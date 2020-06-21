@@ -1,0 +1,8 @@
+#Community Config
+# Features are seperated into categories
+
+reports:
+  enabled: true # Whether reports are enabled
+  persist: true # Whether to save to database 
+  cooldown: "15s" #Duration of cooldown
+  
