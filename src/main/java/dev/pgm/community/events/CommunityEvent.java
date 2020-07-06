@@ -1,19 +1,9 @@
-package dev.pgm.community.reports;
+package dev.pgm.community.events;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class PlayerReportEvent extends Event {
-
-  private final Report report;
-
-  public PlayerReportEvent(Report report) {
-    this.report = report;
-  }
-
-  public Report getReport() {
-    return report;
-  }
+public class CommunityEvent extends Event {
 
   private static final HandlerList handlers = new HandlerList();
 

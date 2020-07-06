@@ -1,8 +1,9 @@
 #Community Config
-# Features are seperated into categories
+# Features are separated into categories
 
+# Reports - Settings related to /report and /reports
 reports:
-  enabled: true # Whether reports are enabled
-  persist: true # Whether to save to database 
-  cooldown: "15s" #Duration of cooldown
+  enabled:  true   # Whether reports are enabled
+  persist:  false  # Whether to save to database 
+  cooldown: 15     # Duration of cooldown in seconds
   

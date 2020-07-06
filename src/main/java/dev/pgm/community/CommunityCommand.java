@@ -1,10 +1,11 @@
 package dev.pgm.community;
 
+import co.aikar.commands.BaseCommand;
 import org.bukkit.ChatColor;
 
-public interface CommunityCommand {
+public abstract class CommunityCommand extends BaseCommand {
 
-  default String format(String format, Object... args) {
+  protected String format(String format, Object... args) {
     return String.format(
         ChatColor.translateAlternateColorCodes('&', format != null ? format : ""), args);
   }

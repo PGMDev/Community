@@ -1,50 +1,60 @@
 package dev.pgm.community;
 
-import app.ashcon.intake.bukkit.BukkitIntake;
-import app.ashcon.intake.bukkit.graph.BasicBukkitCommandGraph;
-import app.ashcon.intake.fluent.DispatcherNode;
+import co.aikar.commands.BukkitCommandManager;
+import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.reports.ReportCommand;
-import dev.pgm.community.reports.ReportManager;
+import dev.pgm.community.reports.ReportFeature;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Community extends JavaPlugin {
 
-  private Config config;
-  private BasicBukkitCommandGraph commands;
+  // Command Manager
+  private BukkitCommandManager commands;
 
-  // Features
-  private ReportManager reportManager;
+  // Feature Manager
+  private FeatureManager features;
 
   @Override
   public void onEnable() {
+    plugin = this;
 
     this.saveDefaultConfig();
     this.reloadConfig();
 
-    this.config = new Config(getConfig());
+    this.features = new FeatureManager(getConfig());
 
-    this.setupManagers();
     this.registerCommands();
   }
 
-  private void setupManagers() {
-    this.reportManager = new ReportManager(config);
+  @Override
+  public void onDisable() {
+    // TODO: save config, shutdown database, etc
+  }
+
+  @Override
+  public void reloadConfig() {
+    super.reloadConfig();
+    features.reloadConfig();
   }
 
   private void registerCommands() {
-    this.commands = new BasicBukkitCommandGraph();
+    this.commands = new BukkitCommandManager(this);
 
-    registerCommand(new ReportCommand(reportManager));
+    // Dependency Registration
+    commands.registerDependency(ReportFeature.class, features.getReports());
 
-    new BukkitIntake(this, commands).register();
-    ;
+    // Command Registration
+    commands.registerCommand(new ReportCommand());
   }
 
-  private void registerCommand(Object command, String... aliases) {
-    DispatcherNode commandNodes = commands.getRootDispatcherNode();
-    if (aliases.length > 1) {
-      commandNodes.registerNode(aliases);
-    }
-    commandNodes.registerCommands(command);
+  public void registerListener(Listener listener) {
+    getServer().getPluginManager().registerEvents(listener, this);
+  }
+
+  private static Community plugin;
+
+  public static Community get() {
+    return plugin;
   }
 }

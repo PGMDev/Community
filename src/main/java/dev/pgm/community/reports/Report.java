@@ -5,8 +5,8 @@ import java.util.UUID;
 
 public class Report {
 
-  private UUID reportedUUID;
-  private UUID reporterUUID;
+  private UUID reportedId;
+  private UUID reporterId;
   private String reason;
   private Instant time;
 
@@ -19,8 +19,8 @@ public class Report {
    * @param time time reported
    */
   public Report(UUID reportedUUID, UUID reporterUUID, String reason, Instant time) {
-    this.reportedUUID = reportedUUID;
-    this.reporterUUID = reporterUUID;
+    this.reportedId = reportedUUID;
+    this.reporterId = reporterUUID;
     this.reason = reason;
     this.time = time;
   }
@@ -30,8 +30,8 @@ public class Report {
    *
    * @return A UUID of the reported
    */
-  public UUID getReportedUUID() {
-    return reportedUUID;
+  public UUID getReportedId() {
+    return reportedId;
   }
 
   /**
@@ -39,8 +39,8 @@ public class Report {
    *
    * @return A UUID of the reporter
    */
-  public UUID getReporterUUID() {
-    return reporterUUID;
+  public UUID getReporterId() {
+    return reporterId;
   }
 
   /**
