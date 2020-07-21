@@ -36,13 +36,8 @@ public class ReportConfig extends FeatureConfigImpl {
   }
 
   @Override
-  public void save() {
-    config.set(PERSIST_KEY, persist);
-    config.set(COOLDOWN_KEY, cooldown);
-  }
-
-  @Override
   public void reload() {
+    super.reload();
     this.persist = config.getBoolean(PERSIST_KEY, false);
     this.cooldown = config.getInt(COOLDOWN_KEY, 15);
   }

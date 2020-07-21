@@ -8,5 +8,9 @@ public interface Feature {
 
   void setEnabled(boolean on);
 
+  void enable();
+
+  void disable();
+
   FeatureConfig getConfig();
 }

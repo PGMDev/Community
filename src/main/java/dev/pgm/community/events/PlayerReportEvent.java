@@ -1,6 +1,5 @@
-package dev.pgm.community.reports.events;
+package dev.pgm.community.events;
 
-import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.reports.Report;
 
 public class PlayerReportEvent extends CommunityEvent {

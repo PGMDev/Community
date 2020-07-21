@@ -1,9 +1,32 @@
-#Community Config
-# Features are separated into categories
+# 
+# Community
+# A plugin for managing a Minecraft community
+#
 
+   
 # Reports - Settings related to /report and /reports
 reports:
   enabled:  true   # Whether reports are enabled
-  persist:  false  # Whether to save to database 
+  persist:  true   # Whether to save to database 
   cooldown: 15     # Duration of cooldown in seconds
   
+  
+# Database : A database is required for persistent data.
+# Community supports (SQLite) or (MySQL).
+# 
+# Modes: 'sql' or 'mysql', specify 'none' for no database support
+database-mode: sql
+
+# Define the name of your local SQLITE database.
+# Only used when database-mode: sql
+# 
+# Note: Database will be saved in Community/<sql-name>.db
+sql-name: "community"
+
+# Settings for MySQL database
+# Only used when database-mode: mysql
+mysql:
+  address: 127.0.0.1
+  username: admin
+  password: "password"
+  table: community

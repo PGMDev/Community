@@ -2,9 +2,6 @@ package dev.pgm.community.feature.config;
 
 public interface FeatureConfig {
 
-  /** Saves current config values to file */
-  void save();
-
   /** Reloads config values with those from the file */
   void reload();
 

@@ -3,7 +3,7 @@ package dev.pgm.community.reports;
 import java.time.Instant;
 import java.util.UUID;
 
-public class Report {
+public class Report implements Comparable<Report> {
 
   private UUID reportedId;
   private UUID reporterId;
@@ -13,14 +13,14 @@ public class Report {
   /**
    * Report Holds information related to a report
    *
-   * @param reportedUUID UUID of reported player
-   * @param reporterUUID UUID of reporting player
+   * @param reportedId UUID of reported player
+   * @param reporterId UUID of reporting player
    * @param reason reason for report
    * @param time time reported
    */
-  public Report(UUID reportedUUID, UUID reporterUUID, String reason, Instant time) {
-    this.reportedId = reportedUUID;
-    this.reporterId = reporterUUID;
+  public Report(UUID reportedId, UUID reporterId, String reason, Instant time) {
+    this.reportedId = reportedId;
+    this.reporterId = reporterId;
     this.reason = reason;
     this.time = time;
   }
@@ -59,5 +59,17 @@ public class Report {
    */
   public Instant getTime() {
     return time;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "{reported: %s, sender: %s, reason:%s, time%s}",
+        getReportedId().toString(), getReporterId().toString(), getReason(), getTime().toString());
+  }
+
+  @Override
+  public int compareTo(Report o) {
+    return -getTime().compareTo(o.getTime());
   }
 }

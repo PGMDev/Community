@@ -7,7 +7,7 @@
 	<version>0.1-SNAPSHOT</version>
 	<name>Community</name>
 	<description>A plugin for managing a Minecraft community</description>
-    <url>https://pgm.dev</url>
+	<url>https://pgm.dev</url>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -25,6 +25,10 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
+		<repository>
+			<id>aikar</id>
+			<url>https://repo.aikar.co/content/groups/aikar/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -33,46 +37,14 @@
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.8.8-R0.1-SNAPSHOT</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 
-		<!-- Text library for creating messages in Minecraft -->
+		<!-- PGM Utils -->
 		<dependency>
-			<groupId>net.kyori</groupId>
-			<artifactId>text-api</artifactId>
-			<version>3.0.4</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.kyori</groupId>
-			<artifactId>text-serializer-plain</artifactId>
-			<version>3.0.4</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.kyori</groupId>
-			<artifactId>text-serializer-legacy</artifactId>
-			<version>3.0.4</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.kyori</groupId>
-			<artifactId>text-serializer-gson</artifactId>
-			<version>3.0.4</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.kyori</groupId>
-			<artifactId>text-adapter-bukkit</artifactId>
-			<version>3.0.5</version>
-			<scope>compile</scope>
-			<!-- Exclude Spigot APIs since we already provide Bukkit -->
-			<exclusions>
-				<exclusion>
-					<groupId>org.spigotmc</groupId>
-					<artifactId>spigot-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>tc.oc.pgm</groupId>
+			<artifactId>util</artifactId>
+			<version>0.9-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Command Framework - https://github.com/aikar/commands -->
@@ -81,12 +53,23 @@
 			<artifactId>acf-bukkit</artifactId>
 			<version>0.5.0-SNAPSHOT</version>
 		</dependency>
-		
+
+		<!-- Database Library for easy connections -->
+		<dependency>
+			<groupId>co.aikar</groupId>
+			<artifactId>idb-core</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>2.4.1</version>
+		</dependency>
 	</dependencies>
 
 
 	<build>
-		<finalName>Community-${project.version}-${git.commit.id.abbrev}</finalName>
+		<finalName>Community-${project.version}</finalName>
 		<resources>
 			<!-- Include the required plugin.yml and config.yml for Bukkit -->
 			<resource>
@@ -107,46 +90,56 @@
 				</configuration>
 			</plugin>
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.3</version>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <minimizeJar>true</minimizeJar>
-                    <artifactSet>
-                        <includes>
-                            <include>net.kyori:text-*:*</include>
-                            <include>app.ashcon.intake:intake-*:*</include>
-                        </includes>
-                    </artifactSet>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/**</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <relocations>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.3</version>
+				<configuration>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<minimizeJar>true</minimizeJar>
+					<artifactSet>
+						<includes>
+							<include>net.kyori:text-*:*</include>
+							<include>tc.oc.pgm:util</include>
+							<include>co.aikar:*</include>
+							<include>com.zaxxer:HikariCP</include>
+						</includes>
+					</artifactSet>
+					<filters>
+						<filter>
+							<artifact>*:*</artifact>
+							<excludes>
+								<exclude>META-INF/**</exclude>
+							</excludes>
+						</filter>
+					</filters>
+					<relocations>
 						<relocation>
 							<pattern>co.aikar.commands</pattern>
 							<shadedPattern>dev.pgm.community.lib.acf</shadedPattern>
 						</relocation>
-                        <relocation>
-                            <pattern>net.kyori</pattern>
-                            <shadedPattern>dev.pgm.community.lib.net.kyori</shadedPattern>
+						<relocation>
+                            <pattern>co.aikar.idb</pattern>
+                            <shadedPattern>dev.pgm.community.lib.idb</shadedPattern>
                         </relocation>
-                    </relocations>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+						<relocation>
+							<pattern>net.kyori</pattern>
+							<shadedPattern>dev.pgm.community.lib.net.kyori</shadedPattern>
+						</relocation>
+						<relocation>
+							<pattern>tc.oc.pgm.util</pattern>
+							<shadedPattern>dev.pgm.community.lib.tc.oc.pgm.util</shadedPattern>
+						</relocation>
+					</relocations>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<!-- Exposes git information to the build environment -->
 			<plugin>

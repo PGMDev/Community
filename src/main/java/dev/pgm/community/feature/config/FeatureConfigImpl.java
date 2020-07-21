@@ -13,6 +13,7 @@ public abstract class FeatureConfigImpl implements FeatureConfig {
   public FeatureConfigImpl(String key, Configuration config) {
     this.key = key;
     this.config = config;
+    reload();
   }
 
   @Override
@@ -28,11 +29,6 @@ public abstract class FeatureConfigImpl implements FeatureConfig {
   @Override
   public void setEnabled(boolean yes) {
     this.enabled = yes;
-  }
-
-  @Override
-  public void save() {
-    config.set(getEnabledKey(), enabled);
   }
 
   public void reload() {
