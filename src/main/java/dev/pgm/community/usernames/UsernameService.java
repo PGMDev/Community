@@ -6,12 +6,15 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import net.kyori.text.Component;
 
 public interface UsernameService {
 
   // Not sure if this was the right place to put this
   // But better than calling XMLUtils
   static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
+
+  Component renderUsername(Optional<UUID> id);
 
   /**
    * Gets the cached username.

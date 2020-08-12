@@ -32,10 +32,10 @@ public abstract class FeatureConfigImpl implements FeatureConfig {
   }
 
   public void reload() {
-    this.enabled = config.getBoolean(getEnabledKey());
+    this.enabled = config.getBoolean(getEnabledKey(key));
   }
 
-  private String getEnabledKey() {
+  protected String getEnabledKey(String key) {
     return key + ".enabled";
   }
 }

@@ -1,74 +1,53 @@
 package dev.pgm.community;
 
+import java.io.File;
 import org.bukkit.configuration.Configuration;
 
 public class CommunityConfig {
 
-  private DatabaseType database;
+  private String serverDisplayName;
 
-  // SQL Options
-  private String sqlFileName;
-
-  // MySQL Options
-  private String address;
-  private String username;
-  private String password;
-  private String table;
+  private boolean databaseEnabled;
+  private String databaseUri;
+  private int databaseMaxConnections;
 
   public CommunityConfig(Configuration config) {
     reload(config);
   }
 
   public void reload(Configuration config) {
-    this.database = DatabaseType.of(config.getString("database-mode"));
-    this.sqlFileName = config.getString("sql-name");
-    this.address = config.getString("mysql.address");
-    this.username = config.getString("mysql.username");
-    this.password = config.getString("mysql.password");
-    this.table = config.getString("mysql.table");
-  }
+    this.serverDisplayName = config.getString("general.server-name", "");
+    this.databaseEnabled = config.getBoolean("database.enabled", true);
+    this.databaseUri = config.getString("database.uri", "");
 
-  public DatabaseType getDatabaseType() {
-    return database;
-  }
-
-  public String getSqlFileName() {
-    return sqlFileName;
-  }
-
-  public String getDatabaseAddress() {
-    return address;
-  }
-
-  public String getDatabaseUsername() {
-    return username;
-  }
-
-  public String getDatabasePassword() {
-    return password;
-  }
-
-  public String getDatabaseTable() {
-    return table;
-  }
-
-  public static enum DatabaseType {
-    SQL,
-    MYSQL,
-    NONE;
-
-    public static DatabaseType of(String value) {
-      switch (value.toLowerCase()) {
-        case "sql":
-        case "sqlite":
-        case "file":
-          return SQL;
-        case "mysql":
-        case "remote":
-          return MYSQL;
-        default:
-          return NONE;
-      }
+    if (databaseUri == null || databaseUri.isEmpty()) {
+      this.databaseUri =
+          new File(Community.get().getDataFolder(), "community.db")
+              .getAbsoluteFile()
+              .toURI()
+              .toString()
+              .replaceFirst("^file", "sqlite");
     }
+
+    this.databaseMaxConnections =
+        this.databaseUri.startsWith("sqlite:")
+            ? 1
+            : Math.min(5, Runtime.getRuntime().availableProcessors());
+  }
+
+  public boolean isDatabaseEnabled() {
+    return databaseEnabled;
+  }
+
+  public String getDatabaseUri() {
+    return databaseUri;
+  }
+
+  public int getMaxDatabaseConnections() {
+    return databaseMaxConnections;
+  }
+
+  public String getServerDisplayName() {
+    return serverDisplayName;
   }
 }

@@ -1,33 +1,34 @@
 package dev.pgm.community;
 
 import co.aikar.commands.BukkitCommandManager;
-import co.aikar.idb.DB;
-import co.aikar.idb.Database;
-import co.aikar.idb.DatabaseOptions;
-import co.aikar.idb.DatabaseOptions.DatabaseOptionsBuilder;
-import co.aikar.idb.PooledDatabaseOptions;
-import dev.pgm.community.CommunityConfig.DatabaseType;
+import co.aikar.commands.InvalidCommandArgument;
+import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.FeatureManager;
-import dev.pgm.community.reports.ReportCommand;
-import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.usernames.UsernameDebugCommand;
 import dev.pgm.community.usernames.UsernameService;
 import dev.pgm.community.usernames.types.CachedUsernameService;
 import dev.pgm.community.usernames.types.SQLUsernameService;
-import java.io.File;
+import dev.pgm.community.utils.CommandAudience;
+import java.sql.SQLException;
+import java.time.Duration;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.bukkit.BukkitUtils;
+import tc.oc.pgm.util.text.TextException;
+import tc.oc.pgm.util.text.TextParser;
 
 public class Community extends JavaPlugin {
 
-  // Community Config: contains general config options
+  // Config for general stuff (database)
   private CommunityConfig config;
 
   // Command Manager
   private BukkitCommandManager commands;
+
+  // Database
+  private DatabaseConnection database;
 
   // Feature Manager
   private FeatureManager features;
@@ -38,26 +39,21 @@ public class Community extends JavaPlugin {
   @Override
   public void onEnable() {
     plugin = this;
-    this.saveDefaultConfig();
-    this.reloadConfig();
 
-    this.config = new CommunityConfig(getConfig());
+    this.setupConfig();
 
     this.setupDatabase();
 
-    this.setupServices();
-
-    this.features =
-        new FeatureManager(getConfig(), config.getDatabaseType(), getLogger(), usernames);
-
-    this.registerCommands();
+    this.setupFeatures();
   }
 
   @Override
   public void onDisable() {
-    if (DB.getGlobalDatabase() != null) {
-      DB.close();
+    if (database != null) {
+      database.close();
     }
+
+    // TODO: Shutdown other things?
   }
 
   public void reload() {
@@ -65,20 +61,40 @@ public class Community extends JavaPlugin {
     features.reloadConfig();
   }
 
-  private void registerCommands() {
+  private void setupConfig() {
+    this.saveDefaultConfig();
+    this.reloadConfig();
+    this.config = new CommunityConfig(getConfig());
+  }
+
+  private void setupCommands() {
     this.commands = new BukkitCommandManager(this);
 
     // Dependency Registration
-    commands.registerDependency(ReportFeature.class, features.getReports());
     commands.registerDependency(UsernameService.class, usernames);
 
     // Contexts
     commands
         .getCommandContexts()
-        .registerIssuerAwareContext(Audience.class, s -> Audience.get(s.getSender()));
+        .registerIssuerAwareContext(CommandAudience.class, c -> new CommandAudience(c.getSender()));
 
-    // Command Registration
-    commands.registerCommand(new ReportCommand());
+    commands
+        .getCommandContexts()
+        .registerContext(
+            Duration.class,
+            c -> {
+              Duration value = Duration.ZERO;
+              String time = c.popFirstArg();
+              if (time != null) {
+                try {
+                  value = TextParser.parseDuration(time);
+                } catch (TextException e) {
+                  throw new InvalidCommandArgument(
+                      time + " is not a valid duration"); // TODO: Translate this
+                }
+              }
+              return value;
+            });
 
     // DEBUG:
     commands.registerCommand(new UsernameDebugCommand());
@@ -88,50 +104,43 @@ public class Community extends JavaPlugin {
     getServer().getPluginManager().registerEvents(listener, this);
   }
 
+  private void setupDatabase() {
+    try {
+      this.database =
+          new DatabaseConnection(config.getDatabaseUri(), config.getMaxDatabaseConnections());
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void setupFeatures() {
+    this.usernames =
+        config.isDatabaseEnabled()
+            ? new SQLUsernameService(getLogger(), database)
+            : new CachedUsernameService(getLogger());
+
+    this.setupCommands();
+
+    this.features = new FeatureManager(getConfig(), getLogger(), database, usernames, commands);
+  }
+
+  public String getServerName() {
+    return BukkitUtils.colorize(
+        config.getServerDisplayName() == null ? "&b&lCommunity" : config.getServerDisplayName());
+  }
+
+  // Not the best practice, only use where makes sense
   private static Community plugin;
 
   public static Community get() {
     return plugin;
   }
 
-  private void setupDatabase() {
-    if (config.getDatabaseType() == DatabaseType.NONE) {
-      getLogger().info("Database: None selected - Some features will not work as efficiently");
-      return;
-    }
-
-    DatabaseOptionsBuilder options = DatabaseOptions.builder();
-
-    // TODO: Update if more databases than SQL & MySQL are supported
-    if (config.getDatabaseType().equals(DatabaseType.SQL)) {
-      String dbName = config.getSqlFileName();
-      String pathway =
-          getDataFolder().getAbsolutePath() + File.separator + String.format("%s.db", dbName);
-      options.sqlite(pathway);
-    } else {
-      options.mysql(
-          config.getDatabaseUsername(),
-          config.getDatabasePassword(),
-          config.getDatabaseTable(),
-          config.getDatabaseAddress());
-    }
-
-    Database database =
-        PooledDatabaseOptions.builder().options(options.build()).createHikariDatabase();
-
-    DB.setGlobalDatabase(database);
-  }
-
-  private void setupServices() {
-    this.usernames =
-        config.getDatabaseType() != DatabaseType.NONE
-            ? new SQLUsernameService(getLogger())
-            : new CachedUsernameService(getLogger());
-  }
-
   // REMOVE WHEN NOT IN DEV
   public static void log(String format, Object... objects) {
     Bukkit.getConsoleSender()
-        .sendMessage(ChatColor.translateAlternateColorCodes('&', String.format(format, objects)));
+        .sendMessage(
+            ChatColor.translateAlternateColorCodes(
+                '&', String.format("&7[&4Community&7]&r " + format, objects)));
   }
 }

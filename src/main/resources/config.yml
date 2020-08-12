@@ -2,7 +2,30 @@
 # Community
 # A plugin for managing a Minecraft community
 #
+general:
+  server-name: "&4Overcast &7Community" # Server display name used at various places
 
+
+# Moderation - Settings related to punishments (/warn, /kick, /ban, /mute)
+moderation:
+  enabled: true   # Whether punishments are enabled
+  persist: true   # Whether to save to database
+  broadcast: true # Whether to broadcast punishments
+  
+  #Message options for kick screen
+  rules-link: "https://pgm.dev/rules" #Link to rules
+  appeal-link: "&7If this ban was made in error, contact &estaff@pgm.dev" # Appeal message (Only shown for perm-bans)
+  
+  #Punishments types - TODO: more options will be found under each punishment type  
+  warn:
+    enabled: true
+  kick:
+    enabled: true
+  ban:
+    enabled: true
+  mute:
+    enabled: true
+  
    
 # Reports - Settings related to /report and /reports
 reports:
@@ -11,22 +34,7 @@ reports:
   cooldown: 15     # Duration of cooldown in seconds
   
   
-# Database : A database is required for persistent data.
-# Community supports (SQLite) or (MySQL).
-# 
-# Modes: 'sql' or 'mysql', specify 'none' for no database support
-database-mode: sql
-
-# Define the name of your local SQLITE database.
-# Only used when database-mode: sql
-# 
-# Note: Database will be saved in Community/<sql-name>.db
-sql-name: "community"
-
-# Settings for MySQL database
-# Only used when database-mode: mysql
-mysql:
-  address: 127.0.0.1
-  username: admin
-  password: "password"
-  table: community
+# Database
+database:
+  enabled: true # Whether to use a database (If false persistent features will not work)
+  uri: ""

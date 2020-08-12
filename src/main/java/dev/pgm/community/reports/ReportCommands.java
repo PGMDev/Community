@@ -13,6 +13,7 @@ import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.utils.CommandAudience;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,16 +26,14 @@ import net.kyori.text.format.TextColor;
 import net.kyori.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
-public class ReportCommand extends CommunityCommand {
+public class ReportCommands extends CommunityCommand {
 
   @Dependency private ReportFeature reports;
   @Dependency private UsernameService usernames;
@@ -43,7 +42,7 @@ public class ReportCommand extends CommunityCommand {
   @Description("Report a player who is breaking the rules")
   @CommandCompletion("@players *")
   @Syntax("[username] (reason)")
-  public void report(Audience viewer, Player sender, OnlinePlayer target, String reason) {
+  public void report(CommandAudience viewer, Player sender, OnlinePlayer target, String reason) {
     checkEnabled();
 
     if (!reports.canReport(sender.getUniqueId())) {
@@ -85,10 +84,7 @@ public class ReportCommand extends CommunityCommand {
     // Command completion here is for ALL online, however can provide any
     // username/uuid to lookup past reports from DB
     public void sendPlayerReportHistory(
-        final Audience viewer,
-        final CommandSender sender,
-        final String target,
-        @Default("1") final int page) {
+        final CommandAudience audience, final String target, @Default("1") final int page) {
       checkEnabled();
 
       // Sub command allows for a player target to be specified
@@ -99,36 +95,38 @@ public class ReportCommand extends CommunityCommand {
               (reports, errors) -> {
                 if (errors != null) {
                   // TODO: Translate this
-                  sender.sendMessage(
-                      ChatColor.DARK_RED
-                          + "There was an error fetching reports for "
-                          + ChatColor.AQUA
-                          + target);
+                  audience
+                      .getSender()
+                      .sendMessage(
+                          ChatColor.DARK_RED
+                              + "There was an error fetching reports for "
+                              + ChatColor.AQUA
+                              + target);
                   errors.printStackTrace();
                   return;
                 }
 
                 if (reports.isEmpty()) {
                   // TODO: Translate this
-                  viewer.sendWarning(
+                  audience.sendWarning(
                       TextComponent.builder("No reports found for ")
                           .append(target, TextColor.AQUA)
                           .build());
                   return;
                 }
-                sendReportHistory(viewer, sender, reports, page);
+                sendReportHistory(audience, reports, page);
               });
       // Example of command syntax: /reports player applenick (page)
     }
 
-    @Default // Default flag is a catch-all, /reports will default to this when no input is present
-    public void recentReports(Audience viewer, CommandSender sender, @Default("1") int page) {
+    @Default // Default is a catch-all, /reports will default to this when no input is present
+    public void recentReports(CommandAudience audience, @Default("1") int page) {
       checkEnabled();
-      sendReportHistory(viewer, sender, reports.getRecentReports(), page);
+      sendReportHistory(audience, reports.getRecentReports(), page);
     }
 
     public void sendReportHistory(
-        Audience viewer, CommandSender sender, Collection<Report> reportData, int page) {
+        CommandAudience audience, Collection<Report> reportData, int page) {
       Component headerResultCount =
           TextComponent.of(Long.toString(reportData.size()), TextColor.RED);
 
@@ -153,7 +151,7 @@ public class ReportCommand extends CommunityCommand {
                       .append(pageNum));
 
       Component formattedHeader =
-          TextFormatter.horizontalLineHeading(sender, header, TextColor.DARK_GRAY);
+          TextFormatter.horizontalLineHeading(audience.getSender(), header, TextColor.DARK_GRAY);
       new PaginatedComponentResults<Report>(formattedHeader, perPage) {
         @Override
         public Component format(Report data, int index) {
@@ -179,7 +177,8 @@ public class ReportCommand extends CommunityCommand {
           // TODO: Translate
           return TextComponent.of("No reports found", TextColor.RED);
         }
-      }.display(viewer, reportData.stream().sorted().collect(Collectors.toList()), page);
+      }.display(
+          audience.getAudience(), reportData.stream().sorted().collect(Collectors.toList()), page);
     }
 
     private Component getReportFormatName(UUID id) {

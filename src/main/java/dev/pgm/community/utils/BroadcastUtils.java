@@ -10,6 +10,8 @@ import tc.oc.pgm.util.chat.Sound;
 
 public class BroadcastUtils {
 
+  public static final Component BROADCAST_DIV = TextComponent.of(" \u00BB ", TextColor.GRAY);
+
   public static final TextComponent ADMIN_CHAT_PREFIX =
       TextComponent.builder()
           .append("[", TextColor.WHITE)
@@ -30,6 +32,11 @@ public class BroadcastUtils {
                 viewer.playSound(sound);
               }
             });
+    Audience.get(Bukkit.getConsoleSender()).sendMessage(formatted);
+  }
+
+  public static void sendGlobalChat(Component formatted) {
+    Bukkit.getOnlinePlayers().stream().map(Audience::get).forEach(p -> p.sendMessage(formatted));
     Audience.get(Bukkit.getConsoleSender()).sendMessage(formatted);
   }
 }

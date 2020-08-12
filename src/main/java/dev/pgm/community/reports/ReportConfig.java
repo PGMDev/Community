@@ -13,6 +13,11 @@ public class ReportConfig extends FeatureConfigImpl {
   private boolean persist;
   private int cooldown;
 
+  /**
+   * Configuration options related to reports
+   *
+   * @param config
+   */
   public ReportConfig(Configuration config) {
     super(KEY, config);
   }
@@ -38,7 +43,7 @@ public class ReportConfig extends FeatureConfigImpl {
   @Override
   public void reload() {
     super.reload();
-    this.persist = config.getBoolean(PERSIST_KEY, false);
+    this.persist = config.getBoolean(PERSIST_KEY, true);
     this.cooldown = config.getInt(COOLDOWN_KEY, 15);
   }
 }

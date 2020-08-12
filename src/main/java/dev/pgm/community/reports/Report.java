@@ -5,10 +5,11 @@ import java.util.UUID;
 
 public class Report implements Comparable<Report> {
 
-  private UUID reportedId;
-  private UUID reporterId;
-  private String reason;
-  private Instant time;
+  private final UUID reportId;
+  private final UUID reportedId;
+  private final UUID reporterId;
+  private final String reason;
+  private final Instant time;
 
   /**
    * Report Holds information related to a report
@@ -19,10 +20,23 @@ public class Report implements Comparable<Report> {
    * @param time time reported
    */
   public Report(UUID reportedId, UUID reporterId, String reason, Instant time) {
+    this(UUID.randomUUID(), reportedId, reporterId, reason, time);
+  }
+
+  public Report(UUID reportId, UUID reportedId, UUID reporterId, String reason, Instant time) {
+    this.reportId = reportId;
     this.reportedId = reportedId;
     this.reporterId = reporterId;
     this.reason = reason;
     this.time = time;
+  }
+  /**
+   * Get the {@link UUID} which identifies the report
+   *
+   * @return report id
+   */
+  public UUID getId() {
+    return reportId;
   }
 
   /**
@@ -64,12 +78,23 @@ public class Report implements Comparable<Report> {
   @Override
   public String toString() {
     return String.format(
-        "{reported: %s, sender: %s, reason:%s, time%s}",
-        getReportedId().toString(), getReporterId().toString(), getReason(), getTime().toString());
+        "{id: %s, reported: %s, sender: %s, reason:%s, time%s}",
+        getId().toString(),
+        getReportedId().toString(),
+        getReporterId().toString(),
+        getReason(),
+        getTime().toString());
   }
 
   @Override
   public int compareTo(Report o) {
     return -getTime().compareTo(o.getTime());
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof Report)) return false;
+    Report otherReport = (Report) other;
+    return getId().equals(otherReport.getId());
   }
 }

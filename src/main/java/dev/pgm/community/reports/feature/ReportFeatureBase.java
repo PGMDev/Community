@@ -2,12 +2,13 @@ package dev.pgm.community.reports.feature;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import dev.pgm.community.Community;
+import com.google.common.collect.Sets;
+import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.events.PlayerReportEvent;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.reports.Report;
+import dev.pgm.community.reports.ReportCommands;
 import dev.pgm.community.reports.ReportConfig;
-import dev.pgm.community.usernames.UsernameService;
 import dev.pgm.community.utils.BroadcastUtils;
 import java.time.Duration;
 import java.time.Instant;
@@ -35,13 +36,11 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
   private static final TimeUnit RECENT_TIME_UNIT = TimeUnit.HOURS;
 
   protected final Cache<UUID, Instant> reportCooldown;
-  protected final UsernameService usernames;
 
   protected final Cache<Report, Instant> recentReports;
 
-  public ReportFeatureBase(ReportConfig config, Logger logger, UsernameService usernames) {
+  public ReportFeatureBase(ReportConfig config, Logger logger) {
     super(config, logger);
-    this.usernames = usernames;
     reportCooldown =
         CacheBuilder.newBuilder().expireAfterWrite(config.getCooldown(), TimeUnit.SECONDS).build();
     this.recentReports =
@@ -54,6 +53,13 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
 
   protected ReportConfig getReportConfig() {
     return (ReportConfig) getConfig();
+  }
+
+  @Override
+  public Set<CommunityCommand> getCommands() {
+    return getReportConfig().isEnabled()
+        ? Sets.newHashSet(new ReportCommands())
+        : Sets.newHashSet();
   }
 
   private boolean isCooldownEnabled() {
@@ -106,7 +112,6 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
   }
 
   private Component formatReportBroadcast(Report report) {
-    Community.log(report.toString() + " -- EXTRA REASON = %s", report.getReason());
     return TranslatableComponent.of(
         "moderation.report.notify",
         TextColor.GRAY,
