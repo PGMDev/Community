@@ -2,6 +2,7 @@ package dev.pgm.community.moderation;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import org.bukkit.configuration.Configuration;
+import tc.oc.pgm.util.bukkit.BukkitUtils;
 
 public class ModerationConfig extends FeatureConfigImpl {
 
@@ -107,7 +108,7 @@ public class ModerationConfig extends FeatureConfigImpl {
    * @return Appeal message for kick screen
    */
   public String getAppealMessage() {
-    return appealMessage;
+    return appealMessage != null ? BukkitUtils.colorize(appealMessage) : "";
   }
 
   @Override
@@ -124,6 +125,6 @@ public class ModerationConfig extends FeatureConfigImpl {
 
     // Messages
     this.rulesLink = config.getString(KEY + ".rules-link");
-    this.appealMessage = config.getString(KEY + ".appeals-link");
+    this.appealMessage = config.getString(KEY + ".appeal-link");
   }
 }

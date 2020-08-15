@@ -12,9 +12,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
-import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public class CachedUsernameService implements UsernameService {
 
@@ -28,13 +25,6 @@ public class CachedUsernameService implements UsernameService {
     this.cache = CacheBuilder.newBuilder().maximumSize(CACHE_LIMIT).build();
     // Auto register username change listener
     Community.get().registerListener(new UsernameChangeListener(this));
-  }
-
-  @Override
-  public Component renderUsername(Optional<UUID> id) {
-    return id.isPresent()
-        ? PlayerComponent.of(id.get(), getUsername(id.get()), NameStyle.FANCY)
-        : PlayerComponent.CONSOLE;
   }
 
   @Override

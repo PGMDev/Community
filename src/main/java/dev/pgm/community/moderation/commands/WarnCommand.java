@@ -8,6 +8,7 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.utils.CommandAudience;
@@ -20,7 +21,7 @@ public class WarnCommand extends CommunityCommand {
   @Description("Warn a player for bad behavior")
   @Syntax("[player] [reason]")
   @CommandCompletion("@players")
-  @CommandPermission("TODO.WARN") // TODO: Permissions
+  @CommandPermission(CommunityPermissions.WARN) // TODO: Permissions
   public void warn(CommandAudience sender, OnlinePlayer target, String reason) {
     moderation.punish(
         PunishmentType.WARN,

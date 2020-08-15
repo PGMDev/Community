@@ -8,6 +8,7 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.utils.CommandAudience;
@@ -20,7 +21,7 @@ public class KickCommand extends CommunityCommand {
   @Description("Kick a player from the server")
   @Syntax("[player] [reason]")
   @CommandCompletion("@players")
-  @CommandPermission("TODO.KICK") // TODO: Permissions
+  @CommandPermission(CommunityPermissions.KICK)
   public void kick(CommandAudience audience, OnlinePlayer target, String reason) {
     moderation.punish(
         PunishmentType.KICK,

@@ -8,7 +8,9 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
@@ -40,7 +42,7 @@ public class PunishmentCommand extends CommunityCommand {
 
   public static final Duration DEFAULT_TEMPBAN_LENGTH = Duration.ofDays(7); // TODO: Maybe config?
 
-  public static final Sound PARDON_ALERT = new Sound("note.harp", 1f, 1.5f);
+  public static final Sound PARDON_SOUND = new Sound("note.harp", 1f, 1.5f);
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsernameService usernames;
@@ -49,41 +51,52 @@ public class PunishmentCommand extends CommunityCommand {
   @Description("Issue the most appropriate punishment for a player")
   @Syntax("[player] [reason]")
   @CommandCompletion("@players")
-  @CommandPermission("TODO.punishment")
+  @CommandPermission(CommunityPermissions.PUNISH)
   public void punish(CommandAudience audience, OnlinePlayer target, String reason) {
     moderation
         .getNextPunishment(target.getPlayer().getUniqueId())
         .thenAcceptAsync(
             type -> {
-              Duration length = type == PunishmentType.TEMP_BAN ? DEFAULT_TEMPBAN_LENGTH : null;
-              moderation.punish(
-                  type,
-                  target.getPlayer().getUniqueId(),
-                  audience,
-                  reason,
-                  length,
-                  true,
-                  isVanished(audience));
+              Bukkit.getScheduler()
+                  .scheduleSyncDelayedTask(
+                      Community.get(),
+                      new Runnable() { // Schedule since lookup is async
+
+                        @Override
+                        public void run() {
+                          Duration length =
+                              type == PunishmentType.TEMP_BAN ? DEFAULT_TEMPBAN_LENGTH : null;
+                          moderation.punish(
+                              type,
+                              target.getPlayer().getUniqueId(),
+                              audience,
+                              reason,
+                              length,
+                              true,
+                              isVanished(audience));
+                        }
+                      });
             });
   }
 
   @CommandAlias("punishmenthistory|ph")
   @Description("View a list of recent punishments")
   @Syntax("[page]")
-  @CommandPermission("TODO.punishment")
+  @CommandPermission(CommunityPermissions.PUNISH)
   public void viewRecentPunishments(CommandAudience audience, @Default("1") int page) {
-    sendPunishmentHistory(audience, null, moderation.getRecentPunishments(), page);
-    // FIXME: Bug, currently we cache punishments to allow for this command to work. However
-    // punishments are not updated if /pardon is done on an entry
-    // Maybe see if we should fetch ALL punishments everytime sorted by time, or simply see if we
-    // can modify the cached entries to match updates performed
+    moderation
+        .getRecentPunishments(Duration.ofHours(1))
+        .thenAcceptAsync(
+            punishments -> {
+              sendPunishmentHistory(audience, null, punishments, page);
+            });
   }
 
   @CommandAlias("repeatpunishment|rp")
   @Description("Repeat the last punishment you performed for another player")
   @Syntax("[player]")
   @CommandCompletion("@players")
-  @CommandPermission("TODO.punishment")
+  @CommandPermission(CommunityPermissions.PUNISH)
   public void repeatPunishment(
       CommandAudience audience, @co.aikar.commands.annotation.Optional OnlinePlayer target) {
     audience
@@ -129,7 +142,7 @@ public class PunishmentCommand extends CommunityCommand {
   @Description("Pardon all active punishments for a player")
   @Syntax("[player]")
   @CommandCompletion("*")
-  @CommandPermission("TODO.punishment")
+  @CommandPermission(CommunityPermissions.UNBAN)
   public void unbanPlayer(CommandAudience audience, String target) {
     moderation
         .isBanned(target)
@@ -155,7 +168,7 @@ public class PunishmentCommand extends CommunityCommand {
                                     .append(" was unbanned by ", TextColor.GRAY)
                                     .append(audience.getStyledName())
                                     .build(),
-                                PARDON_ALERT);
+                                PARDON_SOUND);
                           }
                           // TODO: translate
                         });
@@ -172,8 +185,8 @@ public class PunishmentCommand extends CommunityCommand {
   @CommandAlias("lookup|l")
   @Description("View infraction history of a player")
   @Syntax("[player] [page]")
-  @CommandCompletion("@players")
-  @CommandPermission("TODO.punishment") // TODO: Permission
+  @CommandCompletion("@players *")
+  @CommandPermission(CommunityPermissions.LOOKUP)
   public void viewPunishmentHistory(
       CommandAudience audience, String target, @Default("1") int page) {
     moderation
@@ -261,7 +274,7 @@ public class PunishmentCommand extends CommunityCommand {
                 .append("\n")
                 .append("Expires in ", TextColor.GRAY)
                 .append(
-                    PeriodFormats.briefNaturalApproximate(data.getTimeIssued(), endDate, 1)
+                    PeriodFormats.briefNaturalApproximate(Instant.now(), endDate, 1)
                         .color(TextColor.YELLOW));
           } else if (!data.wasUpdated()) {
             hover

@@ -45,12 +45,4 @@ public class TempBanPunishment extends ExpirablePunishment {
   public PunishmentType getType() {
     return PunishmentType.TEMP_BAN;
   }
-
-  @Override
-  public boolean isActive() {
-    Instant expires = this.getTimeIssued().plus(this.getDuration());
-    return super.isActive()
-        ? Instant.now().isBefore(expires)
-        : false; // If unbanned return false, otherwise return true until expires
-  }
 }

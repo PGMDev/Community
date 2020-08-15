@@ -7,6 +7,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import net.kyori.text.Component;
+import net.kyori.text.TextComponent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
+import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.text.PeriodFormats;
 
 public class MutePunishment extends ExpirablePunishment {
 
@@ -36,9 +42,32 @@ public class MutePunishment extends ExpirablePunishment {
         usernames);
   }
 
+  public Component getMuteMessage() {
+    return TextComponent.builder()
+        .append("You have been muted for ", TextColor.GRAY)
+        .append(getReason(), TextColor.RED)
+        .hoverEvent(
+            HoverEvent.showText(
+                TextComponent.builder()
+                    .append("Expires in ", TextColor.GRAY)
+                    .append(
+                        PeriodFormats.briefNaturalApproximate(
+                                Duration.between(Instant.now(), getExpireTime()), 1)
+                            .color(TextColor.YELLOW))
+                    .build()))
+        .build();
+  }
+
   @Override
   public boolean punish() {
-    return false;
+    getTargetPlayer()
+        .map(Audience::get)
+        .ifPresent(
+            player -> {
+              this.sendWarning(player, getReason());
+              player.sendWarning(getMuteMessage());
+            });
+    return getTargetPlayer().isPresent();
   }
 
   @Override

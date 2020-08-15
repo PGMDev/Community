@@ -9,6 +9,7 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.usernames.UsernameService;
@@ -17,7 +18,7 @@ import java.time.Duration;
 
 @CommandAlias("ban|permban|pb")
 @Description("Ban a player from the server")
-@CommandPermission("TODO.BAN") // TODO: Permissions
+@CommandPermission(CommunityPermissions.BAN)
 public class BanCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
@@ -44,7 +45,8 @@ public class BanCommand extends CommunityCommand {
   public void ipBan(
       CommandAudience audience,
       String target,
-      String reason) {} // TODO: Maybe leave IP ban out of community and add to Bungee
+      String reason) {} // TODO: Maybe leave IP ban out of community and add to Bungee in a separate
+  // plugin?
 
   @Default
   @Syntax("[player] [reason]")

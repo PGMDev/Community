@@ -7,10 +7,12 @@ import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.commands.BanCommand;
 import dev.pgm.community.moderation.commands.KickCommand;
+import dev.pgm.community.moderation.commands.MuteCommand;
 import dev.pgm.community.moderation.commands.PunishmentCommand;
 import dev.pgm.community.moderation.commands.WarnCommand;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
+import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.usernames.UsernameService;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -19,6 +21,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import net.kyori.text.Component;
 import org.bukkit.Bukkit;
@@ -26,12 +29,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import tc.oc.pgm.util.chat.Audience;
 import tc.oc.pgm.util.chat.Sound;
 
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
 
-  private Set<Punishment> recents; // Punishments performed during server run
+  private Set<Punishment> recents;
   private UsernameService usernames;
 
   public ModerationFeatureBase(ModerationConfig config, Logger logger, UsernameService usernames) {
@@ -96,7 +101,9 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
       commands.add(new BanCommand());
     }
 
-    // TODO: Mute
+    if (getModerationConfig().isMuteEnabled()) {
+      commands.add(new MuteCommand());
+    }
 
     commands.add(new PunishmentCommand());
 
@@ -104,13 +111,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   @Override
-  public Set<Punishment> getRecentPunishments() {
-    return recents;
-  }
-
-  @Override
   public Optional<Punishment> getLastPunishment(UUID issuer) {
-    return getRecentPunishments().stream()
+    return recents.stream()
         .filter(p -> p.getIssuerId().isPresent() && p.getIssuerId().get().equals(issuer))
         .sorted()
         .findFirst();
@@ -142,5 +144,20 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPreLoginEvent(AsyncPlayerPreLoginEvent event) {
     this.onPreLogin(event);
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent event) {
+    try {
+      Optional<Punishment> mute = isMuted(event.getPlayer().getUniqueId()).get();
+      mute.map(MutePunishment.class::cast)
+          .ifPresent(
+              activeMute -> {
+                event.setCancelled(true);
+                Audience.get(event.getPlayer()).sendWarning(activeMute.getMuteMessage());
+              });
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
   }
 }

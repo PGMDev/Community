@@ -41,8 +41,20 @@ public abstract class ExpirablePunishment extends PunishmentBase {
     this.duration = length;
   }
 
+  @Override
+  public boolean isActive() {
+    Instant expires = this.getTimeIssued().plus(this.getDuration());
+    return super.isActive()
+        ? Instant.now().isBefore(expires)
+        : false; // If expired return false, otherwise return true until expires
+  }
+
   public Duration getDuration() {
     return duration;
+  }
+
+  public Instant getExpireTime() {
+    return getTimeIssued().plus(getDuration());
   }
 
   public static @Nullable Duration getDuration(Punishment punishment) {

@@ -6,6 +6,7 @@ import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.types.BanPunishment;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
 import dev.pgm.community.moderation.punishments.types.KickPunishment;
+import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
 import dev.pgm.community.usernames.UsernameService;
@@ -129,7 +130,18 @@ public interface Punishment {
             config,
             usernames);
       case MUTE:
-        break;
+        return new MutePunishment(
+            id,
+            target,
+            issuer,
+            reason,
+            time,
+            length,
+            active,
+            lastUpdated,
+            lastUpdatedBy,
+            config,
+            usernames);
       case KICK:
         return new KickPunishment(
             id,

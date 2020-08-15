@@ -11,9 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
-/** A feature that can handle punishments * */
+/** A feature that can handles moderation * */
 public interface ModerationFeature extends Feature {
 
   /**
@@ -50,7 +51,7 @@ public interface ModerationFeature extends Feature {
    *
    * @param target A username or UUID string
    * @param issuer An optional UUID of the command sender (console is empty)
-   * @return Whether any punishments were pardoned
+   * @return True if any ban infractions were lifted, false if none
    */
   CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer);
 
@@ -63,6 +64,30 @@ public interface ModerationFeature extends Feature {
   CompletableFuture<Boolean> isBanned(String target);
 
   /**
+   * Gets active mute for the provided UUID, if any
+   *
+   * @param target A player UUID
+   * @return An optional {@link Punishment}
+   */
+  CompletableFuture<Optional<Punishment>> isMuted(UUID target);
+
+  /**
+   * Unmutes any active mutes for the provided target
+   * @param target A player UUID
+   * @param issuer The person lifting the infraction
+   * @return true if unmute was removed, false if no mute existed
+   */
+  CompletableFuture<Boolean> unmute(UUID target, Optional<UUID> issuer);
+
+  /**
+   * Gets a set of online players who are muted
+   *
+   * @see {@link #isMuted(UUID)}
+   * @return An set of players who are muted
+   */
+  Set<Player> getOnlineMutes();
+
+  /**
    * Get the most appropriate punishment based on history Warn -> Kick -> TempBan -> PermBan
    *
    * @param target A player id
@@ -71,11 +96,12 @@ public interface ModerationFeature extends Feature {
   CompletableFuture<PunishmentType> getNextPunishment(UUID target);
 
   /**
-   * Return a non-updated list of punishments that have been issued since server start.
+   * Get a set of recent punishments during a time period
    *
-   * @return A set of {@link Punishment}
+   * @param period Time period to search
+   * @return A set of punishments
    */
-  Set<Punishment> getRecentPunishments();
+  CompletableFuture<List<Punishment>> getRecentPunishments(Duration period);
 
   /**
    * Get the last punishment a user issued Note: Used for /repeatpunishment

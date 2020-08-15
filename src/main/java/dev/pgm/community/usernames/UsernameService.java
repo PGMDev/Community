@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.kyori.text.Component;
+import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public interface UsernameService {
 
@@ -14,7 +16,20 @@ public interface UsernameService {
   // But better than calling XMLUtils
   static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
 
-  Component renderUsername(Optional<UUID> id);
+  /**
+   * Render a player's name if cached
+   *
+   * @param userId Optional UUID of player, empty will result in console name
+   * @return The rendered name component of provided UUID
+   */
+  default Component renderUsername(Optional<UUID> userId) {
+    if (!userId.isPresent()) return PlayerComponent.CONSOLE;
+
+    if (getUsername(userId.get()) != null) {
+      return PlayerComponent.of(userId.get(), getUsername(userId.get()), NameStyle.FANCY);
+    }
+    return PlayerComponent.UNKNOWN;
+  }
 
   /**
    * Gets the cached username.

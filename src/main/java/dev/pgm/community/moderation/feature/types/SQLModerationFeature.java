@@ -12,11 +12,15 @@ import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
@@ -123,5 +127,35 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   @Override
   public CompletableFuture<PunishmentType> getNextPunishment(UUID target) {
     return service.getNextPunishment(target);
+  }
+
+  @Override
+  public CompletableFuture<Optional<Punishment>> isMuted(UUID target) {
+    return service.isMuted(target);
+  }
+
+  @Override
+  public CompletableFuture<Boolean> unmute(UUID id, Optional<UUID> issuer) {
+    return service.unmute(id, issuer);
+  }
+
+  @Override
+  public CompletableFuture<List<Punishment>> getRecentPunishments(Duration period) {
+    return service.getRecentPunishments(period);
+  }
+
+  @Override
+  public Set<Player> getOnlineMutes() {
+    return Bukkit.getOnlinePlayers().stream()
+        .filter(
+            pl -> {
+              try {
+                return isMuted(pl.getUniqueId()).get().isPresent();
+              } catch (InterruptedException | ExecutionException e) {
+                // Noop error, just ignore
+              }
+              return false;
+            })
+        .collect(Collectors.toSet());
   }
 }
