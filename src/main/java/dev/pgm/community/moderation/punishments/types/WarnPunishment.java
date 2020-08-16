@@ -3,7 +3,7 @@ package dev.pgm.community.moderation.punishments.types;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.PunishmentBase;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +22,7 @@ public class WarnPunishment extends PunishmentBase {
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
       ModerationConfig config,
-      UsernameService usernames) {
+      UsersFeature usernames) {
     super(
         id,
         targetId,

@@ -7,5 +7,7 @@ public interface Savable<T> {
 
   void save(T t);
 
-  CompletableFuture<List<T>> query(String target);
+  CompletableFuture<List<T>> queryList(String target);
+
+  CompletableFuture<T> query(String target);
 }

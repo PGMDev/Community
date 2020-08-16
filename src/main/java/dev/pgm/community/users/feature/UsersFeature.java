@@ -1,16 +1,24 @@
-package dev.pgm.community.usernames;
+package dev.pgm.community.users.feature;
 
-import java.util.Map;
+import dev.pgm.community.feature.Feature;
+import dev.pgm.community.users.UserProfile;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.kyori.text.Component;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
-public interface UsernameService {
+/**
+ * UsersFeature
+ * <p> Features related to users
+ *
+ */
+public interface UsersFeature extends Feature {
 
   // Not sure if this was the right place to put this
   // But better than calling XMLUtils
@@ -70,16 +78,42 @@ public interface UsernameService {
    */
   CompletableFuture<Optional<UUID>> getStoredId(String username);
 
+  
+  /**
+   * Queries the database for a user profile by UUID
+   * 
+   * @param id Player UUID
+   * @return A user profile if found or null
+   */
+  CompletableFuture<UserProfile> getStoredProfile(UUID id);
+
+  /**
+   * Queries the database for a user profile by either username or UUID
+   * @param query Username or UUID string
+   * @return A user profile if found or null
+   */
+  CompletableFuture<UserProfile> getStoredProfile(String query);
+
+  /**
+   * Gets a cached UserProfile for the given UUID
+   * @param id Player UUID
+   * @return A cached UserProfile or null
+   */
+  @Nullable
+  UserProfile getProfile(UUID id);
+
+  
   /**
    * Updates the stored username for matching id
    *
    * @param id Player UUID
    * @param name Username
    */
-  public void setName(UUID id, String name);
+  void setName(UUID id, String name);
 
-  /** ******************** Methods below are for debug only ********************** */
-  public Map<UUID, String> getAllNamesDebug();
+  /* Events to be handled by FeatureImpls */
+  
+  void onLogin(AsyncPlayerPreLoginEvent login);
 
-  public CompletableFuture<Map<UUID, String>> getStoredNamesDebug();
+  void onLogout(PlayerQuitEvent event);
 }

@@ -1,4 +1,4 @@
-package dev.pgm.community.reports;
+package dev.pgm.community.reports.commands;
 
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.CommandAlias;
@@ -11,8 +11,9 @@ import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.reports.Report;
 import dev.pgm.community.reports.feature.ReportFeature;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Collection;
 import java.util.UUID;
@@ -36,7 +37,7 @@ import tc.oc.pgm.util.text.types.PlayerComponent;
 public class ReportCommands extends CommunityCommand {
 
   @Dependency private ReportFeature reports;
-  @Dependency private UsernameService usernames;
+  @Dependency private UsersFeature usernames;
 
   @CommandAlias("report")
   @Description("Report a player who is breaking the rules")

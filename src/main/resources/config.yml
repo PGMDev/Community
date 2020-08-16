@@ -32,7 +32,11 @@ reports:
   enabled:  true   # Whether reports are enabled
   persist:  true   # Whether to save to database 
   cooldown: 15     # Duration of cooldown in seconds
-  
+
+# Users - Track user related info including, name/uuid, first/last logins, join count, and IP history
+users:
+  enabled: true
+    
   
 # Database
 database:

@@ -1,7 +1,7 @@
 package dev.pgm.community.moderation.punishments;
 
 import dev.pgm.community.moderation.ModerationConfig;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +27,7 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
   private Optional<UUID> lastUpdatedBy;
 
   private final ModerationConfig config;
-  private final UsernameService usernames;
+  private final UsersFeature usernames;
 
   public PunishmentBase(
       UUID punishmentId,
@@ -39,7 +39,7 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
       ModerationConfig config,
-      UsernameService usernames) {
+      UsersFeature usernames) {
     this.punishmentId = punishmentId;
     this.targetId = targetId;
     this.issuerId = issuerId;

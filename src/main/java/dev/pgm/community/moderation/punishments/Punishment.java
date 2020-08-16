@@ -9,7 +9,7 @@ import dev.pgm.community.moderation.punishments.types.KickPunishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
 import java.time.Duration;
@@ -115,7 +115,7 @@ public interface Punishment {
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
       ModerationConfig config,
-      UsernameService usernames) {
+      UsersFeature usernames) {
     switch (type) {
       case WARN:
         return new WarnPunishment(
@@ -184,7 +184,7 @@ public interface Punishment {
     return null; // TODO Remove after types are added
   }
 
-  default Component formatBroadcast(UsernameService usernames) {
+  default Component formatBroadcast(UsersFeature usernames) {
     Component prefix = getType().getPunishmentPrefix();
     if (this instanceof ExpirablePunishment
         && !((ExpirablePunishment) this).getDuration().isZero()) {
@@ -212,7 +212,7 @@ public interface Punishment {
   }
 
   /** Formats a string for multi-line kick message */
-  default String formatPunishmentScreen(ModerationConfig config, UsernameService usernames) {
+  default String formatPunishmentScreen(ModerationConfig config, UsersFeature usernames) {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(TextComponent.empty());

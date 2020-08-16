@@ -1,4 +1,4 @@
-package dev.pgm.community.reports.feature;
+package dev.pgm.community.reports.services;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -45,7 +45,7 @@ public class SQLReportService extends SQLFeatureBase<Report> {
   }
 
   @Override
-  public CompletableFuture<List<Report>> query(String target) {
+  public CompletableFuture<List<Report>> queryList(String target) {
     SelectQuery query = cachedReports.getUnchecked(UUID.fromString(target));
     if (query.hasFetched()) {
       return CompletableFuture.completedFuture(query.getReports());
@@ -54,6 +54,11 @@ public class SQLReportService extends SQLFeatureBase<Report> {
           .submitQueryComplete(query)
           .thenApplyAsync(q -> SelectQuery.class.cast(q).getReports());
     }
+  }
+
+  @Override
+  public CompletableFuture<Report> query(String target) {
+    return CompletableFuture.completedFuture(null); // Noop atm
   }
 
   private class InsertQuery implements Query {

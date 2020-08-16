@@ -73,6 +73,7 @@ public interface ModerationFeature extends Feature {
 
   /**
    * Unmutes any active mutes for the provided target
+   *
    * @param target A player UUID
    * @param issuer The person lifting the infraction
    * @return true if unmute was removed, false if no mute existed

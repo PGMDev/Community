@@ -4,10 +4,6 @@ import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.InvalidCommandArgument;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.FeatureManager;
-import dev.pgm.community.usernames.UsernameDebugCommand;
-import dev.pgm.community.usernames.UsernameService;
-import dev.pgm.community.usernames.types.CachedUsernameService;
-import dev.pgm.community.usernames.types.SQLUsernameService;
 import dev.pgm.community.utils.CommandAudience;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -32,9 +28,6 @@ public class Community extends JavaPlugin {
 
   // Feature Manager
   private FeatureManager features;
-
-  // Services
-  private UsernameService usernames;
 
   @Override
   public void onEnable() {
@@ -70,9 +63,6 @@ public class Community extends JavaPlugin {
   private void setupCommands() {
     this.commands = new BukkitCommandManager(this);
 
-    // Dependency Registration
-    commands.registerDependency(UsernameService.class, usernames);
-
     // Contexts
     commands
         .getCommandContexts()
@@ -95,9 +85,6 @@ public class Community extends JavaPlugin {
               }
               return value;
             });
-
-    // DEBUG:
-    commands.registerCommand(new UsernameDebugCommand());
   }
 
   public void registerListener(Listener listener) {
@@ -114,14 +101,8 @@ public class Community extends JavaPlugin {
   }
 
   private void setupFeatures() {
-    this.usernames =
-        config.isDatabaseEnabled()
-            ? new SQLUsernameService(getLogger(), database)
-            : new CachedUsernameService(getLogger());
-
     this.setupCommands();
-
-    this.features = new FeatureManager(getConfig(), getLogger(), database, usernames, commands);
+    this.features = new FeatureManager(getConfig(), getLogger(), database, commands);
   }
 
   public String getServerName() {

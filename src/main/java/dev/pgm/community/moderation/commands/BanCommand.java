@@ -12,7 +12,7 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 
@@ -22,7 +22,7 @@ import java.time.Duration;
 public class BanCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
-  @Dependency private UsernameService usernames;
+  @Dependency private UsersFeature usernames;
 
   @CommandAlias("tempban|tb")
   @Subcommand("temp|temporary|t")

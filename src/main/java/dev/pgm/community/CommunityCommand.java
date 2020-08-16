@@ -2,7 +2,7 @@ package dev.pgm.community;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.InvalidCommandArgument;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,8 +17,8 @@ public abstract class CommunityCommand extends BaseCommand {
         ChatColor.translateAlternateColorCodes('&', format != null ? format : ""), args);
   }
 
-  protected UUID getTarget(String target, UsernameService service) throws InvalidCommandArgument {
-    boolean username = UsernameService.USERNAME_REGEX.matcher(target).matches();
+  protected UUID getTarget(String target, UsersFeature service) throws InvalidCommandArgument {
+    boolean username = UsersFeature.USERNAME_REGEX.matcher(target).matches();
     UUID id = null;
     if (!username) {
       try {

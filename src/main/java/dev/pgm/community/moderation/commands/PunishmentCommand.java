@@ -15,7 +15,7 @@ import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
@@ -45,7 +45,7 @@ public class PunishmentCommand extends CommunityCommand {
   public static final Sound PARDON_SOUND = new Sound("note.harp", 1f, 1.5f);
 
   @Dependency private ModerationFeature moderation;
-  @Dependency private UsernameService usernames;
+  @Dependency private UsersFeature usernames;
 
   @CommandAlias("punish|p")
   @Description("Issue the most appropriate punishment for a player")

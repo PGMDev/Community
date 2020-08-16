@@ -13,7 +13,7 @@ import dev.pgm.community.moderation.commands.WarnCommand;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
@@ -37,9 +37,9 @@ import tc.oc.pgm.util.chat.Sound;
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
 
   private Set<Punishment> recents;
-  private UsernameService usernames;
+  private UsersFeature usernames;
 
-  public ModerationFeatureBase(ModerationConfig config, Logger logger, UsernameService usernames) {
+  public ModerationFeatureBase(ModerationConfig config, Logger logger, UsersFeature usernames) {
     super(config, logger);
     this.recents = Sets.newHashSet();
     this.usernames = usernames;
@@ -49,7 +49,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     }
   }
 
-  public UsernameService getUsernames() {
+  public UsersFeature getUsernames() {
     return usernames;
   }
 

@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeatureBase;
-import dev.pgm.community.moderation.feature.SQLModerationService;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.usernames.UsernameService;
+import dev.pgm.community.moderation.services.SQLModerationService;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.util.List;
@@ -29,10 +29,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   private SQLModerationService service;
 
   public SQLModerationFeature(
-      Configuration config,
-      Logger logger,
-      DatabaseConnection connection,
-      UsernameService usernames) {
+      Configuration config, Logger logger, DatabaseConnection connection, UsersFeature usernames) {
     super(new ModerationConfig(config), logger, usernames);
     this.service = new SQLModerationService(connection, getModerationConfig(), usernames);
     logger.info("Punishments (SQL) have been enabled");
@@ -57,22 +54,22 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<List<Punishment>> query(String target) {
-    if (UsernameService.USERNAME_REGEX.matcher(target).matches()) {
+    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
       // CONVERT TO UUID if username
       return getUsernames()
           .getStoredId(target)
           .thenApplyAsync(
               uuid ->
                   uuid.isPresent()
-                      ? service.query(uuid.get().toString()).join()
+                      ? service.queryList(uuid.get().toString()).join()
                       : Lists.newArrayList());
     }
-    return service.query(target);
+    return service.queryList(target);
   }
 
   @Override
   public CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer) {
-    if (UsernameService.USERNAME_REGEX.matcher(target).matches()) {
+    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
       return getUsernames()
           .getStoredId(target)
           .thenApplyAsync(
@@ -83,7 +80,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<Boolean> isBanned(String target) {
-    if (UsernameService.USERNAME_REGEX.matcher(target).matches()) {
+    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
       return getUsernames()
           .getStoredId(target)
           .thenApplyAsync(
@@ -96,7 +93,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
     List<Punishment> punishments;
     try {
-      punishments = service.query(event.getUniqueId().toString()).get();
+      punishments = service.queryList(event.getUniqueId().toString()).get();
 
       Optional<Punishment> ban = hasActiveBan(punishments);
       if (ban.isPresent()) {
