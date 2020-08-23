@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
-import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.reports.Report;
@@ -90,9 +89,7 @@ public class SQLReportService extends SQLFeatureBase<Report> {
       statement.setString(3, report.getReportedId().toString());
       statement.setString(4, report.getReason());
       statement.setLong(5, report.getTime().toEpochMilli());
-
-      int count = statement.executeUpdate();
-      Community.log("There are now a total of %d reports saved", count); // DEBUG
+      statement.executeUpdate();
     }
   }
 

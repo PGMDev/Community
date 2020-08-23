@@ -8,7 +8,7 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UsersConfig;
-import dev.pgm.community.users.commands.ProfileCommands;
+import dev.pgm.community.users.commands.UserInfoCommands;
 import dev.pgm.community.users.listeners.UserProfileLoginListener;
 import java.util.Optional;
 import java.util.Set;
@@ -20,13 +20,14 @@ public abstract class UsersFeatureBase extends FeatureBase implements UsersFeatu
 
   protected static final int CACHE_LIMIT = 8000;
 
-  protected Cache<UUID, String> names;
-  protected Cache<UUID, UserProfile> profiles;
+  protected final Cache<UUID, String> names;
+  protected final Cache<UUID, UserProfile> profiles;
 
   public UsersFeatureBase(UsersConfig config, Logger logger) {
     super(config, logger);
     this.profiles = CacheBuilder.newBuilder().maximumSize(CACHE_LIMIT).build();
     this.names = CacheBuilder.newBuilder().maximumSize(CACHE_LIMIT).build();
+
     // Auto register username change listener
     Community.get().registerListener(new UserProfileLoginListener(this));
   }
@@ -38,7 +39,7 @@ public abstract class UsersFeatureBase extends FeatureBase implements UsersFeatu
   @Override
   public Set<CommunityCommand> getCommands() {
     return getUsersConfig().isEnabled()
-        ? Sets.newHashSet(new ProfileCommands())
+        ? Sets.newHashSet(new UserInfoCommands())
         : Sets.newHashSet();
   }
 

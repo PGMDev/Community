@@ -3,6 +3,7 @@ package dev.pgm.community.users.feature;
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
@@ -15,14 +16,23 @@ import tc.oc.pgm.util.text.types.PlayerComponent;
 
 /**
  * UsersFeature
- * <p> Features related to users
  *
+ * <p>Features related to users
  */
 public interface UsersFeature extends Feature {
 
   // Not sure if this was the right place to put this
   // But better than calling XMLUtils
   static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
+
+  /**
+   * @see {@link #renderUsername(Optional)}
+   * @param userId UUID of a player
+   * @return The rendered name component of provided UUID
+   */
+  default Component renderUsername(UUID userId) {
+    return renderUsername(Optional.ofNullable(userId));
+  }
 
   /**
    * Render a player's name if cached
@@ -78,10 +88,9 @@ public interface UsersFeature extends Feature {
    */
   CompletableFuture<Optional<UUID>> getStoredId(String username);
 
-  
   /**
    * Queries the database for a user profile by UUID
-   * 
+   *
    * @param id Player UUID
    * @return A user profile if found or null
    */
@@ -89,6 +98,7 @@ public interface UsersFeature extends Feature {
 
   /**
    * Queries the database for a user profile by either username or UUID
+   *
    * @param query Username or UUID string
    * @return A user profile if found or null
    */
@@ -96,13 +106,29 @@ public interface UsersFeature extends Feature {
 
   /**
    * Gets a cached UserProfile for the given UUID
+   *
    * @param id Player UUID
    * @return A cached UserProfile or null
    */
   @Nullable
   UserProfile getProfile(UUID id);
 
-  
+  /**
+   * Gets a set of IP strings that the given player ID has been associated with
+   *
+   * @param playerId Player UUID
+   * @return A set of IP strings
+   */
+  CompletableFuture<Set<String>> getKnownIPs(UUID playerId);
+
+  /**
+   * Gets a set of alternate account ids related to the target
+   *
+   * @param playerId Player UUID
+   * @return A set of UUIDs belonging to alternate accounts
+   */
+  CompletableFuture<Set<UUID>> getAlternateAccounts(UUID playerId);
+
   /**
    * Updates the stored username for matching id
    *
@@ -112,7 +138,7 @@ public interface UsersFeature extends Feature {
   void setName(UUID id, String name);
 
   /* Events to be handled by FeatureImpls */
-  
+
   void onLogin(AsyncPlayerPreLoginEvent login);
 
   void onLogout(PlayerQuitEvent event);

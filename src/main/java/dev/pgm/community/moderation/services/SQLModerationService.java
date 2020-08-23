@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
-import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
@@ -61,13 +60,8 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
   public CompletableFuture<List<Punishment>> queryList(String target) {
     SelectPunishedQuery query = punishmentCache.getUnchecked(UUID.fromString(target));
     if (query.hasFetched()) {
-      Community.log(
-          "Punishments were &acached&7, now returning cached results"); // TODO: Debug, remove
       return CompletableFuture.completedFuture(query.getPunishments());
     } else {
-      Community.log(
-          "Punishments &cNOT FOUND&7 cached, now submitting queue to database..."); // TODO: Debug,
-      // remove
       return getDatabase()
           .submitQueryComplete(query)
           .thenApplyAsync(q -> SelectPunishedQuery.class.cast(q).getPunishments());
@@ -393,7 +387,6 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
 
       int updated = statement.executeUpdate();
       successful = updated != 0;
-      Community.log("Updated " + updated + " punishments for " + id.toString());
     }
   }
 }

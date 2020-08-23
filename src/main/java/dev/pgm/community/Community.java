@@ -2,6 +2,7 @@ package dev.pgm.community;
 
 import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.InvalidCommandArgument;
+import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.utils.CommandAudience;
@@ -85,6 +86,8 @@ public class Community extends JavaPlugin {
               }
               return value;
             });
+
+    commands.registerCommand(new CommunityPluginCommand());
   }
 
   public void registerListener(Listener listener) {

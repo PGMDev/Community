@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
@@ -210,10 +211,18 @@ public class PunishmentCommand extends CommunityCommand {
             TextComponent.of(Integer.toString(page), TextColor.RED),
             TextComponent.of(Integer.toString(pages), TextColor.RED));
 
-    Component targetName =
-        target != null
-            ? PlayerComponent.of(Bukkit.getPlayer(target), target, NameStyle.FANCY)
-            : TextComponent.empty();
+    Component targetName = TextComponent.empty();
+    if (target != null) {
+      UUID targetID =
+          (!UsersFeature.USERNAME_REGEX.matcher(target).matches() ? UUID.fromString(target) : null);
+      if (targetID != null) {
+        targetName =
+            PlayerComponent.of(
+                targetID, usernames.getStoredUsername(targetID).join(), NameStyle.FANCY);
+      } else {
+        targetName = PlayerComponent.of(null, target, NameStyle.FANCY, null);
+      }
+    }
 
     Component header =
         TextComponent.builder()
@@ -257,6 +266,9 @@ public class PunishmentCommand extends CommunityCommand {
           builder.append(MessageUtils.WARNING).append(" ");
         }
 
+        if (data.getIssuerId().isPresent()) {
+          usernames.getStoredUsername(data.getIssuerId().get()).join();
+        }
         builder.append(data.formatBroadcast(usernames));
         TextComponent.Builder hover = TextComponent.builder();
         hover
@@ -271,14 +283,14 @@ public class PunishmentCommand extends CommunityCommand {
           Instant endDate = data.getTimeIssued().plus(length);
           if (data.isActive()) {
             hover
-                .append("\n")
+                .append(TextComponent.newline())
                 .append("Expires in ", TextColor.GRAY)
                 .append(
                     PeriodFormats.briefNaturalApproximate(Instant.now(), endDate, 1)
                         .color(TextColor.YELLOW));
           } else if (!data.wasUpdated()) {
             hover
-                .append("\n")
+                .append(TextComponent.newline())
                 .append("Expired ", TextColor.GRAY)
                 .append(PeriodFormats.relativePastApproximate(endDate).color(TextColor.YELLOW));
           }
@@ -286,7 +298,7 @@ public class PunishmentCommand extends CommunityCommand {
 
         if (data.wasUpdated()) {
           hover
-              .append("\n")
+              .append(TextComponent.newline())
               .append("Infraction lifted by ", TextColor.GRAY) // TODO: translate
               .append(usernames.renderUsername(data.getLastUpdatedBy()))
               .append(" ")

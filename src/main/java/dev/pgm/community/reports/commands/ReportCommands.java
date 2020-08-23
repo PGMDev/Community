@@ -11,6 +11,7 @@ import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.reports.Report;
 import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -76,7 +77,7 @@ public class ReportCommands extends CommunityCommand {
   // Ex. /reports server [server] or /reports time 5h
   @CommandAlias("reports|reporthistory|reps")
   @Description("View report history")
-  @CommandPermission("todo.add.permission.here") // TODO: Set real permission
+  @CommandPermission(CommunityPermissions.REPORTS)
   public class ReportHistory extends CommunityCommand {
 
     @Subcommand("player|pl")
@@ -92,21 +93,8 @@ public class ReportCommands extends CommunityCommand {
       // TODO: search for player reports in DB, sort by most recent
       reports
           .query(target)
-          .whenComplete(
-              (reports, errors) -> {
-                if (errors != null) {
-                  // TODO: Translate this
-                  audience
-                      .getSender()
-                      .sendMessage(
-                          ChatColor.DARK_RED
-                              + "There was an error fetching reports for "
-                              + ChatColor.AQUA
-                              + target);
-                  errors.printStackTrace();
-                  return;
-                }
-
+          .thenAcceptAsync(
+              reports -> {
                 if (reports.isEmpty()) {
                   // TODO: Translate this
                   audience.sendWarning(

@@ -6,21 +6,18 @@ import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeatureBase;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
+import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.services.SQLModerationService;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
@@ -56,11 +53,11 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   public CompletableFuture<List<Punishment>> query(String target) {
     if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
       // CONVERT TO UUID if username
-      return getUsernames()
+      return getUsers()
           .getStoredId(target)
           .thenApplyAsync(
               uuid ->
-                  uuid.isPresent()
+                  uuid != null && uuid.isPresent()
                       ? service.queryList(uuid.get().toString()).join()
                       : Lists.newArrayList());
     }
@@ -70,18 +67,26 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   @Override
   public CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer) {
     if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
-      return getUsernames()
+      return getUsers()
           .getStoredId(target)
           .thenApplyAsync(
-              uuid -> uuid.isPresent() ? service.pardon(uuid.get(), issuer).join() : false);
+              uuid -> {
+                if (uuid.isPresent()) {
+                  removeCachedBan(uuid.get());
+                  return service.pardon(uuid.get(), issuer).join();
+                }
+                return false;
+              });
     }
-    return service.pardon(UUID.fromString(target), issuer);
+    UUID id = UUID.fromString(target);
+    removeCachedBan(id);
+    return service.pardon(id, issuer);
   }
 
   @Override
   public CompletableFuture<Boolean> isBanned(String target) {
     if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
-      return getUsernames()
+      return getUsers()
           .getStoredId(target)
           .thenApplyAsync(
               uuid -> uuid.isPresent() ? service.isBanned(uuid.get().toString()).join() : false);
@@ -99,9 +104,13 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       if (ban.isPresent()) {
         Punishment punishment = ban.get();
 
-        event.setKickMessage(
-            punishment.formatPunishmentScreen(getModerationConfig(), getUsernames()));
+        event.setKickMessage(punishment.formatPunishmentScreen(getModerationConfig(), getUsers()));
         event.setLoginResult(Result.KICK_BANNED);
+      }
+
+      Optional<MutePunishment> mute = hasActiveMute(punishments);
+      if (mute.isPresent()) {
+        addMute(event.getUniqueId(), mute.get());
       }
 
       logger.info(
@@ -113,6 +122,13 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       event.setKickMessage("Error, please try again."); // TODO: Pretty this up
       e.printStackTrace();
     }
+  }
+
+  private Optional<MutePunishment> hasActiveMute(List<Punishment> punishments) {
+    return punishments.stream()
+        .filter(p -> p.isActive() && p.getType().equals(PunishmentType.MUTE))
+        .map(MutePunishment.class::cast)
+        .findAny();
   }
 
   private Optional<Punishment> hasActiveBan(List<Punishment> punishments) {
@@ -133,26 +149,12 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<Boolean> unmute(UUID id, Optional<UUID> issuer) {
+    removeMute(id);
     return service.unmute(id, issuer);
   }
 
   @Override
   public CompletableFuture<List<Punishment>> getRecentPunishments(Duration period) {
     return service.getRecentPunishments(period);
-  }
-
-  @Override
-  public Set<Player> getOnlineMutes() {
-    return Bukkit.getOnlinePlayers().stream()
-        .filter(
-            pl -> {
-              try {
-                return isMuted(pl.getUniqueId()).get().isPresent();
-              } catch (InterruptedException | ExecutionException e) {
-                // Noop error, just ignore
-              }
-              return false;
-            })
-        .collect(Collectors.toSet());
   }
 }

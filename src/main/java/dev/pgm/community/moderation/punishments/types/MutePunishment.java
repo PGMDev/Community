@@ -42,10 +42,43 @@ public class MutePunishment extends ExpirablePunishment {
         usernames);
   }
 
-  public Component getMuteMessage() {
+  // When muted player attempts to chat
+  public Component getChatMuteMessage() {
+    Component chat =
+        TextComponent.builder()
+            .append("You are unable to chat while muted: ")
+            .append(getReason(), TextColor.RED)
+            .color(TextColor.GRAY)
+            .build();
+    return formatWithHover(chat);
+  }
+
+  // When muted player attempts to place sign
+  public Component getSignMuteMessage() {
+    Component sign =
+        TextComponent.builder()
+            .append("You are unable to write on signs while muted: ")
+            .append(getReason(), TextColor.RED)
+            .color(TextColor.GRAY)
+            .build();
+    return formatWithHover(sign);
+  }
+
+  // When player is muted
+  public Component getMutedMessage() {
+    Component muted =
+        TextComponent.builder()
+            .append("You have been muted for ")
+            .append(getReason(), TextColor.RED)
+            .color(TextColor.GRAY)
+            .build();
+    return formatWithHover(muted);
+  }
+
+  // Include expire time on hover
+  private Component formatWithHover(Component message) {
     return TextComponent.builder()
-        .append("You have been muted for ", TextColor.GRAY)
-        .append(getReason(), TextColor.RED)
+        .append(message)
         .hoverEvent(
             HoverEvent.showText(
                 TextComponent.builder()
@@ -65,7 +98,7 @@ public class MutePunishment extends ExpirablePunishment {
         .ifPresent(
             player -> {
               this.sendWarning(player, getReason());
-              player.sendWarning(getMuteMessage());
+              player.sendWarning(getMutedMessage());
             });
     return getTargetPlayer().isPresent();
   }

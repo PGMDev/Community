@@ -3,3 +3,4 @@ description: ${project.description}
 main: ${project.mainClass}
 version: ${project.version} (git-${git.commit.id.abbrev})
 website: ${project.url}
+author: ${project.author}

@@ -33,4 +33,12 @@ public class MessageUtils {
     return TextTranslations.translateLegacy(
         TextComponent.join(TextComponent.of("\n" + ChatColor.RESET), message), null);
   }
+
+  public static Component formatUnseen(String target) {
+    return TextComponent.builder()
+        .append(target, TextColor.DARK_AQUA)
+        .append(" has never joined the server")
+        .build();
+    // TODO: translate
+  }
 }

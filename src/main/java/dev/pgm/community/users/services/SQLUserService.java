@@ -28,6 +28,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
 
   public SQLUserService(DatabaseConnection database) {
     super(database, TABLE_NAME, TABLE_FIELDS);
+
     this.profileCache =
         CacheBuilder.newBuilder()
             .build(
@@ -47,7 +48,6 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
 
   @Override
   public CompletableFuture<List<UserProfile>> queryList(String target) {
-    // TODO?
     return CompletableFuture.completedFuture(null);
   }
 
@@ -89,7 +89,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
   }
 
   // Increase join count, set last login, check for username change
-  public CompletableFuture<UserProfile> login(UUID id, String username) {
+  public CompletableFuture<UserProfile> login(UUID id, String username, String address) {
     return query(id.toString())
         .thenApplyAsync(
             profile -> {

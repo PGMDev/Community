@@ -4,8 +4,10 @@ import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UsersConfig;
 import dev.pgm.community.users.feature.UsersFeatureBase;
+import dev.pgm.community.users.services.AddressHistoryService;
 import dev.pgm.community.users.services.SQLUserService;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -16,10 +18,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class SQLUsersFeature extends UsersFeatureBase {
 
   private SQLUserService service;
+  private AddressHistoryService addresses;
 
   public SQLUsersFeature(Configuration config, Logger logger, DatabaseConnection database) {
     super(new UsersConfig(config), logger);
     this.service = new SQLUserService(database);
+    this.addresses = new AddressHistoryService(database);
   }
 
   @Override
@@ -71,10 +75,12 @@ public class SQLUsersFeature extends UsersFeatureBase {
           .query(username)
           .thenApplyAsync(
               profile -> {
+                UUID id = null;
                 if (profile != null && profile.getId() != null) {
                   this.setName(profile.getId(), profile.getUsername());
+                  id = profile.getId();
                 }
-                return Optional.ofNullable(profile.getId());
+                return Optional.ofNullable(id);
               });
     }
 
@@ -82,14 +88,28 @@ public class SQLUsersFeature extends UsersFeatureBase {
   }
 
   @Override
+  public CompletableFuture<Set<String>> getKnownIPs(UUID playerId) {
+    return addresses.getKnownIps(playerId);
+  }
+
+  @Override
+  public CompletableFuture<Set<UUID>> getAlternateAccounts(UUID playerId) {
+    return addresses.getAlternateAccounts(playerId);
+  }
+
+  @Override
   public void onLogin(AsyncPlayerPreLoginEvent login) {
     final UUID id = login.getUniqueId();
     final String name = login.getName();
+    final String address = login.getAddress().getHostAddress();
     setName(id, name); // Check for username update
 
     profiles.invalidate(
         login.getUniqueId()); // Removed cached profile upon every login, so we get up to date info
-    service.login(id, name).thenAcceptAsync(profile -> profiles.put(id, profile));
+    service
+        .login(id, name, address)
+        .thenAcceptAsync(profile -> profiles.put(id, profile)); // Login save
+    addresses.trackIp(id, address); // Track IP
   }
 
   @Override
