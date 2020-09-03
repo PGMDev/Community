@@ -84,7 +84,7 @@ public class Community extends JavaPlugin {
                       time + " is not a valid duration"); // TODO: Translate this
                 }
               }
-              return value;
+              return value.abs();
             });
 
     commands.registerCommand(new CommunityPluginCommand());

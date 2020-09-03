@@ -13,12 +13,14 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.Punishment;
+import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -32,7 +34,6 @@ import net.kyori.text.event.HoverEvent;
 import net.kyori.text.event.HoverEvent.Action;
 import net.kyori.text.format.TextColor;
 import org.bukkit.Bukkit;
-import tc.oc.pgm.util.chat.Sound;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -42,8 +43,6 @@ import tc.oc.pgm.util.text.types.PlayerComponent;
 public class PunishmentCommand extends CommunityCommand {
 
   public static final Duration DEFAULT_TEMPBAN_LENGTH = Duration.ofDays(7); // TODO: Maybe config?
-
-  public static final Sound PARDON_SOUND = new Sound("note.harp", 1f, 1.5f);
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
@@ -122,13 +121,16 @@ public class PunishmentCommand extends CommunityCommand {
                       isVanished(audience));
                 } else {
                   // No target supplied, show last punishment
-                  Component lastPunishMsg =
-                      TextComponent.builder()
-                          .append("Last punishment: ", TextColor.GRAY)
-                          .append(lastPunishment.formatBroadcast(usernames))
-                          .build();
-
-                  audience.sendMessage(lastPunishMsg);
+                  PunishmentFormats.formatBroadcast(lastPunishment, usernames)
+                      .thenAcceptAsync(
+                          lpm -> {
+                            Component lastPunishMsg =
+                                TextComponent.builder()
+                                    .append("Last punishment: ", TextColor.GRAY)
+                                    .append(lpm)
+                                    .build();
+                            audience.sendMessage(lastPunishMsg);
+                          });
                 }
               } else {
                 audience.sendMessage(
@@ -169,7 +171,7 @@ public class PunishmentCommand extends CommunityCommand {
                                     .append(" was unbanned by ", TextColor.GRAY)
                                     .append(audience.getStyledName())
                                     .build(),
-                                PARDON_SOUND);
+                                Sounds.PUNISHMENT_PARDON);
                           }
                           // TODO: translate
                         });
@@ -266,10 +268,11 @@ public class PunishmentCommand extends CommunityCommand {
           builder.append(MessageUtils.WARNING).append(" ");
         }
 
-        if (data.getIssuerId().isPresent()) {
-          usernames.getStoredUsername(data.getIssuerId().get()).join();
-        }
-        builder.append(data.formatBroadcast(usernames));
+        builder.append(
+            data.formatBroadcast(
+                usernames.renderUsername(data.getIssuerId()).join(),
+                usernames.renderUsername(Optional.of(data.getTargetId())).join()));
+
         TextComponent.Builder hover = TextComponent.builder();
         hover
             .append("Issued ", TextColor.GRAY)
@@ -300,7 +303,7 @@ public class PunishmentCommand extends CommunityCommand {
           hover
               .append(TextComponent.newline())
               .append("Infraction lifted by ", TextColor.GRAY) // TODO: translate
-              .append(usernames.renderUsername(data.getLastUpdatedBy()))
+              .append(usernames.renderUsername(data.getLastUpdatedBy()).join())
               .append(" ")
               .append(
                   PeriodFormats.relativePastApproximate(data.getLastUpdated())

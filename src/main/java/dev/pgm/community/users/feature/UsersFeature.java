@@ -26,27 +26,15 @@ public interface UsersFeature extends Feature {
   static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
 
   /**
-   * @see {@link #renderUsername(Optional)}
-   * @param userId UUID of a player
-   * @return The rendered name component of provided UUID
-   */
-  default Component renderUsername(UUID userId) {
-    return renderUsername(Optional.ofNullable(userId));
-  }
-
-  /**
-   * Render a player's name if cached
+   * Render a player name by looking up cached value or using database stored name
    *
    * @param userId Optional UUID of player, empty will result in console name
    * @return The rendered name component of provided UUID
    */
-  default Component renderUsername(Optional<UUID> userId) {
-    if (!userId.isPresent()) return PlayerComponent.CONSOLE;
-
-    if (getUsername(userId.get()) != null) {
-      return PlayerComponent.of(userId.get(), getUsername(userId.get()), NameStyle.FANCY);
-    }
-    return PlayerComponent.UNKNOWN;
+  default CompletableFuture<Component> renderUsername(Optional<UUID> userId) {
+    if (!userId.isPresent()) return CompletableFuture.completedFuture(PlayerComponent.CONSOLE);
+    return getStoredUsername(userId.get())
+        .thenApplyAsync(name -> PlayerComponent.of(userId.get(), name, NameStyle.FANCY));
   }
 
   /**

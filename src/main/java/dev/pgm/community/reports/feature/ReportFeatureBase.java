@@ -10,6 +10,7 @@ import dev.pgm.community.reports.Report;
 import dev.pgm.community.reports.ReportConfig;
 import dev.pgm.community.reports.commands.ReportCommands;
 import dev.pgm.community.utils.BroadcastUtils;
+import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
@@ -23,14 +24,10 @@ import net.kyori.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import tc.oc.pgm.util.chat.Sound;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public abstract class ReportFeatureBase extends FeatureBase implements ReportFeature {
-
-  private static final Sound REPORT_SOUND =
-      new Sound("random.pop", 1f, 1.2f); // Sound played during report broadcast
 
   private static final int EXPIRES_AFTER = 1;
   private static final TimeUnit RECENT_TIME_UNIT = TimeUnit.HOURS;
@@ -108,7 +105,7 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
   @EventHandler
   public void onPlayerReport(PlayerReportEvent event) {
     recentReports.put(event.getReport(), Instant.now());
-    BroadcastUtils.sendAdminChat(formatReportBroadcast(event.getReport()), REPORT_SOUND);
+    BroadcastUtils.sendAdminChat(formatReportBroadcast(event.getReport()), Sounds.PLAYER_REPORT);
   }
 
   private Component formatReportBroadcast(Report report) {

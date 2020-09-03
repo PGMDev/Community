@@ -62,7 +62,7 @@ public class UserInfoCommands extends CommunityCommand {
                           online ? " has been online since " : " was last seen ") // TODO: translate
                       .append(
                           PeriodFormats.relativePastApproximate(profile.getLastLogin())
-                              .color(online ? TextColor.GREEN : TextColor.GRAY))
+                              .color(online ? TextColor.GREEN : TextColor.DARK_GREEN))
                       .color(TextColor.GRAY)
                       .build();
               audience.sendMessage(lastSeenMsg);
@@ -277,14 +277,13 @@ public class UserInfoCommands extends CommunityCommand {
         TextComponent.join(
             TextComponent.of(", ", TextColor.GRAY),
             alts.stream()
-                .map(Player::getUniqueId)
-                .map(users::renderUsername)
+                .map(pl -> PlayerComponent.of(pl, NameStyle.FANCY))
                 .collect(Collectors.toSet()));
     Component size = TextComponent.of(Integer.toString(alts.size()), TextColor.YELLOW);
 
     return TextComponent.builder()
         .append("[", TextColor.GOLD)
-        .append(users.renderUsername(target.getUniqueId()))
+        .append(PlayerComponent.of(target, NameStyle.FANCY))
         .append("] ", TextColor.GOLD)
         .append("(", TextColor.GRAY)
         .append(size)

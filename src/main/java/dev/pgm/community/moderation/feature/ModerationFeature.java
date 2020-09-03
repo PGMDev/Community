@@ -38,6 +38,8 @@ public interface ModerationFeature extends Feature {
       boolean active,
       boolean silent);
 
+  void save(Punishment punishment);
+
   /**
    * Query the backend to find all punishments for the given target
    *

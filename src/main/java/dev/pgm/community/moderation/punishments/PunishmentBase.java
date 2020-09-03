@@ -108,7 +108,12 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
   public boolean kick() {
     Optional<Player> player = getTargetPlayer();
     if (player.isPresent()) {
-      player.get().kickPlayer(formatPunishmentScreen(config, usernames));
+      usernames
+          .renderUsername(getIssuerId())
+          .thenAccept(
+              issuer -> {
+                player.get().getPlayer().kickPlayer(formatPunishmentScreen(config, issuer));
+              });
       return true;
     }
     return false;

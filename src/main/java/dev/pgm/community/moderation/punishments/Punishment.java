@@ -180,11 +180,10 @@ public interface Punishment {
             config,
             usernames);
     }
-
-    return null; // TODO Remove after types are added
+    return null;
   }
 
-  default Component formatBroadcast(UsersFeature usernames) {
+  default Component formatBroadcast(Component issuer, Component target) {
     Component prefix = getType().getPunishmentPrefix();
     if (this instanceof ExpirablePunishment
         && !((ExpirablePunishment) this).getDuration().isZero()) {
@@ -201,18 +200,18 @@ public interface Punishment {
     }
 
     return TextComponent.builder()
-        .append(usernames.renderUsername(getIssuerId()))
+        .append(issuer)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(prefix)
         .append(BroadcastUtils.BROADCAST_DIV)
-        .append(usernames.renderUsername(Optional.of(getTargetId())))
+        .append(target)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(getReason(), TextColor.RED)
         .build();
   }
 
   /** Formats a string for multi-line kick message */
-  default String formatPunishmentScreen(ModerationConfig config, UsersFeature usernames) {
+  default String formatPunishmentScreen(ModerationConfig config, Component issuerName) {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(TextComponent.empty());
@@ -232,9 +231,7 @@ public interface Punishment {
     }
 
     // Staff Sign-off
-    lines.add(
-        TranslatableComponent.of(
-            "moderation.screen.signoff", TextColor.GRAY, usernames.renderUsername(getIssuerId())));
+    lines.add(TranslatableComponent.of("moderation.screen.signoff", TextColor.GRAY, issuerName));
 
     // Link to rules for review by player
     if (config.getRulesLink() != null && !config.getRulesLink().isEmpty()) {

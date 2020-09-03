@@ -9,7 +9,9 @@ import dev.pgm.community.reports.feature.types.SQLReportFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 
 public class FeatureManager {
 
@@ -50,6 +52,15 @@ public class FeatureManager {
     commands.registerDependency(UsersFeature.class, getUsers());
     commands.registerDependency(ReportFeature.class, getReports());
     commands.registerDependency(ModerationFeature.class, getModeration());
+
+    commands
+        .getCommandCompletions()
+        .registerCompletion(
+            "mutes",
+            x ->
+                getModeration().getOnlineMutes().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toSet()));
 
     getUsers().getCommands().forEach(commands::registerCommand);
     getReports().getCommands().forEach(commands::registerCommand);

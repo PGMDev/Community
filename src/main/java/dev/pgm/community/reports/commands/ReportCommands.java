@@ -18,6 +18,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
@@ -144,8 +145,8 @@ public class ReportCommands extends CommunityCommand {
       new PaginatedComponentResults<Report>(formattedHeader, perPage) {
         @Override
         public Component format(Report data, int index) {
-          Component reporterName = getReportFormatName(data.getReporterId());
-          Component reportedName = getReportFormatName(data.getReportedId());
+          Component reporterName = getReportFormatName(data.getReporterId()).join();
+          Component reportedName = getReportFormatName(data.getReportedId()).join();
 
           Component reporter =
               TranslatableComponent.of("moderation.reports.hover", TextColor.GRAY, reporterName);
@@ -170,8 +171,13 @@ public class ReportCommands extends CommunityCommand {
           audience.getAudience(), reportData.stream().sorted().collect(Collectors.toList()), page);
     }
 
-    private Component getReportFormatName(UUID id) {
-      return PlayerComponent.of(Bukkit.getPlayer(id), usernames.getUsername(id), NameStyle.FANCY);
+    private CompletableFuture<Component> getReportFormatName(UUID id) {
+      return usernames
+          .getStoredUsername(id)
+          .thenApplyAsync(
+              name -> {
+                return PlayerComponent.of(Bukkit.getPlayer(id), name, NameStyle.FANCY);
+              });
     }
   }
 

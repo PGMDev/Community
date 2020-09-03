@@ -9,7 +9,6 @@ import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.services.SQLModerationService;
 import dev.pgm.community.users.feature.UsersFeature;
-import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -33,20 +32,10 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
-  public Punishment punish(
-      PunishmentType type,
-      UUID target,
-      CommandAudience issuer,
-      String reason,
-      Duration duration,
-      boolean active,
-      boolean silent) {
-    Punishment punishment = super.punish(type, target, issuer, reason, duration, active, silent);
-
+  public void save(Punishment punishment) {
     if (getModerationConfig().isPersistent()) {
       service.save(punishment);
     }
-    return punishment;
   }
 
   @Override
@@ -104,7 +93,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       if (ban.isPresent()) {
         Punishment punishment = ban.get();
 
-        event.setKickMessage(punishment.formatPunishmentScreen(getModerationConfig(), getUsers()));
+        event.setKickMessage(
+            punishment.formatPunishmentScreen(
+                getModerationConfig(), getUsers().renderUsername(punishment.getIssuerId()).join()));
         event.setLoginResult(Result.KICK_BANNED);
       }
 

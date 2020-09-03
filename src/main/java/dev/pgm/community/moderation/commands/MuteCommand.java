@@ -22,6 +22,7 @@ import net.kyori.text.TextComponent;
 import net.kyori.text.TranslatableComponent;
 import net.kyori.text.format.TextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.util.chat.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -31,11 +32,11 @@ public class MuteCommand extends CommunityCommand {
 
   @CommandAlias("mute|m")
   @Description("Prevent player from speaking in the chat")
-  @Syntax("[duration] [player] [reason]")
-  @CommandCompletion("1h|1d|7d @players *")
+  @Syntax("[player] [duration] [reason]")
+  @CommandCompletion("@players 30m|1h|6h *")
   @CommandPermission(CommunityPermissions.MUTE)
   public void mutePlayer(
-      CommandAudience audience, Duration length, OnlinePlayer target, String reason) {
+      CommandAudience audience, OnlinePlayer target, Duration length, String reason) {
     moderation.punish(
         PunishmentType.MUTE,
         target.getPlayer().getUniqueId(),
@@ -77,8 +78,12 @@ public class MuteCommand extends CommunityCommand {
                                     .append(audience.getStyledName())
                                     .build(),
                                 null);
+
+                            Audience.get(target.getPlayer())
+                                .sendWarning(
+                                    TranslatableComponent.of(
+                                        "moderation.unmute.target", TextColor.GREEN));
                           }
-                          // TODO: translate
                         });
               } else {
                 audience.sendWarning(

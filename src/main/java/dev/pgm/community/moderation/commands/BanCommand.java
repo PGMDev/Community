@@ -26,9 +26,9 @@ public class BanCommand extends CommunityCommand {
 
   @CommandAlias("tempban|tb")
   @Subcommand("temp|temporary|t")
-  @Syntax("[duration] [player] [reason]")
-  @CommandCompletion("30m|6h|7d @players *")
-  public void tempBan(CommandAudience audience, Duration length, String target, String reason) {
+  @Syntax("[player] [duration] [reason]")
+  @CommandCompletion("@players 1d|3d|7d *")
+  public void tempBan(CommandAudience audience, String target, Duration length, String reason) {
     moderation.punish(
         PunishmentType.TEMP_BAN,
         getTarget(target, usernames),
@@ -38,15 +38,6 @@ public class BanCommand extends CommunityCommand {
         true,
         isVanished(audience));
   }
-
-  @CommandAlias("ipban")
-  @Subcommand("ip|ipaddress")
-  @Syntax("[player | IP address] [reason]")
-  public void ipBan(
-      CommandAudience audience,
-      String target,
-      String reason) {} // TODO: Maybe leave IP ban out of community and add to Bungee in a separate
-  // plugin?
 
   @Default
   @Syntax("[player] [reason]")

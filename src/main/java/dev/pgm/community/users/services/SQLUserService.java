@@ -158,7 +158,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
 
     @Override
     public String getFormat() {
-      return FORMAT + (isUsernameQuery() ? "name" : "id") + " = ? LIMIT 1";
+      return FORMAT + (isUsernameQuery() ? "LOWER(name) = LOWER(?)" : "id = ?") + " LIMIT 1";
     }
 
     public String getQuery() {
