@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.database.query.CountQuery;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
@@ -49,6 +50,12 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                     return new SelectPunishedQuery(key);
                   }
                 });
+  }
+
+  public CompletableFuture<Integer> count() {
+    return getDatabase()
+        .submitQueryComplete(new CountQuery(TABLE_NAME))
+        .thenApplyAsync(query -> CountQuery.class.cast(query).getCount());
   }
 
   @Override

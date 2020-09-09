@@ -2,6 +2,7 @@ package dev.pgm.community.users.feature.types;
 
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.users.UserProfile;
+import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.UsersConfig;
 import dev.pgm.community.users.feature.UsersFeatureBase;
 import dev.pgm.community.users.services.AddressHistoryService;
@@ -115,5 +116,18 @@ public class SQLUsersFeature extends UsersFeatureBase {
   @Override
   public void onLogout(PlayerQuitEvent event) {
     service.logout(event.getPlayer().getUniqueId());
+  }
+
+  @Override
+  public void saveImportedUser(UUID id, String username) {
+    getStoredProfile(id)
+        .thenAcceptAsync(
+            profile -> {
+              if (profile == null) {
+                UserProfile up = new UserProfileImpl(id, username);
+                service.save(up);
+                setName(id, username);
+              }
+            });
   }
 }

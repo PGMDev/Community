@@ -72,4 +72,9 @@ public class NoDBUsersFeature extends UsersFeatureBase {
   public void onLogout(PlayerQuitEvent event) {
     // Noop
   }
+
+  @Override
+  public void saveImportedUser(UUID id, String username) {
+    setName(id, username);
+  }
 }

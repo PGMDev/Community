@@ -148,4 +148,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   public CompletableFuture<List<Punishment>> getRecentPunishments(Duration period) {
     return service.getRecentPunishments(period);
   }
+
+  @Override
+  public CompletableFuture<Integer> count() {
+    return service.count();
+  }
 }

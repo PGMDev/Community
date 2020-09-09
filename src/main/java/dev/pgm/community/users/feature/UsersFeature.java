@@ -130,4 +130,6 @@ public interface UsersFeature extends Feature {
   void onLogin(AsyncPlayerPreLoginEvent login);
 
   void onLogout(PlayerQuitEvent event);
+
+  void saveImportedUser(UUID id, String name);
 }

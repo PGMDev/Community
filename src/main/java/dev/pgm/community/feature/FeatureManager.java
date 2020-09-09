@@ -1,6 +1,7 @@
 package dev.pgm.community.feature;
 
 import co.aikar.commands.BukkitCommandManager;
+import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
@@ -49,10 +50,12 @@ public class FeatureManager {
 
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
+    // Dependency injection for features
     commands.registerDependency(UsersFeature.class, getUsers());
     commands.registerDependency(ReportFeature.class, getReports());
     commands.registerDependency(ModerationFeature.class, getModeration());
 
+    // Custom command completions
     commands
         .getCommandCompletions()
         .registerCompletion(
@@ -62,9 +65,13 @@ public class FeatureManager {
                     .map(Player::getName)
                     .collect(Collectors.toSet()));
 
+    // Feature commands
     getUsers().getCommands().forEach(commands::registerCommand);
     getReports().getCommands().forEach(commands::registerCommand);
     getModeration().getCommands().forEach(commands::registerCommand);
+
+    // Other commands
+    commands.registerCommand(new CommunityPluginCommand());
   }
 
   public void reloadConfig() {
