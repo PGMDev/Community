@@ -4,6 +4,7 @@
 - [x] Reports
 - [x] User Profiles (UUID/Name cache & other attributes)
 - [x] Moderation (Mute, Kick, Ban, Temp Ban, Alt alerts, punishment lookup / history), IP tracking
+- [x] Add ban import command (Import from banned-players.json, future support for other major platforms e.g CommandBook)
 
 ## User Profiles
 - [x] `/seen` command
@@ -13,7 +14,6 @@
 - [x] `/profile` command: Display extensive info on player, user profile info, IP history, etc (See OCC Project Insight for reference)
 
 ## Major ToDo (Confirmed):
-- [ ] Add ban import command (Import from banned-players.json, future support for other major platforms e.g CommandBook)
 - [ ] Teleports (/tp, /bring, consider CommandBook and what's used)
 - [ ] MOTD login messages and unlimited "info" commands. Example, define rules section in config, command: 'rules', message: "etc" which would translate to `/rules` -> msg
 - [ ] A generalized Freeze option (not a priority) 
