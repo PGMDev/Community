@@ -8,7 +8,6 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
-import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
@@ -33,7 +32,6 @@ import net.kyori.text.TranslatableComponent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.event.HoverEvent.Action;
 import net.kyori.text.format.TextColor;
-import org.bukkit.Bukkit;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -46,38 +44,6 @@ public class PunishmentCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
-
-  @CommandAlias("punish|p")
-  @Description("Issue the most appropriate punishment for a player")
-  @Syntax("[player] [reason]")
-  @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.PUNISH)
-  public void punish(CommandAudience audience, OnlinePlayer target, String reason) {
-    moderation
-        .getNextPunishment(target.getPlayer().getUniqueId())
-        .thenAcceptAsync(
-            type -> {
-              Bukkit.getScheduler()
-                  .scheduleSyncDelayedTask(
-                      Community.get(),
-                      new Runnable() { // Schedule since lookup is async
-
-                        @Override
-                        public void run() {
-                          Duration length =
-                              type == PunishmentType.TEMP_BAN ? DEFAULT_TEMPBAN_LENGTH : null;
-                          moderation.punish(
-                              type,
-                              target.getPlayer().getUniqueId(),
-                              audience,
-                              reason,
-                              length,
-                              true,
-                              isVanished(audience));
-                        }
-                      });
-            });
-  }
 
   @CommandAlias("punishmenthistory|ph")
   @Description("View a list of recent punishments")

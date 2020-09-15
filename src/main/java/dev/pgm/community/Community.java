@@ -7,8 +7,10 @@ import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.utils.CommandAudience;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -66,7 +68,7 @@ public class Community extends JavaPlugin {
     // Contexts
     commands
         .getCommandContexts()
-        .registerIssuerAwareContext(CommandAudience.class, c -> new CommandAudience(c.getSender()));
+        .registerContext(CommandAudience.class, c -> new CommandAudience(c.getSender()));
 
     commands
         .getCommandContexts()
@@ -84,6 +86,27 @@ public class Community extends JavaPlugin {
                 }
               }
               return value.abs();
+            });
+
+    // Command Completions
+
+    // Use for commands ALL players have access to, allows for vanished players to be hidden from
+    // tab-complete
+    // Note: use @players if you need ALL players
+    commands
+        .getCommandCompletions()
+        .registerCompletion(
+            "visible",
+            c -> {
+              // TODO: maybe add a config value to allow specific vanish perms to check (if server
+              // was not using PGM)
+              return Bukkit.getOnlinePlayers().stream()
+                  .filter(
+                      p ->
+                          !p.hasMetadata("isVanished")
+                              || c.getPlayer() != null && c.getPlayer().hasPermission("pgm.vanish"))
+                  .map(Player::getName)
+                  .collect(Collectors.toSet());
             });
   }
 

@@ -11,7 +11,6 @@ import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
-import dev.pgm.community.users.feature.UsersFeature;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,13 +33,10 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
   private LoadingCache<UUID, SelectPunishedQuery> punishmentCache;
 
   private final ModerationConfig config;
-  private final UsersFeature usernames;
 
-  public SQLModerationService(
-      DatabaseConnection connection, ModerationConfig config, UsersFeature usernames) {
+  public SQLModerationService(DatabaseConnection connection, ModerationConfig config) {
     super(connection, TABLE_NAME, TABLE_FIELDS);
     this.config = config;
-    this.usernames = usernames;
     this.punishmentCache =
         CacheBuilder.newBuilder()
             .build(
@@ -126,28 +122,6 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                 }
               }
               return banned;
-            });
-  }
-
-  public CompletableFuture<PunishmentType> getNextPunishment(UUID target) {
-    return queryList(target.toString())
-        .thenApplyAsync(
-            punishments -> {
-              Optional<Punishment> recent = punishments.stream().sorted().findFirst();
-              if (!recent.isPresent()) return PunishmentType.WARN;
-              // NOTE: Ideal punishment history Warn -> Kick -> TempBan -> Ban
-              switch (recent.get().getType()) {
-                case KICK:
-                  return PunishmentType.TEMP_BAN;
-                case MUTE:
-                  return PunishmentType.KICK;
-                case TEMP_BAN:
-                  return PunishmentType.BAN;
-                case WARN:
-                  return PunishmentType.KICK;
-                default:
-                  return PunishmentType.BAN;
-              }
             });
   }
 
@@ -271,8 +245,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                   active,
                   lastUpdate,
                   parseIssuer(lastUpdateBy),
-                  config,
-                  usernames));
+                  config));
         }
       }
     }
@@ -338,8 +311,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                   active,
                   lastUpdate,
                   parseIssuer(lastUpdateBy),
-                  config,
-                  usernames));
+                  config));
         }
         fetched = true;
       }

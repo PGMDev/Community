@@ -27,7 +27,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   public SQLModerationFeature(
       Configuration config, Logger logger, DatabaseConnection connection, UsersFeature usernames) {
     super(new ModerationConfig(config), logger, usernames);
-    this.service = new SQLModerationService(connection, getModerationConfig(), usernames);
+    this.service = new SQLModerationService(connection, getModerationConfig());
     logger.info("Punishments (SQL) have been enabled");
   }
 
@@ -126,11 +126,6 @@ public class SQLModerationFeature extends ModerationFeatureBase {
     return punishments.stream()
         .filter(p -> p.isActive() && PunishmentType.isBan(p.getType()))
         .findAny();
-  }
-
-  @Override
-  public CompletableFuture<PunishmentType> getNextPunishment(UUID target) {
-    return service.getNextPunishment(target);
   }
 
   @Override

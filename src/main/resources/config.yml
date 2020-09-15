@@ -36,6 +36,10 @@ reports:
 # Users - Track user related info including, name/uuid, first/last logins, join count, and IP history
 users:
   enabled: true
+  
+# Teleports - 
+teleports:
+  enabled: true
     
   
 # Database

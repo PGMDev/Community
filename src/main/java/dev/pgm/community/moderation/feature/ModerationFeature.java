@@ -91,14 +91,6 @@ public interface ModerationFeature extends Feature {
   Set<Player> getOnlineMutes();
 
   /**
-   * Get the most appropriate punishment based on history Warn -> Kick -> TempBan -> PermBan
-   *
-   * @param target A player id
-   * @return The {@link PunishmentType} to issue
-   */
-  CompletableFuture<PunishmentType> getNextPunishment(UUID target);
-
-  /**
    * Get a set of recent punishments during a time period
    *
    * @param period Time period to search

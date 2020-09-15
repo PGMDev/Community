@@ -83,6 +83,7 @@ public class ReportCommands extends CommunityCommand {
 
     @Subcommand("player|pl")
     @Description("View a list of recent reports for a target player")
+    @Syntax("[player] [page]")
     @CommandCompletion("@players")
     // Command completion here is for ALL online, however can provide any
     // username/uuid to lookup past reports from DB
@@ -110,6 +111,7 @@ public class ReportCommands extends CommunityCommand {
     }
 
     @Default // Default is a catch-all, /reports will default to this when no input is present
+    @Syntax("[page]")
     public void recentReports(CommandAudience audience, @Default("1") int page) {
       checkEnabled();
       sendReportHistory(audience, reports.getRecentReports(), page);

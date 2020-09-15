@@ -1,7 +1,7 @@
 package dev.pgm.community.moderation.punishments;
 
 import dev.pgm.community.moderation.ModerationConfig;
-import dev.pgm.community.users.feature.UsersFeature;
+import dev.pgm.community.utils.Sounds;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +12,8 @@ import net.kyori.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.chat.Audience;
-import tc.oc.pgm.util.chat.Sound;
+import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public abstract class PunishmentBase implements Punishment, Comparable<Punishment> {
 
@@ -27,7 +28,6 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
   private Optional<UUID> lastUpdatedBy;
 
   private final ModerationConfig config;
-  private final UsersFeature usernames;
 
   public PunishmentBase(
       UUID punishmentId,
@@ -38,8 +38,7 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      ModerationConfig config,
-      UsersFeature usernames) {
+      ModerationConfig config) {
     this.punishmentId = punishmentId;
     this.targetId = targetId;
     this.issuerId = issuerId;
@@ -47,7 +46,6 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
     this.timeIssued = timeIssued;
     this.active = active;
     this.config = config;
-    this.usernames = usernames;
     this.lastUpdated = lastUpdated;
     this.lastUpdatedBy = lastUpdatedBy;
   }
@@ -108,18 +106,20 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
   public boolean kick() {
     Optional<Player> player = getTargetPlayer();
     if (player.isPresent()) {
-      usernames
-          .renderUsername(getIssuerId())
-          .thenAccept(
-              issuer -> {
-                player.get().getPlayer().kickPlayer(formatPunishmentScreen(config, issuer));
-              });
+      player
+          .get()
+          .getPlayer()
+          .kickPlayer(
+              formatPunishmentScreen(
+                  config,
+                  getIssuerId().isPresent()
+                      ? PlayerComponent.of(getIssuerId().get(), NameStyle.FANCY)
+                      : PlayerComponent.CONSOLE));
       return true;
     }
     return false;
   }
 
-  private static final Sound WARN_SOUND = new Sound("mob.enderdragon.growl", 1f, 1f);
   private static final Component WARN_SYMBOL = TextComponent.of(" \u26a0 ", TextColor.YELLOW);
 
   /*
@@ -132,6 +132,6 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
     Component subtitle = TextComponent.of(reason, TextColor.GOLD);
 
     target.showTitle(title, subtitle, 5, 200, 10);
-    target.playSound(WARN_SOUND);
+    target.playSound(Sounds.WARN_SOUND);
   }
 }

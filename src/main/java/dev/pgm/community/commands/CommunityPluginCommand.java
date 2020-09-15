@@ -53,8 +53,7 @@ public class CommunityPluginCommand extends CommunityCommand {
                           .build()));
     }
 
-    
-    //TODO: Look into cleaning up messages and redo verbose stuff
+    // TODO: Look into cleaning up messages and redo verbose stuff
     @Subcommand("import")
     @Syntax("[true/false] - Verbose message")
     public void importBans(CommandAudience viewer, @Default("false") boolean verbose) {

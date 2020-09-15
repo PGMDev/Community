@@ -9,7 +9,6 @@ import dev.pgm.community.moderation.punishments.types.KickPunishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
-import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
 import java.time.Duration;
@@ -114,71 +113,23 @@ public interface Punishment {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      ModerationConfig config,
-      UsersFeature usernames) {
+      ModerationConfig config) {
     switch (type) {
       case WARN:
         return new WarnPunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            config,
-            usernames);
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, config);
       case MUTE:
         return new MutePunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            length,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            config,
-            usernames);
+            id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, config);
       case KICK:
         return new KickPunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            config,
-            usernames);
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, config);
       case TEMP_BAN:
         return new TempBanPunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            length,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            config,
-            usernames);
+            id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, config);
       case BAN:
         return new BanPunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            config,
-            usernames);
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, config);
     }
     return null;
   }

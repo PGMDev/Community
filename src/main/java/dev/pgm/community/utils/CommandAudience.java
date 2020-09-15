@@ -2,6 +2,7 @@ package dev.pgm.community.utils;
 
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.kyori.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -33,6 +34,14 @@ public class CommandAudience {
 
   public Component getStyledName() {
     return PlayerComponent.of(sender, NameStyle.FANCY);
+  }
+
+  public @Nullable Player getPlayer() {
+    return isPlayer() ? (Player) sender : null;
+  }
+
+  public boolean isPlayer() {
+    return getSender() instanceof Player;
   }
 
   public void sendMessage(Component message) {

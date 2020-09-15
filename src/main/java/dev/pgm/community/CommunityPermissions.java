@@ -25,6 +25,10 @@ public interface CommunityPermissions {
   String RELOAD = ROOT + ".reload";
   String RESTRICTED = ROOT + ".restricted"; // Access to restricted info (e.g IP addresses)
 
+  // Teleports
+  String TELEPORT = ROOT + ".teleport";
+  String TELEPORT_OTHERS = TELEPORT + ".others";
+
   // TODO Setup different groups like moderation
 
 }

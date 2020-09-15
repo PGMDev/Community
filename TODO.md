@@ -14,9 +14,10 @@
 - [x] `/profile` command: Display extensive info on player, user profile info, IP history, etc (See OCC Project Insight for reference)
 
 ## Major ToDo (Confirmed):
-- [ ] Teleports (/tp, /bring, consider CommandBook and what's used)
+- [x] Teleports (/tp, /bring, consider CommandBook and what's used)
+- [ ] Teleports WIP: (Consider config options, teleport delay, cooldown
 - [ ] MOTD login messages and unlimited "info" commands. Example, define rules section in config, command: 'rules', message: "etc" which would translate to `/rules` -> msg
-- [ ] A generalized Freeze option (not a priority) 
+- [ ] Chat Management Module - Look at existing OCC code, add /chat lock|slowmode|clear commands
 
 ## Bugs
 - [ ] /msg is sending even when player is muted, look into PGM to fix this
@@ -33,7 +34,7 @@
 - [ ] Discord Support: could include account linking, auto role assignment, transfer what Cloudy already does (reports/server status), PGM specific(auto audio team channels for linked players)
 
 ## Feature Ideas Minor (not confirmed yet)
-- [ ] Chat Management Module - Look at existing OCC code, add /chat lock|slowmode|clear commands
 - [ ] Party Mode - Convert from OCC, make more customized (General Party / PGM Party)
 - [ ] World Commands: /time, /weather, /mobs, 
 - [ ] Fun Commands: /fireworks, /tnt, /hat, etc
+- [ ] A generalized Freeze option (not a priority) 

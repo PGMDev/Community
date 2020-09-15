@@ -3,7 +3,6 @@ package dev.pgm.community.moderation.punishments.types;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.PunishmentBase;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.users.feature.UsersFeature;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,8 +18,7 @@ public class BanPunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      ModerationConfig config,
-      UsersFeature usernames) {
+      ModerationConfig config) {
     super(
         punishmentId,
         targetId,
@@ -30,8 +28,7 @@ public class BanPunishment extends PunishmentBase {
         active,
         lastUpdated,
         lastUpdatedBy,
-        config,
-        usernames);
+        config);
   }
 
   @Override

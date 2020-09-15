@@ -3,7 +3,6 @@ package dev.pgm.community.moderation.punishments.types;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentBase;
-import dev.pgm.community.users.feature.UsersFeature;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -25,19 +24,8 @@ public abstract class ExpirablePunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      ModerationConfig config,
-      UsersFeature usernames) {
-    super(
-        id,
-        targetId,
-        issuerId,
-        reason,
-        timeIssued,
-        active,
-        lastUpdated,
-        lastUpdatedBy,
-        config,
-        usernames);
+      ModerationConfig config) {
+    super(id, targetId, issuerId, reason, timeIssued, active, lastUpdated, lastUpdatedBy, config);
     this.duration = length;
   }
 

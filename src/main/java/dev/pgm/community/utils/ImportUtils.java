@@ -113,8 +113,7 @@ public class ImportUtils {
           true,
           getCreated(),
           Optional.empty(),
-          config,
-          users);
+          config);
     }
   }
 }

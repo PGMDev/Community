@@ -2,7 +2,6 @@ package dev.pgm.community.moderation.punishments.types;
 
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.users.feature.UsersFeature;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -26,8 +25,7 @@ public class MutePunishment extends ExpirablePunishment {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      ModerationConfig config,
-      UsersFeature usernames) {
+      ModerationConfig config) {
     super(
         id,
         targetId,
@@ -38,8 +36,7 @@ public class MutePunishment extends ExpirablePunishment {
         active,
         lastUpdated,
         lastUpdatedBy,
-        config,
-        usernames);
+        config);
   }
 
   // When muted player attempts to chat
