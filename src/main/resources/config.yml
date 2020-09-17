@@ -37,10 +37,25 @@ reports:
 users:
   enabled: true
   
-# Teleports - 
+# Teleports - Teleport commands include /tp, /bring, and /tploc
 teleports:
   enabled: true
     
+# Custom Info Commands    
+commands:
+  # Example of /rules command
+  rules: # The command name is defined as the config section
+    permission: "community.rules" # You can define any permission node, or use "" for no permission
+    lines: # You can have an unlimited # of lines that will be sent to the player. & color code formatting supported
+      - "&7&m-------&r &a&lServer Rules&f &7&m-------&r"
+      - "&e1. &3Be Nice"
+      - "&e2. &3No griefing"
+      - "&e3. &3No cheating"
+  # Second example of a single line /website command    
+  website:
+    permission: "" # For no permission, leave empty
+    lines:
+      - "&7Visit our website at &b&nhttps://pgm.dev"
   
 # Database
 database:

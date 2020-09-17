@@ -3,6 +3,7 @@ package dev.pgm.community.feature;
 import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.info.InfoCommandsFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.reports.feature.ReportFeature;
@@ -23,6 +24,7 @@ public class FeatureManager {
   private final UsersFeature users;
 
   private final TeleportFeature teleports;
+  private final InfoCommandsFeature infoCommands;
 
   public FeatureManager(
       Configuration config,
@@ -40,6 +42,7 @@ public class FeatureManager {
 
     // Non-DB Features
     this.teleports = new TeleportFeatureBase(config, logger);
+    this.infoCommands = new InfoCommandsFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -58,6 +61,10 @@ public class FeatureManager {
 
   public TeleportFeature getTeleports() {
     return teleports;
+  }
+
+  public InfoCommandsFeature getInfoCommands() {
+    return infoCommands;
   }
 
   // Register Feature commands and any dependency
@@ -84,6 +91,9 @@ public class FeatureManager {
     getModeration().getCommands().forEach(commands::registerCommand);
     getTeleports().getCommands().forEach(commands::registerCommand);
 
+    // TODO: Move ^ calls to different method, use #unregisterAll and re-register upon reload to
+    // allow commands to be enanbled/disabled
+
     // Other commands
     commands.registerCommand(new CommunityPluginCommand());
   }
@@ -94,6 +104,7 @@ public class FeatureManager {
     getModeration().getConfig().reload();
     getUsers().getConfig().reload();
     getTeleports().getConfig().reload();
+    getInfoCommands().getConfig().reload();
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
