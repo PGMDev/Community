@@ -131,7 +131,7 @@ public class PunishmentCommand extends CommunityCommand {
                                     .color(TextColor.RED)
                                     .build());
                           } else {
-                            BroadcastUtils.sendAdminChat(
+                            BroadcastUtils.sendAdminChatMessage(
                                 TextComponent.builder()
                                     .append(target, TextColor.DARK_AQUA)
                                     .append(" was unbanned by ", TextColor.GRAY)

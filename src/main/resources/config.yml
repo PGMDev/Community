@@ -40,6 +40,12 @@ users:
 # Teleports - Teleport commands include /tp, /bring, and /tploc
 teleports:
   enabled: true
+  
+# Chat Management - Commands that relate to chat management such as slowmode and lockdown
+chat:
+  enabled: true       # Whether chat management commands are enabled
+  slowmode-speed: 30  # Cooldown time (in seconds) between messages during slowmode 
+  login-alert: true   # Whether to alert joining players if slowmode or lockdown are enabeld
     
 # Custom Info Commands    
 commands:

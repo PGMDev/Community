@@ -173,10 +173,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             broadcast -> {
               if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
                 if (event.isSilent()) {
-                  BroadcastUtils.sendAdminChat(
+                  BroadcastUtils.sendAdminChatMessage(
                       broadcast, new Sound("item.fireCharge.use", 1f, 0.3f));
                 } else {
-                  BroadcastUtils.sendGlobalChat(broadcast);
+                  BroadcastUtils.sendGlobalMessage(broadcast);
                 }
               } else { // Send feedback if not broadcast
                 event.getSender().sendMessage(broadcast);
@@ -199,7 +199,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
           .renderUsername(banEvasion)
           .thenAcceptAsync(
               bannedName -> {
-                BroadcastUtils.sendAdminChat(
+                BroadcastUtils.sendAdminChatMessage(
                     formatBanEvasion(event.getPlayer(), banEvasion.get(), bannedName),
                     Sounds.BAN_EVASION);
               });

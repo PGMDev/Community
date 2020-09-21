@@ -105,7 +105,8 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
   @EventHandler
   public void onPlayerReport(PlayerReportEvent event) {
     recentReports.put(event.getReport(), Instant.now());
-    BroadcastUtils.sendAdminChat(formatReportBroadcast(event.getReport()), Sounds.PLAYER_REPORT);
+    BroadcastUtils.sendAdminChatMessage(
+        formatReportBroadcast(event.getReport()), Sounds.PLAYER_REPORT);
   }
 
   private Component formatReportBroadcast(Report report) {

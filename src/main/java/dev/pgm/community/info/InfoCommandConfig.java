@@ -21,6 +21,7 @@ public class InfoCommandConfig extends FeatureConfigImpl {
 
   @Override
   public void reload() {
+    super.reload();
     this.commands =
         config.getConfigurationSection(KEY).getKeys(false).stream()
             .map(key -> InfoCommandData.of(config.getConfigurationSection(KEY + "." + key)))

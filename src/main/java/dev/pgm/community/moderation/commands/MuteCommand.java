@@ -71,7 +71,7 @@ public class MuteCommand extends CommunityCommand {
                                     .color(TextColor.RED)
                                     .build());
                           } else {
-                            BroadcastUtils.sendAdminChat(
+                            BroadcastUtils.sendAdminChatMessage(
                                 TextComponent.builder()
                                     .append(PlayerComponent.of(target.getPlayer(), NameStyle.FANCY))
                                     .append(" was unmuted by ", TextColor.GRAY)

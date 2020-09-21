@@ -68,7 +68,7 @@ public class Community extends JavaPlugin {
     // Contexts
     commands
         .getCommandContexts()
-        .registerContext(CommandAudience.class, c -> new CommandAudience(c.getSender()));
+        .registerIssuerOnlyContext(CommandAudience.class, c -> new CommandAudience(c.getSender()));
 
     commands
         .getCommandContexts()

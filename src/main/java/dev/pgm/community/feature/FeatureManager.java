@@ -1,6 +1,7 @@
 package dev.pgm.community.feature;
 
 import co.aikar.commands.BukkitCommandManager;
+import dev.pgm.community.chat.ChatManagementFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.info.InfoCommandsFeature;
@@ -25,6 +26,7 @@ public class FeatureManager {
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
+  private final ChatManagementFeature chat;
 
   public FeatureManager(
       Configuration config,
@@ -43,6 +45,7 @@ public class FeatureManager {
     // Non-DB Features
     this.teleports = new TeleportFeatureBase(config, logger);
     this.infoCommands = new InfoCommandsFeature(config, logger);
+    this.chat = new ChatManagementFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -67,6 +70,10 @@ public class FeatureManager {
     return infoCommands;
   }
 
+  public ChatManagementFeature getChatManagement() {
+    return chat;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -74,6 +81,7 @@ public class FeatureManager {
     commands.registerDependency(ReportFeature.class, getReports());
     commands.registerDependency(ModerationFeature.class, getModeration());
     commands.registerDependency(TeleportFeature.class, getTeleports());
+    commands.registerDependency(ChatManagementFeature.class, getChatManagement());
 
     // Custom command completions
     commands
@@ -86,16 +94,20 @@ public class FeatureManager {
                     .collect(Collectors.toSet()));
 
     // Feature commands
-    getUsers().getCommands().forEach(commands::registerCommand);
-    getReports().getCommands().forEach(commands::registerCommand);
-    getModeration().getCommands().forEach(commands::registerCommand);
-    getTeleports().getCommands().forEach(commands::registerCommand);
-
-    // TODO: Move ^ calls to different method, use #unregisterAll and re-register upon reload to
-    // allow commands to be enanbled/disabled
+    registerFeatureCommands(getUsers(), commands);
+    registerFeatureCommands(getReports(), commands);
+    registerFeatureCommands(getModeration(), commands);
+    registerFeatureCommands(getTeleports(), commands);
+    registerFeatureCommands(getChatManagement(), commands);
+    // TODO: Group calls together and perform upon reload
+    // will allow commands to be enabled/disabled with features
 
     // Other commands
     commands.registerCommand(new CommunityPluginCommand());
+  }
+
+  private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {
+    feature.getCommands().forEach(commandManager::registerCommand);
   }
 
   public void reloadConfig() {
@@ -105,6 +117,7 @@ public class FeatureManager {
     getUsers().getConfig().reload();
     getTeleports().getConfig().reload();
     getInfoCommands().getConfig().reload();
+    getChatManagement().getConfig().reload();
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

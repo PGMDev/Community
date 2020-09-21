@@ -29,6 +29,13 @@ public interface CommunityPermissions {
   String TELEPORT = ROOT + ".teleport";
   String TELEPORT_OTHERS = TELEPORT + ".others";
 
+  // Chat Management
+  String CHAT_MANAGEMENT =
+      ROOT + ".chat"; // Able to use /chat commands, and excempt during lock & slowmode
+
+  // General Staff
+  String STAFF = ROOT + ".staff"; // Recieve staff broadcasts
+
   // TODO Setup different groups like moderation
 
 }
