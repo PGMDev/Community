@@ -45,7 +45,14 @@
 		<dependency>
 			<groupId>tc.oc.pgm</groupId>
 			<artifactId>util</artifactId>
-			<version>0.9-SNAPSHOT</version>
+			<version>0.10-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>tc.oc.pgm</groupId>
+			<artifactId>core</artifactId>
+			<version>0.10-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Command Framework - https://github.com/aikar/commands -->
@@ -53,7 +60,7 @@
 			<groupId>co.aikar</groupId>
 			<artifactId>acf-bukkit</artifactId>
 			<version>0.5.0-SNAPSHOT</version>
-		</dependency>		
+		</dependency>
 	</dependencies>
 
 
@@ -88,8 +95,8 @@
 					<artifactSet>
 						<includes>
 							<include>net.kyori:text-*:*</include>
-							<include>tc.oc.pgm:util</include>
 							<include>co.aikar:*</include>
+							<include>tc.oc.pgm:util</include>
 						</includes>
 					</artifactSet>
 					<filters>
@@ -107,11 +114,7 @@
 						</relocation>
 						<relocation>
 							<pattern>net.kyori</pattern>
-							<shadedPattern>dev.pgm.community.lib.net.kyori</shadedPattern>
-						</relocation>
-						<relocation>
-							<pattern>tc.oc.pgm.util</pattern>
-							<shadedPattern>dev.pgm.community.lib.tc.oc.pgm.util</shadedPattern>
+							<shadedPattern>tc.oc.pgm.lib.net.kyori</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>

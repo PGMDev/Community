@@ -82,7 +82,7 @@ public class MutePunishment extends ExpirablePunishment {
                     .append("Expires in ", TextColor.GRAY)
                     .append(
                         PeriodFormats.briefNaturalApproximate(
-                                Duration.between(Instant.now(), getExpireTime()), 1)
+                                Duration.between(Instant.now(), getExpireTime()), 1, true)
                             .color(TextColor.YELLOW))
                     .build()))
         .build();

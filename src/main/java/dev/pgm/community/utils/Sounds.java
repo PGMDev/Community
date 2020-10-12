@@ -21,4 +21,7 @@ public class Sounds {
 
   // Played when a player is teleported via command
   public static final Sound TELEPORT = new Sound("mob.endermen.portal", 1f, 0.9f);
+
+  // Played when player logs in and has a pending friend request
+  public static final Sound FRIEND_REQUEST_LOGIN = new Sound("note.harp", 1f, 1.2f);
 }

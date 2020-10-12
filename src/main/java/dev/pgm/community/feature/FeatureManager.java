@@ -4,6 +4,8 @@ import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.chat.ChatManagementFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.friends.feature.FriendshipFeature;
+import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
 import dev.pgm.community.info.InfoCommandsFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
@@ -23,6 +25,7 @@ public class FeatureManager {
   private final ReportFeature reports;
   private final ModerationFeature moderation;
   private final UsersFeature users;
+  private final FriendshipFeature friends;
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
@@ -37,6 +40,7 @@ public class FeatureManager {
     this.users = new SQLUsersFeature(config, logger, database);
     this.reports = new SQLReportFeature(config, logger, database, users);
     this.moderation = new SQLModerationFeature(config, logger, database, users);
+    this.friends = new SQLFriendshipFeature(config, logger, database, users);
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?
     // Ex. FileReportFeature, MongoReportFeature, RedisReportFeature...
@@ -74,6 +78,10 @@ public class FeatureManager {
     return chat;
   }
 
+  public FriendshipFeature getFriendships() {
+    return friends;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -82,6 +90,7 @@ public class FeatureManager {
     commands.registerDependency(ModerationFeature.class, getModeration());
     commands.registerDependency(TeleportFeature.class, getTeleports());
     commands.registerDependency(ChatManagementFeature.class, getChatManagement());
+    commands.registerDependency(FriendshipFeature.class, getFriendships());
 
     // Custom command completions
     commands
@@ -99,6 +108,7 @@ public class FeatureManager {
     registerFeatureCommands(getModeration(), commands);
     registerFeatureCommands(getTeleports(), commands);
     registerFeatureCommands(getChatManagement(), commands);
+    registerFeatureCommands(getFriendships(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 

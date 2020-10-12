@@ -8,6 +8,7 @@
 - [x] Teleports (/tp, /bring, consider CommandBook and what's used)
 - [x] Chat Management (/chat lock, /chat clear, /chat slow)
 - [x] Unlimited "info" commands, defined in config
+- [x] Friends Support: Command `/friends`, hook into PGM, restore name highlighting in tab, friend only death/join messages. Include non-pgm option too if needed
 
 ## User Profiles
 - [x] `/seen` command
@@ -23,6 +24,7 @@
 ## Bugs
 - [ ] /msg is sending even when player is muted, look into PGM to fix this
 - [ ] Allow commands to unregister if disabled (maybe?)
+- [ ] Look into hiding vanished players from all lookup/friend commands, such as /seen and /friends
 
 ## ToDo GitHub:
 - [ ] Setup PGM.dev pages with Install, Commands, Permissions, Config pages
@@ -30,7 +32,6 @@
 - [ ] Finalize README with project info
 
 ## Feature Ideas Major (not confirmed yet)
-- [ ] Friends Support: Command `/friends`, hook into PGM, restore name highlighting in tab, friend only death/join messages. Include non-pgm option too if needed
 - [ ] Bungee support: Store info about server, hook into Bungee directly from plugin. Useful for gathering network stats (I.e joins per day, week) Maybe redis support for pub/sub like things. Ex. network server status messages, join/leave messages to other servers Look at OCN for example
 - [ ] Discord Support: could include account linking, auto role assignment, transfer what Cloudy already does (reports/server status), PGM specific(auto audio team channels for linked players)
 

@@ -37,6 +37,10 @@ reports:
 users:
   enabled: true
   
+# Friends - Settings related to friendship features/commands  
+friends:
+  enabled: true
+  
 # Teleports - Teleport commands include /tp, /bring, and /tploc
 teleports:
   enabled: true

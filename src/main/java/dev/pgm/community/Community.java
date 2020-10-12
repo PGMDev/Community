@@ -31,6 +31,10 @@ public class Community extends JavaPlugin {
   // Feature Manager
   private FeatureManager features;
 
+  public FeatureManager getFeatures() {
+    return features;
+  }
+
   @Override
   public void onEnable() {
     plugin = this;

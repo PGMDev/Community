@@ -29,27 +29,43 @@ public class BanCommand extends CommunityCommand {
   @Syntax("[player] [duration] [reason]")
   @CommandCompletion("@players 1d|3d|7d *")
   public void tempBan(CommandAudience audience, String target, Duration length, String reason) {
-    moderation.punish(
-        PunishmentType.TEMP_BAN,
-        getTarget(target, usernames),
-        audience,
-        reason,
-        length,
-        true,
-        isVanished(audience));
+    getTarget(target, usernames)
+        .thenAcceptAsync(
+            id -> {
+              if (id.isPresent()) {
+                moderation.punish(
+                    PunishmentType.TEMP_BAN,
+                    id.get(),
+                    audience,
+                    reason,
+                    length,
+                    true,
+                    isVanished(audience));
+              } else {
+                audience.sendWarning(formatNotFoundComponent(target));
+              }
+            });
   }
 
   @Default
   @Syntax("[player] [reason]")
   @CommandCompletion("@players")
   public void ban(CommandAudience audience, String target, String reason) {
-    moderation.punish(
-        PunishmentType.BAN,
-        getTarget(target, usernames),
-        audience,
-        reason,
-        null,
-        true,
-        isVanished(audience));
+    getTarget(target, usernames)
+        .thenAcceptAsync(
+            id -> {
+              if (id.isPresent()) {
+                moderation.punish(
+                    PunishmentType.BAN,
+                    id.get(),
+                    audience,
+                    reason,
+                    null,
+                    true,
+                    isVanished(audience));
+              } else {
+                audience.sendWarning(formatNotFoundComponent(target));
+              }
+            });
   }
 }

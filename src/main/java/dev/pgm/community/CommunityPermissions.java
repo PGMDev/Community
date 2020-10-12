@@ -2,6 +2,9 @@ package dev.pgm.community;
 
 public interface CommunityPermissions {
 
+  // TODO: Copy PGM format and style, register groups of permission nodes like moderator/admin/dev
+  // etc
+
   // Root permission node
   String ROOT = "community";
 
@@ -31,10 +34,13 @@ public interface CommunityPermissions {
 
   // Chat Management
   String CHAT_MANAGEMENT =
-      ROOT + ".chat"; // Able to use /chat commands, and excempt during lock & slowmode
+      ROOT + ".chat"; // Able to use /chat commands, and exempt during lock & slowmode
+
+  // Friends
+  String FRIENDSHIP = ROOT + ".friendship"; // Access to /friend commands
 
   // General Staff
-  String STAFF = ROOT + ".staff"; // Recieve staff broadcasts
+  String STAFF = ROOT + ".staff"; // Receive staff broadcasts
 
   // TODO Setup different groups like moderation
 

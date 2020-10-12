@@ -20,8 +20,8 @@ public class WarnCommand extends CommunityCommand {
   @CommandAlias("warn|w")
   @Description("Warn a player for bad behavior")
   @Syntax("[player] [reason]")
-  @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.WARN) // TODO: Permissions
+  @CommandCompletion("@players *")
+  @CommandPermission(CommunityPermissions.WARN)
   public void warn(CommandAudience sender, OnlinePlayer target, String reason) {
     moderation.punish(
         PunishmentType.WARN,
