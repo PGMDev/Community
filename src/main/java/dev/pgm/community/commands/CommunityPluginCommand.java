@@ -10,8 +10,10 @@ import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.feature.Feature;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeature;
+import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.ImportUtils;
@@ -20,6 +22,7 @@ import java.util.List;
 import net.kyori.text.TextComponent;
 import net.kyori.text.format.TextColor;
 import tc.oc.pgm.util.UsernameResolver;
+import tc.oc.pgm.util.text.TextFormatter;
 
 // TODO: Maybe move to a different place
 @CommandAlias("community")
@@ -30,6 +33,7 @@ public class CommunityPluginCommand extends CommunityCommand {
   @Dependency private Community plugin;
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature users;
+  @Dependency private ReportFeature reports;
 
   @Default
   public void reload(CommandAudience audience) {
@@ -37,22 +41,33 @@ public class CommunityPluginCommand extends CommunityCommand {
     audience.sendWarning(TextComponent.of("Community has been reloaded")); // TODO: translate
   }
 
+  @Subcommand("stats")
+  public void stats(CommandAudience audience) {
+    audience.sendMessage(
+        TextFormatter.horizontalLineHeading(
+            audience.getSender(),
+            TextComponent.of("Community Database Stats", TextColor.YELLOW),
+            TextColor.DARK_RED));
+    sendTotalCount(users, "Total Users", audience);
+    sendTotalCount(moderation, "Total Punishments", audience);
+    sendTotalCount(reports, "Total Reports", audience);
+  }
+
+  private void sendTotalCount(Feature feature, String countName, CommandAudience audience) {
+    feature
+        .count()
+        .thenAcceptAsync(
+            total ->
+                audience.sendMessage(
+                    TextComponent.builder()
+                        .append(countName, TextColor.GOLD)
+                        .append(": ", TextColor.GRAY)
+                        .append(TextComponent.of(total, TextColor.GREEN))
+                        .build()));
+  }
+
   @Subcommand("punishments|p")
   public class ModerationAdminCommands extends CommunityCommand {
-    @Subcommand("count")
-    public void countPunishments(CommandAudience viewer) {
-      moderation
-          .count()
-          .thenAcceptAsync(
-              total ->
-                  viewer.sendWarning(
-                      TextComponent.builder()
-                          .append("There are ")
-                          .append(TextComponent.of(total))
-                          .append(" punishments")
-                          .build()));
-    }
-
     // TODO: Look into cleaning up messages and redo verbose stuff
     @Subcommand("import")
     @Syntax("[true/false] - Verbose message")

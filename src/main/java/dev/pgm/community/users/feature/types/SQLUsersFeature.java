@@ -130,4 +130,9 @@ public class SQLUsersFeature extends UsersFeatureBase {
               }
             });
   }
+
+  @Override
+  public CompletableFuture<Integer> count() {
+    return service.count();
+  }
 }

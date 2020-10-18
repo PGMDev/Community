@@ -19,6 +19,7 @@ public class TempBanPunishment extends ExpirablePunishment {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
+      String service,
       ModerationConfig config) {
     super(
         id,
@@ -30,6 +31,7 @@ public class TempBanPunishment extends ExpirablePunishment {
         active,
         lastUpdated,
         lastUpdatedBy,
+        service,
         config);
   }
 

@@ -97,6 +97,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             active,
             time,
             getSenderId(issuer.getSender()),
+            getModerationConfig().getService(),
             getModerationConfig());
     save(punishment);
     Bukkit.getPluginManager().callEvent(new PlayerPunishmentEvent(issuer, punishment, silent));

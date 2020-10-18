@@ -194,4 +194,8 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
               });
     }
   }
+
+  public CompletableFuture<Integer> count() {
+    return service.count();
+  }
 }

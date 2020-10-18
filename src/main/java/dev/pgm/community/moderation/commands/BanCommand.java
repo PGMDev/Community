@@ -8,6 +8,7 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
@@ -23,6 +24,7 @@ public class BanCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
+  @Dependency private Community plugin;
 
   @CommandAlias("tempban|tb")
   @Subcommand("temp|temporary|t")
@@ -30,7 +32,7 @@ public class BanCommand extends CommunityCommand {
   @CommandCompletion("@players 1d|3d|7d *")
   public void tempBan(CommandAudience audience, String target, Duration length, String reason) {
     getTarget(target, usernames)
-        .thenAcceptAsync(
+        .thenAccept(
             id -> {
               if (id.isPresent()) {
                 moderation.punish(
@@ -52,7 +54,7 @@ public class BanCommand extends CommunityCommand {
   @CommandCompletion("@players")
   public void ban(CommandAudience audience, String target, String reason) {
     getTarget(target, usernames)
-        .thenAcceptAsync(
+        .thenAccept(
             id -> {
               if (id.isPresent()) {
                 moderation.punish(

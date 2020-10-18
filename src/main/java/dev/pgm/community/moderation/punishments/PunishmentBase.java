@@ -27,6 +27,8 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
   private Instant lastUpdated;
   private Optional<UUID> lastUpdatedBy;
 
+  private String service;
+
   private final ModerationConfig config;
 
   public PunishmentBase(
@@ -38,6 +40,7 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
+      String service,
       ModerationConfig config) {
     this.punishmentId = punishmentId;
     this.targetId = targetId;
@@ -48,6 +51,7 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
     this.config = config;
     this.lastUpdated = lastUpdated;
     this.lastUpdatedBy = lastUpdatedBy;
+    this.service = service;
   }
 
   @Override
@@ -88,6 +92,11 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
   @Override
   public Optional<UUID> getLastUpdatedBy() {
     return lastUpdatedBy;
+  }
+
+  @Override
+  public String getService() {
+    return service;
   }
 
   @Override

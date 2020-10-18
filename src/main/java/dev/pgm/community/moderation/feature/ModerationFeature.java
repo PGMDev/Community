@@ -108,6 +108,4 @@ public interface ModerationFeature extends Feature {
 
   // AsyncPlayerPreLoginEvent handler
   void onPreLogin(AsyncPlayerPreLoginEvent event);
-
-  CompletableFuture<Integer> count();
 }

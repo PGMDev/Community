@@ -18,8 +18,19 @@ public class KickPunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
+      String service,
       ModerationConfig config) {
-    super(id, targetId, issuerId, reason, timeIssued, active, lastUpdated, lastUpdatedBy, config);
+    super(
+        id,
+        targetId,
+        issuerId,
+        reason,
+        timeIssued,
+        active,
+        lastUpdated,
+        lastUpdatedBy,
+        service,
+        config);
   }
 
   @Override

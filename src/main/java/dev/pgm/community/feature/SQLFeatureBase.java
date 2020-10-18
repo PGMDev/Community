@@ -1,7 +1,9 @@
 package dev.pgm.community.feature;
 
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.database.query.CountQuery;
 import dev.pgm.community.database.query.TableQuery;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class SQLFeatureBase<T> implements SQLFeature<T> {
 
@@ -19,6 +21,12 @@ public abstract class SQLFeatureBase<T> implements SQLFeature<T> {
   @Override
   public void createTable() {
     database.submitQuery(new TableQuery(tableName, fields));
+  }
+
+  public CompletableFuture<Integer> count() {
+    return getDatabase()
+        .submitQueryComplete(new CountQuery(tableName))
+        .thenApplyAsync(query -> CountQuery.class.cast(query).getCount());
   }
 
   @Override

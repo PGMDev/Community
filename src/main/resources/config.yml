@@ -4,13 +4,14 @@
 #
 general:
   server-name: "&4Overcast &7Community" # Server display name used at various places
-
-
+  
 # Moderation - Settings related to punishments (/warn, /kick, /ban, /mute)
 moderation:
   enabled: true   # Whether punishments are enabled
   persist: true   # Whether to save to database
   broadcast: true # Whether to broadcast punishments
+  
+  service: "occ"  # Name of service that punishments will be recorded under.
   
   #Message options for kick screen
   rules-link: "https://pgm.dev/rules" #Link to rules

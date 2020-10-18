@@ -10,6 +10,7 @@ import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
@@ -274,6 +275,18 @@ public class PunishmentCommand extends CommunityCommand {
               .append(
                   PeriodFormats.relativePastApproximate(data.getLastUpdated())
                       .color(TextColor.YELLOW));
+        }
+
+        // If punishment was issued on a different service, add note to hover message
+        if (!((ModerationConfig) moderation.getConfig())
+            .getService()
+            .equalsIgnoreCase(data.getService())) {
+          hover
+              .append(TextComponent.newline())
+              .append("Service ", TextColor.GRAY)
+              .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
+              .append(TextComponent.space())
+              .append(data.getService(), TextColor.AQUA);
         }
 
         return builder.hoverEvent(HoverEvent.of(Action.SHOW_TEXT, hover.build())).build();

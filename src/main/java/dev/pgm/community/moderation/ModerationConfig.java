@@ -16,6 +16,11 @@ public class ModerationConfig extends FeatureConfigImpl {
   private static final String BAN_KEY = KEY + ".ban";
   private static final String MUTE_KEY = KEY + ".mute";
 
+  private static final String RULES_KEY = KEY + ".rules-link";
+  private static final String APPEAL_KEY = KEY + ".appeal-link";
+
+  private static final String SERVICE_KEY = KEY + ".service";
+
   // General options
   private boolean persist;
   private boolean broadcast;
@@ -29,6 +34,9 @@ public class ModerationConfig extends FeatureConfigImpl {
   // Messages
   private String rulesLink;
   private String appealMessage;
+
+  // Service
+  private String service;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -111,6 +119,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     return appealMessage != null ? BukkitUtils.colorize(appealMessage) : "";
   }
 
+  public String getService() {
+    return service;
+  }
+
   @Override
   public void reload() {
     super.reload();
@@ -124,7 +136,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     this.mute = config.getBoolean(getEnabledKey(MUTE_KEY));
 
     // Messages
-    this.rulesLink = config.getString(KEY + ".rules-link");
-    this.appealMessage = config.getString(KEY + ".appeal-link");
+    this.rulesLink = config.getString(RULES_KEY);
+    this.appealMessage = config.getString(APPEAL_KEY);
+
+    // Service
+    this.service = config.getString(SERVICE_KEY);
   }
 }

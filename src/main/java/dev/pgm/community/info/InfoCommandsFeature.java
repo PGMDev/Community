@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
@@ -36,5 +37,10 @@ public class InfoCommandsFeature extends FeatureBase {
   @Override
   public Set<CommunityCommand> getCommands() {
     return Sets.newHashSet(); // No actual commands, see #onPlayerCommandProcess
+  }
+
+  @Override
+  public CompletableFuture<Integer> count() {
+    return CompletableFuture.completedFuture(getInfoConfig().getInfoCommands().size());
   }
 }

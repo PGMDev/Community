@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import dev.pgm.community.database.DatabaseConnection;
-import dev.pgm.community.database.query.CountQuery;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
@@ -26,7 +25,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
 
   private static final String TABLE_NAME = "punishments";
   private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, punished VARCHAR(36), issuer VARCHAR(36), reason VARCHAR(255), type VARCHAR(8), time LONG, expires LONG, active BOOL, last_updated LONG, updated_by VARCHAR(36))";
+      "(id VARCHAR(36) PRIMARY KEY, punished VARCHAR(36), issuer VARCHAR(36), reason VARCHAR(255), type VARCHAR(8), time LONG, expires LONG, active BOOL, last_updated LONG, updated_by VARCHAR(36), service VARCHAR(255))";
   private static final String CONSOLE_DB_NAME =
       "console"; // Used in issuer field when punishment issued by console
 
@@ -46,12 +45,6 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                     return new SelectPunishedQuery(key);
                   }
                 });
-  }
-
-  public CompletableFuture<Integer> count() {
-    return getDatabase()
-        .submitQueryComplete(new CountQuery(TABLE_NAME))
-        .thenApplyAsync(query -> CountQuery.class.cast(query).getCount());
   }
 
   @Override
@@ -154,7 +147,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
     private static final String INSERT_PUNISHMENT_QUERY =
         "INSERT INTO "
             + TABLE_NAME
-            + "(id, punished, issuer, reason, type, time, expires, active, last_updated, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "(id, punished, issuer, reason, type, time, expires, active, last_updated, updated_by, service) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final Punishment punishment;
 
@@ -184,6 +177,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
       statement.setBoolean(8, punishment.isActive());
       statement.setLong(9, punishment.getTimeIssued().toEpochMilli());
       statement.setString(10, convertIssuer(punishment.getIssuerId()));
+      statement.setString(11, config.getService());
 
       statement.executeUpdate();
     }
@@ -233,6 +227,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
           long lastUpdateTime = result.getLong("last_updated");
           Instant lastUpdate = Instant.ofEpochMilli(lastUpdateTime);
           String lastUpdateBy = result.getString("updated_by");
+          String service = result.getString("service");
           punishments.add(
               Punishment.of(
                   UUID.fromString(id),
@@ -245,6 +240,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                   active,
                   lastUpdate,
                   parseIssuer(lastUpdateBy),
+                  service,
                   config));
         }
       }
@@ -299,6 +295,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
           long lastUpdateTime = result.getLong("last_updated");
           Instant lastUpdate = Instant.ofEpochMilli(lastUpdateTime);
           String lastUpdateBy = result.getString("updated_by");
+          String service = result.getString("service");
           punishments.add(
               Punishment.of(
                   UUID.fromString(id),
@@ -311,6 +308,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                   active,
                   lastUpdate,
                   parseIssuer(lastUpdateBy),
+                  service,
                   config));
         }
         fetched = true;

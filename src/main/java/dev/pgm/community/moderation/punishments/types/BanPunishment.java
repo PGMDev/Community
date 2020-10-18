@@ -18,6 +18,7 @@ public class BanPunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
+      String service,
       ModerationConfig config) {
     super(
         punishmentId,
@@ -28,6 +29,7 @@ public class BanPunishment extends PunishmentBase {
         active,
         lastUpdated,
         lastUpdatedBy,
+        service,
         config);
   }
 

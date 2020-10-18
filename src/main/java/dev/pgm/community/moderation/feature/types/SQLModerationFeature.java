@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
@@ -110,21 +111,30 @@ public class SQLModerationFeature extends ModerationFeatureBase {
               + event.getUniqueId().toString());
     } catch (InterruptedException | ExecutionException e) {
       event.setLoginResult(Result.KICK_OTHER);
-      event.setKickMessage("Error, please try again."); // TODO: Pretty this up
+      event.setKickMessage(
+          ChatColor.DARK_RED + "Error joining, please try again."); // TODO: Pretty this up
       e.printStackTrace();
     }
   }
 
   private Optional<MutePunishment> hasActiveMute(List<Punishment> punishments) {
     return punishments.stream()
-        .filter(p -> p.isActive() && p.getType().equals(PunishmentType.MUTE))
+        .filter(
+            p ->
+                p.isActive()
+                    && p.getType().equals(PunishmentType.MUTE)
+                    && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
         .map(MutePunishment.class::cast)
         .findAny();
   }
 
   private Optional<Punishment> hasActiveBan(List<Punishment> punishments) {
     return punishments.stream()
-        .filter(p -> p.isActive() && PunishmentType.isBan(p.getType()))
+        .filter(
+            p ->
+                p.isActive()
+                    && PunishmentType.isBan(p.getType())
+                    && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
         .findAny();
   }
 
