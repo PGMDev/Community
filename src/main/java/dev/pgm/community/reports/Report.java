@@ -10,6 +10,7 @@ public class Report implements Comparable<Report> {
   private final UUID reporterId;
   private final String reason;
   private final Instant time;
+  private final String server;
 
   /**
    * Report Holds information related to a report
@@ -18,17 +19,20 @@ public class Report implements Comparable<Report> {
    * @param reporterId UUID of reporting player
    * @param reason reason for report
    * @param time time reported
+   * @param name of current server
    */
-  public Report(UUID reportedId, UUID reporterId, String reason, Instant time) {
-    this(UUID.randomUUID(), reportedId, reporterId, reason, time);
+  public Report(UUID reportedId, UUID reporterId, String reason, Instant time, String server) {
+    this(UUID.randomUUID(), reportedId, reporterId, reason, time, server);
   }
 
-  public Report(UUID reportId, UUID reportedId, UUID reporterId, String reason, Instant time) {
+  public Report(
+      UUID reportId, UUID reportedId, UUID reporterId, String reason, Instant time, String server) {
     this.reportId = reportId;
     this.reportedId = reportedId;
     this.reporterId = reporterId;
     this.reason = reason;
     this.time = time;
+    this.server = server;
   }
   /**
    * Get the {@link UUID} which identifies the report
@@ -75,15 +79,25 @@ public class Report implements Comparable<Report> {
     return time;
   }
 
+  /**
+   * Get the name of server where report was made
+   *
+   * @return name of report's server
+   */
+  public String getServer() {
+    return server;
+  }
+
   @Override
   public String toString() {
     return String.format(
-        "{id: %s, reported: %s, sender: %s, reason:%s, time%s}",
+        "{id: %s, reported: %s, sender: %s, reason:%s, time:%s, server:%s }",
         getId().toString(),
         getReportedId().toString(),
         getReporterId().toString(),
         getReason(),
-        getTime().toString());
+        getTime().toString(),
+        getServer());
   }
 
   @Override

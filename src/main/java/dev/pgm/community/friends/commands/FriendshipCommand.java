@@ -331,6 +331,7 @@ public class FriendshipCommand extends CommunityCommand {
             .append(
                 PeriodFormats.relativePastApproximate(data.getRequestDate())
                     .color(TextColor.DARK_AQUA))
+            .append(TextComponent.space())
             .append(FriendshipFeature.createAcceptButton(data.getRequesterId().toString()))
             .append(TextComponent.space())
             .append(FriendshipFeature.createRejectButton(data.getRequesterId().toString()))
@@ -402,7 +403,10 @@ public class FriendshipCommand extends CommunityCommand {
             .append(TextComponent.space())
             .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
             .append(
-                renderOnlineStatus(data.getOtherPlayer(audience.getPlayer().getUniqueId())).join())
+                renderOnlineStatus(
+                        data.getOtherPlayer(audience.getPlayer().getUniqueId()),
+                        audience.getSender().hasPermission(CommunityPermissions.STAFF))
+                    .join())
             .build();
       }
 
@@ -414,17 +418,19 @@ public class FriendshipCommand extends CommunityCommand {
     }.display(audience.getAudience(), friends, pages);
   }
 
-  private CompletableFuture<Component> renderOnlineStatus(UUID playerId) {
+  private CompletableFuture<Component> renderOnlineStatus(UUID playerId, boolean staff) {
     return users
         .getStoredProfile(playerId)
         .thenApplyAsync(
             profile -> {
               boolean online = Bukkit.getPlayer(playerId) != null;
+              boolean disguised = online && Bukkit.getPlayer(playerId).hasMetadata("isVanished");
+
               Component status =
                   PeriodFormats.relativePastApproximate(profile.getLastLogin())
                       .color(online ? TextColor.GREEN : TextColor.DARK_GREEN);
               return TextComponent.builder()
-                  .append(online ? " Online since " : " Last seen ")
+                  .append(online && (!disguised || staff) ? " Online since " : " Last seen ")
                   .append(status)
                   .color(TextColor.GRAY)
                   .build();

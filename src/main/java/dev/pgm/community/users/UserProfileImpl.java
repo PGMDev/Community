@@ -1,5 +1,6 @@
 package dev.pgm.community.users;
 
+import dev.pgm.community.Community;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,18 +11,31 @@ public class UserProfileImpl implements UserProfile {
   private Instant firstLogin;
   private Instant lastLogin;
   private int joinCount;
+  private String serverName;
 
   public UserProfileImpl(UUID playerId, String username) {
-    this(playerId, username, Instant.now(), Instant.now(), 1);
+    this(
+        playerId,
+        username,
+        Instant.now(),
+        Instant.now(),
+        1,
+        Community.get().getServerConfig().getServerId());
   }
 
   public UserProfileImpl(
-      UUID playerId, String username, Instant firstLogin, Instant lastLogin, int joinCount) {
+      UUID playerId,
+      String username,
+      Instant firstLogin,
+      Instant lastLogin,
+      int joinCount,
+      String server) {
     this.playerId = playerId;
     this.username = username;
     this.firstLogin = firstLogin;
     this.lastLogin = lastLogin;
     this.joinCount = joinCount;
+    this.serverName = server;
   }
 
   @Override
@@ -47,6 +61,11 @@ public class UserProfileImpl implements UserProfile {
   @Override
   public int getJoinCount() {
     return joinCount;
+  }
+
+  @Override
+  public String getServerName() {
+    return serverName;
   }
 
   @Override

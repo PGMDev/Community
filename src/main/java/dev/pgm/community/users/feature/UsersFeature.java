@@ -2,6 +2,7 @@ package dev.pgm.community.users.feature;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
+import dev.pgm.community.utils.MessageUtils;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -32,7 +33,7 @@ public interface UsersFeature extends Feature {
    * @return The rendered name component of provided UUID
    */
   default CompletableFuture<Component> renderUsername(Optional<UUID> userId) {
-    if (!userId.isPresent()) return CompletableFuture.completedFuture(PlayerComponent.CONSOLE);
+    if (!userId.isPresent()) return CompletableFuture.completedFuture(MessageUtils.CONSOLE);
     return getStoredUsername(userId.get())
         .thenApplyAsync(name -> PlayerComponent.of(userId.get(), name, NameStyle.FANCY));
   }

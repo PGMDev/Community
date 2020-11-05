@@ -53,13 +53,19 @@ public class UserInfoCommands extends CommunityCommand {
               }
 
               boolean online = Bukkit.getPlayer(profile.getId()) != null;
+              boolean disguised =
+                  online && Bukkit.getPlayer(profile.getId()).hasMetadata("isVanished");
+              boolean viewerStaff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
+
               Component lastSeenMsg =
                   TextComponent.builder()
                       .append(
                           PlayerComponent.of(
                               profile.getId(), profile.getUsername(), NameStyle.FANCY))
                       .append(
-                          online ? " has been online since " : " was last seen ") // TODO: translate
+                          online && (disguised && viewerStaff)
+                              ? " has been online since "
+                              : " was last seen ") // TODO: translate
                       .append(
                           PeriodFormats.relativePastApproximate(profile.getLastLogin())
                               .color(online ? TextColor.GREEN : TextColor.DARK_GREEN))
@@ -163,6 +169,11 @@ public class UserInfoCommands extends CommunityCommand {
               Component joinCount =
                   formatInfoField(
                       "Join Count", TextComponent.of(profile.getJoinCount(), TextColor.YELLOW));
+
+              Component lastServer =
+                  formatInfoField(
+                      "Last Server", TextComponent.of(profile.getServerName(), TextColor.AQUA));
+
               Component knownIPs = formatInfoField("Known IPs", TextComponent.empty());
 
               audience.sendMessage(
@@ -173,6 +184,7 @@ public class UserInfoCommands extends CommunityCommand {
               audience.sendMessage(firstLogin);
               audience.sendMessage(lastLogin);
               audience.sendMessage(joinCount);
+              audience.sendMessage(lastServer);
 
               if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
                 users

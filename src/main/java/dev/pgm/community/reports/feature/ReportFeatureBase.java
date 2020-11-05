@@ -3,6 +3,7 @@ package dev.pgm.community.reports.feature;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.events.PlayerReportEvent;
 import dev.pgm.community.feature.FeatureBase;
@@ -86,7 +87,13 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
   @Override
   public Report report(Player sender, Player target, String reason) {
     // Create Report
-    Report report = new Report(target.getUniqueId(), sender.getUniqueId(), reason, Instant.now());
+    Report report =
+        new Report(
+            target.getUniqueId(),
+            sender.getUniqueId(),
+            reason,
+            Instant.now(),
+            Community.get().getServerConfig().getServerId());
 
     // Call Event
     Bukkit.getPluginManager().callEvent(new PlayerReportEvent(report));

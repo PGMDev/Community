@@ -144,6 +144,10 @@ public class Community extends JavaPlugin {
     return plugin;
   }
 
+  public CommunityConfig getServerConfig() {
+    return config;
+  }
+
   // REMOVE WHEN NOT IN DEV
   public static void log(String format, Object... objects) {
     Bukkit.getConsoleSender()

@@ -47,6 +47,13 @@ public interface UserProfile {
   int getJoinCount();
 
   /**
+   * Get the name of the last known server
+   *
+   * @return Name of the last known server
+   */
+  String getServerName();
+
+  /**
    * Set the player's username
    *
    * @param username Player's username

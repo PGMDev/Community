@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation.punishments;
 
 import dev.pgm.community.moderation.ModerationConfig;
+import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Instant;
 import java.util.Optional;
@@ -123,7 +124,7 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
                   config,
                   getIssuerId().isPresent()
                       ? PlayerComponent.of(getIssuerId().get(), NameStyle.FANCY)
-                      : PlayerComponent.CONSOLE));
+                      : MessageUtils.CONSOLE));
       return true;
     }
     return false;

@@ -10,6 +10,7 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
 import co.aikar.commands.bukkit.contexts.OnlinePlayer;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.reports.Report;
@@ -150,13 +151,28 @@ public class ReportCommands extends CommunityCommand {
           Component reporterName = getReportFormatName(data.getReporterId()).join();
           Component reportedName = getReportFormatName(data.getReportedId()).join();
 
-          Component reporter =
-              TranslatableComponent.of("moderation.reports.hover", TextColor.GRAY, reporterName);
+          Component serverName =
+              TextComponent.builder()
+                  .append("Server ", TextColor.GRAY)
+                  .append(": ", TextColor.DARK_GRAY)
+                  .append(data.getServer(), TextColor.AQUA)
+                  .build();
+
+          TextComponent.Builder reporter =
+              TextComponent.builder()
+                  .append(
+                      TranslatableComponent.of(
+                          "moderation.reports.hover", TextColor.GRAY, reporterName));
+
+          if (!data.getServer().equalsIgnoreCase(Community.get().getServerConfig().getServerId())) {
+            reporter.append(TextComponent.newline()).append(serverName);
+          }
+
           Component timeAgo =
               PeriodFormats.relativePastApproximate(data.getTime()).color(TextColor.DARK_GREEN);
 
           return TextComponent.builder()
-              .append(timeAgo.hoverEvent(HoverEvent.of(Action.SHOW_TEXT, reporter)))
+              .append(timeAgo.hoverEvent(HoverEvent.of(Action.SHOW_TEXT, reporter.build())))
               .append(": ", TextColor.GRAY)
               .append(reportedName)
               .append(" « ", TextColor.YELLOW)

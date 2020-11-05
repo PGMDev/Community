@@ -24,8 +24,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.friends.FriendStatusChangeEvent;
 
 public class SQLFriendshipFeature extends FriendshipFeatureBase {
 
@@ -181,7 +181,7 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
 
   @Override
   public void updateFriendships(UUID playerId) {
-    if (Bukkit.getPluginManager().isPluginEnabled("PGM")) {
+    if (pgmFriends != null) {
       getFriends(playerId)
           .thenAcceptAsync(
               friends -> {
@@ -190,9 +190,15 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
                         .map(f -> f.getOtherPlayer(playerId))
                         .collect(Collectors.toSet());
                 // Sends updated friendship status to PGM for hook-in
-                PGM.get().getFriendManager().setFriends(playerId, friendIds);
+                pgmFriends.setFriends(playerId, friendIds);
+                friendIds.stream().forEach(this::callUpdateEvent);
+                callUpdateEvent(playerId);
               });
     }
+  }
+
+  private void callUpdateEvent(UUID playerId) {
+    Community.get().getServer().getPluginManager().callEvent(new FriendStatusChangeEvent(playerId));
   }
 
   public CompletableFuture<Integer> count() {

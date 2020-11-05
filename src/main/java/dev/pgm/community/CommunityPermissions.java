@@ -40,7 +40,9 @@ public interface CommunityPermissions {
   String FRIENDSHIP = ROOT + ".friendship"; // Access to /friend commands
 
   // General Staff
-  String STAFF = ROOT + ".staff"; // Receive staff broadcasts
+  String STAFF =
+      ROOT + ".staff"; // Receive staff broadcasts and see disguised players (maybe add a different
+  // node later)
 
   // TODO Setup different groups like moderation
 

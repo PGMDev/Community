@@ -9,6 +9,7 @@
 - [x] Chat Management (/chat lock, /chat clear, /chat slow)
 - [x] Unlimited "info" commands, defined in config
 - [x] Friends Support: Command `/friends`, hook into PGM, restore name highlighting in tab, friend only death/join messages. Include non-pgm option too if needed
+- [x] Multi-server records (save what server punishments/reports/player is on)
 
 ## User Profiles
 - [x] `/seen` command
@@ -18,8 +19,10 @@
 - [x] `/profile` command: Display extensive info on player, user profile info, IP history, etc (See OCC Project Insight for reference)
 
 ## Major ToDo (Confirmed):
-- [ ] Teleports WIP: (Consider config options, teleport delay, cooldown
+- [ ] /nick support (persist nickname in user profile, make sure /nick is not used by any other player, etc)
+- [ ] Teleports WIP: Now -> (Consider config options, teleport delay, cooldown) Also * player selector or dedicated /bringall /tpall etc
 - [ ] MOTD login messages
+- [ ] Translate entire plugin
 
 ## Bugs
 - [ ] /msg is sending even when player is muted, look into PGM to fix this
@@ -27,7 +30,7 @@
 - [ ] Look into hiding vanished players from all lookup/friend commands, such as /seen and /friends
 
 ## ToDo GitHub:
-- [ ] Setup PGM.dev pages with Install, Commands, Permissions, Config pages
+- [ ] Setup pgm.dev pages with Install, Commands, Permissions, Config pages
 - [ ] Transfer TODO above to github projects and issues for each item, if not complete
 - [ ] Finalize README with project info
 

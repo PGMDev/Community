@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
+import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.reports.Report;
@@ -20,7 +21,7 @@ public class SQLReportService extends SQLFeatureBase<Report> {
 
   private static final String TABLE_NAME = "reports";
   private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, sender VARCHAR(36), reported VARCHAR(36), reason VARCHAR(255), time LONG)";
+      "(id VARCHAR(36) PRIMARY KEY, sender VARCHAR(36), reported VARCHAR(36), reason VARCHAR(255), time LONG, server VARCHAR(255))";
 
   private LoadingCache<UUID, SelectQuery> cachedReports;
 
@@ -63,7 +64,9 @@ public class SQLReportService extends SQLFeatureBase<Report> {
   private class InsertQuery implements Query {
 
     private static final String INSERT_REPORT_QUERY =
-        "INSERT INTO " + TABLE_NAME + "(id, sender, reported, reason, time) VALUES (?, ?, ?, ?, ?)";
+        "INSERT INTO "
+            + TABLE_NAME
+            + "(id, sender, reported, reason, time, server) VALUES (?, ?, ?, ?, ?, ?)";
 
     private final Report report;
 
@@ -89,6 +92,7 @@ public class SQLReportService extends SQLFeatureBase<Report> {
       statement.setString(3, report.getReportedId().toString());
       statement.setString(4, report.getReason());
       statement.setLong(5, report.getTime().toEpochMilli());
+      statement.setString(6, Community.get().getServerConfig().getServerId());
       statement.executeUpdate();
     }
   }
@@ -139,7 +143,8 @@ public class SQLReportService extends SQLFeatureBase<Report> {
                       targetId,
                       UUID.fromString(sender),
                       reason,
-                      Instant.ofEpochMilli(time)));
+                      Instant.ofEpochMilli(time),
+                      Community.get().getServerConfig().getServerId()));
         }
         fetched = true;
       }

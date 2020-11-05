@@ -6,6 +6,7 @@ import org.bukkit.configuration.Configuration;
 public class CommunityConfig {
 
   private String serverDisplayName;
+  private String serverId;
 
   private boolean databaseEnabled;
   private String databaseUri;
@@ -17,6 +18,7 @@ public class CommunityConfig {
 
   public void reload(Configuration config) {
     this.serverDisplayName = config.getString("general.server-name", "");
+    this.serverId = config.getString("general.server-id", "");
     this.databaseEnabled = config.getBoolean("database.enabled", true);
     this.databaseUri = config.getString("database.uri", "");
 
@@ -49,5 +51,9 @@ public class CommunityConfig {
 
   public String getServerDisplayName() {
     return serverDisplayName;
+  }
+
+  public String getServerId() {
+    return serverId;
   }
 }

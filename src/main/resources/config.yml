@@ -3,7 +3,9 @@
 # A plugin for managing a Minecraft community
 #
 general:
-  server-name: "&4Overcast &7Community" # Server display name used at various places
+  server-name: "&4Overcast &7Community" # Network display name used at various places
+  
+  server-id: "occ" # id of server for cross-server tracking
   
 # Moderation - Settings related to punishments (/warn, /kick, /ban, /mute)
 moderation:
@@ -41,6 +43,8 @@ users:
 # Friends - Settings related to friendship features/commands  
 friends:
   enabled: true
+  
+  pgm-integration: true # Whether Community will attempt to hook into PGM for extended friend features (tablist / joins / death messages)
   
 # Teleports - Teleport commands include /tp, /bring, and /tploc
 teleports:

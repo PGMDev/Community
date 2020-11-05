@@ -3,6 +3,7 @@ package dev.pgm.community.users.services;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.users.UserProfile;
@@ -21,7 +22,7 @@ import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 public class SQLUserService extends SQLFeatureBase<UserProfile> {
 
   private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, name VARCHAR(16), first_join LONG, last_join LONG, join_count INT)";
+      "(id VARCHAR(36) PRIMARY KEY, name VARCHAR(16), first_join LONG, last_join LONG, join_count INT, server VARCHAR(255))";
   private static final String TABLE_NAME = "users";
 
   private LoadingCache<UUID, SelectProfileQuery> profileCache;
@@ -122,7 +123,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
   private class InsertQuery implements Query {
 
     private static final String INSERT_USERNAME_QUERY =
-        "INSERT INTO " + TABLE_NAME + " VALUES (?,?,?,?,?)";
+        "INSERT INTO " + TABLE_NAME + " VALUES (?,?,?,?,?,?)";
 
     private UserProfile profile;
 
@@ -142,6 +143,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
       statement.setLong(3, profile.getFirstLogin().toEpochMilli());
       statement.setLong(4, profile.getLastLogin().toEpochMilli());
       statement.setInt(5, profile.getJoinCount());
+      statement.setString(6, Community.get().getServerConfig().getServerId());
       statement.execute();
     }
   }
@@ -186,20 +188,24 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
         final long firstJoin = result.getLong("first_join");
         final long lastJoin = result.getLong("last_join");
         final int joinCount = result.getInt("join_count");
+        final String server = result.getString("server");
         this.profile =
             new UserProfileImpl(
                 id,
                 username,
                 Instant.ofEpochMilli(firstJoin),
                 Instant.ofEpochMilli(lastJoin),
-                joinCount);
+                joinCount,
+                server);
       }
     }
   }
 
   private class UpdateProfileQuery implements Query {
     private static final String FORMAT =
-        "UPDATE " + TABLE_NAME + " SET name = ?, last_join = ?, join_count = ? WHERE id = ? ";
+        "UPDATE "
+            + TABLE_NAME
+            + " SET name = ?, last_join = ?, join_count = ?, server = ? WHERE id = ? ";
 
     private UserProfile profile;
 
@@ -217,7 +223,8 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
       statement.setString(1, profile.getUsername());
       statement.setLong(2, profile.getLastLogin().toEpochMilli());
       statement.setInt(3, profile.getJoinCount());
-      statement.setString(4, profile.getId().toString());
+      statement.setString(4, Community.get().getServerConfig().getServerId());
+      statement.setString(5, profile.getId().toString());
       statement.executeUpdate();
     }
   }

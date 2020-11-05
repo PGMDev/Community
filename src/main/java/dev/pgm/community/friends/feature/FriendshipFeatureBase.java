@@ -5,11 +5,13 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.friends.FriendshipConfig;
+import dev.pgm.community.friends.PGMFriendManager;
 import dev.pgm.community.friends.commands.FriendshipCommand;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.Sounds;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.ClickEvent;
@@ -22,15 +24,47 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.plugin.Plugin;
+import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.util.chat.Audience;
 
 public abstract class FriendshipFeatureBase extends FeatureBase implements FriendshipFeature {
+
+  protected @Nullable PGMFriendManager pgmFriends;
 
   public FriendshipFeatureBase(Configuration config, Logger logger) {
     super(new FriendshipConfig(config), logger);
 
     if (getConfig().isEnabled()) {
       enable();
+    }
+  }
+
+  public FriendshipConfig getFriendshipConfig() {
+    return (FriendshipConfig) getConfig();
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    enablePGMSupport();
+  }
+
+  private void enablePGMSupport() {
+    Plugin pgmPlugin = Bukkit.getServer().getPluginManager().getPlugin("PGM");
+    if (pgmPlugin != null
+        && pgmPlugin.isEnabled()
+        && getFriendshipConfig().isIntegrationEnabled()) {
+      pgmFriends = new PGMFriendManager();
+      Bukkit.getScheduler()
+          .scheduleSyncDelayedTask(
+              Community.get(),
+              new Runnable() {
+                @Override
+                public void run() {
+                  PGM.get().getFriendRegistry().setProvider(pgmFriends);
+                }
+              });
     }
   }
 
