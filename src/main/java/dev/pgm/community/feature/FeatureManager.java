@@ -9,6 +9,7 @@ import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
 import dev.pgm.community.info.InfoCommandsFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
+import dev.pgm.community.motd.MotdFeature;
 import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.reports.feature.types.SQLReportFeature;
 import dev.pgm.community.teleports.TeleportFeature;
@@ -30,6 +31,7 @@ public class FeatureManager {
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
   private final ChatManagementFeature chat;
+  private final MotdFeature motd;
 
   public FeatureManager(
       Configuration config,
@@ -50,6 +52,7 @@ public class FeatureManager {
     this.teleports = new TeleportFeatureBase(config, logger);
     this.infoCommands = new InfoCommandsFeature(config, logger);
     this.chat = new ChatManagementFeature(config, logger);
+    this.motd = new MotdFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -80,6 +83,10 @@ public class FeatureManager {
 
   public FriendshipFeature getFriendships() {
     return friends;
+  }
+
+  public MotdFeature getMotd() {
+    return motd;
   }
 
   // Register Feature commands and any dependency
@@ -120,14 +127,15 @@ public class FeatureManager {
     feature.getCommands().forEach(commandManager::registerCommand);
   }
 
-  public void reloadConfig() {
+  public void reloadConfig(Configuration config) {
     // Reload all config values here
-    getReports().getConfig().reload();
-    getModeration().getConfig().reload();
-    getUsers().getConfig().reload();
-    getTeleports().getConfig().reload();
-    getInfoCommands().getConfig().reload();
-    getChatManagement().getConfig().reload();
+    getReports().getConfig().reload(config);
+    getModeration().getConfig().reload(config);
+    getUsers().getConfig().reload(config);
+    getTeleports().getConfig().reload(config);
+    getInfoCommands().getConfig().reload(config);
+    getChatManagement().getConfig().reload(config);
+    getMotd().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

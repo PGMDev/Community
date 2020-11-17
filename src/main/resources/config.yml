@@ -71,6 +71,12 @@ commands:
     permission: "" # For no permission, leave empty
     lines:
       - "&7Visit our website at &b&nhttps://pgm.dev"
+      
+motd:
+  enabled: true
+  lines:
+    - "&cWelcome to &4&lCommunity"
+    - "&6To configure this message check the &aconfig.yml"      
   
 # Database
 database:

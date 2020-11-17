@@ -12,7 +12,7 @@ public class TeleportConfig extends FeatureConfigImpl {
   }
 
   @Override
-  public void reload() {
-    super.reload(); // TODO: Cooldowns, sounds message format, and other config settings
+  public void reload(Configuration config) {
+    super.reload(config); // TODO: Cooldowns, sounds message format, and other config settings
   }
 }

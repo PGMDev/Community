@@ -1,9 +1,12 @@
 package dev.pgm.community.feature.config;
 
+import dev.pgm.community.reports.feature.ReportFeature;
+import org.bukkit.configuration.Configuration;
+
 public interface FeatureConfig {
 
   /** Reloads config values with those from the file */
-  void reload();
+  void reload(Configuration config);
 
   /**
    * The key associated with the feature e.g "reports" for {@link ReportFeature}

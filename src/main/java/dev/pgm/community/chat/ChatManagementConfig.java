@@ -34,8 +34,8 @@ public class ChatManagementConfig extends FeatureConfigImpl {
   }
 
   @Override
-  public void reload() {
-    super.reload();
+  public void reload(Configuration config) {
+    super.reload(config);
     this.slowmodeSpeed = config.getInt(KEY + ".slowmode-speed");
     this.loginAlerts = config.getBoolean(KEY + ".login-alert");
     this.lastSentMessage =

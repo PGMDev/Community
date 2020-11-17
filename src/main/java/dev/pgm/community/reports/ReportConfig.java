@@ -41,8 +41,8 @@ public class ReportConfig extends FeatureConfigImpl {
   }
 
   @Override
-  public void reload() {
-    super.reload();
+  public void reload(Configuration config) {
+    super.reload(config);
     this.persist = config.getBoolean(PERSIST_KEY, true);
     this.cooldown = config.getInt(COOLDOWN_KEY, 15);
   }

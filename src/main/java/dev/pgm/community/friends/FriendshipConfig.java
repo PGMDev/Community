@@ -18,8 +18,8 @@ public class FriendshipConfig extends FeatureConfigImpl {
   }
 
   @Override
-  public void reload() {
-    super.reload();
+  public void reload(Configuration config) {
+    super.reload(config);
     this.pgmIntegration = config.getBoolean(getKey() + ".pgm-integration");
   }
 }
