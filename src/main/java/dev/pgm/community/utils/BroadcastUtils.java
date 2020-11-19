@@ -29,6 +29,10 @@ public class BroadcastUtils {
           .append("] ", TextColor.WHITE)
           .build();
 
+  public static void sendAdminChatMessage(Component message) {
+    sendAdminChatMessage(message, null);
+  }
+
   public static void sendAdminChatMessage(Component message, @Nullable Sound sound) {
     Component formatted = TextComponent.builder().append(ADMIN_CHAT_PREFIX).append(message).build();
     Bukkit.getOnlinePlayers().stream()

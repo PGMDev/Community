@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 
+/** Manages all {@link Feature}s of the plugin */
 public class FeatureManager {
 
   private final ReportFeature reports;

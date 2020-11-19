@@ -50,9 +50,10 @@ public class PunishmentCommand extends CommunityCommand {
   @Description("View a list of recent punishments")
   @Syntax("[page]")
   @CommandPermission(CommunityPermissions.PUNISH)
-  public void viewRecentPunishments(CommandAudience audience, @Default("1") int page) {
+  public void viewRecentPunishments(
+      CommandAudience audience, @Default("1") int page, @Default("1h") Duration length) {
     moderation
-        .getRecentPunishments(Duration.ofHours(1))
+        .getRecentPunishments(length)
         .thenAcceptAsync(
             punishments -> {
               sendPunishmentHistory(audience, null, punishments, page);

@@ -2,6 +2,7 @@ package dev.pgm.community.feature.config;
 
 import org.bukkit.configuration.Configuration;
 
+/** An implementation of {@link FeatureConfig} * */
 public abstract class FeatureConfigImpl implements FeatureConfig {
 
   private final String key;

@@ -2,6 +2,7 @@ package dev.pgm.community.events;
 
 import dev.pgm.community.reports.Report;
 
+/** PlayerReportEvent - Called when a report is created */
 public class PlayerReportEvent extends CommunityEvent {
 
   private final Report report;

@@ -3,6 +3,7 @@ package dev.pgm.community.events;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.utils.CommandAudience;
 
+/** PlayerPunishmentEvent - Called when a punishment is issued to a player */
 public class PlayerPunishmentEvent extends CommunityEvent {
 
   private final CommandAudience sender;

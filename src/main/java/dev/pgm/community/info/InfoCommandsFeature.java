@@ -10,6 +10,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+/** InfoCommandsFeature - Allows for commands via the config to be defined and used * */
 public class InfoCommandsFeature extends FeatureBase {
 
   public InfoCommandsFeature(Configuration config, Logger logger) {

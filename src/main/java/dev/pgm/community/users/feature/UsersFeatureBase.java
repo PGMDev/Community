@@ -18,15 +18,13 @@ import javax.annotation.Nullable;
 
 public abstract class UsersFeatureBase extends FeatureBase implements UsersFeature {
 
-  protected static final int CACHE_LIMIT = 8000;
-
   protected final Cache<UUID, String> names;
   protected final Cache<UUID, UserProfile> profiles;
 
   public UsersFeatureBase(UsersConfig config, Logger logger) {
     super(config, logger);
-    this.profiles = CacheBuilder.newBuilder().maximumSize(CACHE_LIMIT).build();
-    this.names = CacheBuilder.newBuilder().maximumSize(CACHE_LIMIT).build();
+    this.profiles = CacheBuilder.newBuilder().build();
+    this.names = CacheBuilder.newBuilder().build();
 
     // Auto register username change listener
     Community.get().registerListener(new UserProfileLoginListener(this));

@@ -14,10 +14,7 @@ public class Sounds {
   public static final Sound WARN_SOUND = new Sound("mob.enderdragon.growl", 1f, 1f);
 
   // Played when an infraction is lifted
-  public static final Sound PUNISHMENT_PARDON = new Sound("note.harp", 1f, 1.5f);
-
-  // Played when a punishment is issued
-  public static final Sound PUNISHMENT_ISSUE = new Sound("item.fireCharge.use", 1f, 0.3f);
+  public static final Sound PUNISHMENT_PARDON = new Sound("note.harp", 0.7f, 1.5f);
 
   // Played when a player is teleported via command
   public static final Sound TELEPORT = new Sound("mob.endermen.portal", 1f, 0.9f);

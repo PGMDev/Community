@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.configuration.Configuration;
 
+/** Configuration related to chat management features */
 public class ChatManagementConfig extends FeatureConfigImpl {
 
   public static final String KEY = "chat";

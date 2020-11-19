@@ -50,6 +50,8 @@ friends:
 teleports:
   enabled: true
   
+  sound: true # Play a sound upon teleportation
+  
 # Chat Management - Commands that relate to chat management such as slowmode and lockdown
 chat:
   enabled: true       # Whether chat management commands are enabled
@@ -71,7 +73,8 @@ commands:
     permission: "" # For no permission, leave empty
     lines:
       - "&7Visit our website at &b&nhttps://pgm.dev"
-      
+
+# Message of the day - The lines here are sent to every player upon login (color codes & allowed)      
 motd:
   enabled: true
   lines:

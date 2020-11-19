@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
+/** TeleportFeature - Teleport players to other locations * */
 public interface TeleportFeature extends Feature {
 
   default void teleport(CommandAudience sender, Player teleporter, Player target) {

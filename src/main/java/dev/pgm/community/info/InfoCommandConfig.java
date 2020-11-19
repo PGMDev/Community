@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.Configuration;
 
+/** InfoCommandConfig - Configuration related to custom info commands * */
 public class InfoCommandConfig extends FeatureConfigImpl {
 
   private static final String KEY = "commands";

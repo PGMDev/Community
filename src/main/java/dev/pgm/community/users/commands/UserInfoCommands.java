@@ -2,6 +2,7 @@ package dev.pgm.community.users.commands;
 
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
+import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Optional;
@@ -36,12 +37,11 @@ public class UserInfoCommands extends CommunityCommand {
 
   @Dependency private UsersFeature users;
 
-  // TODO: look into vanish account masking, find a way to hide them. Maybe add a random time, or
-  // something?
   @CommandAlias("seen|lastseen")
   @Description("View when a player was last online")
   @Syntax("[player]")
   @CommandCompletion("@players")
+  @CommandPermission(CommunityPermissions.LOOKUP)
   public void seenPlayer(CommandAudience audience, String target) {
     users
         .getStoredProfile(target)
@@ -79,6 +79,7 @@ public class UserInfoCommands extends CommunityCommand {
   @Description("View a list of alternate accounts of a player")
   @CommandCompletion("@players")
   @Syntax("[target]")
+  @CommandPermission(CommunityPermissions.LOOKUP)
   public void viewAlts(CommandAudience audience, @Optional String target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
@@ -140,6 +141,7 @@ public class UserInfoCommands extends CommunityCommand {
   @Description("View account info for a player")
   @Syntax("(name | uuid)")
   @CommandCompletion("@players")
+  @CommandPermission(CommunityPermissions.LOOKUP)
   public void viewUserProfile(CommandAudience audience, String target) {
     users
         .getStoredProfile(target)

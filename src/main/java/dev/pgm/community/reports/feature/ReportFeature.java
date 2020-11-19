@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 
+/** ReportFeature - Allows players to report troublemakers to server staff * */
 public interface ReportFeature extends Feature {
 
   Report report(Player sender, Player target, String reason);

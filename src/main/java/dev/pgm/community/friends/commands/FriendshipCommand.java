@@ -424,13 +424,13 @@ public class FriendshipCommand extends CommunityCommand {
         .thenApplyAsync(
             profile -> {
               boolean online = Bukkit.getPlayer(playerId) != null;
-              boolean disguised = online && Bukkit.getPlayer(playerId).hasMetadata("isVanished");
+              boolean vanished = online && Bukkit.getPlayer(playerId).hasMetadata("isVanished");
 
               Component status =
                   PeriodFormats.relativePastApproximate(profile.getLastLogin())
                       .color(online ? TextColor.GREEN : TextColor.DARK_GREEN);
               return TextComponent.builder()
-                  .append(online && (!disguised || staff) ? " Online since " : " Last seen ")
+                  .append(online && (!vanished || staff) ? " Online since " : " Last seen ")
                   .append(status)
                   .color(TextColor.GRAY)
                   .build();

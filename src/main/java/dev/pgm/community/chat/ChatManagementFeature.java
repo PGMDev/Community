@@ -25,6 +25,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.util.chat.Audience;
 
+/** ChatManagementFeature - Chat safety feature, including slowmode, lockdown, and clear. * */
 public class ChatManagementFeature extends FeatureBase {
 
   private boolean lockdown;

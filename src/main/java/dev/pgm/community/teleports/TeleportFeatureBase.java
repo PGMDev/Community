@@ -94,6 +94,8 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
   private void sendTeleportMessage(Player teleporter, Component message) {
     Audience viewer = Audience.get(teleporter);
     viewer.sendMessage(message);
-    viewer.playSound(Sounds.TELEPORT);
+    if (getTeleportConfig().isSoundPlayed()) {
+      viewer.playSound(Sounds.TELEPORT);
+    }
   }
 }

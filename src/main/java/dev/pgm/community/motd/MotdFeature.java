@@ -11,6 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 
+/** MotdFeature - Displays a configurable message at login * */
 public class MotdFeature extends FeatureBase {
 
   public MotdFeature(Configuration config, Logger logger) {

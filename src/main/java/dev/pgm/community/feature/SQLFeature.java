@@ -11,7 +11,7 @@ public interface SQLFeature<T> extends Savable<T> {
   /**
    * Get the existing database connection
    *
-   * @return DatabaseConnection
+   * @return a DatabaseConnection
    */
   DatabaseConnection getDatabase();
 }

@@ -44,7 +44,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.util.chat.Audience;
-import tc.oc.pgm.util.chat.Sound;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -174,8 +173,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             broadcast -> {
               if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
                 if (event.isSilent()) {
-                  BroadcastUtils.sendAdminChatMessage(
-                      broadcast, new Sound("item.fireCharge.use", 1f, 0.3f));
+                  BroadcastUtils.sendAdminChatMessage(broadcast);
                 } else {
                   BroadcastUtils.sendGlobalMessage(broadcast);
                 }
