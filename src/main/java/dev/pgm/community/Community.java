@@ -134,6 +134,10 @@ public class Community extends JavaPlugin {
         config.getServerDisplayName() == null ? "&b&lCommunity" : config.getServerDisplayName());
   }
 
+  public FeatureManager getFeatures() {
+    return features;
+  }
+
   // Not the best practice, only use where makes sense
   private static Community plugin;
 
