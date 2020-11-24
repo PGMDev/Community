@@ -30,13 +30,15 @@ import net.kyori.text.TranslatableComponent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.TextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import tc.oc.pgm.util.chat.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
-@CommandAlias("friend|friendship")
+@CommandAlias("friend|friendship|fs")
 @Description("Manage your friend relationships")
 @CommandPermission(CommunityPermissions.FRIENDSHIP)
 public class FriendshipCommand extends CommunityCommand {
@@ -227,6 +229,18 @@ public class FriendshipCommand extends CommunityCommand {
                             .append("'s friend request!")
                             .color(TextColor.GREEN)
                             .build());
+
+                    // Notify online requester
+                    Player onlineFriend = Bukkit.getPlayer(storedId.get());
+                    if (onlineFriend != null) {
+                      Audience.get(onlineFriend)
+                          .sendMessage(
+                              TextComponent.builder()
+                                  .append(users.renderUsername(sender.getId()).join())
+                                  .append(" has accepted your friend request!", TextColor.GREEN)
+                                  .build());
+                    }
+
                   } else {
                     sender.sendWarning(
                         TextComponent.builder()
@@ -292,25 +306,29 @@ public class FriendshipCommand extends CommunityCommand {
     Component headerResultCount =
         TextComponent.of(Integer.toString(requests.size()), TextColor.RED);
 
-    int perPage = 7;
+    int perPage = 9;
     int pages = (requests.size() + perPage - 1) / perPage;
     page = Math.max(1, Math.min(page, pages));
+
+    TextColor featureColor = TextColor.YELLOW;
 
     Component pageNum =
         TranslatableComponent.of(
             "command.simplePageHeader",
             TextColor.GRAY,
-            TextComponent.of(Integer.toString(page), TextColor.DARK_GREEN),
-            TextComponent.of(Integer.toString(pages), TextColor.DARK_GREEN));
+            TextComponent.of(Integer.toString(page), featureColor),
+            TextComponent.of(Integer.toString(pages), featureColor));
 
     Component header =
         TextComponent.builder()
-            .append("Friend Requests", TextColor.YELLOW)
+            .append("Friend Requests", featureColor)
             .append(
-                TextComponent.of(" (")
+                TextComponent.builder()
+                    .append(" (")
                     .append(headerResultCount)
-                    .append(TextComponent.of(") » ", TextColor.GRAY))
-                    .append(pageNum))
+                    .append(TextComponent.of(") » "))
+                    .append(pageNum)
+                    .color(TextColor.GRAY))
             .build();
 
     Component formattedHeader =
@@ -344,7 +362,7 @@ public class FriendshipCommand extends CommunityCommand {
         // TODO: Translate
         return TextComponent.of("You have no pending friend requests", TextColor.RED);
       }
-    }.display(audience.getAudience(), requests, pages);
+    }.display(audience.getAudience(), requests, page);
   }
 
   private void sendFriendList(CommandAudience audience, List<Friendship> friends, int page) {
@@ -365,20 +383,22 @@ public class FriendshipCommand extends CommunityCommand {
     Component headerResultCount =
         TextComponent.of(Integer.toString(friends.size()), TextColor.LIGHT_PURPLE);
 
-    int perPage = 7;
+    int perPage = 9;
     int pages = (friends.size() + perPage - 1) / perPage;
     page = Math.max(1, Math.min(page, pages));
+
+    TextColor featureColor = TextColor.DARK_PURPLE;
 
     Component pageNum =
         TranslatableComponent.of(
             "command.simplePageHeader",
             TextColor.GRAY,
-            TextComponent.of(Integer.toString(page), TextColor.DARK_PURPLE),
-            TextComponent.of(Integer.toString(pages), TextColor.DARK_PURPLE));
+            TextComponent.of(Integer.toString(page), featureColor),
+            TextComponent.of(Integer.toString(pages), featureColor));
 
     Component header =
         TextComponent.builder()
-            .append("Friends", TextColor.DARK_PURPLE)
+            .append("Friends", featureColor)
             .append(
                 TextComponent.of(" (")
                     .append(headerResultCount)
@@ -398,16 +418,29 @@ public class FriendshipCommand extends CommunityCommand {
                     data.getOtherPlayer(audience.getPlayer().getUniqueId()), data.getLastUpdated())
                 .join();
 
-        return TextComponent.builder()
-            .append(name)
-            .append(TextComponent.space())
-            .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
-            .append(
-                renderOnlineStatus(
-                        data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                        audience.getSender().hasPermission(CommunityPermissions.STAFF))
-                    .join())
-            .build();
+        TextComponent.Builder builder =
+            TextComponent.builder()
+                .append(name)
+                .append(TextComponent.space())
+                .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
+                .append(
+                    renderOnlineStatus(
+                            data.getOtherPlayer(audience.getPlayer().getUniqueId()),
+                            audience.getSender().hasPermission(CommunityPermissions.STAFF))
+                        .join());
+
+        if (data.getLastUpdated() != null) {
+          Component hover =
+              TextComponent.builder()
+                  .append("Friends since ", TextColor.GRAY)
+                  .append(
+                      PeriodFormats.relativePastApproximate(data.getLastUpdated())
+                          .color(TextColor.AQUA))
+                  .build();
+          builder.hoverEvent(HoverEvent.showText(hover));
+        }
+
+        return builder.build();
       }
 
       @Override
@@ -415,7 +448,7 @@ public class FriendshipCommand extends CommunityCommand {
         // TODO: Translate
         return TextComponent.of("You have no friends yet... :(", TextColor.RED);
       }
-    }.display(audience.getAudience(), friends, pages);
+    }.display(audience.getAudience(), friends, page);
   }
 
   private CompletableFuture<Component> renderOnlineStatus(UUID playerId, boolean staff) {
@@ -425,12 +458,13 @@ public class FriendshipCommand extends CommunityCommand {
             profile -> {
               boolean online = Bukkit.getPlayer(playerId) != null;
               boolean vanished = online && Bukkit.getPlayer(playerId).hasMetadata("isVanished");
+              boolean visible = online && (!vanished || staff);
 
               Component status =
                   PeriodFormats.relativePastApproximate(profile.getLastLogin())
-                      .color(online ? TextColor.GREEN : TextColor.DARK_GREEN);
+                      .color(visible ? TextColor.GREEN : TextColor.DARK_GREEN);
               return TextComponent.builder()
-                  .append(online && (!vanished || staff) ? " Online since " : " Last seen ")
+                  .append(visible ? " Online since " : " Last seen ")
                   .append(status)
                   .color(TextColor.GRAY)
                   .build();
@@ -444,16 +478,7 @@ public class FriendshipCommand extends CommunityCommand {
             name -> {
               TextComponent.Builder formatted =
                   TextComponent.builder()
-                      .append(PlayerComponent.of(Bukkit.getPlayer(id), name, NameStyle.CONCISE));
-              if (friendDate != null) {
-                Component hover =
-                    TextComponent.builder()
-                        .append("Friends since ", TextColor.GRAY)
-                        .append(
-                            PeriodFormats.relativePastApproximate(friendDate).color(TextColor.AQUA))
-                        .build();
-                formatted.hoverEvent(HoverEvent.showText(hover));
-              }
+                      .append(PlayerComponent.of(Bukkit.getPlayer(id), name, NameStyle.FANCY));
               return formatted.build();
             });
   }

@@ -80,6 +80,11 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
                 return FriendRequestStatus.EXISTING; // Already requested
               }
 
+              // Can't add an existing friend ;)
+              if (areFriends(sender, target).join()) {
+                return FriendRequestStatus.EXISTING;
+              }
+
               Friendship request = new Friendship(sender, target);
               service.save(request);
 
