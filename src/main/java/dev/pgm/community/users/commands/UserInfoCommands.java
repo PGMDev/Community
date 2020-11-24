@@ -53,9 +53,10 @@ public class UserInfoCommands extends CommunityCommand {
               }
 
               boolean online = Bukkit.getPlayer(profile.getId()) != null;
-              boolean disguised =
+              boolean vanished =
                   online && Bukkit.getPlayer(profile.getId()).hasMetadata("isVanished");
-              boolean viewerStaff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
+              boolean staff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
+              boolean visible = online && (!vanished || staff);
 
               Component lastSeenMsg =
                   TextComponent.builder()
@@ -63,7 +64,7 @@ public class UserInfoCommands extends CommunityCommand {
                           PlayerComponent.of(
                               profile.getId(), profile.getUsername(), NameStyle.FANCY))
                       .append(
-                          online && (disguised && viewerStaff)
+                          visible
                               ? " has been online since "
                               : " was last seen ") // TODO: translate
                       .append(
