@@ -22,12 +22,16 @@ moderation:
   #Punishments types - TODO: more options will be found under each punishment type  
   warn:
     enabled: true
+    public: false
   kick:
     enabled: true
+    public: true
   ban:
     enabled: true
+    public: true
   mute:
     enabled: true
+    public: true
   
    
 # Reports - Settings related to /report and /reports

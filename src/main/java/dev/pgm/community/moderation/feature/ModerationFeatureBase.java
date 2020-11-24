@@ -172,7 +172,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .thenAcceptAsync(
             broadcast -> {
               if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
-                if (event.isSilent()) {
+                if (event.isSilent() || !getModerationConfig().isPunishmentPublic(punishment)) {
                   BroadcastUtils.sendAdminChatMessage(broadcast);
                 } else {
                   BroadcastUtils.sendGlobalMessage(broadcast);

@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
+import dev.pgm.community.moderation.punishments.Punishment;
 import org.bukkit.configuration.Configuration;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 
@@ -30,6 +31,11 @@ public class ModerationConfig extends FeatureConfigImpl {
   private boolean warn;
   private boolean ban;
   private boolean mute;
+
+  private boolean kickPublic;
+  private boolean warnPublic;
+  private boolean banPublic;
+  private boolean mutePublic;
 
   // Messages
   private String rulesLink;
@@ -111,6 +117,28 @@ public class ModerationConfig extends FeatureConfigImpl {
   }
 
   /**
+   * Get the broadcast visibility of a punishment based on the type
+   *
+   * @param punishment - a punishment
+   * @return True if punishment should be visible publicly
+   */
+  public boolean isPunishmentPublic(Punishment punishment) {
+    switch (punishment.getType()) {
+      case TEMP_BAN:
+      case BAN:
+        return banPublic;
+      case KICK:
+        return kickPublic;
+      case MUTE:
+        return mutePublic;
+      case WARN:
+        return warnPublic;
+      default:
+        return broadcast;
+    }
+  }
+
+  /**
    * Get a message displayed on kick screen when punishment is permanent
    *
    * @return Appeal message for kick screen
@@ -123,17 +151,26 @@ public class ModerationConfig extends FeatureConfigImpl {
     return service;
   }
 
+  private String getBroadcastKey(String type) {
+    return type + ".public";
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
     this.persist = config.getBoolean(PERSIST_KEY, true);
     this.broadcast = config.getBoolean(BROADCAST_KEY, true);
 
-    // Punishment types (kick, warn, ban, mute)
+    // Punishment options (kick, warn, ban, mute)
     this.kick = config.getBoolean(getEnabledKey(KICK_KEY));
     this.warn = config.getBoolean(getEnabledKey(WARN_KEY));
     this.ban = config.getBoolean(getEnabledKey(BAN_KEY));
     this.mute = config.getBoolean(getEnabledKey(MUTE_KEY));
+
+    this.kickPublic = config.getBoolean(getBroadcastKey(KICK_KEY));
+    this.warnPublic = config.getBoolean(getBroadcastKey(WARN_KEY));
+    this.mutePublic = config.getBoolean(getBroadcastKey(MUTE_KEY));
+    this.banPublic = config.getBoolean(getBroadcastKey(BAN_KEY));
 
     // Messages
     this.rulesLink = config.getString(RULES_KEY);
