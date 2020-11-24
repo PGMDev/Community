@@ -31,6 +31,7 @@ public interface CommunityPermissions {
   // Teleports
   String TELEPORT = ROOT + ".teleport";
   String TELEPORT_OTHERS = TELEPORT + ".others";
+  String TELEPORT_LOCATION = TELEPORT + ".location";
 
   // Chat Management
   String CHAT_MANAGEMENT =

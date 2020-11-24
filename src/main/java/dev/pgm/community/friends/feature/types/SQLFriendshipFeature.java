@@ -144,7 +144,6 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
   @Override
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
     updateFriendships(event.getUniqueId());
-    Community.log("Prelogin was run and friendships should be set!");
   }
 
   @Override

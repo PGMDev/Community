@@ -13,6 +13,7 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 import net.kyori.text.TextComponent;
+import net.kyori.text.TranslatableComponent;
 import net.kyori.text.format.TextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -37,6 +38,11 @@ public class TeleportCommand extends CommunityCommand {
         teleport.teleport(viewer, sender, player.getPlayer());
         return;
       }
+    }
+
+    if (!viewer.getSender().hasPermission(CommunityPermissions.TELEPORT_OTHERS)) {
+      viewer.sendWarning(TranslatableComponent.of("misc.noPermission"));
+      return;
     }
 
     if (target != null) {
@@ -71,6 +77,7 @@ public class TeleportCommand extends CommunityCommand {
   @Description("Teleport to specific coordinates")
   @Syntax("[x,y,z] [target]")
   @CommandCompletion("@players")
+  @CommandPermission(CommunityPermissions.TELEPORT_LOCATION)
   public void teleportLocation(
       CommandAudience viewer,
       Location location,
