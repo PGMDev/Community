@@ -3,6 +3,7 @@ package dev.pgm.community.feature;
 import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.chat.ChatManagementFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
+import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
@@ -122,6 +123,7 @@ public class FeatureManager {
 
     // Other commands
     commands.registerCommand(new CommunityPluginCommand());
+    commands.registerCommand(new FlightCommand());
   }
 
   private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {

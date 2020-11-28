@@ -8,7 +8,6 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Flags;
 import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Syntax;
-import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
@@ -30,12 +29,14 @@ public class TeleportCommand extends CommunityCommand {
   @CommandCompletion("@visible @visible")
   @CommandPermission(CommunityPermissions.TELEPORT)
   public void teleportCommand(
-      CommandAudience viewer, @Flags("other") OnlinePlayer player, @Optional OnlinePlayer target) {
+      CommandAudience viewer,
+      @Flags("other") Player player,
+      @Optional @Flags("other") Player target) {
 
     if (viewer.isPlayer()) {
       Player sender = (Player) viewer.getSender();
       if (target == null) {
-        teleport.teleport(viewer, sender, player.getPlayer());
+        teleport.teleport(viewer, sender, player);
         return;
       }
     }
@@ -46,7 +47,7 @@ public class TeleportCommand extends CommunityCommand {
     }
 
     if (target != null) {
-      teleport.teleport(viewer, player.getPlayer(), target.getPlayer());
+      teleport.teleport(viewer, player, target);
     }
   }
 
