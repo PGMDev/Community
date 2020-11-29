@@ -35,7 +35,40 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   @Override
   public void save(Punishment punishment) {
     if (getModerationConfig().isPersistent()) {
-      service.save(punishment);
+
+      // When issuing a new ban or mute, check for existing and pardon if any.
+      switch (punishment.getType()) {
+        case TEMP_BAN:
+        case BAN:
+          isBanned(punishment.getTargetId().toString())
+              .thenAcceptAsync(
+                  banned -> {
+                    if (banned) {
+                      service
+                          .pardon(punishment.getTargetId(), punishment.getIssuerId())
+                          .thenAcceptAsync(x -> service.save(punishment));
+                    } else {
+                      service.save(punishment);
+                    }
+                  });
+          break;
+        case MUTE:
+          isMuted(punishment.getTargetId())
+              .thenAcceptAsync(
+                  mute -> {
+                    if (mute.isPresent()) {
+                      service
+                          .unmute(punishment.getTargetId(), punishment.getIssuerId())
+                          .thenAcceptAsync(x -> service.save(punishment));
+                    } else {
+                      service.save(punishment);
+                    }
+                  });
+          break;
+        default:
+          service.save(punishment);
+          break;
+      }
     }
   }
 
