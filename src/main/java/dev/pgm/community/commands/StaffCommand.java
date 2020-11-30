@@ -6,6 +6,7 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,8 @@ public class StaffCommand extends CommunityCommand {
             .filter(
                 player ->
                     (player.hasPermission(Permissions.STAFF)
-                        && (!isVanished(player) || sender.hasPermission(Permissions.STAFF))))
+                        && (!isVanished(player)
+                            || sender.hasPermission(CommunityPermissions.STAFF))))
             .map(player -> PlayerComponent.of(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
 
