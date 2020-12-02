@@ -45,6 +45,9 @@ public interface CommunityPermissions {
       ROOT + ".staff"; // Receive staff broadcasts and see disguised players (maybe add a different
   // node later)
 
+  // Freeze
+  String FREEZE = ROOT + ".freeze";
+
   // Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";

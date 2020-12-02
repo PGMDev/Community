@@ -6,6 +6,7 @@ import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.StaffCommand;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.freeze.FreezeFeature;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
 import dev.pgm.community.info.InfoCommandsFeature;
@@ -35,6 +36,7 @@ public class FeatureManager {
   private final InfoCommandsFeature infoCommands;
   private final ChatManagementFeature chat;
   private final MotdFeature motd;
+  private final FreezeFeature freeze;
 
   public FeatureManager(
       Configuration config,
@@ -56,6 +58,7 @@ public class FeatureManager {
     this.infoCommands = new InfoCommandsFeature(config, logger);
     this.chat = new ChatManagementFeature(config, logger);
     this.motd = new MotdFeature(config, logger);
+    this.freeze = new FreezeFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -92,6 +95,10 @@ public class FeatureManager {
     return motd;
   }
 
+  public FreezeFeature getFreeze() {
+    return freeze;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -101,6 +108,7 @@ public class FeatureManager {
     commands.registerDependency(TeleportFeature.class, getTeleports());
     commands.registerDependency(ChatManagementFeature.class, getChatManagement());
     commands.registerDependency(FriendshipFeature.class, getFriendships());
+    commands.registerDependency(FreezeFeature.class, getFreeze());
 
     // Custom command completions
     commands
@@ -119,6 +127,7 @@ public class FeatureManager {
     registerFeatureCommands(getTeleports(), commands);
     registerFeatureCommands(getChatManagement(), commands);
     registerFeatureCommands(getFriendships(), commands);
+    registerFeatureCommands(getFreeze(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -141,6 +150,7 @@ public class FeatureManager {
     getInfoCommands().getConfig().reload(config);
     getChatManagement().getConfig().reload(config);
     getMotd().getConfig().reload(config);
+    getFreeze().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

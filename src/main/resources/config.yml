@@ -84,6 +84,11 @@ motd:
   lines:
     - "&cWelcome to &4&lCommunity"
     - "&6To configure this message check the &aconfig.yml"      
+
+# Freeze - Freeze players via command or observer hotbar tool (when PGM is enabled)  
+freeze:
+  enabled: true  
+  pgm-integration: true # Whether Community will attempt to hook into PGM
   
 # Database
 database:

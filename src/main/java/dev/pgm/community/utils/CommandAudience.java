@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.kyori.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.chat.Audience;
@@ -14,6 +15,8 @@ public class CommandAudience {
 
   private Audience audience;
   private CommandSender sender;
+
+  public static CommandAudience CONSOLE = new CommandAudience(Bukkit.getConsoleSender());
 
   public CommandAudience(CommandSender sender) {
     this.sender = sender;
