@@ -270,8 +270,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
                 TextColor.GRAY,
                 PlayerComponent.of(player, NameStyle.FANCY),
                 banned))
-        .hoverEvent(HoverEvent.showText(TextComponent.of("Click to view punishment history")))
-        .clickEvent(ClickEvent.runCommand("/l " + bannedId.toString()))
+        .hoverEvent(
+            HoverEvent.showText(
+                TextComponent.of("Click to issue ban evasion punishment", TextColor.RED)))
+        .clickEvent(ClickEvent.runCommand("/ban " + bannedId.toString() + " Ban Evasion"))
         .build();
   }
 }

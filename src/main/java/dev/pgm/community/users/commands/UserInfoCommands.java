@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.TranslatableComponent;
+import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.TextColor;
 import net.kyori.text.format.TextDecoration;
@@ -113,11 +114,28 @@ public class UserInfoCommands extends CommunityCommand {
                         Set<Component> altNames =
                             alts.stream()
                                 .map(
-                                    altId ->
-                                        PlayerComponent.of(
-                                            altId,
-                                            users.getStoredUsername(altId).join(),
-                                            NameStyle.FANCY))
+                                    altId -> {
+                                      Component name =
+                                          PlayerComponent.of(
+                                              altId,
+                                              users.getStoredUsername(altId).join(),
+                                              NameStyle.FANCY);
+
+                                      return TextComponent.builder()
+                                          .append(name)
+                                          .clickEvent(
+                                              ClickEvent.runCommand(
+                                                  "/l " + profile.getId().toString()))
+                                          .hoverEvent(
+                                              HoverEvent.showText(
+                                                  TextComponent.builder()
+                                                      .append(
+                                                          "Click to view punishment history of ",
+                                                          TextColor.GRAY)
+                                                      .append(name)
+                                                      .build()))
+                                          .build();
+                                    })
                                 .collect(Collectors.toSet());
 
                         Component altNameList =
