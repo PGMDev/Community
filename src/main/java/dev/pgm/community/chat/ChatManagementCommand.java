@@ -54,17 +54,6 @@ public class ChatManagementCommand extends CommunityCommand {
     for (int i = 0; i < 100; i++) {
       BroadcastUtils.sendGlobalMessage(TextComponent.empty());
     }
-
-    Component clearMsg =
-        TextComponent.builder()
-            .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
-            .append(" The chat has been cleared ")
-            .append(BroadcastUtils.LEFT_DIV.color(TextColor.GOLD))
-            .color(TextColor.GREEN)
-            .build();
-
-    BroadcastUtils.sendGlobalMessage(
-        TextFormatter.horizontalLineHeading(viewer.getSender(), clearMsg, TextColor.BLACK));
   }
 
   private Component formatStatus(Component name, boolean enabled) {

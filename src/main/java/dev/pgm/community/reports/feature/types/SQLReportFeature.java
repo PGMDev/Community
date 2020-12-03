@@ -55,4 +55,9 @@ public class SQLReportFeature extends ReportFeatureBase {
 
     return service.queryList(target);
   }
+
+  @Override
+  public CompletableFuture<Integer> count() {
+    return service.count();
+  }
 }
