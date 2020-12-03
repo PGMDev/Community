@@ -6,11 +6,11 @@ import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Syntax;
-import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
@@ -21,6 +21,7 @@ import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.TranslatableComponent;
 import net.kyori.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.chat.Audience;
 import tc.oc.pgm.util.named.NameStyle;
@@ -29,22 +30,30 @@ import tc.oc.pgm.util.text.types.PlayerComponent;
 public class MuteCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
+  @Dependency private UsersFeature usernames;
 
   @CommandAlias("mute|m")
   @Description("Prevent player from speaking in the chat")
   @Syntax("[player] [duration] [reason]")
   @CommandCompletion("@players 30m|1h|6h *")
   @CommandPermission(CommunityPermissions.MUTE)
-  public void mutePlayer(
-      CommandAudience audience, OnlinePlayer target, Duration length, String reason) {
-    moderation.punish(
-        PunishmentType.MUTE,
-        target.getPlayer().getUniqueId(),
-        audience,
-        reason,
-        length,
-        true,
-        isVanished(audience));
+  public void mutePlayer(CommandAudience audience, String target, Duration length, String reason) {
+    getTarget(target, usernames)
+        .thenAccept(
+            id -> {
+              if (id.isPresent()) {
+                moderation.punish(
+                    PunishmentType.MUTE,
+                    id.get(),
+                    audience,
+                    reason,
+                    length,
+                    true,
+                    isVanished(audience));
+              } else {
+                audience.sendWarning(formatNotFoundComponent(target));
+              }
+            });
   }
 
   @CommandAlias("unmute|um")
@@ -52,45 +61,55 @@ public class MuteCommand extends CommunityCommand {
   @Syntax("[player]")
   @CommandCompletion("@mutes")
   @CommandPermission(CommunityPermissions.MUTE)
-  public void unMutePlayer(CommandAudience audience, OnlinePlayer target) {
-    moderation
-        .isMuted(target.getPlayer().getUniqueId())
-        .thenAcceptAsync(
-            isMuted -> {
-              if (isMuted.isPresent()) {
+  public void unMutePlayer(CommandAudience audience, String target) {
+    getTarget(target, usernames)
+        .thenAccept(
+            id -> {
+              if (id.isPresent()) {
+
                 moderation
-                    .unmute(target.getPlayer().getUniqueId(), audience.getId())
+                    .isMuted(id.get())
                     .thenAcceptAsync(
-                        pardon -> {
-                          if (!pardon) {
+                        isMuted -> {
+                          if (isMuted.isPresent()) {
+                            moderation
+                                .unmute(id.get(), audience.getId())
+                                .thenAcceptAsync(
+                                    pardon -> {
+                                      if (!pardon) {
+                                        audience.sendWarning(
+                                            TextComponent.builder()
+                                                .append(usernames.renderUsername(id).join())
+                                                .append(" could not be ", TextColor.GRAY)
+                                                .append("unmuted")
+                                                .color(TextColor.RED)
+                                                .build());
+                                      } else {
+                                        BroadcastUtils.sendAdminChatMessage(
+                                            TextComponent.builder()
+                                                .append(usernames.renderUsername(id).join())
+                                                .append(" was unmuted by ", TextColor.GRAY)
+                                                .append(audience.getStyledName())
+                                                .build(),
+                                            null);
+
+                                        Player online = Bukkit.getPlayer(id.get());
+                                        if (online != null) {
+                                          Audience.get(online)
+                                              .sendWarning(
+                                                  TranslatableComponent.of(
+                                                      "moderation.unmute.target", TextColor.GREEN));
+                                        }
+                                      }
+                                    });
+                          } else {
                             audience.sendWarning(
                                 TextComponent.builder()
-                                    .append(PlayerComponent.of(target.getPlayer(), NameStyle.FANCY))
-                                    .append(" could not be ", TextColor.GRAY)
-                                    .append("unmuted")
-                                    .color(TextColor.RED)
+                                    .append(usernames.renderUsername(id).join())
+                                    .append(" is not muted", TextColor.GRAY)
                                     .build());
-                          } else {
-                            BroadcastUtils.sendAdminChatMessage(
-                                TextComponent.builder()
-                                    .append(PlayerComponent.of(target.getPlayer(), NameStyle.FANCY))
-                                    .append(" was unmuted by ", TextColor.GRAY)
-                                    .append(audience.getStyledName())
-                                    .build(),
-                                null);
-
-                            Audience.get(target.getPlayer())
-                                .sendWarning(
-                                    TranslatableComponent.of(
-                                        "moderation.unmute.target", TextColor.GREEN));
                           }
                         });
-              } else {
-                audience.sendWarning(
-                    TextComponent.builder()
-                        .append(PlayerComponent.of(target.getPlayer(), NameStyle.FANCY))
-                        .append(" is not muted", TextColor.GRAY)
-                        .build());
               }
             });
   }
