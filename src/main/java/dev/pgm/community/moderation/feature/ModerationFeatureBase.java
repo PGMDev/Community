@@ -273,7 +273,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .hoverEvent(
             HoverEvent.showText(
                 TextComponent.of("Click to issue ban evasion punishment", TextColor.RED)))
-        .clickEvent(ClickEvent.runCommand("/ban " + bannedId.toString() + " Ban Evasion"))
+        .clickEvent(ClickEvent.runCommand("/ban " + player.getName() + " Ban Evasion"))
         .build();
   }
 }
