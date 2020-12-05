@@ -15,7 +15,7 @@ import tc.oc.pgm.util.text.types.PlayerComponent;
 public interface TeleportFeature extends Feature {
 
   default void teleport(CommandAudience sender, Player teleporter, Player target) {
-    teleport(sender, teleporter, target, formatTeleportPlayerMessage(target), null);
+    teleport(sender, teleporter, target, formatTeleportPlayerMessage(target), null, true);
   }
 
   default void teleport(CommandAudience sender, Player teleporter, Location target) {
@@ -38,7 +38,8 @@ public interface TeleportFeature extends Feature {
       Player teleporter,
       Player target,
       @Nullable Component teleporterMsg,
-      @Nullable Component targetMsg);
+      @Nullable Component targetMsg,
+      boolean senderFeedback);
 
   default Component formatTeleportPlayerMessage(Player target) {
     return TextComponent.builder()

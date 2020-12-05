@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -32,6 +33,17 @@ public abstract class CommunityCommand extends BaseCommand {
       }
     }
     return service.getStoredId(target);
+  }
+
+  protected Player getSinglePlayer(CommandAudience viewer, String target) {
+    Player player = Bukkit.getPlayer(target);
+
+    if (target == null || (target != null && !canView(viewer, player))) {
+      viewer.sendWarning(formatNotFoundComponent(target));
+      return null;
+    }
+
+    return player;
   }
 
   protected UUID getOnlineTarget(String target, UsersFeature service)
@@ -68,6 +80,16 @@ public abstract class CommunityCommand extends BaseCommand {
 
   protected boolean isVanished(Player player) {
     return player.hasMetadata("isVanished");
+  }
+
+  public boolean canView(CommandAudience viewer, Player player) {
+    boolean vanished = isVanished(player);
+    if (vanished
+        && viewer.isPlayer()
+        && !viewer.getPlayer().hasPermission(CommunityPermissions.STAFF)) {
+      return false;
+    }
+    return true;
   }
 
   protected String formatNotFoundMsg(String target) {

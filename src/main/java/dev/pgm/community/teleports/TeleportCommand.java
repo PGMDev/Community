@@ -11,9 +11,12 @@ import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
+import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.TranslatableComponent;
 import net.kyori.text.format.TextColor;
+import net.kyori.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
@@ -28,14 +31,12 @@ public class TeleportCommand extends CommunityCommand {
   @Syntax("<player> <other player>")
   @CommandCompletion("@visible @visible")
   @CommandPermission(CommunityPermissions.TELEPORT)
-  public void teleportCommand(
-      CommandAudience viewer,
-      @Flags("other") Player player,
-      @Optional @Flags("other") Player target) {
+  public void teleportCommand(CommandAudience viewer, String target1, @Optional String target2) {
 
     if (viewer.isPlayer()) {
       Player sender = (Player) viewer.getSender();
-      if (target == null) {
+      if (target2 == null) {
+        Player player = getSinglePlayer(viewer, target1);
         teleport.teleport(viewer, sender, player);
         return;
       }
@@ -46,8 +47,12 @@ public class TeleportCommand extends CommunityCommand {
       return;
     }
 
-    if (target != null) {
-      teleport.teleport(viewer, player, target);
+    if (target2 != null) {
+      Player player1 = getSinglePlayer(viewer, target1);
+      Player player2 = getSinglePlayer(viewer, target2);
+      if (player1 != null && player2 != null) {
+        teleport.teleport(viewer, player1, player2);
+      }
     }
   }
 
@@ -56,19 +61,52 @@ public class TeleportCommand extends CommunityCommand {
   @Syntax("[player] - Player to teleport")
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
-  public void teleportHereCommand(CommandAudience viewer, @Flags("other") Player target) {
+  public void teleportHereCommand(CommandAudience viewer, String target) {
     if (viewer.isPlayer()) {
       Player sender = viewer.getPlayer();
+      Player player = getSinglePlayer(viewer, target);
 
-      teleport.teleport(
-          viewer,
-          target,
-          sender,
-          null,
+      if (player != null) {
+        teleport.teleport(
+            viewer,
+            player,
+            sender,
+            null,
+            TextComponent.builder()
+                .append("Teleported ")
+                .append(PlayerComponent.of(player, NameStyle.FANCY))
+                .append(" to your location")
+                .color(TextColor.GRAY)
+                .build(),
+            true);
+      }
+    }
+  }
+
+  @CommandAlias("tpall|tpa|bringall")
+  @Description("Teleport everyone to you or another player")
+  @Syntax("[target] - Player to teleport everyone to")
+  @CommandCompletion("@players")
+  @CommandPermission(CommunityPermissions.TELEPORT_ALL)
+  public void teleportAllCommand(CommandAudience viewer, @Optional String target) {
+    if (viewer.isPlayer()) {
+      if (target != null && getSinglePlayer(viewer, target) == null)
+        return; // Return if target is not found
+      Player targetPlayer = target != null ? getSinglePlayer(viewer, target) : viewer.getPlayer();
+      Bukkit.getOnlinePlayers()
+          .forEach(p -> teleport.teleport(viewer, p, targetPlayer, null, null, false));
+      int size = Bukkit.getOnlinePlayers().size();
+      Component locName =
+          targetPlayer.equals(viewer.getPlayer())
+              ? TextComponent.of("your location")
+              : PlayerComponent.of(targetPlayer, NameStyle.FANCY);
+      viewer.sendMessage(
           TextComponent.builder()
               .append("Teleported ")
-              .append(PlayerComponent.of(target, NameStyle.FANCY))
-              .append(" to your location")
+              .append(TextComponent.of(size, TextColor.YELLOW, TextDecoration.BOLD))
+              .append(" player" + (size != 1 ? "s " : " "))
+              .append("to ")
+              .append(locName)
               .color(TextColor.GRAY)
               .build());
     }

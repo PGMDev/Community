@@ -29,9 +29,11 @@ public interface CommunityPermissions {
   String RESTRICTED = ROOT + ".restricted"; // Access to restricted info (e.g IP addresses)
 
   // Teleports
-  String TELEPORT = ROOT + ".teleport";
-  String TELEPORT_OTHERS = TELEPORT + ".others";
-  String TELEPORT_LOCATION = TELEPORT + ".location";
+  String TELEPORT = ROOT + ".teleport"; // Access to teleport to another player
+  String TELEPORT_OTHERS = TELEPORT + ".others"; // Access to teleport other players
+  String TELEPORT_LOCATION =
+      TELEPORT + ".location"; // Access to teleport to a world location (coords)
+  String TELEPORT_ALL = TELEPORT + ".all"; // Access to teleport everyone
 
   // Chat Management
   String CHAT_MANAGEMENT =

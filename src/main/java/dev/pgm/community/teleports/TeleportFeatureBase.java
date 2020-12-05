@@ -64,7 +64,8 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
       Player teleporter,
       Player target,
       Component teleporterMsg,
-      Component targetMsg) {
+      Component targetMsg,
+      boolean senderFeedback) {
     boolean involved =
         sender.isPlayer()
             && (sender.getPlayer().equals(teleporter) || sender.getPlayer().equals(target));
@@ -79,7 +80,7 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
       sendTeleportMessage(target, targetMsg);
     }
 
-    if (!involved) {
+    if (senderFeedback && !involved) {
       sender.sendMessage(
           TextComponent.builder()
               .append("Teleported ")
