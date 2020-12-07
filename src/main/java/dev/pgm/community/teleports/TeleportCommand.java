@@ -37,7 +37,9 @@ public class TeleportCommand extends CommunityCommand {
       Player sender = (Player) viewer.getSender();
       if (target2 == null) {
         Player player = getSinglePlayer(viewer, target1);
-        teleport.teleport(viewer, sender, player);
+        if (player != null) {
+          teleport.teleport(viewer, sender, player);
+        }
         return;
       }
     }

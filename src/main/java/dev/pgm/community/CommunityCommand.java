@@ -7,6 +7,7 @@ import dev.pgm.community.utils.CommandAudience;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.format.TextColor;
@@ -38,9 +39,8 @@ public abstract class CommunityCommand extends BaseCommand {
   protected Player getSinglePlayer(CommandAudience viewer, String target) {
     Player player = Bukkit.getPlayer(target);
 
-    if (target == null || (target != null && !canView(viewer, player))) {
+    if (player == null || (player != null && !canView(viewer, player))) {
       viewer.sendWarning(formatNotFoundComponent(target));
-      return null;
     }
 
     return player;
@@ -78,8 +78,8 @@ public abstract class CommunityCommand extends BaseCommand {
     return audience.getId().isPresent() ? isVanished((Player) audience.getSender()) : false;
   }
 
-  protected boolean isVanished(Player player) {
-    return player.hasMetadata("isVanished");
+  protected boolean isVanished(@Nullable Player player) {
+    return player != null ? player.hasMetadata("isVanished") : false;
   }
 
   public boolean canView(CommandAudience viewer, Player player) {
