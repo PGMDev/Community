@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation.feature.types;
 
 import com.google.common.collect.Lists;
+import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeatureBase;
@@ -15,9 +16,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
@@ -121,7 +126,10 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
     List<Punishment> punishments;
     try {
-      punishments = service.queryList(event.getUniqueId().toString()).get();
+      punishments =
+          service
+              .queryList(event.getUniqueId().toString())
+              .get(getModerationConfig().getLoginTimeout(), TimeUnit.SECONDS);
 
       Optional<Punishment> ban = hasActiveBan(punishments);
       if (ban.isPresent()) {
@@ -147,7 +155,51 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       event.setKickMessage(
           ChatColor.DARK_RED + "Error joining, please try again."); // TODO: Pretty this up
       e.printStackTrace();
+    } catch (TimeoutException e) {
+      scheduleDelayedCheck(event.getUniqueId());
+      e.printStackTrace();
     }
+  }
+
+  private void scheduleDelayedCheck(UUID playerId) {
+    Community.get()
+        .getServer()
+        .getScheduler()
+        .scheduleSyncDelayedTask(
+            Community.get(),
+            new Runnable() {
+              @Override
+              public void run() {
+                Player player = Bukkit.getPlayer(playerId);
+                if (player != null) {
+                  service
+                      .queryList(playerId.toString())
+                      .thenAcceptAsync(
+                          punishments -> {
+                            Optional<Punishment> ban = hasActiveBan(punishments);
+                            if (ban.isPresent()) {
+                              Punishment punishment = ban.get();
+
+                              player.kickPlayer(
+                                  punishment.formatPunishmentScreen(
+                                      getModerationConfig(),
+                                      getUsers().renderUsername(punishment.getIssuerId()).join()));
+                            }
+
+                            Optional<MutePunishment> mute = hasActiveMute(punishments);
+                            if (mute.isPresent()) {
+                              addMute(playerId, mute.get());
+                            }
+
+                            logger.info(
+                                "[Delayed]: "
+                                    + punishments.size()
+                                    + " Punishments have been fetched for "
+                                    + playerId.toString());
+                          });
+                }
+              }
+            });
   }
 
   private Optional<MutePunishment> hasActiveMute(List<Punishment> punishments) {

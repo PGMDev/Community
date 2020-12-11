@@ -22,6 +22,8 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   private static final String SERVICE_KEY = KEY + ".service";
 
+  private static final String TIMEOUT_KEY = KEY + ".login-timeout";
+
   // General options
   private boolean persist;
   private boolean broadcast;
@@ -43,6 +45,9 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   // Service
   private String service;
+
+  // Login
+  private int loginTimeout;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -151,6 +156,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     return service;
   }
 
+  public int getLoginTimeout() {
+    return Math.max(1, loginTimeout);
+  }
+
   private String getBroadcastKey(String type) {
     return type + ".public";
   }
@@ -178,5 +187,8 @@ public class ModerationConfig extends FeatureConfigImpl {
 
     // Service
     this.service = config.getString(SERVICE_KEY);
+
+    // Logins
+    this.loginTimeout = config.getInt(TIMEOUT_KEY);
   }
 }

@@ -32,6 +32,9 @@ moderation:
   mute:
     enabled: true
     public: true
+    
+  #Logins
+  login-timeout: 30
   
    
 # Reports - Settings related to /report and /reports
