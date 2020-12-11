@@ -124,8 +124,7 @@ public class UserInfoCommands extends CommunityCommand {
                                       return TextComponent.builder()
                                           .append(name)
                                           .clickEvent(
-                                              ClickEvent.runCommand(
-                                                  "/l " + profile.getId().toString()))
+                                              ClickEvent.runCommand("/l " + altId.toString()))
                                           .hoverEvent(
                                               HoverEvent.showText(
                                                   TextComponent.builder()
