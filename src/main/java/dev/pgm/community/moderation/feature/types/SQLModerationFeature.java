@@ -157,7 +157,6 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       e.printStackTrace();
     } catch (TimeoutException e) {
       scheduleDelayedCheck(event.getUniqueId());
-      e.printStackTrace();
     }
   }
 

@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class NoDBUsersFeature extends UsersFeatureBase {
@@ -61,11 +61,12 @@ public class NoDBUsersFeature extends UsersFeatureBase {
   }
 
   @Override
-  public void onLogin(AsyncPlayerPreLoginEvent login) {
-    profiles.invalidate(login.getUniqueId());
+  public void onLogin(PlayerJoinEvent event) {
+    Player player = event.getPlayer();
+    profiles.invalidate(player.getUniqueId());
     this.profiles.put(
-        login.getUniqueId(), new UserProfileImpl(login.getUniqueId(), login.getName()));
-    this.setName(login.getUniqueId(), login.getName());
+        player.getUniqueId(), new UserProfileImpl(player.getUniqueId(), player.getName()));
+    this.setName(player.getUniqueId(), player.getName());
   }
 
   @Override

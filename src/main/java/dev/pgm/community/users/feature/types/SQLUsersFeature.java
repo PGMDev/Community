@@ -13,7 +13,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class SQLUsersFeature extends UsersFeatureBase {
@@ -99,14 +100,15 @@ public class SQLUsersFeature extends UsersFeatureBase {
   }
 
   @Override
-  public void onLogin(AsyncPlayerPreLoginEvent login) {
-    final UUID id = login.getUniqueId();
-    final String name = login.getName();
-    final String address = login.getAddress().getHostAddress();
+  public void onLogin(PlayerJoinEvent event) {
+    final Player player = event.getPlayer();
+    final UUID id = player.getUniqueId();
+    final String name = player.getName();
+    final String address = player.getAddress().getHostString();
     setName(id, name); // Check for username update
 
     profiles.invalidate(
-        login.getUniqueId()); // Removed cached profile upon every login, so we get up to date info
+        player.getUniqueId()); // Removed cached profile upon every login, so we get up to date info
     service
         .login(id, name, address)
         .thenAcceptAsync(profile -> profiles.put(id, profile)); // Login save

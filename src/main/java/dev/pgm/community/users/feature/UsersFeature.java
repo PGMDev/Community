@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.kyori.text.Component;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
@@ -128,7 +128,7 @@ public interface UsersFeature extends Feature {
 
   /* Events to be handled by FeatureImpls */
 
-  void onLogin(AsyncPlayerPreLoginEvent login);
+  void onLogin(PlayerJoinEvent login);
 
   void onLogout(PlayerQuitEvent event);
 
