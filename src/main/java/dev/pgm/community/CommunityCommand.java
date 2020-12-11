@@ -41,6 +41,7 @@ public abstract class CommunityCommand extends BaseCommand {
 
     if (player == null || (player != null && !canView(viewer, player))) {
       viewer.sendWarning(formatNotFoundComponent(target));
+      return null;
     }
 
     return player;
