@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 
 public class WarnPunishment extends PunishmentBase {
 

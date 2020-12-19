@@ -1,32 +1,30 @@
 package dev.pgm.community.utils;
 
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+
 import dev.pgm.community.CommunityPermissions;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import tc.oc.pgm.util.chat.Audience;
-import tc.oc.pgm.util.chat.Sound;
+import tc.oc.pgm.util.Audience;
 
 public class BroadcastUtils {
 
-  public static final Component RIGHT_DIV = TextComponent.of("\u00BB");
-  public static final Component LEFT_DIV = TextComponent.of("\u00AB");
+  public static final Component RIGHT_DIV = text("\u00BB");
+  public static final Component LEFT_DIV = text("\u00AB");
 
   public static final Component BROADCAST_DIV =
-      TextComponent.builder()
-          .append(" ")
-          .append(RIGHT_DIV)
-          .append(" ")
-          .color(TextColor.GRAY)
-          .build();
+      text().append(space()).append(RIGHT_DIV).append(space()).build();
 
-  public static final TextComponent ADMIN_CHAT_PREFIX =
-      TextComponent.builder()
-          .append("[", TextColor.WHITE)
-          .append("A", TextColor.GOLD)
-          .append("] ", TextColor.WHITE)
+  public static final Component ADMIN_CHAT_PREFIX =
+      text()
+          .append(text("[", NamedTextColor.WHITE))
+          .append(text("A", NamedTextColor.GOLD))
+          .append(text("]", NamedTextColor.WHITE))
+          .append(space())
           .build();
 
   public static void sendAdminChatMessage(Component message) {
@@ -34,7 +32,7 @@ public class BroadcastUtils {
   }
 
   public static void sendAdminChatMessage(Component message, @Nullable Sound sound) {
-    Component formatted = TextComponent.builder().append(ADMIN_CHAT_PREFIX).append(message).build();
+    Component formatted = text().append(ADMIN_CHAT_PREFIX).append(message).build();
     Bukkit.getOnlinePlayers().stream()
         .filter(player -> player.hasPermission(CommunityPermissions.STAFF))
         .map(Audience::get)

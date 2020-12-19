@@ -1,11 +1,12 @@
 package dev.pgm.community.teleports;
 
+import static net.kyori.adventure.text.Component.text;
+
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.utils.CommandAudience;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
@@ -23,11 +24,7 @@ public interface TeleportFeature extends Feature {
         sender,
         teleporter,
         target,
-        TextComponent.builder()
-            .append("Teleported to ")
-            .append(formatLocation(target))
-            .color(TextColor.GRAY)
-            .build());
+        text("Teleported to ").append(formatLocation(target)).color(NamedTextColor.GRAY));
   }
 
   void teleport(
@@ -42,23 +39,19 @@ public interface TeleportFeature extends Feature {
       boolean senderFeedback);
 
   default Component formatTeleportPlayerMessage(Player target) {
-    return TextComponent.builder()
-        .append("Teleported to ")
-        .append(PlayerComponent.of(target, NameStyle.FANCY))
-        .color(TextColor.GRAY)
-        .build();
+    return text("Teleported to ")
+        .append(PlayerComponent.player(target, NameStyle.FANCY))
+        .color(NamedTextColor.GRAY);
   }
 
   default Component formatLocation(Location location) {
-    return TextComponent.builder()
-        .append("(")
-        .append(TextComponent.of(location.getBlockX(), TextColor.AQUA))
-        .append(", ")
-        .append(TextComponent.of(location.getBlockY(), TextColor.AQUA))
-        .append(", ")
-        .append(TextComponent.of(location.getBlockZ(), TextColor.AQUA))
-        .append(")")
-        .color(TextColor.GRAY)
-        .build();
+    return text(("("))
+        .append(text(location.getBlockX(), NamedTextColor.AQUA))
+        .append(text(", "))
+        .append(text(location.getBlockY(), NamedTextColor.AQUA))
+        .append(text(", "))
+        .append(text(location.getBlockZ(), NamedTextColor.AQUA))
+        .append(text(")"))
+        .color(NamedTextColor.GRAY);
   }
 }

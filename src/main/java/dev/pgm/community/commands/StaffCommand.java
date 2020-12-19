@@ -1,5 +1,8 @@
 package dev.pgm.community.commands;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Dependency;
@@ -10,10 +13,8 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import tc.oc.pgm.api.Permissions;
 import tc.oc.pgm.util.named.NameStyle;
@@ -36,21 +37,21 @@ public class StaffCommand extends CommunityCommand {
                     (player.hasPermission(Permissions.STAFF)
                         && (!isVanished(player)
                             || sender.hasPermission(CommunityPermissions.STAFF))))
-            .map(player -> PlayerComponent.of(player, NameStyle.VERBOSE))
+            .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
 
     // FORMAT: Online Staff ({count}): {names}
     Component staffCount =
-        TextComponent.of(Integer.toString(onlineStaff.size()))
-            .color(onlineStaff.isEmpty() ? TextColor.RED : TextColor.AQUA);
+        text(Integer.toString(onlineStaff.size()))
+            .color(onlineStaff.isEmpty() ? NamedTextColor.RED : NamedTextColor.AQUA);
 
     Component content =
         onlineStaff.isEmpty()
-            ? TranslatableComponent.of("moderation.staff.empty")
-            : TextFormatter.list(onlineStaff, TextColor.GRAY);
+            ? translatable("moderation.staff.empty")
+            : TextFormatter.list(onlineStaff, NamedTextColor.GRAY);
 
     Component staff =
-        TranslatableComponent.of("moderation.staff.name", TextColor.GRAY, staffCount, content);
+        translatable("moderation.staff.name", NamedTextColor.GRAY, staffCount, content);
 
     // Send message
     viewer.sendMessage(staff);

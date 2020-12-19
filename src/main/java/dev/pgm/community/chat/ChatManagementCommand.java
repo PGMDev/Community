@@ -1,5 +1,7 @@
 package dev.pgm.community.chat;
 
+import static net.kyori.adventure.text.Component.text;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
@@ -10,10 +12,9 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("chat")
@@ -41,31 +42,27 @@ public class ChatManagementCommand extends CommunityCommand {
   public void viewStatus(CommandAudience audience) {
     audience.sendMessage(
         TextFormatter.horizontalLineHeading(
-            audience.getSender(),
-            TextComponent.of("Chat Status", TextColor.YELLOW),
-            TextColor.GRAY));
-    audience.sendMessage(formatStatus(TextComponent.of("Chat Lockdown"), chat.isLockdown()));
-    audience.sendMessage(formatStatus(TextComponent.of("Chat Slowmode"), chat.isSlowmode()));
+            audience.getSender(), text("Chat Status", NamedTextColor.YELLOW), NamedTextColor.GRAY));
+    audience.sendMessage(formatStatus(text("Chat Lockdown"), chat.isLockdown()));
+    audience.sendMessage(formatStatus(text("Chat Slowmode"), chat.isSlowmode()));
   }
 
   @Subcommand("clear")
   @CommandAlias("clearchat")
   public void clearChat(CommandAudience viewer) {
     for (int i = 0; i < 100; i++) {
-      BroadcastUtils.sendGlobalMessage(TextComponent.empty());
+      BroadcastUtils.sendGlobalMessage(Component.empty());
     }
   }
 
   private Component formatStatus(Component name, boolean enabled) {
-    return TextComponent.builder()
+    return text()
         .append(BroadcastUtils.BROADCAST_DIV)
-        .append(name.color(TextColor.GOLD).decoration(TextDecoration.BOLD, true))
-        .append(": ")
+        .append(name.color(NamedTextColor.GOLD).decoration(TextDecoration.BOLD, true))
+        .append(text(": "))
         .append(
-            enabled
-                ? TextComponent.of("enabled", TextColor.GREEN)
-                : TextComponent.of("disabled", TextColor.RED))
-        .color(TextColor.GRAY)
+            enabled ? text("enabled", NamedTextColor.GREEN) : text("disabled", NamedTextColor.RED))
+        .color(NamedTextColor.GRAY)
         .build();
   }
 }

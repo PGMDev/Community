@@ -1,5 +1,8 @@
 package dev.pgm.community.moderation.commands;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -17,13 +20,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -78,36 +79,38 @@ public class MuteCommand extends CommunityCommand {
                                     pardon -> {
                                       if (!pardon) {
                                         audience.sendWarning(
-                                            TextComponent.builder()
-                                                .append(usernames.renderUsername(id).join())
-                                                .append(" could not be ", TextColor.GRAY)
-                                                .append("unmuted")
-                                                .color(TextColor.RED)
-                                                .build());
+                                            usernames
+                                                .renderUsername(id)
+                                                .join()
+                                                .append(text(" could not be ", NamedTextColor.GRAY))
+                                                .append(text("unmuted"))
+                                                .color(NamedTextColor.RED));
                                       } else {
                                         BroadcastUtils.sendAdminChatMessage(
-                                            TextComponent.builder()
-                                                .append(usernames.renderUsername(id).join())
-                                                .append(" was unmuted by ", TextColor.GRAY)
-                                                .append(audience.getStyledName())
-                                                .build(),
+                                            usernames
+                                                .renderUsername(id)
+                                                .join()
+                                                .append(
+                                                    text(" was unmuted by ", NamedTextColor.GRAY))
+                                                .append(audience.getStyledName()),
                                             null);
 
                                         Player online = Bukkit.getPlayer(id.get());
                                         if (online != null) {
                                           Audience.get(online)
                                               .sendWarning(
-                                                  TranslatableComponent.of(
-                                                      "moderation.unmute.target", TextColor.GREEN));
+                                                  translatable(
+                                                      "moderation.unmute.target",
+                                                      NamedTextColor.GREEN));
                                         }
                                       }
                                     });
                           } else {
                             audience.sendWarning(
-                                TextComponent.builder()
-                                    .append(usernames.renderUsername(id).join())
-                                    .append(" is not muted", TextColor.GRAY)
-                                    .build());
+                                usernames
+                                    .renderUsername(id)
+                                    .join()
+                                    .append(text(" is not muted", NamedTextColor.GRAY)));
                           }
                         });
               }
@@ -122,23 +125,22 @@ public class MuteCommand extends CommunityCommand {
 
     List<Component> onlineMutes =
         mutedPlayers.stream()
-            .map(player -> PlayerComponent.of(player, NameStyle.FANCY))
+            .map(player -> PlayerComponent.player(player, NameStyle.FANCY))
             .collect(Collectors.toList());
 
     if (onlineMutes.isEmpty()) {
-      audience.sendWarning(TranslatableComponent.of("moderation.mute.none"));
+      audience.sendWarning(translatable("moderation.mute.none"));
       return;
     }
 
-    Component names = TextComponent.join(TextComponent.of(", ", TextColor.GRAY), onlineMutes);
+    Component names = Component.join(text(", ", NamedTextColor.GRAY), onlineMutes);
     Component message =
-        TextComponent.builder()
-            .append(TranslatableComponent.of("moderation.mute.list", TextColor.GOLD))
-            .append("(", TextColor.GRAY)
-            .append(Integer.toString(onlineMutes.size()), TextColor.YELLOW)
-            .append("): ", TextColor.GRAY)
-            .append(names)
-            .build();
+        translatable("moderation.mute.list", NamedTextColor.GOLD)
+            .append(text("(", NamedTextColor.GRAY))
+            .append(text(Integer.toString(onlineMutes.size()), NamedTextColor.YELLOW))
+            .append(text("): ", NamedTextColor.GRAY))
+            .append(names);
+
     audience.sendMessage(message);
   }
 }

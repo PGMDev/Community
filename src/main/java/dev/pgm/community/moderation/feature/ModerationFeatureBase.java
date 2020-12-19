@@ -1,5 +1,8 @@
 package dev.pgm.community.moderation.feature;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
@@ -28,12 +31,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -43,7 +44,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -263,16 +264,15 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   private Component formatBanEvasion(Player player, UUID bannedId, Component banned) {
-    return TextComponent.builder()
+    return text()
         .append(
-            TranslatableComponent.of(
+            translatable(
                 "moderation.similarIP.loginEvent",
-                TextColor.GRAY,
-                PlayerComponent.of(player, NameStyle.FANCY),
+                NamedTextColor.GRAY,
+                PlayerComponent.player(player, NameStyle.FANCY),
                 banned))
         .hoverEvent(
-            HoverEvent.showText(
-                TextComponent.of("Click to issue ban evasion punishment", TextColor.RED)))
+            HoverEvent.showText(text("Click to issue ban evasion punishment", NamedTextColor.RED)))
         .clickEvent(ClickEvent.runCommand("/ban " + player.getName() + " Ban Evasion"))
         .build();
   }

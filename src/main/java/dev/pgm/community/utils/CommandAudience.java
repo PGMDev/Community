@@ -3,11 +3,11 @@ package dev.pgm.community.utils;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -36,7 +36,7 @@ public class CommandAudience {
   }
 
   public Component getStyledName() {
-    return PlayerComponent.of(sender, NameStyle.FANCY);
+    return PlayerComponent.player(sender, NameStyle.FANCY);
   }
 
   public @Nullable Player getPlayer() {

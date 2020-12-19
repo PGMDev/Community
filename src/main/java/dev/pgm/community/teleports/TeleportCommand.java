@@ -1,5 +1,8 @@
 package dev.pgm.community.teleports;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -11,11 +14,9 @@ import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -45,7 +46,7 @@ public class TeleportCommand extends CommunityCommand {
     }
 
     if (!viewer.getSender().hasPermission(CommunityPermissions.TELEPORT_OTHERS)) {
-      viewer.sendWarning(TranslatableComponent.of("misc.noPermission"));
+      viewer.sendWarning(translatable("misc.noPermission"));
       return;
     }
 
@@ -74,12 +75,10 @@ public class TeleportCommand extends CommunityCommand {
             player,
             sender,
             null,
-            TextComponent.builder()
-                .append("Teleported ")
-                .append(PlayerComponent.of(player, NameStyle.FANCY))
-                .append(" to your location")
-                .color(TextColor.GRAY)
-                .build(),
+            text("Teleported ")
+                .append(PlayerComponent.player(player, NameStyle.FANCY))
+                .append(text(" to your location"))
+                .color(NamedTextColor.GRAY),
             true);
       }
     }
@@ -100,17 +99,15 @@ public class TeleportCommand extends CommunityCommand {
       int size = Bukkit.getOnlinePlayers().size();
       Component locName =
           targetPlayer.equals(viewer.getPlayer())
-              ? TextComponent.of("your location")
-              : PlayerComponent.of(targetPlayer, NameStyle.FANCY);
+              ? text("your location")
+              : PlayerComponent.player(targetPlayer, NameStyle.FANCY);
       viewer.sendMessage(
-          TextComponent.builder()
-              .append("Teleported ")
-              .append(TextComponent.of(size, TextColor.YELLOW, TextDecoration.BOLD))
-              .append(" player" + (size != 1 ? "s " : " "))
-              .append("to ")
+          text("Teleported ")
+              .append(text(size, NamedTextColor.YELLOW, TextDecoration.BOLD))
+              .append(text(" player" + (size != 1 ? "s " : " ")))
+              .append(text("to "))
               .append(locName)
-              .color(TextColor.GRAY)
-              .build());
+              .color(NamedTextColor.GRAY));
     }
   }
 

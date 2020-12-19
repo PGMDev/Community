@@ -1,5 +1,10 @@
 package dev.pgm.community.reports.commands;
 
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
@@ -21,13 +26,11 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.event.HoverEvent.Action;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -52,11 +55,13 @@ public class ReportCommands extends CommunityCommand {
     if (!reports.canReport(sender.getUniqueId())) {
       int cooldown = reports.getCooldownSeconds(sender.getUniqueId());
       if (cooldown > 0) {
-        TextComponent secondsComponent = TextComponent.of(Integer.toString(cooldown));
-        TranslatableComponent secondsLeftComponent =
-            TranslatableComponent.of(
-                cooldown != 1 ? "misc.seconds" : "misc.second", TextColor.AQUA, secondsComponent);
-        viewer.sendWarning(TranslatableComponent.of("command.cooldown", secondsLeftComponent));
+        Component secondsComponent = text(Integer.toString(cooldown));
+        Component secondsLeftComponent =
+            translatable(
+                cooldown != 1 ? "misc.seconds" : "misc.second",
+                NamedTextColor.AQUA,
+                secondsComponent);
+        viewer.sendWarning(translatable("command.cooldown", secondsLeftComponent));
         return;
       }
     }
@@ -64,10 +69,10 @@ public class ReportCommands extends CommunityCommand {
     reports.report(sender, target.getPlayer(), reason);
 
     Component thanks =
-        TextComponent.builder()
-            .append(TranslatableComponent.of("misc.thankYou", TextColor.GREEN))
-            .append(TextComponent.space())
-            .append(TranslatableComponent.of("moderation.report.acknowledge", TextColor.GOLD))
+        text()
+            .append(translatable("misc.thankYou", NamedTextColor.GREEN))
+            .append(space())
+            .append(translatable("moderation.report.acknowledge", NamedTextColor.GOLD))
             .build();
     viewer.sendMessage(thanks);
   }
@@ -101,9 +106,7 @@ public class ReportCommands extends CommunityCommand {
                 if (reports.isEmpty()) {
                   // TODO: Translate this
                   audience.sendWarning(
-                      TextComponent.builder("No reports found for ")
-                          .append(target, TextColor.AQUA)
-                          .build());
+                      text("No reports found for ").append(text(target, NamedTextColor.AQUA)));
                   return;
                 }
                 sendReportHistory(audience, reports, page);
@@ -120,31 +123,26 @@ public class ReportCommands extends CommunityCommand {
 
     public void sendReportHistory(
         CommandAudience audience, Collection<Report> reportData, int page) {
-      Component headerResultCount =
-          TextComponent.of(Long.toString(reportData.size()), TextColor.RED);
+      Component headerResultCount = text(Long.toString(reportData.size()), NamedTextColor.RED);
 
       int perPage = 7;
       int pages = (reportData.size() + perPage - 1) / perPage;
       page = Math.max(1, Math.min(page, pages));
 
       Component pageNum =
-          TranslatableComponent.of(
+          translatable(
               "command.simplePageHeader",
-              TextColor.GRAY,
-              TextComponent.of(Integer.toString(page), TextColor.RED),
-              TextComponent.of(Integer.toString(pages), TextColor.RED));
+              NamedTextColor.GRAY,
+              text(Integer.toString(page), NamedTextColor.RED),
+              text(Integer.toString(pages), NamedTextColor.RED));
 
       Component header =
-          TranslatableComponent.of(
-                  "moderation.reports.header", TextColor.GRAY, headerResultCount, pageNum)
-              .append(
-                  TextComponent.of(" (")
-                      .append(headerResultCount)
-                      .append(TextComponent.of(") » "))
-                      .append(pageNum));
+          translatable("moderation.reports.header", NamedTextColor.GRAY, headerResultCount, pageNum)
+              .append(text(" (").append(headerResultCount).append(text(") » ")).append(pageNum));
 
       Component formattedHeader =
-          TextFormatter.horizontalLineHeading(audience.getSender(), header, TextColor.DARK_GRAY);
+          TextFormatter.horizontalLineHeading(
+              audience.getSender(), header, NamedTextColor.DARK_GRAY);
       new PaginatedComponentResults<Report>(formattedHeader, perPage) {
         @Override
         public Component format(Report data, int index) {
@@ -152,38 +150,36 @@ public class ReportCommands extends CommunityCommand {
           Component reportedName = getReportFormatName(data.getReportedId()).join();
 
           Component serverName =
-              TextComponent.builder()
-                  .append("Server ", TextColor.GRAY)
-                  .append(": ", TextColor.DARK_GRAY)
-                  .append(data.getServer(), TextColor.AQUA)
-                  .build();
+              text("Server ", NamedTextColor.GRAY)
+                  .append(text(": ", NamedTextColor.DARK_GRAY))
+                  .append(text(data.getServer(), NamedTextColor.AQUA));
 
           TextComponent.Builder reporter =
-              TextComponent.builder()
+              text()
                   .append(
-                      TranslatableComponent.of(
-                          "moderation.reports.hover", TextColor.GRAY, reporterName));
+                      translatable("moderation.reports.hover", NamedTextColor.GRAY, reporterName));
 
           if (!data.getServer().equalsIgnoreCase(Community.get().getServerConfig().getServerId())) {
-            reporter.append(TextComponent.newline()).append(serverName);
+            reporter.append(newline()).append(serverName);
           }
 
           Component timeAgo =
-              PeriodFormats.relativePastApproximate(data.getTime()).color(TextColor.DARK_GREEN);
+              PeriodFormats.relativePastApproximate(data.getTime())
+                  .color(NamedTextColor.DARK_GREEN);
 
-          return TextComponent.builder()
-              .append(timeAgo.hoverEvent(HoverEvent.of(Action.SHOW_TEXT, reporter.build())))
-              .append(": ", TextColor.GRAY)
+          return text()
+              .append(timeAgo.hoverEvent(HoverEvent.showText(reporter.build())))
+              .append(text(": ", NamedTextColor.GRAY))
               .append(reportedName)
-              .append(" « ", TextColor.YELLOW)
-              .append(data.getReason(), TextColor.WHITE, TextDecoration.ITALIC)
+              .append(text(" « ", NamedTextColor.YELLOW))
+              .append(text(data.getReason(), NamedTextColor.WHITE, TextDecoration.ITALIC))
               .build();
         }
 
         @Override
         public Component formatEmpty() {
           // TODO: Translate
-          return TextComponent.of("No reports found", TextColor.RED);
+          return text("No reports found", NamedTextColor.RED);
         }
       }.display(
           audience.getAudience(), reportData.stream().sorted().collect(Collectors.toList()), page);
@@ -194,7 +190,7 @@ public class ReportCommands extends CommunityCommand {
           .getStoredUsername(id)
           .thenApplyAsync(
               name -> {
-                return PlayerComponent.of(Bukkit.getPlayer(id), name, NameStyle.FANCY);
+                return PlayerComponent.player(Bukkit.getPlayer(id), name, NameStyle.FANCY);
               });
     }
   }

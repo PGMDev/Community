@@ -1,5 +1,7 @@
 package dev.pgm.community.commands;
 
+import static net.kyori.adventure.text.Component.text;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
@@ -19,8 +21,7 @@ import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.ImportUtils;
 import dev.pgm.community.utils.ImportUtils.BukkitBanEntry;
 import java.util.List;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.UsernameResolver;
 import tc.oc.pgm.util.text.TextFormatter;
 
@@ -38,7 +39,7 @@ public class CommunityPluginCommand extends CommunityCommand {
   @Default
   public void reload(CommandAudience audience) {
     plugin.reload();
-    audience.sendWarning(TextComponent.of("Community has been reloaded")); // TODO: translate
+    audience.sendWarning(text("Community has been reloaded")); // TODO: translate
   }
 
   @Subcommand("stats")
@@ -46,8 +47,8 @@ public class CommunityPluginCommand extends CommunityCommand {
     audience.sendMessage(
         TextFormatter.horizontalLineHeading(
             audience.getSender(),
-            TextComponent.of("Community Database Stats", TextColor.YELLOW),
-            TextColor.DARK_RED));
+            text("Community Database Stats", NamedTextColor.YELLOW),
+            NamedTextColor.DARK_RED));
     sendTotalCount(users, "Total Users", audience);
     sendTotalCount(moderation, "Total Punishments", audience);
     sendTotalCount(reports, "Total Reports", audience);
@@ -59,10 +60,10 @@ public class CommunityPluginCommand extends CommunityCommand {
         .thenAcceptAsync(
             total ->
                 audience.sendMessage(
-                    TextComponent.builder()
-                        .append(countName, TextColor.GOLD)
-                        .append(": ", TextColor.GRAY)
-                        .append(TextComponent.of(total, TextColor.GREEN))
+                    text()
+                        .append(text(countName, NamedTextColor.GOLD))
+                        .append(text(": ", NamedTextColor.GRAY))
+                        .append(text(total, NamedTextColor.GREEN))
                         .build()));
   }
 
@@ -73,20 +74,18 @@ public class CommunityPluginCommand extends CommunityCommand {
     @Syntax("[true/false] - Verbose message")
     public void importBans(CommandAudience viewer, @Default("false") boolean verbose) {
       viewer.sendWarning(
-          TextComponent.of(
+          text(
               "Now importing bans to Community database, this may take a while...",
-              TextColor.DARK_RED));
+              NamedTextColor.DARK_RED));
 
       // Get a list of banned players
       List<BukkitBanEntry> bans = ImportUtils.getBukkitBans();
       viewer.sendMessage(
-          TextComponent.builder()
-              .append("Parsed ")
-              .append(Integer.toString(bans.size()), TextColor.GREEN)
-              .append(" bans from ")
-              .append("banned-players.json", TextColor.AQUA)
-              .color(TextColor.GRAY)
-              .build());
+          text("Parsed ")
+              .append(text(Integer.toString(bans.size()), NamedTextColor.GREEN))
+              .append(text(" bans from "))
+              .append(text("banned-players.json", NamedTextColor.AQUA))
+              .color(NamedTextColor.GRAY));
 
       bans.stream()
           .forEach(

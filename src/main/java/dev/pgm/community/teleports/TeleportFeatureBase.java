@@ -1,5 +1,7 @@
 package dev.pgm.community.teleports;
 
+import static net.kyori.adventure.text.Component.text;
+
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
@@ -7,13 +9,12 @@ import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.Sounds;
 import java.util.Set;
 import java.util.logging.Logger;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -48,13 +49,11 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
 
     if (!involved) {
       sender.sendMessage(
-          TextComponent.builder()
-              .append("Teleported ")
-              .append(PlayerComponent.of(teleporter, NameStyle.FANCY))
-              .append(" to ")
+          text("Teleported ")
+              .append(PlayerComponent.player(teleporter, NameStyle.FANCY))
+              .append(text(" to "))
               .append(formatLocation(target))
-              .color(TextColor.GRAY)
-              .build());
+              .color(NamedTextColor.GRAY));
     }
   }
 
@@ -82,13 +81,11 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
 
     if (senderFeedback && !involved) {
       sender.sendMessage(
-          TextComponent.builder()
-              .append("Teleported ")
-              .append(PlayerComponent.of(teleporter, NameStyle.FANCY))
-              .append(" to ")
-              .append(PlayerComponent.of(target, NameStyle.FANCY))
-              .color(TextColor.GRAY)
-              .build());
+          text("Teleported ")
+              .append(PlayerComponent.player(teleporter, NameStyle.FANCY))
+              .append(text(" to "))
+              .append(PlayerComponent.player(target, NameStyle.FANCY))
+              .color(NamedTextColor.GRAY));
     }
   }
 

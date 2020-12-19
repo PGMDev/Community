@@ -1,18 +1,22 @@
 package dev.pgm.community.moderation.punishments;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.title.Title.title;
+
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title.Times;
+import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
 
@@ -123,25 +127,26 @@ public abstract class PunishmentBase implements Punishment, Comparable<Punishmen
               formatPunishmentScreen(
                   config,
                   getIssuerId().isPresent()
-                      ? PlayerComponent.of(getIssuerId().get(), NameStyle.FANCY)
+                      ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
                       : MessageUtils.CONSOLE));
       return true;
     }
     return false;
   }
 
-  private static final Component WARN_SYMBOL = TextComponent.of(" \u26a0 ", TextColor.YELLOW);
+  private static final Component WARN_SYMBOL = text(" \u26a0 ", NamedTextColor.YELLOW);
 
   /*
    * Sends a formatted title and plays a sound warning a user of their actions
    */
   public void sendWarning(Audience target, String reason) {
-    Component titleWord = TranslatableComponent.of("misc.warning", TextColor.DARK_RED);
-    Component title =
-        TextComponent.builder().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
-    Component subtitle = TextComponent.of(reason, TextColor.GOLD);
+    Component titleWord = translatable("misc.warning", NamedTextColor.DARK_RED);
+    Component title = text().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
+    Component subtitle = text(reason, NamedTextColor.GOLD);
 
-    target.showTitle(title, subtitle, 5, 200, 10);
+    target.showTitle(
+        title(
+            title, subtitle, Times.of(Ticks.duration(5), Ticks.duration(200), Ticks.duration(10))));
     target.playSound(Sounds.WARN_SOUND);
   }
 }

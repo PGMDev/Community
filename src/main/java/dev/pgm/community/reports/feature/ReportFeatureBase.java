@@ -1,5 +1,8 @@
 package dev.pgm.community.reports.feature;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
@@ -18,10 +21,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -117,11 +118,11 @@ public abstract class ReportFeatureBase extends FeatureBase implements ReportFea
   }
 
   private Component formatReportBroadcast(Report report) {
-    return TranslatableComponent.of(
+    return translatable(
         "moderation.report.notify",
-        TextColor.GRAY,
-        PlayerComponent.of(report.getReporterId(), NameStyle.FANCY),
-        PlayerComponent.of(report.getReportedId(), NameStyle.FANCY),
-        TextComponent.of(report.getReason(), TextColor.WHITE));
+        NamedTextColor.GRAY,
+        PlayerComponent.player(report.getReporterId(), NameStyle.FANCY),
+        PlayerComponent.player(report.getReportedId(), NameStyle.FANCY),
+        text(report.getReason(), NamedTextColor.WHITE));
   }
 }

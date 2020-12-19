@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
+import net.kyori.adventure.text.Component;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.util.named.NameStyle;
@@ -35,7 +35,7 @@ public interface UsersFeature extends Feature {
   default CompletableFuture<Component> renderUsername(Optional<UUID> userId) {
     if (!userId.isPresent()) return CompletableFuture.completedFuture(MessageUtils.CONSOLE);
     return getStoredUsername(userId.get())
-        .thenApplyAsync(name -> PlayerComponent.of(userId.get(), name, NameStyle.FANCY));
+        .thenApplyAsync(name -> PlayerComponent.player(userId.get(), name, NameStyle.FANCY));
   }
 
   /**

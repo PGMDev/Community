@@ -1,5 +1,9 @@
 package dev.pgm.community.freeze;
 
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -10,10 +14,8 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.types.PlayerComponent;
@@ -36,17 +38,17 @@ public class FreezeCommand extends CommunityCommand {
   public void sendFrozenList(CommandAudience sender) {
 
     if (freeze.getFrozenAllPlayerCount() < 1) {
-      sender.sendWarning(TranslatableComponent.of("moderation.freeze.frozenList.none"));
+      sender.sendWarning(translatable("moderation.freeze.frozenList.none"));
       return;
     }
 
     // Online Players
     if (freeze.getOnlineCount() > 0) {
       Component names =
-          TextComponent.join(
-              TextComponent.of(", ", TextColor.GRAY),
+          join(
+              text(", ", NamedTextColor.GRAY),
               freeze.getFrozenPlayers().stream()
-                  .map(p -> PlayerComponent.of(p, NameStyle.FANCY))
+                  .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
                   .collect(Collectors.toList()));
 
       sender.sendMessage(
@@ -55,7 +57,7 @@ public class FreezeCommand extends CommunityCommand {
 
     // Offline Players
     if (freeze.getOfflineCount() > 0) {
-      Component names = TextComponent.of(freeze.getOfflineFrozenNames());
+      Component names = text(freeze.getOfflineFrozenNames());
       sender.sendMessage(
           formatFrozenList(
               "moderation.freeze.frozenList.offline", freeze.getOfflineCount(), names));
@@ -63,7 +65,6 @@ public class FreezeCommand extends CommunityCommand {
   }
 
   private Component formatFrozenList(String key, int count, Component names) {
-    return TranslatableComponent.of(
-        key, TextColor.GRAY, TextComponent.of(count, TextColor.AQUA), names);
+    return translatable(key, NamedTextColor.GRAY, text(count, NamedTextColor.AQUA), names);
   }
 }

@@ -1,5 +1,8 @@
 package dev.pgm.community.chat;
 
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.text;
+
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -10,11 +13,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 import java.util.logging.Logger;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
@@ -23,7 +25,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 
 /** ChatManagementFeature - Chat safety feature, including slowmode, lockdown, and clear. * */
 public class ChatManagementFeature extends FeatureBase {
@@ -45,7 +47,7 @@ public class ChatManagementFeature extends FeatureBase {
   public void toggleLockdown(CommandSender sender) {
     setLockdown(!isLockdown());
     broadcastModeChange(
-        TextComponent.of("Chat Lockdown", TextColor.DARK_PURPLE, TextDecoration.BOLD),
+        text("Chat Lockdown", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD),
         getLockdownHover(),
         isLockdown());
   }
@@ -53,21 +55,21 @@ public class ChatManagementFeature extends FeatureBase {
   public void toggleSlowmode(CommandSender sender) {
     setSlowmode(!isSlowmode());
     broadcastModeChange(
-        TextComponent.of("Chat Slowmode", TextColor.GOLD, TextDecoration.BOLD),
+        text("Chat Slowmode", NamedTextColor.GOLD, TextDecoration.BOLD),
         getSlowmodeHover(),
         isSlowmode());
   }
 
   private void broadcastModeChange(Component modeName, Component hover, boolean enabled) {
     Component message =
-        TextComponent.builder()
+        text()
             .append(modeName)
-            .append(" has been ")
+            .append(text(" has been "))
             .append(
                 enabled
-                    ? TextComponent.of("enabled", TextColor.GREEN)
-                    : TextComponent.of("disabled", TextColor.RED))
-            .color(TextColor.GRAY)
+                    ? text("enabled", NamedTextColor.GREEN)
+                    : text("disabled", NamedTextColor.RED))
+            .color(NamedTextColor.GRAY)
             .hoverEvent(HoverEvent.showText(hover))
             .build();
     BroadcastUtils.sendGlobalWarning(message);
@@ -90,31 +92,31 @@ public class ChatManagementFeature extends FeatureBase {
   }
 
   private Component getSlowmodeHover() {
-    TextComponent.Builder builder = TextComponent.builder().append("Slowmode has been ");
+    Component builder = text("Slowmode has been ");
 
     if (isSlowmode()) {
       builder
-          .append("enabled", TextColor.GREEN)
-          .append(" in order to reduce spam.")
-          .append(TextComponent.newline())
-          .append(BroadcastUtils.BROADCAST_DIV.color(TextColor.GOLD))
-          .append("Current slowmode speed: ")
-          .append(TextComponent.of(getChatConfig().getSlowmodeSpeed(), TextColor.YELLOW))
+          .append(text("enabled", NamedTextColor.GREEN))
+          .append(text(" in order to reduce spam."))
+          .append(newline())
+          .append(BroadcastUtils.BROADCAST_DIV.color(NamedTextColor.GOLD))
+          .append(text("Current slowmode speed: "))
+          .append(text(getChatConfig().getSlowmodeSpeed(), NamedTextColor.YELLOW))
           .append(formatSeconds(getChatConfig().getSlowmodeSpeed()));
     } else {
       builder
-          .append("disabled", TextColor.RED)
-          .append(". There is no longer a chat speed restriction in place");
+          .append(text("disabled", NamedTextColor.RED))
+          .append(text(". There is no longer a chat speed restriction in place"));
     }
-    return builder.color(TextColor.GRAY).build();
+    return builder.color(NamedTextColor.GRAY);
   }
 
   private Component getLockdownHover() {
-    return TextComponent.of(
+    return text(
         isLockdown()
             ? "Chat messages can not be sent at this time"
             : "Chat messages can now be sent",
-        TextColor.GRAY);
+        NamedTextColor.GRAY);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -128,7 +130,7 @@ public class ChatManagementFeature extends FeatureBase {
 
     // Lockdown - Cancel ALL player chat, except staff
     if (isLockdown()) {
-      viewer.sendWarning(TextComponent.of("The chat is currently locked"));
+      viewer.sendWarning(text("The chat is currently locked"));
       event.setCancelled(true);
       return;
     }
@@ -145,13 +147,11 @@ public class ChatManagementFeature extends FeatureBase {
           long seconds = (getChatConfig().getSlowmodeSpeed() - timeSince.getSeconds());
 
           Component cooldownMsg =
-              TextComponent.builder()
-                  .append("Please wait ")
-                  .append(TextComponent.of(seconds, TextColor.RED, TextDecoration.BOLD))
+              text("Please wait ")
+                  .append(text(seconds, NamedTextColor.RED, TextDecoration.BOLD))
                   .append(formatSeconds(seconds))
-                  .append(" before sending another message")
-                  .color(TextColor.GRAY)
-                  .build();
+                  .append(text(" before sending another message"))
+                  .color(NamedTextColor.GRAY);
 
           viewer.sendWarning(cooldownMsg);
           event.setCancelled(true);
@@ -169,20 +169,20 @@ public class ChatManagementFeature extends FeatureBase {
     if (isLockdown()) {
       sendDelayedMessage(
           viewer,
-          TextComponent.of("The chat has been locked.\nNo messages can be sent at this time"));
+          text("The chat has been locked.")
+              .append(newline())
+              .append(text("No messages can be sent at this time")));
     } else if (isSlowmode()) {
       sendDelayedMessage(
           viewer,
-          TextComponent.builder()
-              .append("Chat slowmode has been ")
-              .append("enabled", TextColor.GREEN)
-              .append(" to reduce spam.")
-              .append(TextComponent.newline())
-              .append("You may send a chat message once every ")
-              .append(TextComponent.of(getChatConfig().getSlowmodeSpeed(), TextColor.YELLOW))
+          text("Chat slowmode has been ")
+              .append(text("enabled", NamedTextColor.GREEN))
+              .append(text(" to reduce spam."))
+              .append(newline())
+              .append(text("You may send a chat message once every "))
+              .append(text(getChatConfig().getSlowmodeSpeed(), NamedTextColor.YELLOW))
               .append(formatSeconds(getChatConfig().getSlowmodeSpeed()))
-              .color(TextColor.GRAY)
-              .build());
+              .color(NamedTextColor.GRAY));
     }
   }
 
@@ -206,7 +206,7 @@ public class ChatManagementFeature extends FeatureBase {
         : Sets.newHashSet();
   }
 
-  private String formatSeconds(long seconds) {
-    return String.format(" second%s", seconds != 1 ? "s" : "");
+  private Component formatSeconds(long seconds) {
+    return text(String.format(" second%s", seconds != 1 ? "s" : ""));
   }
 }

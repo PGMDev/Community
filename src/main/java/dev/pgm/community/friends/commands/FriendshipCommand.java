@@ -1,5 +1,9 @@
 package dev.pgm.community.friends.commands;
 
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -24,14 +28,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -84,8 +86,7 @@ public class FriendshipCommand extends CommunityCommand {
               storedId -> {
                 if (storedId.isPresent()) {
                   if (sender.getId().equals(storedId)) {
-                    sender.sendWarning(
-                        TextComponent.builder().append("You may not friend yourself...").build());
+                    sender.sendWarning(text("You may not friend yourself..."));
                     return;
                   }
 
@@ -100,12 +101,10 @@ public class FriendshipCommand extends CommunityCommand {
                                       switch (status) {
                                         case ACCEPTED_EXISTING:
                                           sender.sendMessage(
-                                              TextComponent.builder()
-                                                  .append("You accepted ")
+                                              text("You accepted ")
                                                   .append(users.renderUsername(storedId).join())
-                                                  .append("'s friend request!")
-                                                  .color(TextColor.GREEN)
-                                                  .build());
+                                                  .append(text("'s friend request!"))
+                                                  .color(NamedTextColor.GREEN));
                                           break;
                                         case EXISTING:
                                           if (friends
@@ -113,35 +112,25 @@ public class FriendshipCommand extends CommunityCommand {
                                                   sender.getPlayer().getUniqueId(), storedId.get())
                                               .join()) {
                                             sender.sendWarning(
-                                                TextComponent.builder()
-                                                    .append("You are already friends with ")
-                                                    .append(name)
-                                                    .build());
+                                                text("You are already friends with ").append(name));
                                           } else {
                                             sender.sendWarning(
-                                                TextComponent.builder()
-                                                    .append(
-                                                        "You have already sent a friend request to ")
+                                                text("You have already sent a friend request to ")
                                                     .append(name)
-                                                    .color(TextColor.GRAY)
-                                                    .build());
+                                                    .color(NamedTextColor.GRAY));
                                           }
                                           break;
                                         case PENDING:
                                           sender.sendMessage(
-                                              TextComponent.builder()
-                                                  .append("Friend request sent to ")
+                                              text("Friend request sent to ")
                                                   .append(name)
-                                                  .color(TextColor.GRAY)
-                                                  .build());
+                                                  .color(NamedTextColor.GRAY));
                                           break;
                                         default:
                                           sender.sendWarning(
-                                              TextComponent.builder()
-                                                  .append("Could not send a friend request to ")
+                                              text("Could not send a friend request to ")
                                                   .append(name)
-                                                  .color(TextColor.GRAY)
-                                                  .build());
+                                                  .color(NamedTextColor.GRAY));
                                           break;
                                       }
                                     });
@@ -162,8 +151,7 @@ public class FriendshipCommand extends CommunityCommand {
               storedId -> {
                 if (storedId.isPresent()) {
                   if (sender.getId().equals(storedId)) {
-                    sender.sendWarning(
-                        TextComponent.builder().append("You may not unfriend yourself...").build());
+                    sender.sendWarning(text("You may not unfriend yourself..."));
                     return;
                   }
 
@@ -178,18 +166,14 @@ public class FriendshipCommand extends CommunityCommand {
                               friends.removeFriend(
                                   sender.getPlayer().getUniqueId(), existing.get());
                               sender.sendMessage(
-                                  TextComponent.builder()
-                                      .append("You have removed ")
+                                  text("You have removed ")
                                       .append(users.renderUsername(storedId).join())
-                                      .append(" as a friend")
-                                      .color(TextColor.GRAY)
-                                      .build());
+                                      .append(text(" as a friend"))
+                                      .color(NamedTextColor.GRAY));
                             } else {
                               sender.sendWarning(
-                                  TextComponent.builder()
-                                      .append("You are not friends with ")
-                                      .append(users.renderUsername(storedId).join())
-                                      .build());
+                                  text("You are not friends with ")
+                                      .append(users.renderUsername(storedId).join()));
                             }
                           });
                 } else {
@@ -211,7 +195,7 @@ public class FriendshipCommand extends CommunityCommand {
                   List<Friendship> requests =
                       friends.getIncomingRequests(sender.getPlayer().getUniqueId()).join();
                   if (requests.isEmpty()) {
-                    sender.sendWarning(TextComponent.of("You have no pending friend requests"));
+                    sender.sendWarning(text("You have no pending friend requests"));
                     return;
                   }
 
@@ -223,31 +207,30 @@ public class FriendshipCommand extends CommunityCommand {
                   if (pending.isPresent()) {
                     friends.acceptFriendship(pending.get());
                     sender.sendMessage(
-                        TextComponent.builder()
-                            .append("You accepted ")
+                        text("You accepted ")
                             .append(users.renderUsername(storedId).join())
-                            .append("'s friend request!")
-                            .color(TextColor.GREEN)
-                            .build());
+                            .append(text("'s friend request!"))
+                            .color(NamedTextColor.GREEN));
 
                     // Notify online requester
                     Player onlineFriend = Bukkit.getPlayer(storedId.get());
                     if (onlineFriend != null) {
                       Audience.get(onlineFriend)
                           .sendMessage(
-                              TextComponent.builder()
-                                  .append(users.renderUsername(sender.getId()).join())
-                                  .append(" has accepted your friend request!", TextColor.GREEN)
-                                  .build());
+                              users
+                                  .renderUsername(sender.getId())
+                                  .join()
+                                  .append(
+                                      text(
+                                          " has accepted your friend request!",
+                                          NamedTextColor.GREEN)));
                     }
 
                   } else {
                     sender.sendWarning(
-                        TextComponent.builder()
-                            .append("You don't have a pending friend request from ")
+                        text("You don't have a pending friend request from ")
                             .append(users.renderUsername(storedId).join())
-                            .color(TextColor.GRAY)
-                            .build());
+                            .color(NamedTextColor.GRAY));
                   }
                 } else {
                   sender.sendWarning(formatNotFoundComponent(target));
@@ -267,7 +250,7 @@ public class FriendshipCommand extends CommunityCommand {
                   List<Friendship> requests =
                       friends.getIncomingRequests(sender.getPlayer().getUniqueId()).join();
                   if (requests.isEmpty()) {
-                    sender.sendWarning(TextComponent.of("You have no pending friend requests"));
+                    sender.sendWarning(text("You have no pending friend requests"));
                     return;
                   }
 
@@ -278,20 +261,16 @@ public class FriendshipCommand extends CommunityCommand {
                   if (pending.isPresent()) {
                     friends.rejectFriendship(pending.get());
                     sender.sendMessage(
-                        TextComponent.builder()
-                            .append("You have rejected ")
+                        text("You have rejected ")
                             .append(users.renderUsername(storedId).join())
-                            .append("'s friend request")
-                            .color(TextColor.GRAY)
-                            .build());
+                            .append(text("'s friend request"))
+                            .color(NamedTextColor.GRAY));
                     return;
                   } else {
                     sender.sendWarning(
-                        TextComponent.builder()
-                            .append("You don't have a pending friend request from ")
+                        text("You don't have a pending friend request from ")
                             .append(users.renderUsername(storedId).join())
-                            .color(TextColor.GRAY)
-                            .build());
+                            .color(NamedTextColor.GRAY));
                   }
                 } else {
                   sender.sendWarning(formatNotFoundComponent(target));
@@ -303,36 +282,33 @@ public class FriendshipCommand extends CommunityCommand {
   private void sendRequestsList(CommandAudience audience, List<Friendship> requests, int page) {
     Collections.sort(requests); // Sorted by most recent request
 
-    Component headerResultCount =
-        TextComponent.of(Integer.toString(requests.size()), TextColor.RED);
+    Component headerResultCount = text(Integer.toString(requests.size()), NamedTextColor.RED);
 
     int perPage = 9;
     int pages = (requests.size() + perPage - 1) / perPage;
     page = Math.max(1, Math.min(page, pages));
 
-    TextColor featureColor = TextColor.YELLOW;
+    NamedTextColor featureColor = NamedTextColor.YELLOW;
 
     Component pageNum =
-        TranslatableComponent.of(
+        translatable(
             "command.simplePageHeader",
-            TextColor.GRAY,
-            TextComponent.of(Integer.toString(page), featureColor),
-            TextComponent.of(Integer.toString(pages), featureColor));
+            NamedTextColor.GRAY,
+            text(Integer.toString(page), featureColor),
+            text(Integer.toString(pages), featureColor));
 
     Component header =
-        TextComponent.builder()
-            .append("Friend Requests", featureColor)
+        text("Friend Requests", featureColor)
             .append(
-                TextComponent.builder()
-                    .append(" (")
+                text(" (")
                     .append(headerResultCount)
-                    .append(TextComponent.of(") » "))
+                    .append(text(") » "))
                     .append(pageNum)
-                    .color(TextColor.GRAY))
-            .build();
+                    .color(NamedTextColor.GRAY));
 
     Component formattedHeader =
-        TextFormatter.horizontalLineHeading(audience.getSender(), header, TextColor.DARK_GREEN);
+        TextFormatter.horizontalLineHeading(
+            audience.getSender(), header, NamedTextColor.DARK_GREEN);
     new PaginatedComponentResults<Friendship>(formattedHeader, perPage) {
 
       @Override
@@ -341,26 +317,23 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             getFriendName(data.getOtherPlayer(audience.getPlayer().getUniqueId()), null).join();
 
-        return TextComponent.builder()
-            .append(name)
-            .append(TextComponent.space())
-            .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
-            .append(" Sent ")
+        return name.append(space())
+            .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
+            .append(text(" Sent "))
             .append(
                 PeriodFormats.relativePastApproximate(data.getRequestDate())
-                    .color(TextColor.DARK_AQUA))
-            .append(TextComponent.space())
+                    .color(NamedTextColor.DARK_AQUA))
+            .append(space())
             .append(FriendshipFeature.createAcceptButton(data.getRequesterId().toString()))
-            .append(TextComponent.space())
+            .append(space())
             .append(FriendshipFeature.createRejectButton(data.getRequesterId().toString()))
-            .color(TextColor.GRAY)
-            .build();
+            .color(NamedTextColor.GRAY);
       }
 
       @Override
       public Component formatEmpty() {
         // TODO: Translate
-        return TextComponent.of("You have no pending friend requests", TextColor.RED);
+        return text("You have no pending friend requests", NamedTextColor.RED);
       }
     }.display(audience.getAudience(), requests, page);
   }
@@ -381,34 +354,29 @@ public class FriendshipCommand extends CommunityCommand {
         });
 
     Component headerResultCount =
-        TextComponent.of(Integer.toString(friends.size()), TextColor.LIGHT_PURPLE);
+        text(Integer.toString(friends.size()), NamedTextColor.LIGHT_PURPLE);
 
     int perPage = 9;
     int pages = (friends.size() + perPage - 1) / perPage;
     page = Math.max(1, Math.min(page, pages));
 
-    TextColor featureColor = TextColor.DARK_PURPLE;
+    NamedTextColor featureColor = NamedTextColor.DARK_PURPLE;
 
     Component pageNum =
-        TranslatableComponent.of(
+        translatable(
             "command.simplePageHeader",
-            TextColor.GRAY,
-            TextComponent.of(Integer.toString(page), featureColor),
-            TextComponent.of(Integer.toString(pages), featureColor));
+            NamedTextColor.GRAY,
+            text(Integer.toString(page), featureColor),
+            text(Integer.toString(pages), featureColor));
 
     Component header =
-        TextComponent.builder()
-            .append("Friends", featureColor)
-            .append(
-                TextComponent.of(" (")
-                    .append(headerResultCount)
-                    .append(TextComponent.of(") » "))
-                    .append(pageNum))
-            .color(TextColor.GRAY)
-            .build();
+        text("Friends", featureColor)
+            .append(text(" (").append(headerResultCount).append(text(") » ")).append(pageNum))
+            .color(NamedTextColor.GRAY);
 
     Component formattedHeader =
-        TextFormatter.horizontalLineHeading(audience.getSender(), header, TextColor.DARK_GREEN);
+        TextFormatter.horizontalLineHeading(
+            audience.getSender(), header, NamedTextColor.DARK_GREEN);
     new PaginatedComponentResults<Friendship>(formattedHeader, perPage) {
 
       @Override
@@ -418,11 +386,9 @@ public class FriendshipCommand extends CommunityCommand {
                     data.getOtherPlayer(audience.getPlayer().getUniqueId()), data.getLastUpdated())
                 .join();
 
-        TextComponent.Builder builder =
-            TextComponent.builder()
-                .append(name)
-                .append(TextComponent.space())
-                .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
+        Component builder =
+            name.append(space())
+                .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
                 .append(
                     renderOnlineStatus(
                             data.getOtherPlayer(audience.getPlayer().getUniqueId()),
@@ -431,22 +397,20 @@ public class FriendshipCommand extends CommunityCommand {
 
         if (data.getLastUpdated() != null) {
           Component hover =
-              TextComponent.builder()
-                  .append("Friends since ", TextColor.GRAY)
+              text("Friends since ", NamedTextColor.GRAY)
                   .append(
                       PeriodFormats.relativePastApproximate(data.getLastUpdated())
-                          .color(TextColor.AQUA))
-                  .build();
+                          .color(NamedTextColor.AQUA));
           builder.hoverEvent(HoverEvent.showText(hover));
         }
 
-        return builder.build();
+        return builder;
       }
 
       @Override
       public Component formatEmpty() {
         // TODO: Translate
-        return TextComponent.of("You have no friends yet... :(", TextColor.RED);
+        return text("You have no friends yet... :(", NamedTextColor.RED);
       }
     }.display(audience.getAudience(), friends, page);
   }
@@ -462,12 +426,10 @@ public class FriendshipCommand extends CommunityCommand {
 
               Component status =
                   PeriodFormats.relativePastApproximate(profile.getLastLogin())
-                      .color(visible ? TextColor.GREEN : TextColor.DARK_GREEN);
-              return TextComponent.builder()
-                  .append(visible ? " Online since " : " Last seen ")
+                      .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
+              return text(visible ? " Online since " : " Last seen ")
                   .append(status)
-                  .color(TextColor.GRAY)
-                  .build();
+                  .color(NamedTextColor.GRAY);
             });
   }
 
@@ -475,11 +437,6 @@ public class FriendshipCommand extends CommunityCommand {
     return users
         .getStoredUsername(id)
         .thenApplyAsync(
-            name -> {
-              TextComponent.Builder formatted =
-                  TextComponent.builder()
-                      .append(PlayerComponent.of(Bukkit.getPlayer(id), name, NameStyle.FANCY));
-              return formatted.build();
-            });
+            name -> PlayerComponent.player(Bukkit.getPlayer(id), name, NameStyle.FANCY));
   }
 }

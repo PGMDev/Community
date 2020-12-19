@@ -4,7 +4,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.users.feature.UsersFeature;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import net.kyori.text.Component;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 
 public class PunishmentFormats {

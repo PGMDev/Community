@@ -1,5 +1,11 @@
 package dev.pgm.community.moderation.commands;
 
+import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -27,12 +33,10 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.event.HoverEvent.Action;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -93,18 +97,15 @@ public class PunishmentCommand extends CommunityCommand {
                       .thenAcceptAsync(
                           lpm -> {
                             Component lastPunishMsg =
-                                TextComponent.builder()
-                                    .append("Last punishment: ", TextColor.GRAY)
-                                    .append(lpm)
-                                    .build();
+                                text("Last punishment: ", NamedTextColor.GRAY).append(lpm);
                             audience.sendMessage(lastPunishMsg);
                           });
                 }
               } else {
                 audience.sendMessage(
-                    TextComponent.of(
+                    text(
                         "You have not issued any recent punishments",
-                        TextColor.RED)); // TODO: Translate
+                        NamedTextColor.RED)); // TODO: Translate
               }
             });
   }
@@ -126,29 +127,23 @@ public class PunishmentCommand extends CommunityCommand {
                         pardon -> {
                           if (!pardon) {
                             audience.sendWarning(
-                                TextComponent.builder()
-                                    .append(target, TextColor.DARK_AQUA)
-                                    .append(" could not be ", TextColor.GRAY)
-                                    .append("unbanned")
-                                    .color(TextColor.RED)
-                                    .build());
+                                text(target, NamedTextColor.DARK_AQUA)
+                                    .append(text(" could not be ", NamedTextColor.GRAY))
+                                    .append(text("unbanned"))
+                                    .color(NamedTextColor.RED));
                           } else {
                             BroadcastUtils.sendAdminChatMessage(
-                                TextComponent.builder()
-                                    .append(target, TextColor.DARK_AQUA)
-                                    .append(" was unbanned by ", TextColor.GRAY)
-                                    .append(audience.getStyledName())
-                                    .build(),
+                                text(target, NamedTextColor.DARK_AQUA)
+                                    .append(text(" was unbanned by ", NamedTextColor.GRAY))
+                                    .append(audience.getStyledName()),
                                 Sounds.PUNISHMENT_PARDON);
                           }
                           // TODO: translate
                         });
               } else {
                 audience.sendWarning(
-                    TextComponent.builder()
-                        .append(target, TextColor.AQUA)
-                        .append(" has no active bans", TextColor.GRAY)
-                        .build());
+                    text(target, NamedTextColor.AQUA)
+                        .append(text(" has no active bans", NamedTextColor.GRAY)));
               }
             });
   }
@@ -167,57 +162,45 @@ public class PunishmentCommand extends CommunityCommand {
 
   public void sendPunishmentHistory(
       CommandAudience audience, String target, Collection<Punishment> punishmentData, int page) {
-    Component headerResultCount =
-        TextComponent.of(Long.toString(punishmentData.size()), TextColor.RED);
+    Component headerResultCount = text(Long.toString(punishmentData.size()), NamedTextColor.RED);
 
     int perPage = 7;
     int pages = (punishmentData.size() + perPage - 1) / perPage;
     page = Math.max(1, Math.min(page, pages));
 
     Component pageNum =
-        TranslatableComponent.of(
+        translatable(
             "command.simplePageHeader",
-            TextColor.GRAY,
-            TextComponent.of(Integer.toString(page), TextColor.RED),
-            TextComponent.of(Integer.toString(pages), TextColor.RED));
+            NamedTextColor.GRAY,
+            text(Integer.toString(page), NamedTextColor.RED),
+            text(Integer.toString(pages), NamedTextColor.RED));
 
-    Component targetName = TextComponent.empty();
+    Component targetName = empty();
     if (target != null) {
       UUID targetID =
           (!UsersFeature.USERNAME_REGEX.matcher(target).matches() ? UUID.fromString(target) : null);
       if (targetID != null) {
         targetName =
-            PlayerComponent.of(
+            PlayerComponent.player(
                 targetID, usernames.getStoredUsername(targetID).join(), NameStyle.FANCY);
       } else {
-        targetName = PlayerComponent.of(null, target, NameStyle.FANCY, null);
+        targetName = PlayerComponent.player(null, target, NameStyle.FANCY, null);
       }
     }
 
     Component header =
-        TextComponent.builder()
-            .append(TranslatableComponent.of("moderation.records.history", TextColor.GRAY))
+        translatable("moderation.records.history", NamedTextColor.GRAY)
             .append(
-                target != null
-                    ? TextComponent.builder()
-                        .append(" - ", TextColor.DARK_GRAY)
-                        .append(targetName)
-                        .build()
-                    : TextComponent.empty())
-            .append(
-                TextComponent.of(" (")
-                    .append(headerResultCount)
-                    .append(TextComponent.of(") » "))
-                    .append(pageNum))
-            .color(TextColor.GRAY)
-            .build();
+                target != null ? text(" - ", NamedTextColor.DARK_GRAY).append(targetName) : empty())
+            .append(text(" (").append(headerResultCount).append(text(") » ")).append(pageNum))
+            .color(NamedTextColor.GRAY);
 
     Component formattedHeader =
-        TextFormatter.horizontalLineHeading(audience.getSender(), header, TextColor.DARK_GRAY);
+        TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.DARK_GRAY);
     new PaginatedComponentResults<Punishment>(formattedHeader, perPage) {
       @Override
       public Component format(Punishment data, int index) {
-        TextComponent.Builder builder = TextComponent.builder();
+        TextComponent.Builder builder = text();
 
         // Punishments that can be removed (bans / mutes), show a small status indicator
         if (data.getType().canRescind()) {
@@ -226,14 +209,14 @@ public class PunishmentCommand extends CommunityCommand {
               .append(
                   status.hoverEvent(
                       HoverEvent.showText(
-                          TextComponent.of(
+                          text(
                               data.isActive()
                                   ? "Punishment is active"
                                   : "Punishment is no longer active",
-                              TextColor.GRAY))))
-              .append(" ");
+                              NamedTextColor.GRAY))))
+              .append(space());
         } else {
-          builder.append(MessageUtils.WARNING).append(" ");
+          builder.append(MessageUtils.WARNING).append(space());
         }
 
         builder.append(
@@ -241,12 +224,12 @@ public class PunishmentCommand extends CommunityCommand {
                 usernames.renderUsername(data.getIssuerId()).join(),
                 usernames.renderUsername(Optional.of(data.getTargetId())).join()));
 
-        TextComponent.Builder hover = TextComponent.builder();
+        TextComponent.Builder hover = text();
         hover
-            .append("Issued ", TextColor.GRAY)
+            .append(text("Issued ", NamedTextColor.GRAY))
             .append(
                 PeriodFormats.relativePastApproximate(data.getTimeIssued())
-                    .color(TextColor.YELLOW));
+                    .color(NamedTextColor.YELLOW));
 
         Duration length = ExpirablePunishment.getDuration(data);
         // When a punishments can expire, show expire time on hover
@@ -254,28 +237,29 @@ public class PunishmentCommand extends CommunityCommand {
           Instant endDate = data.getTimeIssued().plus(length);
           if (data.isActive()) {
             hover
-                .append(TextComponent.newline())
-                .append("Expires in ", TextColor.GRAY)
+                .append(newline())
+                .append(text("Expires in ", NamedTextColor.GRAY))
                 .append(
                     PeriodFormats.briefNaturalApproximate(Instant.now(), endDate, 1)
-                        .color(TextColor.YELLOW));
+                        .color(NamedTextColor.YELLOW));
           } else if (!data.wasUpdated()) {
             hover
-                .append(TextComponent.newline())
-                .append("Expired ", TextColor.GRAY)
-                .append(PeriodFormats.relativePastApproximate(endDate).color(TextColor.YELLOW));
+                .append(newline())
+                .append(text("Expired ", NamedTextColor.GRAY))
+                .append(
+                    PeriodFormats.relativePastApproximate(endDate).color(NamedTextColor.YELLOW));
           }
         }
 
         if (data.wasUpdated()) {
           hover
-              .append(TextComponent.newline())
-              .append("Infraction lifted by ", TextColor.GRAY) // TODO: translate
+              .append(newline())
+              .append(text("Infraction lifted by ", NamedTextColor.GRAY)) // TODO: translate
               .append(usernames.renderUsername(data.getLastUpdatedBy()).join())
-              .append(" ")
+              .append(space())
               .append(
                   PeriodFormats.relativePastApproximate(data.getLastUpdated())
-                      .color(TextColor.YELLOW));
+                      .color(NamedTextColor.YELLOW));
         }
 
         // If punishment was issued on a different service, add note to hover message
@@ -283,24 +267,24 @@ public class PunishmentCommand extends CommunityCommand {
             .getService()
             .equalsIgnoreCase(data.getService())) {
           hover
-              .append(TextComponent.newline())
-              .append("Service ", TextColor.GRAY)
-              .append(BroadcastUtils.RIGHT_DIV.color(TextColor.GOLD))
-              .append(TextComponent.space())
-              .append(data.getService(), TextColor.AQUA);
+              .append(newline())
+              .append(text("Service ", NamedTextColor.GRAY))
+              .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
+              .append(space())
+              .append(text(data.getService(), NamedTextColor.AQUA));
         }
 
-        return builder.hoverEvent(HoverEvent.of(Action.SHOW_TEXT, hover.build())).build();
+        return builder.hoverEvent(HoverEvent.showText(hover.build())).build();
       }
 
       @Override
       public Component formatEmpty() {
         return target != null
-            ? TranslatableComponent.of(
+            ? translatable(
                 "moderation.records.lookupNone",
-                TextColor.RED,
-                TextComponent.of(target, TextColor.AQUA))
-            : TextComponent.of("There have been no recent punishments", TextColor.RED);
+                NamedTextColor.RED,
+                text(target, NamedTextColor.AQUA))
+            : text("There have been no recent punishments", NamedTextColor.RED);
       }
     }.display(
         audience.getAudience(),

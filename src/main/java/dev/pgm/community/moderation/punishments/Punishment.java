@@ -1,5 +1,9 @@
 package dev.pgm.community.moderation.punishments;
 
+import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
 import dev.pgm.community.moderation.ModerationConfig;
@@ -17,10 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.text.PeriodFormats;
 import tc.oc.pgm.util.text.TextTranslations;
 
@@ -174,28 +176,26 @@ public interface Punishment {
           getType()
               .getPunishmentPrefix(
                   time.lastIndexOf('s') != -1
-                      ? TextComponent.of(time.substring(0, time.lastIndexOf('s')), TextColor.GOLD)
-                      : TextComponent.empty());
+                      ? text(time.substring(0, time.lastIndexOf('s')), NamedTextColor.GOLD)
+                      : empty());
     }
 
-    return TextComponent.builder()
-        .append(issuer)
+    return issuer
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(prefix)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(target)
         .append(BroadcastUtils.BROADCAST_DIV)
-        .append(getReason(), TextColor.RED)
-        .build();
+        .append(text(getReason(), NamedTextColor.RED));
   }
 
   /** Formats a string for multi-line kick message */
   default String formatPunishmentScreen(ModerationConfig config, Component issuerName) {
     List<Component> lines = Lists.newArrayList();
 
-    lines.add(TextComponent.empty());
-    lines.add(getType().getScreenComponent(TextComponent.of(getReason(), TextColor.RED)));
-    lines.add(TextComponent.empty());
+    lines.add(empty());
+    lines.add(getType().getScreenComponent(text(getReason(), NamedTextColor.RED)));
+    lines.add(empty());
 
     // If punishment expires, display when
     if (this instanceof ExpirablePunishment) {
@@ -205,32 +205,31 @@ public interface Punishment {
       Duration remaining = banLength.minus(timeSince);
 
       Component timeLeft = PeriodFormats.briefNaturalApproximate(remaining);
-      lines.add(TranslatableComponent.of("moderation.screen.expires", TextColor.GRAY, timeLeft));
-      lines.add(TextComponent.empty());
+      lines.add(translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft));
+      lines.add(empty());
     }
 
     // Staff Sign-off
-    lines.add(TranslatableComponent.of("moderation.screen.signoff", TextColor.GRAY, issuerName));
+    lines.add(translatable("moderation.screen.signoff", NamedTextColor.GRAY, issuerName));
 
     // Link to rules for review by player
     if (config.getRulesLink() != null && !config.getRulesLink().isEmpty()) {
-      Component rules = TextComponent.of(config.getRulesLink(), TextColor.AQUA);
+      Component rules = text(config.getRulesLink(), NamedTextColor.AQUA);
 
-      lines.add(TextComponent.empty());
+      lines.add(empty());
       lines.add(
-          TranslatableComponent.of(
-              "moderation.screen.rulesLink", TextColor.GRAY, rules)); // Link to rules
+          translatable("moderation.screen.rulesLink", NamedTextColor.GRAY, rules)); // Link to rules
     }
 
     // Configurable last line (for appeal message or etc)
     if (config.getAppealMessage() != null
         && !config.getAppealMessage().isEmpty()
         && getType().equals(PunishmentType.BAN)) {
-      lines.add(TextComponent.empty());
-      lines.add(TextComponent.of(config.getAppealMessage()));
+      lines.add(empty());
+      lines.add(text(config.getAppealMessage()));
     }
 
-    lines.add(TextComponent.empty());
+    lines.add(empty());
 
     return MessageUtils.formatKickScreenMessage(Community.get().getServerName(), lines);
   }

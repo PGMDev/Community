@@ -1,11 +1,12 @@
 package dev.pgm.community.info;
 
+import static net.kyori.adventure.text.Component.text;
+
 import java.util.List;
-import net.kyori.text.TextComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
-import tc.oc.pgm.util.chat.Audience;
 
 public class InfoCommandData {
 
@@ -44,14 +45,14 @@ public class InfoCommandData {
 
     if (getPermission() != null && !getPermission().isEmpty()) {
       if (!sender.hasPermission(getPermission())) {
-        viewer.sendWarning(TextComponent.of("You do not have permission for this command"));
+        viewer.sendWarning(text("You do not have permission for this command"));
         return; // TODO: Translate
       }
     }
 
     getLines().stream()
         .map(BukkitUtils::colorize)
-        .map(msg -> TextComponent.of(msg))
+        .map(msg -> text(msg))
         .forEach(viewer::sendMessage);
   }
 }

@@ -45,13 +45,13 @@
 		<dependency>
 			<groupId>tc.oc.pgm</groupId>
 			<artifactId>util</artifactId>
-			<version>0.10-SNAPSHOT</version>
+			<version>0.11-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>tc.oc.pgm</groupId>
 			<artifactId>core</artifactId>
-			<version>0.10-SNAPSHOT</version>
+			<version>0.11-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -94,7 +94,7 @@
 					<minimizeJar>true</minimizeJar>
 					<artifactSet>
 						<includes>
-							<include>net.kyori:text-*:*</include>
+							<include>net.kyori:*:*</include>
 							<include>co.aikar:*</include>
 							<include>tc.oc.pgm:util</include>
 						</includes>

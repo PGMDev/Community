@@ -1,9 +1,10 @@
 package dev.pgm.community.moderation.punishments;
 
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.format.TextColor;
+import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.translatable;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 /** Types of Punishments* */
 public enum PunishmentType {
@@ -40,18 +41,16 @@ public enum PunishmentType {
   }
 
   public Component getPunishmentPrefix() {
-    return TranslatableComponent.of(PREFIX_TRANSLATE_KEY + name().toLowerCase(), TextColor.GOLD);
+    return translatable(PREFIX_TRANSLATE_KEY + name().toLowerCase(), NamedTextColor.GOLD);
   }
 
   public Component getPunishmentPrefix(Component time) {
-    return TranslatableComponent.of(
-        PREFIX_TRANSLATE_KEY + name().toLowerCase(), TextColor.GOLD, time);
+    return translatable(PREFIX_TRANSLATE_KEY + name().toLowerCase(), NamedTextColor.GOLD, time);
   }
 
   public Component getScreenComponent(Component reason) {
-    if (!screen) return TextComponent.empty();
-    return TranslatableComponent.of(
-        SCREEN_TRANSLATE_KEY + name().toLowerCase(), TextColor.GOLD, reason);
+    if (!screen) return empty();
+    return translatable(SCREEN_TRANSLATE_KEY + name().toLowerCase(), NamedTextColor.GOLD, reason);
   }
 
   public static boolean isBan(PunishmentType type) {

@@ -1,5 +1,10 @@
 package dev.pgm.community.users.commands;
 
+import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
@@ -19,13 +24,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.TranslatableComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
@@ -60,18 +63,19 @@ public class UserInfoCommands extends CommunityCommand {
               boolean visible = online && (!vanished || staff);
 
               Component lastSeenMsg =
-                  TextComponent.builder()
+                  text()
                       .append(
-                          PlayerComponent.of(
+                          PlayerComponent.player(
                               profile.getId(), profile.getUsername(), NameStyle.FANCY))
                       .append(
-                          visible
-                              ? " has been online since "
-                              : " was last seen ") // TODO: translate
+                          text(
+                              visible
+                                  ? " has been online since "
+                                  : " was last seen ")) // TODO: translate
                       .append(
                           PeriodFormats.relativePastApproximate(profile.getLastLogin())
-                              .color(online ? TextColor.GREEN : TextColor.DARK_GREEN))
-                      .color(TextColor.GRAY)
+                              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+                      .color(NamedTextColor.GRAY)
                       .build();
               audience.sendMessage(lastSeenMsg);
             });
@@ -102,12 +106,12 @@ public class UserInfoCommands extends CommunityCommand {
                   .thenAcceptAsync(
                       alts -> {
                         Component targetPlayer =
-                            PlayerComponent.of(
+                            PlayerComponent.player(
                                 profile.getId(), profile.getUsername(), NameStyle.FANCY);
                         if (alts.isEmpty()) {
                           audience.sendWarning(
-                              TranslatableComponent.of(
-                                  "moderation.alts.noAlts", TextColor.GRAY, targetPlayer));
+                              translatable(
+                                  "moderation.alts.noAlts", NamedTextColor.GRAY, targetPlayer));
                           return;
                         }
 
@@ -116,40 +120,35 @@ public class UserInfoCommands extends CommunityCommand {
                                 .map(
                                     altId -> {
                                       Component name =
-                                          PlayerComponent.of(
+                                          PlayerComponent.player(
                                               altId,
                                               users.getStoredUsername(altId).join(),
                                               NameStyle.FANCY);
 
-                                      return TextComponent.builder()
+                                      return text()
                                           .append(name)
                                           .clickEvent(
                                               ClickEvent.runCommand("/l " + altId.toString()))
                                           .hoverEvent(
                                               HoverEvent.showText(
-                                                  TextComponent.builder()
-                                                      .append(
+                                                  text(
                                                           "Click to view punishment history of ",
-                                                          TextColor.GRAY)
-                                                      .append(name)
-                                                      .build()))
+                                                          NamedTextColor.GRAY)
+                                                      .append(name)))
                                           .build();
                                     })
                                 .collect(Collectors.toSet());
 
                         Component altNameList =
-                            TextComponent.builder()
-                                .append(targetPlayer)
-                                .append(" has ")
+                            targetPlayer
+                                .append(text(" has "))
                                 .append(
-                                    TextComponent.of(
-                                        alts.size(), TextColor.YELLOW, TextDecoration.BOLD))
-                                .append(" known alternate account")
-                                .append(alts.size() != 1 ? "s" : "")
-                                .append(": ")
-                                .append(TextFormatter.list(altNames, TextColor.GRAY))
-                                .color(TextColor.GRAY)
-                                .build();
+                                    text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD))
+                                .append(text(" known alternate account"))
+                                .append(text(alts.size() != 1 ? "s" : ""))
+                                .append(text(": "))
+                                .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
+                                .color(NamedTextColor.GRAY);
                         audience.sendMessage(altNameList);
                       });
             });
@@ -171,34 +170,31 @@ public class UserInfoCommands extends CommunityCommand {
               }
 
               Component header =
-                  TextComponent.builder()
-                      .append("Account Info", TextColor.RED)
-                      .append(" - ", TextColor.GRAY)
+                  text("Account Info", NamedTextColor.RED)
+                      .append(text(" - ", NamedTextColor.GRAY))
                       .append(
-                          PlayerComponent.of(
-                              profile.getId(), profile.getUsername(), NameStyle.CONCISE))
-                      .build();
+                          PlayerComponent.player(
+                              profile.getId(), profile.getUsername(), NameStyle.CONCISE));
 
               Component uuid =
-                  formatInfoField(
-                      "UUID", TextComponent.of(profile.getId().toString(), TextColor.YELLOW));
+                  formatInfoField("UUID", text(profile.getId().toString(), NamedTextColor.YELLOW));
               Component firstLogin =
                   formatInfoField("First Login", formatDateWithHover(profile.getFirstLogin()));
               Component lastLogin =
                   formatInfoField("Last Login", formatDateWithHover(profile.getLastLogin()));
               Component joinCount =
                   formatInfoField(
-                      "Join Count", TextComponent.of(profile.getJoinCount(), TextColor.YELLOW));
+                      "Join Count", text(profile.getJoinCount(), NamedTextColor.YELLOW));
 
               Component lastServer =
                   formatInfoField(
-                      "Last Server", TextComponent.of(profile.getServerName(), TextColor.AQUA));
+                      "Last Server", text(profile.getServerName(), NamedTextColor.AQUA));
 
-              Component knownIPs = formatInfoField("Known IPs", TextComponent.empty());
+              Component knownIPs = formatInfoField("Known IPs", empty());
 
               audience.sendMessage(
                   TextFormatter.horizontalLineHeading(
-                      audience.getSender(), header, TextColor.DARK_GRAY));
+                      audience.getSender(), header, NamedTextColor.DARK_GRAY));
 
               audience.sendMessage(uuid);
               audience.sendMessage(firstLogin);
@@ -217,9 +213,9 @@ public class UserInfoCommands extends CommunityCommand {
                                   ips.stream()
                                       .map(
                                           ip ->
-                                              TextComponent.builder()
-                                                  .append("      - ", TextColor.YELLOW)
-                                                  .append(ip, TextColor.DARK_AQUA)
+                                              text()
+                                                  .append(text("      - ", NamedTextColor.YELLOW))
+                                                  .append(text(ip, NamedTextColor.DARK_AQUA))
                                                   .build())
                                       .collect(Collectors.toList())));
                         });
@@ -229,22 +225,21 @@ public class UserInfoCommands extends CommunityCommand {
 
   private Component formatDateWithHover(Instant pastDate) {
     DateTimeFormatter timeFormat = DateTimeFormatter.ISO_INSTANT;
-    return TextComponent.builder()
+    return text()
         .append(PeriodFormats.relativePastApproximate(pastDate))
-        .hoverEvent(
-            HoverEvent.showText(TextComponent.of(timeFormat.format(pastDate), TextColor.AQUA)))
+        .hoverEvent(HoverEvent.showText(text(timeFormat.format(pastDate), NamedTextColor.AQUA)))
         .build();
   }
 
   private Component formatListItems(Collection<Component> components) {
-    return TextComponent.join(TextComponent.newline(), components);
+    return Component.join(newline(), components);
   }
 
   private Component formatInfoField(String field, Component value) {
-    return TextComponent.builder()
+    return text()
         .append(BroadcastUtils.BROADCAST_DIV)
-        .append(TextComponent.of(field, TextColor.GOLD, TextDecoration.BOLD))
-        .append(": ", TextColor.WHITE)
+        .append(text(field, NamedTextColor.GOLD, TextDecoration.BOLD))
+        .append(text(": ", NamedTextColor.WHITE))
         .append(value)
         .build();
   }
@@ -269,26 +264,26 @@ public class UserInfoCommands extends CommunityCommand {
     int pages = (altAccounts.size() + perPage - 1) / perPage;
 
     Component pageHeader =
-        TranslatableComponent.of(
+        translatable(
             "command.pageHeader",
-            TextColor.GRAY,
-            TextComponent.of(Integer.toString(page), TextColor.DARK_AQUA),
-            TextComponent.of(Integer.toString(pages), TextColor.DARK_AQUA));
+            NamedTextColor.GRAY,
+            text(Integer.toString(page), NamedTextColor.DARK_AQUA),
+            text(Integer.toString(pages), NamedTextColor.DARK_AQUA));
 
-    Component headerText = TranslatableComponent.of("moderation.alts.header", TextColor.DARK_AQUA);
+    Component headerText = translatable("moderation.alts.header", NamedTextColor.DARK_AQUA);
 
     Component header =
-        TextComponent.builder()
+        text()
             .append(headerText)
-            .append(" (", TextColor.GRAY)
-            .append(Integer.toString(altAccounts.size()), TextColor.DARK_AQUA)
-            .append(")", TextColor.GRAY)
-            .append(" » ", TextColor.GOLD)
+            .append(text(" (", NamedTextColor.GRAY))
+            .append(text(Integer.toString(altAccounts.size()), NamedTextColor.DARK_AQUA))
+            .append(text(")", NamedTextColor.GRAY))
+            .append(text(" » ", NamedTextColor.GOLD))
             .append(pageHeader)
             .build();
 
     Component formattedHeader =
-        TextFormatter.horizontalLineHeading(audience.getSender(), header, TextColor.BLUE);
+        TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.BLUE);
 
     new PaginatedComponentResults<Component>(formattedHeader, perPage) {
       @Override
@@ -299,29 +294,27 @@ public class UserInfoCommands extends CommunityCommand {
       @Override
       public Component formatEmpty() {
         // TODO: Translate
-        return TextComponent.of("No alternate accounts found", TextColor.RED);
+        return text("No alternate accounts found", NamedTextColor.RED);
       }
     }.display(audience.getAudience(), altAccounts, page);
   }
 
   private Component formatAltAccountList(Player target, Set<Player> alts) {
     Component names =
-        TextComponent.join(
-            TextComponent.of(", ", TextColor.GRAY),
+        Component.join(
+            text(", ", NamedTextColor.GRAY),
             alts.stream()
-                .map(pl -> PlayerComponent.of(pl, NameStyle.FANCY))
+                .map(pl -> PlayerComponent.player(pl, NameStyle.FANCY))
                 .collect(Collectors.toSet()));
-    Component size = TextComponent.of(Integer.toString(alts.size()), TextColor.YELLOW);
+    Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
 
-    return TextComponent.builder()
-        .append("[", TextColor.GOLD)
-        .append(PlayerComponent.of(target, NameStyle.FANCY))
-        .append("] ", TextColor.GOLD)
-        .append("(", TextColor.GRAY)
+    return text("[", NamedTextColor.GOLD)
+        .append(PlayerComponent.player(target, NameStyle.FANCY))
+        .append(text("] ", NamedTextColor.GOLD))
+        .append(text("(", NamedTextColor.GRAY))
         .append(size)
-        .append("): ", TextColor.GRAY)
-        .append(names)
-        .build();
+        .append(text("): ", NamedTextColor.GRAY))
+        .append(names);
   }
 
   private Set<Player> getAltAccounts(Player target) {

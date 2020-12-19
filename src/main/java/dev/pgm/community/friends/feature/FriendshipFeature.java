@@ -1,5 +1,7 @@
 package dev.pgm.community.friends.feature;
 
+import static net.kyori.adventure.text.Component.text;
+
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.friends.FriendRequestStatus;
 import dev.pgm.community.friends.Friendship;
@@ -7,12 +9,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
-import net.kyori.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -41,14 +42,14 @@ public interface FriendshipFeature extends Feature {
   void updateFriendships(UUID playerId);
 
   static Component createAcceptButton(String playerId) {
-    return TextComponent.of("\u2714", TextColor.GREEN, TextDecoration.BOLD)
+    return text("\u2714", NamedTextColor.GREEN, TextDecoration.BOLD)
         .clickEvent(ClickEvent.runCommand("/friend accept " + playerId))
-        .hoverEvent(HoverEvent.showText(TextComponent.of("Click to accept", TextColor.GREEN)));
+        .hoverEvent(HoverEvent.showText(text("Click to accept", NamedTextColor.GREEN)));
   }
 
   static Component createRejectButton(String playerId) {
-    return TextComponent.of("\u2715", TextColor.RED, TextDecoration.BOLD)
+    return text("\u2715", NamedTextColor.RED, TextDecoration.BOLD)
         .clickEvent(ClickEvent.runCommand("/friend reject " + playerId))
-        .hoverEvent(HoverEvent.showText(TextComponent.of("Click to reject", TextColor.RED)));
+        .hoverEvent(HoverEvent.showText(text("Click to reject", NamedTextColor.RED)));
   }
 }

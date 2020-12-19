@@ -1,5 +1,7 @@
 package dev.pgm.community;
 
+import static net.kyori.adventure.text.Component.text;
+
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.InvalidCommandArgument;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -8,9 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -98,9 +99,7 @@ public abstract class CommunityCommand extends BaseCommand {
   }
 
   protected Component formatNotFoundComponent(String target) {
-    return TextComponent.builder()
-        .append(target, TextColor.AQUA)
-        .append(" could not be found.", TextColor.RED)
-        .build();
+    return text(target, NamedTextColor.AQUA)
+        .append(text(" could not be found.", NamedTextColor.RED));
   }
 }

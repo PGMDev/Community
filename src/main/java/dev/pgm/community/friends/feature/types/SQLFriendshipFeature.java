@@ -1,5 +1,8 @@
 package dev.pgm.community.friends.feature.types;
 
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+
 import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.friends.FriendRequestStatus;
@@ -17,14 +20,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.util.chat.Audience;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.friends.FriendStatusChangeEvent;
 
 public class SQLFriendshipFeature extends FriendshipFeatureBase {
@@ -94,13 +96,13 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
                 Component reject = FriendshipFeature.createRejectButton(sender.toString());
 
                 Component requestMsg =
-                    TextComponent.builder()
+                    text()
                         .append(senderName)
-                        .append(" has requested to be your friend. ")
+                        .append(text(" has requested to be your friend. "))
                         .append(accept)
-                        .append(" ")
+                        .append(space())
                         .append(reject)
-                        .color(TextColor.GOLD)
+                        .color(NamedTextColor.GOLD)
                         .build();
 
                 Audience.get(Bukkit.getPlayer(target)).sendMessage(requestMsg);

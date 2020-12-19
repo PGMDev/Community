@@ -1,16 +1,17 @@
 package dev.pgm.community.moderation.punishments.types;
 
+import static net.kyori.adventure.text.Component.text;
+
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import net.kyori.text.Component;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
-import tc.oc.pgm.util.chat.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.text.PeriodFormats;
 
 public class MutePunishment extends ExpirablePunishment {
@@ -44,49 +45,41 @@ public class MutePunishment extends ExpirablePunishment {
   // When muted player attempts to chat
   public Component getChatMuteMessage() {
     Component chat =
-        TextComponent.builder()
-            .append("You are unable to chat while muted: ")
-            .append(getReason(), TextColor.RED)
-            .color(TextColor.GRAY)
-            .build();
+        text("You are unable to chat while muted: ")
+            .append(text(getReason(), NamedTextColor.RED))
+            .color(NamedTextColor.GRAY);
     return formatWithHover(chat);
   }
 
   // When muted player attempts to place sign
   public Component getSignMuteMessage() {
     Component sign =
-        TextComponent.builder()
-            .append("You are unable to write on signs while muted: ")
-            .append(getReason(), TextColor.RED)
-            .color(TextColor.GRAY)
-            .build();
+        text("You are unable to write on signs while muted: ")
+            .append(text(getReason(), NamedTextColor.RED))
+            .color(NamedTextColor.GRAY);
     return formatWithHover(sign);
   }
 
   // When player is muted
   public Component getMutedMessage() {
     Component muted =
-        TextComponent.builder()
-            .append("You have been muted for ")
-            .append(getReason(), TextColor.RED)
-            .color(TextColor.GRAY)
-            .build();
+        text("You have been muted for ")
+            .append(text(getReason(), NamedTextColor.RED))
+            .color(NamedTextColor.GRAY);
     return formatWithHover(muted);
   }
 
   // Include expire time on hover
   private Component formatWithHover(Component message) {
-    return TextComponent.builder()
+    return text()
         .append(message)
         .hoverEvent(
             HoverEvent.showText(
-                TextComponent.builder()
-                    .append("Expires in ", TextColor.GRAY)
+                text("Expires in ", NamedTextColor.GRAY)
                     .append(
                         PeriodFormats.briefNaturalApproximate(
                                 Duration.between(Instant.now(), getExpireTime()), 1, true)
-                            .color(TextColor.YELLOW))
-                    .build()))
+                            .color(NamedTextColor.YELLOW))))
         .build();
   }
 
