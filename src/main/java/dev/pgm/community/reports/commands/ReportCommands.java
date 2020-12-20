@@ -35,10 +35,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PeriodFormats;
+import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
-import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public class ReportCommands extends CommunityCommand {
 
@@ -164,7 +164,7 @@ public class ReportCommands extends CommunityCommand {
           }
 
           Component timeAgo =
-              PeriodFormats.relativePastApproximate(data.getTime())
+              TemporalComponent.relativePastApproximate(data.getTime())
                   .color(NamedTextColor.DARK_GREEN);
 
           return text()

@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import tc.oc.pgm.util.friends.FriendProvider;
 
@@ -27,9 +26,9 @@ public class PGMFriendManager implements FriendProvider, Listener {
   }
 
   @Override
-  public boolean areFriends(Player player, Player other) {
-    return onlineFriendMap.containsKey(player.getUniqueId())
-        ? onlineFriendMap.get(player.getUniqueId()).contains(other.getUniqueId())
+  public boolean areFriends(UUID player, UUID other) {
+    return onlineFriendMap.containsKey(player)
+        ? onlineFriendMap.get(player).contains(other)
         : false;
   }
 }

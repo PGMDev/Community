@@ -35,10 +35,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PeriodFormats;
+import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
-import tc.oc.pgm.util.text.types.PlayerComponent;
 
 @CommandAlias("friend|friendship|fs")
 @Description("Manage your friend relationships")
@@ -321,7 +321,7 @@ public class FriendshipCommand extends CommunityCommand {
             .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
             .append(text(" Sent "))
             .append(
-                PeriodFormats.relativePastApproximate(data.getRequestDate())
+                TemporalComponent.relativePastApproximate(data.getRequestDate())
                     .color(NamedTextColor.DARK_AQUA))
             .append(space())
             .append(FriendshipFeature.createAcceptButton(data.getRequesterId().toString()))
@@ -399,7 +399,7 @@ public class FriendshipCommand extends CommunityCommand {
           Component hover =
               text("Friends since ", NamedTextColor.GRAY)
                   .append(
-                      PeriodFormats.relativePastApproximate(data.getLastUpdated())
+                      TemporalComponent.relativePastApproximate(data.getLastUpdated())
                           .color(NamedTextColor.AQUA));
           builder.hoverEvent(HoverEvent.showText(hover));
         }
@@ -425,7 +425,7 @@ public class FriendshipCommand extends CommunityCommand {
               boolean visible = online && (!vanished || staff);
 
               Component status =
-                  PeriodFormats.relativePastApproximate(profile.getLastLogin())
+                  TemporalComponent.relativePastApproximate(profile.getLastLogin())
                       .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
               return text(visible ? " Online since " : " Last seen ")
                   .append(status)

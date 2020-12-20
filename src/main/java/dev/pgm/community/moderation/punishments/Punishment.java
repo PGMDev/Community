@@ -23,7 +23,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import tc.oc.pgm.util.text.PeriodFormats;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextTranslations;
 
 public interface Punishment {
@@ -171,7 +171,8 @@ public interface Punishment {
       Duration length = ((ExpirablePunishment) this).getDuration();
       String time =
           TextTranslations.translateLegacy(
-              PeriodFormats.briefNaturalApproximate(Duration.ofSeconds(length.getSeconds())), null);
+              TemporalComponent.briefNaturalApproximate(Duration.ofSeconds(length.getSeconds())),
+              null);
       prefix =
           getType()
               .getPunishmentPrefix(
@@ -204,7 +205,7 @@ public interface Punishment {
 
       Duration remaining = banLength.minus(timeSince);
 
-      Component timeLeft = PeriodFormats.briefNaturalApproximate(remaining);
+      Component timeLeft = TemporalComponent.briefNaturalApproximate(remaining);
       lines.add(translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft));
       lines.add(empty());
     }

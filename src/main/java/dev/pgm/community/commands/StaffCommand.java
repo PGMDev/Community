@@ -18,8 +18,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import tc.oc.pgm.api.Permissions;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.types.PlayerComponent;
 
 @CommandAlias("staff|mods|admins")
 @Description("View a list of online staff members")

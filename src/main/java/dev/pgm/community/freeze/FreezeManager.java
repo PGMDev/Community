@@ -36,7 +36,7 @@ import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.bukkit.OnlinePlayerMapAdapter;
 import tc.oc.pgm.util.bukkit.ViaUtils;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.types.PlayerComponent;
+import tc.oc.pgm.util.text.PlayerComponent;
 
 /** FreezeManager - Handles freezing of players */
 public class FreezeManager {

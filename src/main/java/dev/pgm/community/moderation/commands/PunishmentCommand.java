@@ -38,10 +38,10 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PeriodFormats;
+import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
-import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public class PunishmentCommand extends CommunityCommand {
 
@@ -228,7 +228,7 @@ public class PunishmentCommand extends CommunityCommand {
         hover
             .append(text("Issued ", NamedTextColor.GRAY))
             .append(
-                PeriodFormats.relativePastApproximate(data.getTimeIssued())
+                TemporalComponent.relativePastApproximate(data.getTimeIssued())
                     .color(NamedTextColor.YELLOW));
 
         Duration length = ExpirablePunishment.getDuration(data);
@@ -240,14 +240,15 @@ public class PunishmentCommand extends CommunityCommand {
                 .append(newline())
                 .append(text("Expires in ", NamedTextColor.GRAY))
                 .append(
-                    PeriodFormats.briefNaturalApproximate(Instant.now(), endDate, 1)
+                    TemporalComponent.briefNaturalApproximate(Instant.now(), endDate)
                         .color(NamedTextColor.YELLOW));
           } else if (!data.wasUpdated()) {
             hover
                 .append(newline())
                 .append(text("Expired ", NamedTextColor.GRAY))
                 .append(
-                    PeriodFormats.relativePastApproximate(endDate).color(NamedTextColor.YELLOW));
+                    TemporalComponent.relativePastApproximate(endDate)
+                        .color(NamedTextColor.YELLOW));
           }
         }
 
@@ -258,7 +259,7 @@ public class PunishmentCommand extends CommunityCommand {
               .append(usernames.renderUsername(data.getLastUpdatedBy()).join())
               .append(space())
               .append(
-                  PeriodFormats.relativePastApproximate(data.getLastUpdated())
+                  TemporalComponent.relativePastApproximate(data.getLastUpdated())
                       .color(NamedTextColor.YELLOW));
         }
 

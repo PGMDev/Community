@@ -46,7 +46,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.types.PlayerComponent;
+import tc.oc.pgm.util.text.PlayerComponent;
 
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
 

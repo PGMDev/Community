@@ -12,7 +12,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.Audience;
-import tc.oc.pgm.util.text.PeriodFormats;
+import tc.oc.pgm.util.text.TemporalComponent;
 
 public class MutePunishment extends ExpirablePunishment {
 
@@ -77,8 +77,8 @@ public class MutePunishment extends ExpirablePunishment {
             HoverEvent.showText(
                 text("Expires in ", NamedTextColor.GRAY)
                     .append(
-                        PeriodFormats.briefNaturalApproximate(
-                                Duration.between(Instant.now(), getExpireTime()), 1, true)
+                        TemporalComponent.briefNaturalApproximate(
+                                Duration.between(Instant.now(), getExpireTime()))
                             .color(NamedTextColor.YELLOW))))
         .build();
   }

@@ -32,10 +32,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PeriodFormats;
+import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
-import tc.oc.pgm.util.text.types.PlayerComponent;
 
 public class UserInfoCommands extends CommunityCommand {
 
@@ -73,7 +73,7 @@ public class UserInfoCommands extends CommunityCommand {
                                   ? " has been online since "
                                   : " was last seen ")) // TODO: translate
                       .append(
-                          PeriodFormats.relativePastApproximate(profile.getLastLogin())
+                          TemporalComponent.relativePastApproximate(profile.getLastLogin())
                               .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
                       .color(NamedTextColor.GRAY)
                       .build();
@@ -226,7 +226,7 @@ public class UserInfoCommands extends CommunityCommand {
   private Component formatDateWithHover(Instant pastDate) {
     DateTimeFormatter timeFormat = DateTimeFormatter.ISO_INSTANT;
     return text()
-        .append(PeriodFormats.relativePastApproximate(pastDate))
+        .append(TemporalComponent.relativePastApproximate(pastDate))
         .hoverEvent(HoverEvent.showText(text(timeFormat.format(pastDate), NamedTextColor.AQUA)))
         .build();
   }

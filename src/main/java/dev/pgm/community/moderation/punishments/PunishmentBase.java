@@ -18,7 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.types.PlayerComponent;
+import tc.oc.pgm.util.text.PlayerComponent;
 
 public abstract class PunishmentBase implements Punishment, Comparable<Punishment> {
 

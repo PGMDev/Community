@@ -27,7 +27,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.types.PlayerComponent;
+import tc.oc.pgm.util.text.PlayerComponent;
 
 public abstract class ReportFeatureBase extends FeatureBase implements ReportFeature {
 
