@@ -95,7 +95,10 @@ public class FreezeManager {
     if (freezee.hasPermission(CommunityPermissions.FREEZE_EXEMPT)
         && !freezer.getSender().hasPermission(CommunityPermissions.FREEZE_FORCE)) {
       freezer.sendWarning(
-          text().append(freezer.getStyledName()).append(text(" can not be frozen")).build());
+          text()
+              .append(PlayerComponent.player(freezee, NameStyle.FANCY))
+              .append(text(" can not be frozen"))
+              .build());
       return;
     }
 
