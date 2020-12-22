@@ -49,6 +49,8 @@ public interface CommunityPermissions {
 
   // Freeze
   String FREEZE = ROOT + ".freeze";
+  String FREEZE_EXEMPT = FREEZE + ".exempt";
+  String FREEZE_FORCE = FREEZE + ".force";
 
   // Commands
   String FLIGHT = ROOT + ".fly";

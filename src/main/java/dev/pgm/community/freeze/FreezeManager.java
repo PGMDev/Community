@@ -11,6 +11,7 @@ import static net.kyori.adventure.title.Title.title;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import dev.pgm.community.Community;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.List;
@@ -89,6 +90,15 @@ public class FreezeManager {
 
   public void setFrozen(
       CommandAudience freezer, Player freezee, boolean frozen, boolean silent, boolean pgm) {
+
+    // Don't allow freezing if player is exempt
+    if (freezee.hasPermission(CommunityPermissions.FREEZE_EXEMPT)
+        && !freezer.getSender().hasPermission(CommunityPermissions.FREEZE_FORCE)) {
+      freezer.sendWarning(
+          text().append(freezer.getStyledName()).append(text(" can not be frozen")).build());
+      return;
+    }
+
     // Use PGM freeze if integration & plugin loaded
     if (pgm) {
       Match match = PGM.get().getMatchManager().getMatch(freezee);
