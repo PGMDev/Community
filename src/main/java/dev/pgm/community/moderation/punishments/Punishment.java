@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation.punishments;
 
 import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
@@ -178,7 +179,7 @@ public interface Punishment {
               .getPunishmentPrefix(
                   time.lastIndexOf('s') != -1
                       ? text(time.substring(0, time.lastIndexOf('s')), NamedTextColor.GOLD)
-                      : empty());
+                      : space());
     }
 
     return issuer
