@@ -80,7 +80,7 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
             .color(NamedTextColor.GOLD)
             .append(text(" You have "))
             .append(text(requestCount, NamedTextColor.DARK_AQUA, TextDecoration.BOLD))
-            .append(text(" pending friend request" + (requestCount != 1 ? "s" : "")))
+            .append(text(" pending friend request" + (requestCount != 1 ? "s " : " ")))
             .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
             .color(NamedTextColor.DARK_GREEN)
             .hoverEvent(
