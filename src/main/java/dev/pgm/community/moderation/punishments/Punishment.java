@@ -1,7 +1,6 @@
 package dev.pgm.community.moderation.punishments;
 
 import static net.kyori.adventure.text.Component.empty;
-import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
@@ -171,15 +170,18 @@ public interface Punishment {
         && !((ExpirablePunishment) this).getDuration().isZero()) {
       Duration length = ((ExpirablePunishment) this).getDuration();
       String time =
-          TextTranslations.translateLegacy(
-              TemporalComponent.briefNaturalApproximate(Duration.ofSeconds(length.getSeconds())),
-              null);
-      prefix =
-          getType()
-              .getPunishmentPrefix(
-                  time.lastIndexOf('s') != -1
-                      ? text(time.substring(0, time.lastIndexOf('s')), NamedTextColor.GOLD)
-                      : space());
+          TextTranslations.translateLegacy(TemporalComponent.briefNaturalApproximate(length), null);
+
+      // TODO: Clean up (There's most likely an easier way to do this)
+      String[] timeParts = time.split(" ");
+      boolean seconds = timeParts.length == 2 && timeParts[1].toLowerCase().startsWith("s");
+
+      if (!seconds) {
+        time = time.substring(0, time.lastIndexOf('s'));
+      } else if (time.lastIndexOf("s") == time.length() - 1) {
+        time = time.substring(0, time.length() - 1);
+      }
+      prefix = getType().getPunishmentPrefix(text(time, NamedTextColor.GOLD));
     }
 
     return issuer
