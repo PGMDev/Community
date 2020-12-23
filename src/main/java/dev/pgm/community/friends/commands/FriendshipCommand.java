@@ -437,12 +437,12 @@ public class FriendshipCommand extends CommunityCommand {
               boolean visible = online && (!vanished || staff);
 
               Component status =
-                  visible
-                      ? TemporalComponent.duration(
-                              Duration.between(profile.getLastLogin(), Instant.now()))
-                          .build()
-                      : TemporalComponent.relativePastApproximate(profile.getLastLogin())
-                          .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
+                  (visible
+                          ? TemporalComponent.duration(
+                                  Duration.between(profile.getLastLogin(), Instant.now()))
+                              .build()
+                          : TemporalComponent.relativePastApproximate(profile.getLastLogin()))
+                      .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
               return text(visible ? " Online for " : " Last seen ")
                   .append(status)
                   .color(NamedTextColor.GRAY);
