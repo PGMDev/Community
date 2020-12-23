@@ -19,6 +19,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -70,10 +71,15 @@ public class UserInfoCommands extends CommunityCommand {
                       .append(
                           text(
                               visible
-                                  ? " has been online since "
+                                  ? " has been online for "
                                   : " was last seen ")) // TODO: translate
                       .append(
-                          TemporalComponent.relativePastApproximate(profile.getLastLogin())
+                          (visible
+                                  ? TemporalComponent.duration(
+                                          Duration.between(profile.getLastLogin(), Instant.now()))
+                                      .build()
+                                  : TemporalComponent.relativePastApproximate(
+                                      profile.getLastLogin()))
                               .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
                       .color(NamedTextColor.GRAY)
                       .build();

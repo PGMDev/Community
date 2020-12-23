@@ -20,6 +20,7 @@ import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
@@ -349,6 +350,17 @@ public class FriendshipCommand extends CommunityCommand {
 
             UserProfile friend1 = users.getStoredProfile(f1).join();
             UserProfile friend2 = users.getStoredProfile(f2).join();
+
+            Player online1 = Bukkit.getPlayer(f1);
+            Player online2 = Bukkit.getPlayer(f2);
+
+            // Sort online friends before offline friends
+            if (online1 != null && online2 == null) {
+              return -1;
+            } else if (online2 != null && online1 == null) {
+              return 1;
+            }
+
             return -friend1.getLastLogin().compareTo(friend2.getLastLogin());
           }
         });
@@ -356,7 +368,7 @@ public class FriendshipCommand extends CommunityCommand {
     Component headerResultCount =
         text(Integer.toString(friends.size()), NamedTextColor.LIGHT_PURPLE);
 
-    int perPage = 9;
+    int perPage = 10;
     int pages = (friends.size() + perPage - 1) / perPage;
     page = Math.max(1, Math.min(page, pages));
 
@@ -425,9 +437,13 @@ public class FriendshipCommand extends CommunityCommand {
               boolean visible = online && (!vanished || staff);
 
               Component status =
-                  TemporalComponent.relativePastApproximate(profile.getLastLogin())
-                      .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
-              return text(visible ? " Online since " : " Last seen ")
+                  visible
+                      ? TemporalComponent.duration(
+                              Duration.between(profile.getLastLogin(), Instant.now()))
+                          .build()
+                      : TemporalComponent.relativePastApproximate(profile.getLastLogin())
+                          .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
+              return text(visible ? " Online for " : " Last seen ")
                   .append(status)
                   .color(NamedTextColor.GRAY);
             });
