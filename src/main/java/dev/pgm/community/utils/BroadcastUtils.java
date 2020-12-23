@@ -1,13 +1,17 @@
 package dev.pgm.community.utils;
 
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.title.Title.title;
 
 import dev.pgm.community.CommunityPermissions;
 import javax.annotation.Nullable;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title.Times;
+import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import tc.oc.pgm.util.Audience;
 
@@ -55,5 +59,19 @@ public class BroadcastUtils {
   public static void sendGlobalWarning(Component message) {
     Bukkit.getOnlinePlayers().stream().map(Audience::get).forEach(p -> p.sendWarning(message));
     Audience.get(Bukkit.getConsoleSender()).sendMessage(message);
+  }
+
+  public static void sendGlobalTitle(
+      @Nullable Component title, @Nullable Component subTitle, int stay) {
+    Bukkit.getOnlinePlayers().stream()
+        .map(Audience::get)
+        .forEach(
+            p ->
+                p.showTitle(
+                    title(
+                        title == null ? empty() : title,
+                        subTitle == null ? empty() : subTitle,
+                        Times.of(
+                            Ticks.duration(5), Ticks.duration(20 * stay), Ticks.duration(15)))));
   }
 }

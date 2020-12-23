@@ -13,6 +13,8 @@ import dev.pgm.community.info.InfoCommandsFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.motd.MotdFeature;
+import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.reports.feature.types.SQLReportFeature;
 import dev.pgm.community.teleports.TeleportFeature;
@@ -21,6 +23,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 
@@ -37,6 +40,7 @@ public class FeatureManager {
   private final ChatManagementFeature chat;
   private final MotdFeature motd;
   private final FreezeFeature freeze;
+  private final MutationFeature mutation;
 
   public FeatureManager(
       Configuration config,
@@ -59,6 +63,7 @@ public class FeatureManager {
     this.chat = new ChatManagementFeature(config, logger);
     this.motd = new MotdFeature(config, logger);
     this.freeze = new FreezeFeature(config, logger);
+    this.mutation = new MutationFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -99,6 +104,10 @@ public class FeatureManager {
     return freeze;
   }
 
+  public MutationFeature getMutations() {
+    return mutation;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -109,6 +118,7 @@ public class FeatureManager {
     commands.registerDependency(ChatManagementFeature.class, getChatManagement());
     commands.registerDependency(FriendshipFeature.class, getFriendships());
     commands.registerDependency(FreezeFeature.class, getFreeze());
+    commands.registerDependency(MutationFeature.class, getMutations());
 
     // Custom command completions
     commands
@@ -120,6 +130,25 @@ public class FeatureManager {
                     .map(Player::getName)
                     .collect(Collectors.toSet()));
 
+    commands
+        .getCommandCompletions()
+        .registerCompletion(
+            "addMutations",
+            x ->
+                Stream.of(MutationType.values())
+                    .filter(mt -> !getMutations().hasMutation(mt))
+                    .map(MutationType::getDisplayName)
+                    .collect(Collectors.toSet()));
+    commands
+        .getCommandCompletions()
+        .registerCompletion(
+            "removeMutations",
+            x ->
+                Stream.of(MutationType.values())
+                    .filter(mt -> getMutations().hasMutation(mt))
+                    .map(MutationType::getDisplayName)
+                    .collect(Collectors.toSet()));
+
     // Feature commands
     registerFeatureCommands(getUsers(), commands);
     registerFeatureCommands(getReports(), commands);
@@ -128,6 +157,7 @@ public class FeatureManager {
     registerFeatureCommands(getChatManagement(), commands);
     registerFeatureCommands(getFriendships(), commands);
     registerFeatureCommands(getFreeze(), commands);
+    registerFeatureCommands(getMutations(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -151,6 +181,7 @@ public class FeatureManager {
     getChatManagement().getConfig().reload(config);
     getMotd().getConfig().reload(config);
     getFreeze().getConfig().reload(config);
+    getMutations().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
