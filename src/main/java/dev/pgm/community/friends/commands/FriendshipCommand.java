@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -398,8 +399,10 @@ public class FriendshipCommand extends CommunityCommand {
                     data.getOtherPlayer(audience.getPlayer().getUniqueId()), data.getLastUpdated())
                 .join();
 
-        Component builder =
-            name.append(space())
+        TextComponent.Builder builder =
+            text()
+                .append(name)
+                .append(space())
                 .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
                 .append(
                     renderOnlineStatus(
@@ -409,14 +412,15 @@ public class FriendshipCommand extends CommunityCommand {
 
         if (data.getLastUpdated() != null) {
           Component hover =
-              text("Friends since ", NamedTextColor.GRAY)
+              text("Friends for ", NamedTextColor.GRAY)
                   .append(
-                      TemporalComponent.relativePastApproximate(data.getLastUpdated())
+                      TemporalComponent.duration(
+                              Duration.between(data.getLastUpdated(), Instant.now()))
                           .color(NamedTextColor.AQUA));
           builder.hoverEvent(HoverEvent.showText(hover));
         }
 
-        return builder;
+        return builder.build();
       }
 
       @Override
