@@ -3,8 +3,9 @@ package dev.pgm.community.mutations;
 public enum MutationType {
   RAGE("Rage", "Instant death"),
   BLITZ("Blitz", "A limited number of lives"),
-  TNTRAIN("TNT Rain", "Raining death from above..."),
-  FLY("Fly", "Everyone can fly");
+  TNTRAIN("TNT Rain", "Raining TNT death from above..."),
+  FLY("Fly", "Everyone can fly"),
+  JUMP("Jump", "Double jump");
 
   String displayName;
   String description;

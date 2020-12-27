@@ -25,7 +25,6 @@ import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 @CommandAlias("mutate|mutation|mt")
 @Description("Manage match mutations")
-@CommandPermission(CommunityPermissions.MUTATION)
 public class MutationCommands extends CommunityCommand {
 
   @Dependency private MutationFeature mutations;
@@ -33,6 +32,7 @@ public class MutationCommands extends CommunityCommand {
   @Subcommand("add|enable|a")
   @Description("Add a mutation to the match")
   @CommandCompletion("@addMutations")
+  @CommandPermission(CommunityPermissions.MUTATION)
   public void addMutation(CommandAudience audience, MutationType type) {
     checkForMatch();
     if (!mutations.addMutation(audience, type, true)) {
@@ -47,6 +47,7 @@ public class MutationCommands extends CommunityCommand {
   @Subcommand("remove|rm|disable")
   @Description("Remove an active mutation from the match")
   @CommandCompletion("@removeMutations")
+  @CommandPermission(CommunityPermissions.MUTATION)
   public void removeMutation(CommandAudience audience, MutationType type) {
     checkForMatch();
     if (!mutations.removeMutation(audience, type)) {

@@ -23,19 +23,23 @@ public abstract class KitMutation extends MutationBase {
   @Override
   public void enable() {
     super.enable();
-    giveAllKits();
+    giveAllKit(kits);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onSpawn(ParticipantKitApplyEvent event) {
-    givePlayerKits(event.getPlayer()); // Apply all kits upon respawn
+    givePlayerKit(event.getPlayer(), kits); // Apply all kits upon respawn
   }
 
-  private void giveAllKits() {
-    match.getParticipants().forEach(this::givePlayerKits);
+  protected void giveAllKit(Kit... kit) {
+    giveAllKit(Lists.newArrayList(kit));
   }
 
-  private void givePlayerKits(MatchPlayer player) {
+  protected void giveAllKit(List<Kit> kits) {
+    match.getParticipants().forEach(player -> givePlayerKit(player, kits));
+  }
+
+  protected void givePlayerKit(MatchPlayer player, List<Kit> kits) {
     kits.forEach(kit -> player.applyKit(kit, true));
   }
 }

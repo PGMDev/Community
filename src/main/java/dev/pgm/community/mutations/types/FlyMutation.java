@@ -13,7 +13,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import tc.oc.pgm.api.match.Match;
-import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.FlyKit;
 
 public class FlyMutation extends KitMutation {
@@ -49,14 +48,6 @@ public class FlyMutation extends KitMutation {
     return true;
   }
 
-  private void removeFlightKits() {
-    match.getParticipants().forEach(this::removeFlyKit);
-  }
-
-  private void removeFlyKit(MatchPlayer player) {
-    player.applyKit(KIT_OFF, true);
-  }
-
   private class DisableFlightTask implements Runnable {
 
     private int seconds;
@@ -68,7 +59,7 @@ public class FlyMutation extends KitMutation {
     @Override
     public void run() {
       if (seconds < 1) {
-        removeFlightKits();
+        giveAllKit(KIT_OFF);
         Community.get().getServer().getScheduler().cancelTask(disableTaskID);
       } else {
         Component time = text(seconds, NamedTextColor.RED, TextDecoration.BOLD);
