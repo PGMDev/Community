@@ -170,27 +170,27 @@ public interface Punishment {
         && !((ExpirablePunishment) this).getDuration().isZero()) {
       Duration length = ((ExpirablePunishment) this).getDuration();
       String time =
-          TextTranslations.translateLegacy(TemporalComponent.briefNaturalApproximate(length), null);
+          TextTranslations.translateLegacy(TemporalComponent.duration(length).build(), null);
 
       // TODO: Clean up (There's most likely an easier way to do this)
       String[] timeParts = time.split(" ");
       boolean seconds = timeParts.length == 2 && timeParts[1].toLowerCase().startsWith("s");
-
-      if (!seconds) {
+      if (!seconds && time.contains("s")) {
         time = time.substring(0, time.lastIndexOf('s'));
       } else if (time.lastIndexOf("s") == time.length() - 1) {
         time = time.substring(0, time.length() - 1);
       }
       prefix = getType().getPunishmentPrefix(text(time, NamedTextColor.GOLD));
     }
-
-    return issuer
+    return text()
+        .append(issuer)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(prefix)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(target)
         .append(BroadcastUtils.BROADCAST_DIV)
-        .append(text(getReason(), NamedTextColor.RED));
+        .append(text(getReason(), NamedTextColor.RED))
+        .build();
   }
 
   /** Formats a string for multi-line kick message */
