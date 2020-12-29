@@ -26,7 +26,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextTranslations;
 
-public interface Punishment {
+public interface Punishment extends Comparable<Punishment> {
 
   /**
    * Get the the Punishment ID A Unique id is assigned to each punishment

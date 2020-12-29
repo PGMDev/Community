@@ -20,7 +20,7 @@ import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PlayerComponent;
 
-public abstract class PunishmentBase implements Punishment, Comparable<Punishment> {
+public abstract class PunishmentBase implements Punishment {
 
   private UUID punishmentId;
   private UUID targetId;

@@ -41,7 +41,10 @@ public class MessageUtils {
   }
 
   public static Component formatUnseen(String target) {
-    return text(target, NamedTextColor.DARK_AQUA).append(text(" has never joined the server"));
+    return text()
+        .append(text(target, NamedTextColor.DARK_AQUA))
+        .append(text(" has never joined the server", NamedTextColor.RED))
+        .build();
     // TODO: translate
   }
 }

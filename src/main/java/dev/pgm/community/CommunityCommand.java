@@ -99,7 +99,9 @@ public abstract class CommunityCommand extends BaseCommand {
   }
 
   protected Component formatNotFoundComponent(String target) {
-    return text(target, NamedTextColor.AQUA)
-        .append(text(" could not be found.", NamedTextColor.RED));
+    return text()
+        .append(text(target, NamedTextColor.AQUA))
+        .append(text(" could not be found.", NamedTextColor.RED))
+        .build();
   }
 }
