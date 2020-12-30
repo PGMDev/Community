@@ -55,7 +55,7 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
       return CompletableFuture.completedFuture(cached.getFriendships());
     } else {
       return getDatabase()
-          .submitQueryComplete(new SelectFriendshipsQuery(UUID.fromString(target)))
+          .submitQueryComplete(cached)
           .thenApplyAsync(q -> SelectFriendshipsQuery.class.cast(q).getFriendships());
     }
   }
