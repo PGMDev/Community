@@ -1,6 +1,5 @@
 package dev.pgm.community.teleports;
 
-import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
 import co.aikar.commands.annotation.CommandAlias;
@@ -14,22 +13,22 @@ import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 public class TeleportCommand extends CommunityCommand {
 
   @Dependency private TeleportFeature teleport;
 
+  // NEW TARGET SELECTORS
+
+  // /tp * <single>
+  // /tp ? <single>
+  // /tp team=[name] <single>
+
   @CommandAlias("tp|teleport")
   @Description("Teleport to another player")
-  @Syntax("<player> <other player>")
+  @Syntax("<player> <other player> | <*, ?=1, team=Name, name1,name2...> <target>")
   @CommandCompletion("@visible @visible")
   @CommandPermission(CommunityPermissions.TELEPORT)
   public void teleportCommand(CommandAudience viewer, String target1, @Optional String target2) {
@@ -51,63 +50,25 @@ public class TeleportCommand extends CommunityCommand {
     }
 
     if (target2 != null) {
-      Player player1 = getSinglePlayer(viewer, target1);
+      PlayerSelection targets = getPlayers(viewer, target1);
+
       Player player2 = getSinglePlayer(viewer, target2);
-      if (player1 != null && player2 != null) {
-        teleport.teleport(viewer, player1, player2);
+      if (!targets.getPlayers().isEmpty() && player2 != null) {
+        teleport.teleport(viewer, targets.getPlayers(), player2, targets.getText());
+      } else {
+        targets.sendNoPlayerComponent(viewer);
       }
     }
   }
 
   @CommandAlias("tphere|bring|tph")
-  @Description("Teleport a player to you")
+  @Description("Teleport players to you")
   @Syntax("[player] - Player to teleport")
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
   public void teleportHereCommand(CommandAudience viewer, String target) {
     if (viewer.isPlayer()) {
-      Player sender = viewer.getPlayer();
-      Player player = getSinglePlayer(viewer, target);
-
-      if (player != null) {
-        teleport.teleport(
-            viewer,
-            player,
-            sender,
-            null,
-            text("Teleported ")
-                .append(PlayerComponent.player(player, NameStyle.FANCY))
-                .append(text(" to your location"))
-                .color(NamedTextColor.GRAY),
-            true);
-      }
-    }
-  }
-
-  @CommandAlias("tpall|tpa|bringall")
-  @Description("Teleport everyone to you or another player")
-  @Syntax("[target] - Player to teleport everyone to")
-  @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.TELEPORT_ALL)
-  public void teleportAllCommand(CommandAudience viewer, @Optional String target) {
-    if (viewer.isPlayer()) {
-      if (target != null && getSinglePlayer(viewer, target) == null)
-        return; // Return if target is not found
-      Player targetPlayer = target != null ? getSinglePlayer(viewer, target) : viewer.getPlayer();
-      Bukkit.getOnlinePlayers()
-          .forEach(p -> teleport.teleport(viewer, p, targetPlayer, null, null, false));
-      int size = Bukkit.getOnlinePlayers().size();
-      Component locName =
-          targetPlayer.equals(viewer.getPlayer())
-              ? text("your location")
-              : PlayerComponent.player(targetPlayer, NameStyle.FANCY);
-      viewer.sendMessage(
-          text("Teleported ")
-              .append(text(size, NamedTextColor.YELLOW, TextDecoration.BOLD))
-              .append(text(" player" + (size != 1 ? "s " : " ")))
-              .append(text("to "))
-              .append(locName)
-              .color(NamedTextColor.GRAY));
+      teleportCommand(viewer, target, viewer.getPlayer().getName());
     }
   }
 

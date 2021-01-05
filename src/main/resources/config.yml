@@ -93,6 +93,10 @@ freeze:
   enabled: true  
   pgm-integration: true # Whether Community will attempt to hook into PGM
   
+# Mutations - a PGM exclusive feature. Allows for a variety of fun gameplay altering mechanics
+mutations:
+  enabled: true  
+  
 # Database
 database:
   enabled: true # Whether to use a database (If false persistent features will not work)

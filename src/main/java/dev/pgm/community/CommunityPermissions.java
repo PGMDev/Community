@@ -52,10 +52,19 @@ public interface CommunityPermissions {
   String FREEZE_EXEMPT = FREEZE + ".exempt";
   String FREEZE_FORCE = FREEZE + ".force";
 
-  // Commands
+  // Mutations
+  String MUTATION = ROOT + ".mutation"; // Access to /mutate
+
+  // General Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";
+  String GAMEMODE = ROOT + ".gamemode";
+
+  // Player Selectors
+  String SELECTOR = ROOT + ".selector"; // Allow access to targeting more than 1 player
+  String ALL_SELECTOR = SELECTOR + ".all"; // * - select everyone
+  String RANDOM_SELECTOR = SELECTOR + ".random"; // ? - select a random player
+  String TEAM_SELECTOR = SELECTOR + ".team"; // team='Name' - select a match's team
 
   // TODO Setup different groups like moderation
-
 }

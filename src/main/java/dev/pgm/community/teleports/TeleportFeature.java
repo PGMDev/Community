@@ -4,6 +4,7 @@ import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.utils.CommandAudience;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -14,6 +15,17 @@ import tc.oc.pgm.util.text.PlayerComponent;
 
 /** TeleportFeature - Teleport players to other locations * */
 public interface TeleportFeature extends Feature {
+
+  default void teleport(
+      CommandAudience sender, Set<Player> targets, Player target, @Nullable Component type) {
+    targets.forEach(player -> teleport(sender, player, target));
+    sender.sendMessage(
+        text("Teleported ")
+            .append(type != null ? type : text(targets.size()))
+            .append(text(" to "))
+            .append(PlayerComponent.player(target, NameStyle.FANCY))
+            .color(NamedTextColor.GRAY));
+  }
 
   default void teleport(CommandAudience sender, Player teleporter, Player target) {
     teleport(sender, teleporter, target, formatTeleportPlayerMessage(target), null, true);
