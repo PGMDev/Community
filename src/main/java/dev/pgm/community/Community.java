@@ -7,6 +7,7 @@ import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.utils.CommandAudience;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Random;
 import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -30,6 +31,8 @@ public class Community extends JavaPlugin {
 
   // Feature Manager
   private FeatureManager features;
+
+  private Random random;
 
   @Override
   public void onEnable() {
@@ -65,6 +68,7 @@ public class Community extends JavaPlugin {
 
   private void setupCommands() {
     this.commands = new BukkitCommandManager(this);
+    commands.registerDependency(Random.class, new Random());
 
     // Contexts
     commands

@@ -54,4 +54,8 @@ public class CommandAudience {
   public void sendWarning(Component message) {
     audience.sendWarning(message);
   }
+
+  public boolean hasPermission(String permission) {
+    return isPlayer() ? getPlayer().hasPermission(permission) : true;
+  }
 }

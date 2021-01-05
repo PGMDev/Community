@@ -76,8 +76,8 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
 
   public void sendFriendRequestLoginMessage(Player player, int requestCount) {
     Component requestsMessage =
-        BroadcastUtils.RIGHT_DIV
-            .color(NamedTextColor.GOLD)
+        text()
+            .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
             .append(text(" You have "))
             .append(text(requestCount, NamedTextColor.DARK_AQUA, TextDecoration.BOLD))
             .append(text(" pending friend request" + (requestCount != 1 ? "s " : " ")))
@@ -86,7 +86,8 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
             .hoverEvent(
                 HoverEvent.showText(
                     text("Click to view pending friend requests", NamedTextColor.GRAY)))
-            .clickEvent(ClickEvent.runCommand("/friend requests"));
+            .clickEvent(ClickEvent.runCommand("/friend requests"))
+            .build();
 
     Audience.get(player).sendMessage(requestsMessage);
     Audience.get(player).playSound(Sounds.FRIEND_REQUEST_LOGIN);
