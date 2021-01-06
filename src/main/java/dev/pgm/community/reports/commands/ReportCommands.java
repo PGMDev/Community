@@ -52,6 +52,11 @@ public class ReportCommands extends CommunityCommand {
   public void report(CommandAudience viewer, Player sender, OnlinePlayer target, String reason) {
     checkEnabled();
 
+    if (target.getPlayer().equals(sender)) {
+      viewer.sendWarning(text("You may not report yourself"));
+      return;
+    }
+
     if (!reports.canReport(sender.getUniqueId())) {
       int cooldown = reports.getCooldownSeconds(sender.getUniqueId());
       if (cooldown > 0) {
