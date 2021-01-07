@@ -12,10 +12,10 @@ import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeature;
-import dev.pgm.community.reports.feature.ReportFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.ImportUtils;
@@ -34,7 +34,7 @@ public class CommunityPluginCommand extends CommunityCommand {
   @Dependency private Community plugin;
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature users;
-  @Dependency private ReportFeature reports;
+  @Dependency private AssistanceFeature reports;
 
   @Default
   public void reload(CommandAudience audience) {

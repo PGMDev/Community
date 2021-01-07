@@ -1,17 +1,17 @@
-package dev.pgm.community.reports.feature.types;
+package dev.pgm.community.assistance.feature.types;
 
 import com.google.common.collect.Lists;
-import dev.pgm.community.reports.Report;
-import dev.pgm.community.reports.ReportConfig;
-import dev.pgm.community.reports.feature.ReportFeatureBase;
+import dev.pgm.community.assistance.Report;
+import dev.pgm.community.assistance.ReportConfig;
+import dev.pgm.community.assistance.feature.AssistanceFeatureBase;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
 
-public class NoDBReportFeature extends ReportFeatureBase {
+public class NoDBAssistanceFeature extends AssistanceFeatureBase {
 
-  public NoDBReportFeature(Configuration config, Logger logger) {
+  public NoDBAssistanceFeature(Configuration config, Logger logger) {
     super(new ReportConfig(config), logger);
   }
 

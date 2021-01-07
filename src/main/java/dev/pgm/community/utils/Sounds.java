@@ -28,4 +28,8 @@ public class Sounds {
   // Played when player logs in and has a pending friend request
   public static final Sound FRIEND_REQUEST_LOGIN =
       sound(key("note.harp"), Sound.Source.MASTER, 1f, 1.2f);
+
+  // Played when a player requests help
+  public static final Sound HELP_REQUEST =
+      sound(key("mob.cat.meow"), Sound.Source.MASTER, 1f, 0.9f);
 }

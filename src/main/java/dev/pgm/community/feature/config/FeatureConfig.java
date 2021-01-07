@@ -1,6 +1,6 @@
 package dev.pgm.community.feature.config;
 
-import dev.pgm.community.reports.feature.ReportFeature;
+import dev.pgm.community.assistance.feature.AssistanceFeature;
 import org.bukkit.configuration.Configuration;
 
 public interface FeatureConfig {
@@ -9,7 +9,7 @@ public interface FeatureConfig {
   void reload(Configuration config);
 
   /**
-   * The key associated with the feature e.g "reports" for {@link ReportFeature}
+   * The key associated with the feature e.g "reports" for {@link AssistanceFeature}
    *
    * @return the string key
    */

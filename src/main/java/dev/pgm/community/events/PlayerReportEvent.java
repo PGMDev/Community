@@ -1,6 +1,6 @@
 package dev.pgm.community.events;
 
-import dev.pgm.community.reports.Report;
+import dev.pgm.community.assistance.Report;
 
 /** PlayerReportEvent - Called when a report is created */
 public class PlayerReportEvent extends CommunityEvent {

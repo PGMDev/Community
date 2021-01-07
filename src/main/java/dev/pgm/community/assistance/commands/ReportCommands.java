@@ -1,4 +1,4 @@
-package dev.pgm.community.reports.commands;
+package dev.pgm.community.assistance.commands;
 
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
@@ -18,8 +18,8 @@ import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.reports.Report;
-import dev.pgm.community.reports.feature.ReportFeature;
+import dev.pgm.community.assistance.Report;
+import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Collection;
@@ -42,7 +42,7 @@ import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 public class ReportCommands extends CommunityCommand {
 
-  @Dependency private ReportFeature reports;
+  @Dependency private AssistanceFeature reports;
   @Dependency private UsersFeature usernames;
 
   @CommandAlias("report")
@@ -52,34 +52,23 @@ public class ReportCommands extends CommunityCommand {
   public void report(CommandAudience viewer, Player sender, OnlinePlayer target, String reason) {
     checkEnabled();
 
-    if (target.getPlayer().equals(sender)) {
-      viewer.sendWarning(text("You may not report yourself"));
-      return;
-    }
-
-    if (!reports.canReport(sender.getUniqueId())) {
+    if (!reports.canRequest(sender.getUniqueId())) {
       int cooldown = reports.getCooldownSeconds(sender.getUniqueId());
       if (cooldown > 0) {
-        Component secondsComponent = text(Integer.toString(cooldown));
-        Component secondsLeftComponent =
-            translatable(
-                cooldown != 1 ? "misc.seconds" : "misc.second",
-                NamedTextColor.AQUA,
-                secondsComponent);
-        viewer.sendWarning(translatable("command.cooldown", secondsLeftComponent));
+        viewer.sendWarning(reports.getCooldownMessage(sender.getUniqueId()));
         return;
       }
     }
 
-    reports.report(sender, target.getPlayer(), reason);
-
-    Component thanks =
-        text()
-            .append(translatable("misc.thankYou", NamedTextColor.GREEN))
-            .append(space())
-            .append(translatable("moderation.report.acknowledge", NamedTextColor.GOLD))
-            .build();
-    viewer.sendMessage(thanks);
+    if (reports.report(sender, target.getPlayer(), reason) != null) {
+      Component thanks =
+          text()
+              .append(translatable("misc.thankYou", NamedTextColor.GREEN))
+              .append(space())
+              .append(translatable("moderation.report.acknowledge", NamedTextColor.GOLD))
+              .build();
+      viewer.sendMessage(thanks);
+    }
   }
 
   // Example of a nested command.

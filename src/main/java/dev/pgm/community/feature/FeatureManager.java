@@ -1,6 +1,8 @@
 package dev.pgm.community.feature;
 
 import co.aikar.commands.BukkitCommandManager;
+import dev.pgm.community.assistance.feature.AssistanceFeature;
+import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
 import dev.pgm.community.chat.ChatManagementFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
@@ -16,8 +18,6 @@ import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.motd.MotdFeature;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
-import dev.pgm.community.reports.feature.ReportFeature;
-import dev.pgm.community.reports.feature.types.SQLReportFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -31,7 +31,7 @@ import org.bukkit.entity.Player;
 /** Manages all {@link Feature}s of the plugin */
 public class FeatureManager {
 
-  private final ReportFeature reports;
+  private final AssistanceFeature reports;
   private final ModerationFeature moderation;
   private final UsersFeature users;
   private final FriendshipFeature friends;
@@ -50,7 +50,7 @@ public class FeatureManager {
       BukkitCommandManager commands) {
     // DB Features
     this.users = new SQLUsersFeature(config, logger, database);
-    this.reports = new SQLReportFeature(config, logger, database, users);
+    this.reports = new SQLAssistanceFeature(config, logger, database, users);
     this.moderation = new SQLModerationFeature(config, logger, database, users);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
@@ -69,7 +69,7 @@ public class FeatureManager {
     this.registerCommands(commands);
   }
 
-  public ReportFeature getReports() {
+  public AssistanceFeature getReports() {
     return reports;
   }
 
@@ -113,7 +113,7 @@ public class FeatureManager {
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
     commands.registerDependency(UsersFeature.class, getUsers());
-    commands.registerDependency(ReportFeature.class, getReports());
+    commands.registerDependency(AssistanceFeature.class, getReports());
     commands.registerDependency(ModerationFeature.class, getModeration());
     commands.registerDependency(TeleportFeature.class, getTeleports());
     commands.registerDependency(ChatManagementFeature.class, getChatManagement());

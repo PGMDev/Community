@@ -1,11 +1,11 @@
-package dev.pgm.community.reports.feature.types;
+package dev.pgm.community.assistance.feature.types;
 
 import com.google.common.collect.Lists;
+import dev.pgm.community.assistance.Report;
+import dev.pgm.community.assistance.ReportConfig;
+import dev.pgm.community.assistance.feature.AssistanceFeatureBase;
+import dev.pgm.community.assistance.services.SQLAssistanceService;
 import dev.pgm.community.database.DatabaseConnection;
-import dev.pgm.community.reports.Report;
-import dev.pgm.community.reports.ReportConfig;
-import dev.pgm.community.reports.feature.ReportFeatureBase;
-import dev.pgm.community.reports.services.SQLReportService;
 import dev.pgm.community.users.feature.UsersFeature;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -13,15 +13,15 @@ import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 
-public class SQLReportFeature extends ReportFeatureBase {
+public class SQLAssistanceFeature extends AssistanceFeatureBase {
 
-  private final SQLReportService service;
+  private final SQLAssistanceService service;
   private final UsersFeature usernames;
 
-  public SQLReportFeature(
+  public SQLAssistanceFeature(
       Configuration config, Logger logger, DatabaseConnection database, UsersFeature usernames) {
     super(new ReportConfig(config), logger);
-    this.service = new SQLReportService(database);
+    this.service = new SQLAssistanceService(database);
     this.usernames = usernames;
   }
 
@@ -34,7 +34,7 @@ public class SQLReportFeature extends ReportFeatureBase {
   @Override
   public Report report(Player sender, Player target, String reason) {
     Report report = super.report(sender, target, reason);
-    if (isPersistent()) {
+    if (isPersistent() && report != null) {
       service.save(report);
     }
     return report;

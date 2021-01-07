@@ -1,4 +1,4 @@
-package dev.pgm.community.reports;
+package dev.pgm.community.assistance;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import org.bukkit.configuration.Configuration;

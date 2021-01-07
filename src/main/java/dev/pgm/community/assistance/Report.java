@@ -1,4 +1,4 @@
-package dev.pgm.community.reports;
+package dev.pgm.community.assistance;
 
 import java.time.Instant;
 import java.util.UUID;

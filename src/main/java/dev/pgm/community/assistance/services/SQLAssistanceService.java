@@ -1,13 +1,13 @@
-package dev.pgm.community.reports.services;
+package dev.pgm.community.assistance.services;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
+import dev.pgm.community.assistance.Report;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
-import dev.pgm.community.reports.Report;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLReportService extends SQLFeatureBase<Report> {
+public class SQLAssistanceService extends SQLFeatureBase<Report> {
 
   private static final String TABLE_NAME = "reports";
   private static final String TABLE_FIELDS =
@@ -25,7 +25,7 @@ public class SQLReportService extends SQLFeatureBase<Report> {
 
   private LoadingCache<UUID, SelectQuery> cachedReports;
 
-  public SQLReportService(DatabaseConnection database) {
+  public SQLAssistanceService(DatabaseConnection database) {
     super(database, TABLE_NAME, TABLE_FIELDS);
     this.cachedReports =
         CacheBuilder.newBuilder()
