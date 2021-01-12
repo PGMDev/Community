@@ -5,6 +5,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import tc.oc.pgm.api.match.Match;
 
+/** MutationBase - Foundation of all mutations */
 public abstract class MutationBase implements Mutation, Listener {
 
   private boolean enabled;

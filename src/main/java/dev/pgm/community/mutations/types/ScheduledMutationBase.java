@@ -6,6 +6,7 @@ import dev.pgm.community.mutations.MutationType;
 import java.util.Random;
 import tc.oc.pgm.api.match.Match;
 
+/** ScheduledMutationBase - A base for mutations which require a repeating task * */
 public abstract class ScheduledMutationBase extends MutationBase {
 
   private int taskID;

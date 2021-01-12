@@ -8,7 +8,8 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.doublejump.DoubleJumpKit;
 
-public class DoubleJumpMutation extends KitMutation {
+/** DoubleJumpMutation - Enables {@link DoubleJumpKit} and no fall damage for all players * */
+public class DoubleJumpMutation extends KitMutationBase {
 
   public DoubleJumpMutation(Match match) {
     super(match, MutationType.JUMP, getJumpKit(true));

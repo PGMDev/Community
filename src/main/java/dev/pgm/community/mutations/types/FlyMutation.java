@@ -15,7 +15,8 @@ import net.kyori.adventure.util.Ticks;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.kits.FlyKit;
 
-public class FlyMutation extends KitMutation {
+/** FlyMutation - Enables the {@link FlyKit} for all players */
+public class FlyMutation extends KitMutationBase {
 
   private static final FlyKit KIT_ON = new FlyKit(true, true, 1);
   private static final FlyKit KIT_OFF = new FlyKit(false, false, 1);

@@ -12,12 +12,16 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 
+/**
+ * TNTRainMutation - Spawns falling primed TNT on a scheduled interval, with no damage to players
+ */
 public class TNTRainMutation extends ScheduledMutationBase {
 
   private static final int TASK_SECONDS = 30;
@@ -27,15 +31,17 @@ public class TNTRainMutation extends ScheduledMutationBase {
   private static final boolean TNT_KNOCKBACK = true;
   private static final double TNT_KNOCKBACK_STRENGTH = 1.35D;
   private static final double TNT_KNOCKBACK_ARC = 1.55D;
+  private static final int TNT_FALL_HEIGHT = 15;
 
   public TNTRainMutation(Match match) {
     super(match, MutationType.TNTRAIN, TASK_SECONDS);
   }
 
   public void spawnTNT(Player player) {
-    Location loc = player.getLocation().clone().add(0, 10, 0); // TODO: configure this!!!
+    Location loc =
+        player.getLocation().clone().add(0, TNT_FALL_HEIGHT, 0); // TODO: configure this!!!
     TNTPrimed tnt = loc.getWorld().spawn(loc, TNTPrimed.class);
-    tnt.setIsIncendiary(random.nextBoolean()); // MAKE RANDOM
+    tnt.setIsIncendiary(random.nextBoolean());
     tnt.setMetadata(TNT_META, new FixedMetadataValue(Community.get(), true));
   }
 
@@ -48,13 +54,22 @@ public class TNTRainMutation extends ScheduledMutationBase {
   public void run() {
     List<MatchPlayer> players = new ArrayList<MatchPlayer>(match.getParticipants());
     if (players.isEmpty()) return;
-
     List<MatchPlayer> spawned = Lists.newArrayList();
     while (spawned.size() < Math.min(MAX_PLAYERS_PER_RUN, players.size())) {
       MatchPlayer randomPl = players.get(random.nextInt(players.size()));
       if (randomPl != null && !spawned.contains(randomPl)) {
         spawnTNT(randomPl.getBukkit());
         spawned.add(randomPl);
+      }
+    }
+  }
+
+  @EventHandler
+  public void onTNTDamagePrevention(EntityDamageByEntityEvent event) {
+    if (event.getDamager() instanceof TNTPrimed && event.getEntity() instanceof Player) {
+      TNTPrimed tnt = (TNTPrimed) event.getDamager();
+      if (tnt.hasMetadata(TNT_META)) {
+        event.setDamage(0);
       }
     }
   }

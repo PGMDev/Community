@@ -9,6 +9,7 @@ import tc.oc.pgm.blitz.BlitzConfig;
 import tc.oc.pgm.blitz.BlitzMatchModule;
 import tc.oc.pgm.filters.StaticFilter;
 
+/** BlitzMutation - Enables blitz (1 life) on a non-blitz match * */
 public class BlitzMutation extends MutationBase {
 
   private BlitzMatchModule blitz;

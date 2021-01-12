@@ -37,6 +37,7 @@ public class Community extends JavaPlugin {
   @Override
   public void onEnable() {
     plugin = this;
+    random = new Random();
 
     this.setupConfig();
 
@@ -151,6 +152,10 @@ public class Community extends JavaPlugin {
 
   public CommunityConfig getServerConfig() {
     return config;
+  }
+
+  public Random getRandom() {
+    return random;
   }
 
   // REMOVE WHEN NOT IN DEV

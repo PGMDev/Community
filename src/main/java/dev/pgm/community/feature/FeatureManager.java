@@ -138,7 +138,7 @@ public class FeatureManager {
             x ->
                 Stream.of(MutationType.values())
                     .filter(mt -> !getMutations().hasMutation(mt))
-                    .map(MutationType::getDisplayName)
+                    .map(MutationType::name)
                     .collect(Collectors.toSet()));
     commands
         .getCommandCompletions()
@@ -147,7 +147,7 @@ public class FeatureManager {
             x ->
                 Stream.of(MutationType.values())
                     .filter(mt -> getMutations().hasMutation(mt))
-                    .map(MutationType::getDisplayName)
+                    .map(MutationType::name)
                     .collect(Collectors.toSet()));
 
     // Feature commands

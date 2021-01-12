@@ -11,11 +11,12 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.Kit;
 import tc.oc.pgm.spawns.events.ParticipantKitApplyEvent;
 
-public abstract class KitMutation extends MutationBase {
+/** KitMutation - A base for mutations which grant kits * */
+public abstract class KitMutationBase extends MutationBase {
 
   private List<Kit> kits;
 
-  public KitMutation(Match match, MutationType type, Kit... kits) {
+  public KitMutationBase(Match match, MutationType type, Kit... kits) {
     super(match, type);
     this.kits = Lists.newArrayList(kits);
   }
@@ -23,12 +24,16 @@ public abstract class KitMutation extends MutationBase {
   @Override
   public void enable() {
     super.enable();
-    giveAllKit(kits);
+    giveAllKit(getKits());
+  }
+
+  public List<Kit> getKits() {
+    return kits;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onSpawn(ParticipantKitApplyEvent event) {
-    givePlayerKit(event.getPlayer(), kits); // Apply all kits upon respawn
+    givePlayerKit(event.getPlayer(), getKits()); // Apply all kits upon respawn
   }
 
   protected void giveAllKit(Kit... kit) {

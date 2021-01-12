@@ -5,7 +5,8 @@ public enum MutationType {
   BLITZ("Blitz", "A limited number of lives"),
   TNTRAIN("TNT Rain", "Raining TNT death from above..."),
   FLY("Fly", "Everyone can fly"),
-  JUMP("Jump", "Double jump");
+  JUMP("Jump", "Double jump"),
+  FIREWORKS("Fireworks", "Celebrate with random fireworks!");
 
   String displayName;
   String description;

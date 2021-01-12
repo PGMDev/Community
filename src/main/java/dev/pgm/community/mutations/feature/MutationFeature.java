@@ -13,6 +13,7 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.mutations.types.BlitzMutation;
 import dev.pgm.community.mutations.types.DoubleJumpMutation;
+import dev.pgm.community.mutations.types.FireworkMutation;
 import dev.pgm.community.mutations.types.FlyMutation;
 import dev.pgm.community.mutations.types.RageMutation;
 import dev.pgm.community.mutations.types.TNTRainMutation;
@@ -146,6 +147,8 @@ public class MutationFeature extends FeatureBase {
         return new FlyMutation(getMatch());
       case JUMP:
         return new DoubleJumpMutation(getMatch());
+      case FIREWORKS:
+        return new FireworkMutation(getMatch());
     }
 
     return null;

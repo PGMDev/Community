@@ -12,6 +12,7 @@ import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.rage.RageMatchModule;
 import tc.oc.pgm.util.material.Materials;
 
+/** RageMutation - Enables rage (1-hit kills) on non-rage matches */
 public class RageMutation extends MutationBase {
 
   public RageMutation(Match match) {
