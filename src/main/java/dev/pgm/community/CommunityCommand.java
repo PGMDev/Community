@@ -223,7 +223,7 @@ public abstract class CommunityCommand extends BaseCommand {
   }
 
   protected boolean isVanished(CommandAudience audience) {
-    return audience.getId().isPresent() ? isVanished((Player) audience.getSender()) : false;
+    return audience.isPlayer() ? isVanished(audience.getPlayer()) : true;
   }
 
   protected boolean isVanished(@Nullable Player player) {
