@@ -2,7 +2,6 @@ package dev.pgm.community.mutations.types;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
-import dev.pgm.community.mutations.MutationType;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Effect;
@@ -20,7 +19,8 @@ import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 
 /**
- * TNTRainMutation - Spawns falling primed TNT on a scheduled interval, with no damage to players
+ * @deprecated Keeping for future use... TNTRainMutation - Spawns falling primed TNT on a scheduled
+ *     interval, with no damage to players
  */
 public class TNTRainMutation extends ScheduledMutationBase {
 
@@ -34,7 +34,7 @@ public class TNTRainMutation extends ScheduledMutationBase {
   private static final int TNT_FALL_HEIGHT = 15;
 
   public TNTRainMutation(Match match) {
-    super(match, MutationType.TNTRAIN, TASK_SECONDS);
+    super(match, null, TASK_SECONDS);
   }
 
   public void spawnTNT(Player player) {

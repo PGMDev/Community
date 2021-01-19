@@ -12,11 +12,11 @@ import dev.pgm.community.mutations.MutationConfig;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.mutations.types.BlitzMutation;
+import dev.pgm.community.mutations.types.BlockExplosionMutation;
 import dev.pgm.community.mutations.types.DoubleJumpMutation;
 import dev.pgm.community.mutations.types.FireworkMutation;
 import dev.pgm.community.mutations.types.FlyMutation;
 import dev.pgm.community.mutations.types.RageMutation;
-import dev.pgm.community.mutations.types.TNTRainMutation;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Optional;
@@ -141,8 +141,8 @@ public class MutationFeature extends FeatureBase {
         return new BlitzMutation(getMatch());
       case RAGE:
         return new RageMutation(getMatch());
-      case TNTRAIN:
-        return new TNTRainMutation(getMatch());
+      case EXPLOSIONS:
+        return new BlockExplosionMutation(getMatch());
       case FLY:
         return new FlyMutation(getMatch());
       case JUMP:

@@ -3,7 +3,7 @@ package dev.pgm.community.mutations;
 public enum MutationType {
   RAGE("Rage", "Instant death"),
   BLITZ("Blitz", "A limited number of lives"),
-  TNTRAIN("TNT Rain", "Raining TNT death from above..."),
+  EXPLOSIONS("Explosions", "Random explosions when mining blocks"),
   FLY("Fly", "Everyone can fly"),
   JUMP("Jump", "Double jump"),
   FIREWORKS("Fireworks", "Celebrate with random fireworks!");
