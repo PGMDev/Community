@@ -5,6 +5,7 @@ import dev.pgm.community.mutations.MutationType;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import tc.oc.pgm.api.match.Match;
@@ -25,8 +26,11 @@ public class BlockExplosionMutation extends MutationBase {
 
   @EventHandler
   public void onBlockBreak(BlockBreakEvent event) {
-    if (Math.random() < EXPLODE_CHANCE) {
-      explode(event.getBlock());
+    Player player = event.getPlayer();
+    if (player != null && match.getParticipant(player) != null) {
+      if (Math.random() < EXPLODE_CHANCE) {
+        explode(event.getBlock());
+      }
     }
   }
 

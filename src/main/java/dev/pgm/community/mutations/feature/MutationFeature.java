@@ -16,6 +16,7 @@ import dev.pgm.community.mutations.types.BlockExplosionMutation;
 import dev.pgm.community.mutations.types.DoubleJumpMutation;
 import dev.pgm.community.mutations.types.FireworkMutation;
 import dev.pgm.community.mutations.types.FlyMutation;
+import dev.pgm.community.mutations.types.PotionMutation;
 import dev.pgm.community.mutations.types.RageMutation;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -149,6 +150,8 @@ public class MutationFeature extends FeatureBase {
         return new DoubleJumpMutation(getMatch());
       case FIREWORKS:
         return new FireworkMutation(getMatch());
+      case POTIONS:
+        return new PotionMutation(getMatch());
     }
 
     return null;
