@@ -43,12 +43,7 @@ public class FireworkMutation extends KitMutationBase {
       CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.SECONDS).build();
 
   public FireworkMutation(Match match) {
-    super(match, MutationType.FIREWORKS, getFireworkKit());
-  }
-
-  @Override
-  public boolean canEnable() {
-    return true;
+    super(match, MutationType.FIREWORK);
   }
 
   @Override
@@ -126,5 +121,10 @@ public class FireworkMutation extends KitMutationBase {
     }
     Firework firework = location.getWorld().spawn(location, Firework.class);
     firework.setFireworkMeta((FireworkMeta) getFirework(color, Type.BURST, 0).getItemMeta());
+  }
+
+  @Override
+  public boolean canEnable() {
+    return true;
   }
 }

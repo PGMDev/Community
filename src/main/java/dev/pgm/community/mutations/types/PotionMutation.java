@@ -31,12 +31,7 @@ public class PotionMutation extends KitMutationBase {
   private static double SPLASH_CHANCE = 0.05;
 
   public PotionMutation(Match match) {
-    super(match, MutationType.POTIONS, getRandomPotionKit());
-  }
-
-  @Override
-  public boolean canEnable() {
-    return true;
+    super(match, MutationType.POTION);
   }
 
   @Override
@@ -87,5 +82,10 @@ public class PotionMutation extends KitMutationBase {
             .collect(Collectors.toList());
     PotionType randomType = safeTypes.get(random.nextInt(safeTypes.size()));
     return new Potion(randomType, 1, splash);
+  }
+
+  @Override
+  public boolean canEnable() {
+    return true;
   }
 }

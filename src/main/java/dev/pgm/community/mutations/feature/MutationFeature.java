@@ -12,8 +12,8 @@ import dev.pgm.community.mutations.MutationConfig;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.mutations.types.BlitzMutation;
-import dev.pgm.community.mutations.types.BlockExplosionMutation;
 import dev.pgm.community.mutations.types.DoubleJumpMutation;
+import dev.pgm.community.mutations.types.ExplosionMutation;
 import dev.pgm.community.mutations.types.FireworkMutation;
 import dev.pgm.community.mutations.types.FlyMutation;
 import dev.pgm.community.mutations.types.PotionMutation;
@@ -109,7 +109,7 @@ public class MutationFeature extends FeatureBase {
       mutation.enable();
       if (broadcast) {
         BroadcastUtils.sendGlobalTitle(
-            mutation.getName(), text(" has been enabled", NamedTextColor.GRAY), 3);
+            mutation.getName(), text(" mutation has been enabled", NamedTextColor.GRAY), 3);
       }
     }
   }
@@ -142,15 +142,15 @@ public class MutationFeature extends FeatureBase {
         return new BlitzMutation(getMatch());
       case RAGE:
         return new RageMutation(getMatch());
-      case EXPLOSIONS:
-        return new BlockExplosionMutation(getMatch());
+      case EXPLOSION:
+        return new ExplosionMutation(getMatch());
       case FLY:
         return new FlyMutation(getMatch());
       case JUMP:
         return new DoubleJumpMutation(getMatch());
-      case FIREWORKS:
+      case FIREWORK:
         return new FireworkMutation(getMatch());
-      case POTIONS:
+      case POTION:
         return new PotionMutation(getMatch());
     }
 
