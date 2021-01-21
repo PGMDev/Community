@@ -5,6 +5,7 @@ import co.aikar.commands.InvalidCommandArgument;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.PGMUtils;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Random;
@@ -38,6 +39,11 @@ public class Community extends JavaPlugin {
   public void onEnable() {
     plugin = this;
     random = new Random();
+
+    // If PGM is not enabled on running server, we need this to ensure things work :)
+    if (!PGMUtils.isPGMEnabled()) {
+      BukkitUtils.PLUGIN.set(this);
+    }
 
     this.setupConfig();
 
