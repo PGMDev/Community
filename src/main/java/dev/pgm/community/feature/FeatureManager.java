@@ -18,6 +18,7 @@ import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.motd.MotdFeature;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
+import dev.pgm.community.poll.feature.PollFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -42,6 +43,7 @@ public class FeatureManager {
   private final MotdFeature motd;
   private final FreezeFeature freeze;
   private final MutationFeature mutation;
+  private final PollFeature poll;
 
   public FeatureManager(
       Configuration config,
@@ -65,6 +67,7 @@ public class FeatureManager {
     this.motd = new MotdFeature(config, logger);
     this.freeze = new FreezeFeature(config, logger);
     this.mutation = new MutationFeature(config, logger);
+    this.poll = new PollFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -109,6 +112,10 @@ public class FeatureManager {
     return mutation;
   }
 
+  public PollFeature getPoll() {
+    return poll;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -120,6 +127,7 @@ public class FeatureManager {
     commands.registerDependency(FriendshipFeature.class, getFriendships());
     commands.registerDependency(FreezeFeature.class, getFreeze());
     commands.registerDependency(MutationFeature.class, getMutations());
+    commands.registerDependency(PollFeature.class, getPoll());
 
     // Custom command completions
     commands
@@ -159,6 +167,7 @@ public class FeatureManager {
     registerFeatureCommands(getFriendships(), commands);
     registerFeatureCommands(getFreeze(), commands);
     registerFeatureCommands(getMutations(), commands);
+    registerFeatureCommands(getPoll(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -184,6 +193,7 @@ public class FeatureManager {
     getMotd().getConfig().reload(config);
     getFreeze().getConfig().reload(config);
     getMutations().getConfig().reload(config);
+    getPoll().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

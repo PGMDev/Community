@@ -55,6 +55,10 @@ public interface CommunityPermissions {
   // Mutations
   String MUTATION = ROOT + ".mutation"; // Access to /mutate
 
+  // Polls
+  String POLL = ROOT + ".poll"; // Access to /poll
+  String VOTE = POLL + ".vote"; // Access to vote in a poll
+
   // General Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";
