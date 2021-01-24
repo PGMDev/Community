@@ -50,13 +50,11 @@ users:
 # Friends - Settings related to friendship features/commands  
 friends:
   enabled: true
-  
   pgm-integration: true # Whether Community will attempt to hook into PGM for extended friend features (tablist / joins / death messages)
   
 # Teleports - Teleport commands include /tp, /bring, and /tploc
 teleports:
   enabled: true
-  
   sound: true # Play a sound upon teleportation
   
 # Chat Management - Commands that relate to chat management such as slowmode and lockdown
@@ -96,6 +94,13 @@ freeze:
 # Mutations - a PGM exclusive feature. Allows for a variety of fun gameplay altering mechanics
 mutations:
   enabled: true  
+  
+# Polls - Allow players to decide the outcome of question via an interactive process
+polls:
+  enabled: true 
+  default-time: 60  # Default length (in seconds) of a poll
+  confirm: true     # Whether to confirm final outcome with staff member
+  pgm-integration: true # Whether feature will attempt to hook into PGM
   
 # Database
 database:
