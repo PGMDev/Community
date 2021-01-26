@@ -21,8 +21,8 @@ public abstract class UsersFeatureBase extends FeatureBase implements UsersFeatu
   protected final Cache<UUID, String> names;
   protected final Cache<UUID, UserProfile> profiles;
 
-  public UsersFeatureBase(UsersConfig config, Logger logger) {
-    super(config, logger);
+  public UsersFeatureBase(UsersConfig config, Logger logger, String featureName) {
+    super(config, logger, featureName);
     this.profiles = CacheBuilder.newBuilder().build();
     this.names = CacheBuilder.newBuilder().build();
 

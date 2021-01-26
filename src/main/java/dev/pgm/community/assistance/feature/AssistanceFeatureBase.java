@@ -44,8 +44,8 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
   protected final Cache<Report, Instant> recentReports;
   protected final Cache<PlayerHelpRequest, Instant> recentHelp;
 
-  public AssistanceFeatureBase(ReportConfig config, Logger logger) {
-    super(config, logger);
+  public AssistanceFeatureBase(ReportConfig config, Logger logger, String featureName) {
+    super(config, logger, featureName);
     cooldown =
         CacheBuilder.newBuilder().expireAfterWrite(config.getCooldown(), TimeUnit.SECONDS).build();
     this.recentReports =

@@ -33,8 +33,8 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
 
   protected @Nullable PGMFriendManager pgmFriends;
 
-  public FriendshipFeatureBase(Configuration config, Logger logger) {
-    super(new FriendshipConfig(config), logger);
+  public FriendshipFeatureBase(Configuration config, Logger logger, String featureName) {
+    super(new FriendshipConfig(config), logger, featureName);
 
     if (getConfig().isEnabled()) {
       enable();

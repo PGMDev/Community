@@ -23,7 +23,7 @@ public class SQLUsersFeature extends UsersFeatureBase {
   private AddressHistoryService addresses;
 
   public SQLUsersFeature(Configuration config, Logger logger, DatabaseConnection database) {
-    super(new UsersConfig(config), logger);
+    super(new UsersConfig(config), logger, "Users (SQL)");
     this.service = new SQLUserService(database);
     this.addresses = new AddressHistoryService(database);
   }

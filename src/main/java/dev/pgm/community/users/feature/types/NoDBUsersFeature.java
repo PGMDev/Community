@@ -20,7 +20,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class NoDBUsersFeature extends UsersFeatureBase {
 
   public NoDBUsersFeature(Configuration config, Logger logger) {
-    super(new UsersConfig(config), logger);
+    super(new UsersConfig(config), logger, "Users (No Database)");
   }
 
   @Override

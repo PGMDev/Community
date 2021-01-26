@@ -15,7 +15,7 @@ import tc.oc.pgm.util.bukkit.BukkitUtils;
 public class MotdFeature extends FeatureBase {
 
   public MotdFeature(Configuration config, Logger logger) {
-    super(new MotdConfig(config), logger);
+    super(new MotdConfig(config), logger, "MOTD");
     if (getConfig().isEnabled()) {
       enable();
     }

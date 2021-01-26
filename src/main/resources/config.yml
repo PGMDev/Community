@@ -113,6 +113,20 @@ freeze:
 mutations:
   enabled: true  
   
+# Network - Features which assist in running Community on multiple servers  
+network:
+  enabled: false  
+  id: "" # Network id of server, leave blank for randomly generated
+  
+  # Redis login values
+  redis:
+    host: "localhost"
+    password: ""
+    port: 6379
+    ssl: false
+    
+  
+  
 # Database
 database:
   enabled: true # Whether to use a database (If false persistent features will not work)

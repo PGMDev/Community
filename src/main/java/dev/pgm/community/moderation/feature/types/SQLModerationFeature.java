@@ -9,6 +9,7 @@ import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.services.SQLModerationService;
+import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import java.time.Duration;
 import java.util.List;
@@ -31,10 +32,13 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   private SQLModerationService service;
 
   public SQLModerationFeature(
-      Configuration config, Logger logger, DatabaseConnection connection, UsersFeature usernames) {
-    super(new ModerationConfig(config), logger, usernames);
+      Configuration config,
+      Logger logger,
+      DatabaseConnection connection,
+      UsersFeature usernames,
+      NetworkFeature network) {
+    super(new ModerationConfig(config), logger, "Punishments (SQL)", usernames, network);
     this.service = new SQLModerationService(connection, getModerationConfig());
-    logger.info("Punishments (SQL) have been enabled");
   }
 
   @Override
@@ -94,21 +98,21 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer) {
-    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
-      return getUsers()
-          .getStoredId(target)
-          .thenApplyAsync(
-              uuid -> {
-                if (uuid.isPresent()) {
-                  removeCachedBan(uuid.get());
-                  return service.pardon(uuid.get(), issuer).join();
-                }
-                return false;
-              });
-    }
-    UUID id = UUID.fromString(target);
-    removeCachedBan(id);
-    return service.pardon(id, issuer);
+    CompletableFuture<Optional<UUID>> playerId =
+        UsersFeature.USERNAME_REGEX.matcher(target).matches()
+            ? getUsers().getStoredId(target)
+            : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
+    return playerId.thenApplyAsync(
+        uuid -> {
+          if (uuid.isPresent()) {
+            if (service.pardon(uuid.get(), issuer).join()) {
+              sendUpdate(uuid.get());
+              removeCachedBan(uuid.get());
+              return true;
+            }
+          }
+          return false;
+        });
   }
 
   @Override
@@ -232,8 +236,16 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<Boolean> unmute(UUID id, Optional<UUID> issuer) {
-    removeMute(id);
-    return service.unmute(id, issuer);
+    return service
+        .unmute(id, issuer)
+        .thenApplyAsync(
+            success -> {
+              if (success) {
+                removeMute(id);
+                sendUpdate(id); // Successful unmute will update other servers
+              }
+              return success;
+            });
   }
 
   @Override
@@ -244,5 +256,12 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   @Override
   public CompletableFuture<Integer> count() {
     return service.count();
+  }
+
+  @Override
+  public void invalidate(UUID playerId) {
+    service.invalidate(playerId);
+    removeCachedBan(playerId);
+    removeMute(playerId);
   }
 }
