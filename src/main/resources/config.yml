@@ -88,6 +88,13 @@ motd:
     - "&cWelcome to &4&lCommunity"
     - "&6To configure this message check the &aconfig.yml"      
 
+# Broadcast - Broadcast announcement via /broadcast with ability to send as title or chat only
+broadcast:
+  enabled: true
+  sound: true                  # Whether a small sound will be played
+  title-seconds: 5             # Number of seconds title will stay on screen for
+  prefix: "&8[&c&lAlert&8]&c " # Prefix message
+
 # Freeze - Freeze players via command or observer hotbar tool (when PGM is enabled)  
 freeze:
   enabled: true  

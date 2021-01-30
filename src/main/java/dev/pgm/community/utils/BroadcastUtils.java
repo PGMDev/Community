@@ -6,6 +6,7 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.title.Title.title;
 
 import dev.pgm.community.CommunityPermissions;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -13,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 
 public class BroadcastUtils {
@@ -44,7 +46,6 @@ public class BroadcastUtils {
             viewer -> {
               viewer.sendMessage(formatted);
               if (sound != null) {
-                // TODO: Look into settings for Sounds?
                 viewer.playSound(sound);
               }
             });
@@ -73,5 +74,17 @@ public class BroadcastUtils {
                         subTitle == null ? empty() : subTitle,
                         Times.of(
                             Ticks.duration(5), Ticks.duration(20 * stay), Ticks.duration(15)))));
+  }
+
+  public static void playSelectSound(Sound sound, Predicate<Player> filter) {
+    Bukkit.getOnlinePlayers().stream().filter(filter).forEach(player -> playSound(player, sound));
+  }
+
+  public static void playGlobalSound(Sound sound) {
+    Bukkit.getOnlinePlayers().forEach(player -> playSound(player, sound));
+  }
+
+  public static void playSound(Player player, Sound sound) {
+    Audience.get(player).playSound(sound);
   }
 }

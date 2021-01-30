@@ -32,4 +32,7 @@ public class Sounds {
   // Played when a player requests help
   public static final Sound HELP_REQUEST =
       sound(key("mob.cat.meow"), Sound.Source.MASTER, 1f, 0.9f);
+
+  // Played when a message is broadcasted (/broadcast)
+  public static final Sound BROADCAST = sound(key("note.pling"), Sound.Source.MASTER, 1f, 1.4f);
 }

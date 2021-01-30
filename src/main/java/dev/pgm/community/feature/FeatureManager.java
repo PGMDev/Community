@@ -3,6 +3,7 @@ package dev.pgm.community.feature;
 import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
+import dev.pgm.community.broadcast.BroadcastFeature;
 import dev.pgm.community.chat.ChatManagementFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
@@ -42,6 +43,7 @@ public class FeatureManager {
   private final MotdFeature motd;
   private final FreezeFeature freeze;
   private final MutationFeature mutation;
+  private final BroadcastFeature broadcast;
 
   public FeatureManager(
       Configuration config,
@@ -65,6 +67,7 @@ public class FeatureManager {
     this.motd = new MotdFeature(config, logger);
     this.freeze = new FreezeFeature(config, logger);
     this.mutation = new MutationFeature(config, logger);
+    this.broadcast = new BroadcastFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -109,6 +112,10 @@ public class FeatureManager {
     return mutation;
   }
 
+  public BroadcastFeature getBroadcast() {
+    return broadcast;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -120,6 +127,7 @@ public class FeatureManager {
     commands.registerDependency(FriendshipFeature.class, getFriendships());
     commands.registerDependency(FreezeFeature.class, getFreeze());
     commands.registerDependency(MutationFeature.class, getMutations());
+    commands.registerDependency(BroadcastFeature.class, getBroadcast());
 
     // Custom command completions
     commands
@@ -159,6 +167,7 @@ public class FeatureManager {
     registerFeatureCommands(getFriendships(), commands);
     registerFeatureCommands(getFreeze(), commands);
     registerFeatureCommands(getMutations(), commands);
+    registerFeatureCommands(getBroadcast(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -184,6 +193,7 @@ public class FeatureManager {
     getMotd().getConfig().reload(config);
     getFreeze().getConfig().reload(config);
     getMutations().getConfig().reload(config);
+    getBroadcast().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
