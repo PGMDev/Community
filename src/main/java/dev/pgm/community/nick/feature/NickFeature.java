@@ -5,6 +5,7 @@ import dev.pgm.community.nick.Nick;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.entity.Player;
 
 public interface NickFeature extends Feature {
 
@@ -24,5 +25,9 @@ public interface NickFeature extends Feature {
 
   CompletableFuture<Boolean> toggleNick(UUID playerId); // FALSE IF NO VALID NICK IS SET
 
-  boolean isNicked(UUID playerId);
+  boolean isNicked(UUID playerId); // Whether the given playerID is online & had a nickname
+
+  String getOnlineNick(UUID playerId); // Get the nickname of an online player
+
+  Player getPlayerFromNick(String nickName);
 }

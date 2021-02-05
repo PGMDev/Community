@@ -2,10 +2,9 @@ package dev.pgm.community.nick.providers;
 
 import static net.kyori.adventure.text.Component.text;
 
-import com.google.common.collect.Maps;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.PGMUtils;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Future;
@@ -22,29 +21,21 @@ import tc.oc.pgm.util.nick.NickProvider;
 
 public class PGMNickProvider implements NickProvider {
 
-  private Map<UUID, String> nickedPlayers;
-
   private boolean hotbarColor = false;
+
+  private NickFeature nick;
 
   private Future<?> hotbarTask;
 
-  public PGMNickProvider() {
-    this.nickedPlayers = Maps.newHashMap();
+  public PGMNickProvider(NickFeature nick) {
+    this.nick = nick;
     hotbarTask =
         PGM.get().getExecutor().scheduleAtFixedRate(this::updateHotbars, 0, 1, TimeUnit.SECONDS);
   }
 
   @Override
   public Optional<String> getNick(@Nullable UUID playerId) {
-    return Optional.ofNullable(nickedPlayers.get(playerId));
-  }
-
-  public void setNick(UUID playerId, String nickName) {
-    this.nickedPlayers.put(playerId, nickName);
-  }
-
-  public void clearNick(UUID playerId) {
-    this.nickedPlayers.remove(playerId);
+    return Optional.ofNullable(nick.getOnlineNick(playerId));
   }
 
   public void cancelTask() {
@@ -56,7 +47,7 @@ public class PGMNickProvider implements NickProvider {
     if (match != null) {
       List<MatchPlayer> nicked =
           match.getPlayers().stream()
-              .filter(p -> nickedPlayers.get(p.getId()) != null)
+              .filter(p -> nick.isNicked(p.getId()))
               .collect(Collectors.toList());
       nicked.forEach(mp -> sendHotbarNicked(mp, hotbarColor));
     }

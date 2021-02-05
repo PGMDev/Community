@@ -184,8 +184,15 @@ public abstract class CommunityCommand extends BaseCommand {
     return value;
   }
 
-  protected Player getSinglePlayer(CommandAudience viewer, String target) {
+  @Nullable
+  protected Player getSinglePlayer(CommandAudience viewer, String target, boolean allowNicks) {
     Player player = Bukkit.getPlayer(target);
+
+    Player nicked = Community.get().getFeatures().getNick().getPlayerFromNick(target);
+
+    if (player == null && nicked != null && allowNicks) {
+      player = nicked;
+    }
 
     if (player == null || (player != null && !canView(viewer, player))) {
       viewer.sendWarning(formatNotFoundComponent(target));

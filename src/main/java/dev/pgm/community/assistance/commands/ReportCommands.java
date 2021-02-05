@@ -14,12 +14,12 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
-import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.assistance.Report;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Collection;
@@ -44,12 +44,13 @@ public class ReportCommands extends CommunityCommand {
 
   @Dependency private AssistanceFeature reports;
   @Dependency private UsersFeature usernames;
+  @Dependency private NickFeature nick;
 
   @CommandAlias("report")
   @Description("Report a player who is breaking the rules")
-  @CommandCompletion("@players *")
+  @CommandCompletion("@visible *")
   @Syntax("[username] (reason)")
-  public void report(CommandAudience viewer, Player sender, OnlinePlayer target, String reason) {
+  public void report(CommandAudience viewer, Player sender, String target, String reason) {
     checkEnabled();
 
     if (!reports.canRequest(sender.getUniqueId())) {
@@ -60,7 +61,8 @@ public class ReportCommands extends CommunityCommand {
       }
     }
 
-    if (reports.report(sender, target.getPlayer(), reason) != null) {
+    Player targetPlayer = getSinglePlayer(viewer, target, true);
+    if (targetPlayer != null && reports.report(sender, targetPlayer, reason) != null) {
       Component thanks =
           text()
               .append(translatable("misc.thankYou", NamedTextColor.GREEN))

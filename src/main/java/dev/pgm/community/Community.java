@@ -4,6 +4,7 @@ import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.InvalidCommandArgument;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.FeatureManager;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
 import java.sql.SQLException;
@@ -12,7 +13,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -117,7 +117,17 @@ public class Community extends JavaPlugin {
                       p ->
                           !p.hasMetadata("isVanished")
                               || c.getPlayer() != null && c.getPlayer().hasPermission("pgm.vanish"))
-                  .map(Player::getName)
+                  .map(
+                      player -> {
+                        // Replace nicked user names
+                        if (features.getNick() != null) {
+                          NickFeature nicks = features.getNick();
+                          if (nicks.isNicked(player.getUniqueId())) {
+                            return nicks.getOnlineNick(player.getUniqueId());
+                          }
+                        }
+                        return player.getName();
+                      })
                   .collect(Collectors.toSet());
             });
   }
