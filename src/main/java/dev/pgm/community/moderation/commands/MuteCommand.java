@@ -13,6 +13,7 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -32,6 +33,7 @@ public class MuteCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
+  @Dependency private NickFeature nicks;
 
   @CommandAlias("mute|m")
   @Description("Prevent player from speaking in the chat")
@@ -50,7 +52,7 @@ public class MuteCommand extends CommunityCommand {
                     reason,
                     length,
                     true,
-                    isVanished(audience));
+                    this.isDisguised(audience, nicks));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }

@@ -12,6 +12,7 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Flags;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
@@ -23,13 +24,14 @@ import tc.oc.pgm.util.text.PlayerComponent;
 public class FreezeCommand extends CommunityCommand {
 
   @Dependency private FreezeFeature freeze;
+  @Dependency private NickFeature nicks;
 
   @CommandAlias("freeze|fz|f")
   @Description("Toggle a player's frozen state")
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.FREEZE)
   public void freeze(CommandAudience sender, @Flags("other") Player target) {
-    freeze.setFrozen(sender, target, !freeze.isFrozen(target), isVanished(sender));
+    freeze.setFrozen(sender, target, !freeze.isFrozen(target), this.isDisguised(sender, nicks));
   }
 
   @CommandAlias("frozenlist|fls|flist")

@@ -22,6 +22,7 @@ import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -49,6 +50,7 @@ public class PunishmentCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
+  @Dependency private NickFeature nicks;
 
   @CommandAlias("punishmenthistory|ph")
   @Description("View a list of recent punishments")
@@ -90,7 +92,7 @@ public class PunishmentCommand extends CommunityCommand {
                       reason,
                       length,
                       true,
-                      isVanished(audience));
+                      this.isDisguised(audience, nicks));
                 } else {
                   // No target supplied, show last punishment
                   PunishmentFormats.formatBroadcast(lastPunishment, usernames)

@@ -6,6 +6,7 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.Dependency;
 import com.google.common.collect.Sets;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
@@ -222,12 +223,20 @@ public abstract class CommunityCommand extends BaseCommand {
     return id;
   }
 
-  protected boolean isVanished(CommandAudience audience) {
-    return audience.isPlayer() ? isVanished(audience.getPlayer()) : true;
+  protected boolean isDisguised(CommandAudience audience, NickFeature nicks) {
+    return !audience.isPlayer() || audience.isPlayer() && isDisguised(audience.getPlayer(), nicks);
   }
 
-  protected boolean isVanished(@Nullable Player player) {
-    return player != null ? player.hasMetadata("isVanished") : false;
+  protected boolean isDisguised(Player player, NickFeature nicks) {
+    return isVanished(player) || nicks.isNicked(player.getUniqueId());
+  }
+
+  private boolean isVanished(CommandAudience audience) {
+    return audience.isPlayer() && isVanished(audience.getPlayer());
+  }
+
+  private boolean isVanished(@Nullable Player player) {
+    return player != null && player.hasMetadata("isVanished");
   }
 
   public boolean canView(CommandAudience viewer, Player player) {

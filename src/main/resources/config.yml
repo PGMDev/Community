@@ -58,6 +58,11 @@ users:
   first-join:
     - "!send &a&lWelcome to the server!"
     - "give %name% cake"
+
+# Nicknames - Able to adjust username of player to hide from unwanted eyes (todo wow change this message)  
+nick:
+  enabled: true 
+  pgm-integration: true
   
 # Friends - Settings related to friendship features/commands  
 friends:

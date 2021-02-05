@@ -10,6 +10,7 @@ import co.aikar.commands.annotation.Description;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import tc.oc.pgm.util.text.TextFormatter;
 public class StaffCommand extends CommunityCommand {
 
   @Dependency private Community plugin;
+  @Dependency private NickFeature nicks;
 
   @Default
   public void staff(CommandAudience viewer, CommandSender sender) {
@@ -35,7 +37,7 @@ public class StaffCommand extends CommunityCommand {
             .filter(
                 player ->
                     (player.hasPermission(Permissions.STAFF)
-                        && (!isVanished(player)
+                        && (!this.isDisguised(player, nicks)
                             || sender.hasPermission(CommunityPermissions.STAFF))))
             .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());

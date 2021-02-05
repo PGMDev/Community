@@ -42,6 +42,10 @@ public interface CommunityPermissions {
   // Friends
   String FRIENDSHIP = ROOT + ".friendship"; // Access to /friend commands
 
+  // Nicknames
+  String NICKNAME = ROOT + ".nick"; // Access to /nick (random)
+  String NICKNAME_SET = NICKNAME + ".set"; // Access to /nick set [username]
+
   // General Staff
   String STAFF =
       ROOT + ".staff"; // Receive staff broadcasts and see disguised players (maybe add a different
