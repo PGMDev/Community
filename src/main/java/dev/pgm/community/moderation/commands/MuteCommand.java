@@ -52,7 +52,7 @@ public class MuteCommand extends CommunityCommand {
                     reason,
                     length,
                     true,
-                    this.isDisguised(audience, nicks));
+                    isDisguised(audience, nicks));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }

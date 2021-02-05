@@ -31,7 +31,7 @@ public class FreezeCommand extends CommunityCommand {
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.FREEZE)
   public void freeze(CommandAudience sender, @Flags("other") Player target) {
-    freeze.setFrozen(sender, target, !freeze.isFrozen(target), this.isDisguised(sender, nicks));
+    freeze.setFrozen(sender, target, !freeze.isFrozen(target), isDisguised(sender, nicks));
   }
 
   @CommandAlias("frozenlist|fls|flist")

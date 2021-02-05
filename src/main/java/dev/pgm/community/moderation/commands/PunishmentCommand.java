@@ -92,7 +92,7 @@ public class PunishmentCommand extends CommunityCommand {
                       reason,
                       length,
                       true,
-                      this.isDisguised(audience, nicks));
+                      isDisguised(audience, nicks));
                 } else {
                   // No target supplied, show last punishment
                   PunishmentFormats.formatBroadcast(lastPunishment, usernames)

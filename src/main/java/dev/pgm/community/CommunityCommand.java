@@ -224,15 +224,11 @@ public abstract class CommunityCommand extends BaseCommand {
   }
 
   protected boolean isDisguised(CommandAudience audience, NickFeature nicks) {
-    return !audience.isPlayer() || audience.isPlayer() && isDisguised(audience.getPlayer(), nicks);
+    return !audience.isPlayer() || isDisguised(audience.getPlayer(), nicks);
   }
 
   protected boolean isDisguised(Player player, NickFeature nicks) {
     return isVanished(player) || nicks.isNicked(player.getUniqueId());
-  }
-
-  private boolean isVanished(CommandAudience audience) {
-    return audience.isPlayer() && isVanished(audience.getPlayer());
   }
 
   private boolean isVanished(@Nullable Player player) {
