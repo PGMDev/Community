@@ -59,6 +59,9 @@ public class PGMNickProvider implements NickProvider {
     Component nicked =
         text("You are currently disguised", NamedTextColor.DARK_AQUA, TextDecoration.BOLD);
     Component message = text().append(warning).append(nicked).append(warning).build();
-    player.sendActionBar(message);
+
+    if (player.isObserving()) {
+      player.sendActionBar(message);
+    }
   }
 }
