@@ -37,9 +37,9 @@ public class StaffCommand extends CommunityCommand {
             .filter(
                 player ->
                     (player.hasPermission(Permissions.STAFF)
-                        && (!this.isDisguised(player, nicks)
+                        && (!isDisguised(player, nicks)
                             || sender.hasPermission(CommunityPermissions.STAFF))))
-            .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
+            .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE, viewer.getPlayer()))
             .collect(Collectors.toList());
 
     // FORMAT: Online Staff ({count}): {names}

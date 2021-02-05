@@ -1,5 +1,6 @@
 package dev.pgm.community.nick.commands;
 
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -115,28 +116,22 @@ public class NickCommands extends CommunityCommand {
         .thenAcceptAsync(
             nick -> {
               if (nick == null) {
-                viewer.sendWarning(
-                    text()
-                        .append(
-                            text("You do not have a nickname set! ", NamedTextColor.RED)
-                                .append(
-                                    createTextButton(
-                                        "Get Random Name",
-                                        "/nick random",
-                                        "Click to recieve a new nickname",
-                                        NamedTextColor.GREEN)))
-                        .build());
+                // No nickname set, then random one will be assigned
+                setRandomNick(viewer, player);
                 return;
               }
 
+              // Only display toggle to users who can set a custom nickname
               Component toggle =
-                  createTextButton(
-                      "Toggle",
-                      "/nick toggle",
-                      "&7Click to "
-                          + (nick.isEnabled() ? "&cdisable" : "&aenable")
-                          + "&7 your nickname",
-                      nick.isEnabled() ? NamedTextColor.RED : NamedTextColor.GREEN);
+                  viewer.getPlayer().hasPermission(CommunityPermissions.NICKNAME_SET)
+                      ? createTextButton(
+                          "Toggle",
+                          "/nick toggle",
+                          "&7Click to "
+                              + (nick.isEnabled() ? "&cdisable" : "&aenable")
+                              + "&7 your nickname",
+                          nick.isEnabled() ? NamedTextColor.RED : NamedTextColor.GREEN)
+                      : empty();
 
               Component clear =
                   createTextButton(
