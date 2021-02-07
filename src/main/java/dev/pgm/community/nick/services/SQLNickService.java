@@ -3,7 +3,6 @@ package dev.pgm.community.nick.services;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.nick.Nick;
@@ -16,15 +15,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
 public class SQLNickService extends SQLFeatureBase<Nick> {
 
-  private static final String TABLE_NAME = "nick";
+  private static final String TABLE_NAME = "nicknames";
   private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, nickname VARCHAR(16), playerId VARCHAR(36), date LONG, valid BOOL, enabled BOOL)";
+      "(playerId VARCHAR(36) PRIMARY KEY, nickname VARCHAR(16), date LONG, enabled BOOL)";
 
-  private LoadingCache<UUID, SelectTargetNicksQuery> nickCache;
+  private LoadingCache<UUID, SelectTargetNickQuery> nickCache;
 
   public SQLNickService(DatabaseConnection connection, NickConfig config) {
     super(connection, TABLE_NAME, TABLE_FIELDS);
@@ -32,10 +32,10 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
     this.nickCache =
         CacheBuilder.newBuilder()
             .build(
-                new CacheLoader<UUID, SelectTargetNicksQuery>() {
+                new CacheLoader<UUID, SelectTargetNickQuery>() {
                   @Override
-                  public SelectTargetNicksQuery load(UUID key) throws Exception {
-                    return new SelectTargetNicksQuery(key);
+                  public SelectTargetNickQuery load(UUID key) throws Exception {
+                    return new SelectTargetNickQuery(key);
                   }
                 });
   }
@@ -47,25 +47,20 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
 
   @Override
   public CompletableFuture<List<Nick>> queryList(String target) {
-    SelectTargetNicksQuery query = nickCache.getUnchecked(UUID.fromString(target));
-
-    if (query.hasFetched()) {
-      return CompletableFuture.completedFuture(query.getNicks());
-    } else {
-      return getDatabase()
-          .submitQueryComplete(query)
-          .thenApplyAsync(
-              q ->
-                  SelectTargetNicksQuery.class
-                      .cast(q)
-                      .getNicks()); // Gets a list of ALL nicknames a player has used
-    }
+    return CompletableFuture.completedFuture(null);
   }
 
   @Override
   public CompletableFuture<Nick> query(String target) {
-    return queryList(target)
-        .thenApplyAsync(list -> list.stream().filter(Nick::isValid).findAny().orElse(null));
+    SelectTargetNickQuery query = nickCache.getUnchecked(UUID.fromString(target));
+
+    if (query.hasFetched()) {
+      return CompletableFuture.completedFuture(query.getNick());
+    } else {
+      return getDatabase()
+          .submitQueryComplete(query)
+          .thenApplyAsync(q -> SelectTargetNickQuery.class.cast(q).getNick());
+    }
   }
 
   public CompletableFuture<Boolean> update(Nick nick) {
@@ -75,30 +70,28 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
   }
 
   public CompletableFuture<Boolean> isNameAvailable(String name) {
-    return queryByName(name, true).thenApplyAsync(results -> results.isEmpty());
+    return queryByName(name).thenApplyAsync(results -> results == null);
   }
 
-  public CompletableFuture<List<Nick>> queryByName(String name, boolean valid) {
+  public CompletableFuture<Nick> queryByName(String name) {
     return getDatabase()
-        .submitQueryComplete(new SelectNickByNameQuery(name, valid))
-        .thenApplyAsync(q -> SelectNickByNameQuery.class.cast(q).getResults());
+        .submitQueryComplete(new SelectNickByNameQuery(name))
+        .thenApplyAsync(q -> SelectNickByNameQuery.class.cast(q).getResult());
   }
 
   private class InsertQuery implements Query {
 
     private static final String INSERT_NICKNAME_QUERY =
-        "INSERT INTO "
-            + TABLE_NAME
-            + "(id, nickname, playerId, date, valid, enabled) VALUES (?,?,?,?,?,?)";
+        "INSERT INTO " + TABLE_NAME + "(playerId, nickname, date, enabled) VALUES (?,?,?,?)";
 
     private final Nick nick;
 
     public InsertQuery(Nick nick) {
       this.nick = nick;
 
-      SelectTargetNicksQuery query = nickCache.getUnchecked(nick.getPlayerId());
-      if (query.hasFetched()) {
-        query.getNicks().add(nick);
+      SelectTargetNickQuery cached = nickCache.getUnchecked(nick.getPlayerId());
+      if (cached.getNick() == null) {
+        cached.nick = nick;
       }
     }
 
@@ -109,30 +102,27 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
 
     @Override
     public void query(PreparedStatement statement) throws SQLException {
-      statement.setString(1, nick.getNickId().toString());
-      statement.setString(2, nick.getNickName());
-      statement.setString(3, nick.getPlayerId().toString());
-      statement.setLong(4, nick.getDateSet().toEpochMilli());
-      statement.setBoolean(5, nick.isValid());
-      statement.setBoolean(6, nick.isEnabled());
+      statement.setString(1, nick.getPlayerId().toString());
+      statement.setString(2, nick.getName());
+      statement.setLong(3, nick.getDateSet().toEpochMilli());
+      statement.setBoolean(4, nick.isEnabled());
       statement.executeUpdate();
     }
   }
 
-  private class SelectTargetNicksQuery implements Query {
+  private class SelectTargetNickQuery implements Query {
 
     private static final String SELECT_QUERY =
-        "SELECT * from " + TABLE_NAME + " where playerId = ?";
+        "SELECT * from " + TABLE_NAME + " where playerId = ? LIMIT 1";
 
     private final UUID target;
 
-    private List<Nick> nicks;
+    private Nick nick;
 
     private boolean fetched;
 
-    public SelectTargetNicksQuery(UUID target) {
+    public SelectTargetNickQuery(UUID target) {
       this.target = target;
-      this.nicks = Lists.newArrayList();
       this.fetched = false;
     }
 
@@ -140,8 +130,12 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
       return fetched;
     }
 
-    public List<Nick> getNicks() {
-      return nicks;
+    public Nick getNick() {
+      return nick;
+    }
+
+    public void setNick(Nick nick) {
+      this.nick = nick;
     }
 
     @Override
@@ -154,13 +148,11 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
       statement.setString(1, target.toString());
       try (final ResultSet result = statement.executeQuery()) {
         while (result.next()) {
-          UUID nickId = UUID.fromString(result.getString("id"));
           UUID playerId = UUID.fromString(result.getString("playerId"));
           String nickName = result.getString("nickname");
           Instant date = Instant.ofEpochMilli(result.getLong("date"));
-          boolean valid = result.getBoolean("valid");
           boolean enabled = result.getBoolean("enabled");
-          nicks.add(new NickImpl(nickId, playerId, nickName, date, valid, enabled));
+          setNick(new NickImpl(playerId, nickName, date, enabled));
         }
         fetched = true;
       }
@@ -170,7 +162,7 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
   private class UpdateTargetNickQuery implements Query {
 
     private static final String UPDATE_QUERY =
-        "UPDATE " + TABLE_NAME + " set valid = ?, enabled = ? where id = ?";
+        "UPDATE " + TABLE_NAME + " set nickName = ?, enabled = ?, date = ? where playerId = ?";
 
     private final Nick nick;
     private boolean success;
@@ -190,9 +182,10 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
 
     @Override
     public void query(PreparedStatement statement) throws SQLException {
-      statement.setBoolean(1, nick.isValid());
+      statement.setString(1, nick.getName());
       statement.setBoolean(2, nick.isEnabled());
-      statement.setString(3, nick.getNickId().toString());
+      statement.setLong(3, nick.getDateSet().toEpochMilli());
+      statement.setString(4, nick.getPlayerId().toString());
       success = statement.executeUpdate() != 0;
     }
   }
@@ -200,20 +193,19 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
   private class SelectNickByNameQuery implements Query {
 
     private static final String SELECT_QUERY =
-        "SELECT * from " + TABLE_NAME + " where LOWER(nickname) = LOWER(?) AND valid = ?";
+        "SELECT * from " + TABLE_NAME + " where LOWER(nickname) = LOWER(?)";
 
     private final String name;
-    private final boolean valid;
 
-    private List<Nick> result = Lists.newArrayList();
+    private @Nullable Nick nick;
 
-    public SelectNickByNameQuery(String targetName, boolean valid) {
+    public SelectNickByNameQuery(String targetName) {
       this.name = targetName;
-      this.valid = valid;
+      this.nick = null;
     }
 
-    public List<Nick> getResults() {
-      return result;
+    public Nick getResult() {
+      return nick;
     }
 
     @Override
@@ -224,16 +216,13 @@ public class SQLNickService extends SQLFeatureBase<Nick> {
     @Override
     public void query(PreparedStatement statement) throws SQLException {
       statement.setString(1, name);
-      statement.setBoolean(2, valid);
       try (final ResultSet result = statement.executeQuery()) {
         while (result.next()) {
-          UUID nickId = UUID.fromString(result.getString("id"));
           UUID playerId = UUID.fromString(result.getString("playerId"));
           String nickName = result.getString("nickname");
           Instant date = Instant.ofEpochMilli(result.getLong("date"));
-          boolean valid = result.getBoolean("valid");
           boolean enabled = result.getBoolean("enabled");
-          this.result.add(new NickImpl(nickId, playerId, nickName, date, valid, enabled));
+          nick = new NickImpl(playerId, nickName, date, enabled);
         }
       }
     }

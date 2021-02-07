@@ -5,7 +5,6 @@ import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.feature.NickFeatureBase;
 import dev.pgm.community.nick.services.SQLNickService;
 import dev.pgm.community.users.feature.UsersFeature;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -29,11 +28,6 @@ public class SQLNickFeature extends NickFeatureBase {
   }
 
   @Override
-  public CompletableFuture<List<Nick>> getNickHistory(UUID playerId) {
-    return service.queryList(playerId.toString());
-  }
-
-  @Override
   public CompletableFuture<Boolean> setNick(UUID playerId, String nickName) {
     return isNameAvailable(nickName)
         .thenApplyAsync(
@@ -41,11 +35,17 @@ public class SQLNickFeature extends NickFeatureBase {
               if (!free) {
                 return false;
               }
-              clearNick(playerId)
+
+              getNick(playerId)
                   .thenAcceptAsync(
-                      success -> {
-                        Nick newNick = Nick.of(playerId, nickName);
-                        service.save(newNick);
+                      nick -> {
+                        if (nick == null) {
+                          Nick newNick = Nick.of(playerId, nickName);
+                          service.save(newNick);
+                        } else {
+                          nick.setName(nickName);
+                          service.update(nick);
+                        }
                       });
               return true;
             });
@@ -57,7 +57,7 @@ public class SQLNickFeature extends NickFeatureBase {
         .thenApplyAsync(
             nick -> {
               if (nick == null) return false;
-              nick.setValid(false);
+              nick.clear();
               service.update(nick);
               return true;
             });
@@ -84,10 +84,5 @@ public class SQLNickFeature extends NickFeatureBase {
               service.update(nick);
               return nick.isEnabled();
             });
-  }
-
-  @Override
-  public CompletableFuture<List<Nick>> getNicksByName(String nick) {
-    return service.queryByName(nick, false);
   }
 }

@@ -21,7 +21,9 @@ import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.NickUtils;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -111,61 +113,27 @@ public class NickCommands extends CommunityCommand {
   @Syntax("[target]")
   @Default
   public void checkNickStatus(CommandAudience viewer, Player player, @Optional String target) {
-    nicks
-        .getNick(viewer.getPlayer().getUniqueId())
-        .thenAcceptAsync(
-            nick -> {
-              if (nick == null) {
-                // No nickname set, then random one will be assigned
-                setRandomNick(viewer, player);
-                return;
-              }
-
-              // Only display toggle to users who can set a custom nickname
-              Component toggle =
-                  viewer.getPlayer().hasPermission(CommunityPermissions.NICKNAME_SET)
-                      ? createTextButton(
-                          "Toggle",
-                          "/nick toggle",
-                          "&7Click to "
-                              + (nick.isEnabled() ? "&cdisable" : "&aenable")
-                              + "&7 your nickname",
-                          nick.isEnabled() ? NamedTextColor.RED : NamedTextColor.GREEN)
-                      : empty();
-
-              Component clear =
-                  createTextButton(
-                      "Clear",
-                      "/nick clear",
-                      "Click to clear your nickname",
-                      NamedTextColor.DARK_RED);
-
-              viewer.sendMessage(
-                  text()
-                      .append(text("Nickname: ("))
-                      .append(text(nick.getNickName(), NamedTextColor.AQUA))
-                      .append(text(") Status: "))
-                      .append(
-                          text(
-                              nick.isEnabled() ? "Enabled" : "Disabled",
-                              nick.isEnabled() ? NamedTextColor.GREEN : NamedTextColor.RED))
-                      .append(space())
-                      .append(toggle)
-                      .append(space())
-                      .append(clear)
-                      .color(NamedTextColor.GRAY)
-                      .build());
-
-              // Alert user about nickname updates
-              if (!nicks.isNicked(viewer.getPlayer().getUniqueId()) && nick.isEnabled()) {
-                viewer.sendWarning(
-                    text(
-                        "Your nickname will be active upon your next login", NamedTextColor.GREEN));
-              } else if (nicks.isNicked(viewer.getPlayer().getUniqueId()) && !nick.isEnabled()) {
-                viewer.sendMessage(
-                    text("Your nickname will be removed once you logout", NamedTextColor.RED));
-              }
-            });
+    // Check nick status of other players
+    if (player.hasPermission(CommunityPermissions.NICKNAME_SET) && target != null) {
+      getTarget(target, users)
+          .thenAcceptAsync(
+              uuid -> {
+                if (uuid.isPresent()) {
+                  users
+                      .renderUsername(uuid)
+                      .thenAcceptAsync(
+                          name -> {
+                            sendNickStatus(viewer, player, uuid.get(), name);
+                            return;
+                          });
+                } else {
+                  viewer.sendWarning(formatNotFoundComponent(target));
+                }
+              });
+    } else {
+      // Own status
+      sendNickStatus(viewer, player, player.getUniqueId(), viewer.getStyledName());
+    }
   }
 
   @Subcommand("clear|reset")
@@ -223,27 +191,95 @@ public class NickCommands extends CommunityCommand {
             });
   }
 
-  //  // TODO: bring this back later, allows for nickname history to be viewed
-  //  // COLOR THE >> & the icon as the same color to indicate status
-  //  private Component formatPastNicks(Nick nick) {
-  //    return TextComponent.builder()
-  //        .append(
-  //            (nick.isValid()
-  //                ? MessageUtils.WARNING.append(TextComponent.space())
-  //                : TextComponent.of("- ", TextColor.YELLOW)))
-  //        .append(users.getStoredUsername(nick.getPlayerId()).join(), TextColor.DARK_AQUA)
-  //        .append(" ")
-  //        .append(BroadcastUtils.RIGHT_DIV.color(nick.isValid() ? TextColor.GREEN :
-  // TextColor.YELLOW))
-  //        .append(" ")
-  //        .append(PeriodFormats.relativePastApproximate(nick.getDateSet()).color(TextColor.BLUE))
-  //        .hoverEvent(
-  //            HoverEvent.showText(
-  //                TextComponent.of(
-  //                    nick.isValid() ? "Unavailable at this time" : "Available for use",
-  //                    TextColor.GRAY)))
-  //        .build();
-  //  }
+  private void sendNickStatus(
+      CommandAudience viewer, Player player, UUID targetId, Component targetName) {
+    final boolean self = player.getUniqueId().equals(targetId);
+    nicks
+        .getNick(targetId)
+        .thenAcceptAsync(
+            nick -> {
+              if (nick == null || nick.getName().isEmpty()) {
+                if (self) {
+                  // No nickname set, then random one will be assigned
+                  setRandomNick(viewer, player);
+                } else {
+                  // Other target has no nickname
+                  viewer.sendWarning(
+                      text()
+                          .append(targetName)
+                          .append(text(" does not have a nickname set"))
+                          .build());
+                }
+                return;
+              }
+
+              Component newName =
+                  createTextButton(
+                      "New",
+                      "/nick random",
+                      "&7Click to recieve a new nickname",
+                      NamedTextColor.AQUA);
+
+              // Only display toggle to users who can set a custom nickname
+              Component toggle =
+                  viewer.getPlayer().hasPermission(CommunityPermissions.NICKNAME_SET)
+                      ? createTextButton(
+                          "Toggle",
+                          "/nick toggle",
+                          "&7Click to "
+                              + (nick.isEnabled() ? "&cdisable" : "&aenable")
+                              + "&7 your nickname",
+                          nick.isEnabled() ? NamedTextColor.RED : NamedTextColor.GREEN)
+                      : empty();
+
+              Component clear =
+                  createTextButton(
+                      "Clear",
+                      "/nick clear",
+                      "Click to clear your nickname",
+                      NamedTextColor.DARK_RED);
+
+              TextComponent.Builder statusMsg =
+                  text()
+                      .append(text("Nickname: ("))
+                      .append(text(nick.getName(), NamedTextColor.AQUA))
+                      .append(text(") Status: "))
+                      .append(
+                          text(
+                              nick.isEnabled() ? "Enabled" : "Disabled",
+                              nick.isEnabled() ? NamedTextColor.GREEN : NamedTextColor.RED));
+
+              if (self) {
+                statusMsg
+                    .append(space())
+                    .append(newName)
+                    .append(space())
+                    .append(toggle)
+                    .append(space())
+                    .append(clear);
+              }
+              if (!self)
+                viewer.sendMessage(
+                    text()
+                        .append(text("Nick Status for ", NamedTextColor.GRAY))
+                        .append(targetName)
+                        .build());
+              viewer.sendMessage(statusMsg.color(NamedTextColor.GRAY).build());
+
+              // Alert user about nickname updates
+              if (self) {
+                if (!nicks.isNicked(viewer.getPlayer().getUniqueId()) && nick.isEnabled()) {
+                  viewer.sendWarning(
+                      text(
+                          "Your nickname will be active upon your next login",
+                          NamedTextColor.GREEN));
+                } else if (nicks.isNicked(viewer.getPlayer().getUniqueId()) && !nick.isEnabled()) {
+                  viewer.sendMessage(
+                      text("Your nickname will be removed once you logout", NamedTextColor.RED));
+                }
+              }
+            });
+  }
 
   private Component createTextButton(
       String text, String command, String hover, NamedTextColor color) {

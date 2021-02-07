@@ -5,31 +5,28 @@ import java.util.UUID;
 
 public class NickImpl implements Nick {
 
-  private UUID nickId;
   private UUID playerId;
   private String nickName;
   private Instant date;
-  private boolean valid;
   private boolean enabled;
 
-  public NickImpl(
-      UUID nickId, UUID playerId, String nickName, Instant date, boolean valid, boolean enabled) {
-    this.nickId = nickId;
+  public NickImpl(UUID playerId, String nickName, Instant date, boolean enabled) {
     this.playerId = playerId;
     this.nickName = nickName;
     this.date = date;
-    this.valid = valid;
     this.enabled = enabled;
   }
 
   @Override
-  public UUID getNickId() {
-    return nickId;
+  public String getName() {
+    return nickName;
   }
 
   @Override
-  public String getNickName() {
-    return nickName;
+  public void setName(String name) {
+    this.nickName = name;
+    this.enabled = true;
+    this.date = Instant.now();
   }
 
   @Override
@@ -43,18 +40,8 @@ public class NickImpl implements Nick {
   }
 
   @Override
-  public boolean isValid() {
-    return valid;
-  }
-
-  @Override
-  public void setValid(boolean valid) {
-    this.valid = valid;
-  }
-
-  @Override
   public boolean isEnabled() {
-    return enabled;
+    return !nickName.isEmpty() && enabled;
   }
 
   @Override

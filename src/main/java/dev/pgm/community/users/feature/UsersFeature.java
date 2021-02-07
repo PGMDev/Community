@@ -26,6 +26,9 @@ public interface UsersFeature extends Feature {
   // But better than calling XMLUtils
   static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
 
+  default CompletableFuture<Component> renderUsername(UUID userId) {
+    return renderUsername(Optional.ofNullable(userId));
+  }
   /**
    * Render a player name by looking up cached value or using database stored name
    *

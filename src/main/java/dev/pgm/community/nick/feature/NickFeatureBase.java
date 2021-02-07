@@ -74,7 +74,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
     if (!getConfig().isEnabled()) return;
     Nick nick = this.getNick(event.getUniqueId()).join();
     if (nick != null && nick.isEnabled()) {
-      nickedPlayers.put(event.getUniqueId(), nick.getNickName());
+      nickedPlayers.put(event.getUniqueId(), nick.getName());
     } else {
       nickedPlayers.remove(event.getUniqueId());
     }

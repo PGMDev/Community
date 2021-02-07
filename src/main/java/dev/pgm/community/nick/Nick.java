@@ -6,18 +6,13 @@ import java.util.UUID;
 public interface Nick {
 
   /**
-   * Get the nickname record ID
-   *
-   * @return nickname record uuid
-   */
-  UUID getNickId();
-
-  /**
    * Get the nickname
    *
    * @return a nickname string
    */
-  String getNickName();
+  String getName();
+
+  void setName(String name);
 
   /**
    * Get the owning player's ID
@@ -34,21 +29,6 @@ public interface Nick {
   Instant getDateSet();
 
   /**
-   * Get whether this nickname is still valid Note: Nicknames are valid if player has yet to clear
-   * or change their name
-   *
-   * @return true if valid
-   */
-  boolean isValid();
-
-  /**
-   * Set whether nickname is valid
-   *
-   * @param valid True if valid, false if not
-   */
-  void setValid(boolean valid);
-
-  /**
    * Get whether the nickname is enabled Note: This represents whether the user wants their nickname
    * applied upon login
    *
@@ -63,7 +43,12 @@ public interface Nick {
    */
   void setEnabled(boolean enabled);
 
+  default void clear() {
+    setName("");
+    setEnabled(false);
+  }
+
   public static Nick of(UUID playerId, String nick) {
-    return new NickImpl(UUID.randomUUID(), playerId, nick, Instant.now(), true, true);
+    return new NickImpl(playerId, nick, Instant.now(), true);
   }
 }
