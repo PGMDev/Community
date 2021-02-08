@@ -11,7 +11,6 @@ import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Flags;
 import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
@@ -101,12 +100,52 @@ public class NickCommands extends CommunityCommand {
             });
   }
 
-  // TODO
   @Subcommand("setother|other")
   @Description("Set the nickname of another player")
   @Syntax("[target] [nick]")
-  public void setOtherNick(
-      CommandAudience viewer, @Flags("other") Player target, @Optional String nick) {}
+  @CommandPermission(CommunityPermissions.NICKNAME_OTHER)
+  public void setOtherNick(CommandAudience viewer, String target, String nick) {
+    validateNick(nick);
+    getTarget(target, users)
+        .thenAcceptAsync(
+            uuid -> {
+              if (uuid.isPresent()) {
+                nicks
+                    .setNick(uuid.get(), nick)
+                    .thenAcceptAsync(
+                        success -> {
+                          if (success) {
+                            users
+                                .renderUsername(uuid)
+                                .thenAcceptAsync(
+                                    name -> {
+                                      viewer.sendMessage(
+                                          text()
+                                              .append(text("Nickname for "))
+                                              .append(name)
+                                              .append(text(" set to "))
+                                              .append(
+                                                  text(
+                                                      nick,
+                                                      NamedTextColor.AQUA,
+                                                      TextDecoration.BOLD))
+                                              .color(NamedTextColor.GRAY)
+                                              .build());
+                                    });
+                          } else {
+                            viewer.sendWarning(
+                                text()
+                                    .append(text("Could not set nickname for "))
+                                    .append(text(target, NamedTextColor.AQUA))
+                                    .build());
+                          }
+                        });
+
+              } else {
+                viewer.sendWarning(formatNotFoundComponent(target));
+              }
+            });
+  }
 
   @Subcommand("status")
   @Description("Check your current nickname status")
