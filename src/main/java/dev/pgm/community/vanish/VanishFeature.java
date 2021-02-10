@@ -176,7 +176,9 @@ public class VanishFeature extends FeatureBase implements VanishManager {
     if (player == null) return;
     if (player.getParty() instanceof Competitor) return; // Do not vanish players on a team
     if (!player.getBukkit().hasPermission(Permissions.VANISH)) return; // No perms
-    if (nicks.isNicked(player.getId())) {
+    if (checkVanishSubdomain(player)) return; // Login via vanish.<ip> will force vanish
+
+    if (nicks.isNicked(player.getId()) || nicks.isAutoNicked(player.getId())) {
       if (isVanished(player.getId())) {
         removeVanished(player); // Unvanish nicked players
       }
@@ -186,19 +188,6 @@ public class VanishFeature extends FeatureBase implements VanishManager {
     if (isVanished(player.getId())) { // Player is already vanished
       player.setVanished(true);
       return;
-    }
-
-    if (player
-        .getBukkit()
-        .hasPermission(Permissions.VANISH)) { // Player is not vanished, but has permission to
-
-      // Automatic vanish if player logs in via a "vanish" subdomain
-      String domain = loginSubdomains.getIfPresent(player.getId());
-      if (domain != null) {
-        loginSubdomains.invalidate(player.getId());
-        tempVanish.add(player.getId());
-        setVanished(player, true, true);
-      }
     }
   }
 
@@ -233,6 +222,29 @@ public class VanishFeature extends FeatureBase implements VanishManager {
     }
 
     player.setVanished(isVanished(player.getId()));
+  }
+
+  private boolean checkVanishSubdomain(MatchPlayer player) {
+    if (player
+        .getBukkit()
+        .hasPermission(Permissions.VANISH)) { // Player is not vanished, but has permission to
+
+      // Automatic vanish if player logs in via a "vanish" subdomain
+      String domain = loginSubdomains.getIfPresent(player.getId());
+      if (domain != null) {
+        loginSubdomains.invalidate(player.getId());
+        tempVanish.add(player.getId());
+        setVanished(player, true, true);
+
+        if (nicks.isNicked(player.getId())) {
+          nicks.removeOnlineNick(player.getId());
+          player.sendMessage(text("You have forcefully vanished (Nick removed)"));
+        }
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private boolean isVanishSubdomain(String address) {

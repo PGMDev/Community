@@ -23,4 +23,9 @@ public interface NickFeature extends Feature {
   String getOnlineNick(UUID playerId); // Get the nickname of an online player
 
   Player getPlayerFromNick(String nickName);
+
+  void removeOnlineNick(UUID playerId); // Removes the player from being nicked
+
+  boolean isAutoNicked(
+      UUID playerId); // Whether the player was nicked via logging in with nick.<domain>
 }

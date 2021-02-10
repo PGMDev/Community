@@ -74,6 +74,16 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
   }
 
   @Override
+  public void removeOnlineNick(UUID playerId) {
+    this.nickedPlayers.remove(playerId);
+  }
+
+  @Override
+  public boolean isAutoNicked(UUID playerId) {
+    return this.autoNicked.contains(playerId);
+  }
+
+  @Override
   public Player getPlayerFromNick(String nickName) {
     Optional<UUID> player =
         nickedPlayers.entrySet().stream()
@@ -133,7 +143,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
                                           Audience.get(player)
                                               .sendWarning(
                                                   text(
-                                                      "You have been given a random nickname",
+                                                      "You had no nickname, so a random one has been assigned",
                                                       NamedTextColor.GREEN));
                                         }
                                       });
