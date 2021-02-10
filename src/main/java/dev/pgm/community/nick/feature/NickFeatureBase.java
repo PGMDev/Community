@@ -36,7 +36,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.util.Audience;
 
@@ -100,10 +99,10 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
       loginSubdomains.put(player.getUniqueId(), event.getHostname());
     }
   }
-  
+
   @EventHandler
   public void onQuit(PlayerQuitEvent event) {
-	  autoNicked.remove(event.getPlayer().getUniqueId());
+    autoNicked.remove(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
