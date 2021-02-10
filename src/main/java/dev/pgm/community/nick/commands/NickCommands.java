@@ -153,7 +153,7 @@ public class NickCommands extends CommunityCommand {
   @Default
   public void checkNickStatus(CommandAudience viewer, Player player, @Optional String target) {
     // Check nick status of other players
-    if (player.hasPermission(CommunityPermissions.NICKNAME_SET) && target != null) {
+    if (player.hasPermission(CommunityPermissions.NICKNAME_OTHER) && target != null) {
       getTarget(target, users)
           .thenAcceptAsync(
               uuid -> {
@@ -176,8 +176,45 @@ public class NickCommands extends CommunityCommand {
   }
 
   @Subcommand("clear|reset")
-  @Description("Remove your nickname")
-  public void clearNick(CommandAudience viewer, Player player) {
+  @Description("Remove nickname from yourself or another player")
+  public void clearNick(CommandAudience viewer, Player player, @Optional String target) {
+    // Clear other user name
+    if (player.hasPermission(CommunityPermissions.NICKNAME_OTHER) && target != null) {
+      getTarget(target, users)
+          .thenAcceptAsync(
+              uuid -> {
+                if (uuid.isPresent()) {
+                  users
+                      .renderUsername(uuid)
+                      .thenAcceptAsync(
+                          name -> {
+                            nicks
+                                .clearNick(uuid.get())
+                                .thenAcceptAsync(
+                                    success -> {
+                                      Component setName =
+                                          text()
+                                              .append(text("You have reset the nickname of "))
+                                              .append(name)
+                                              .color(NamedTextColor.GREEN)
+                                              .build();
+                                      Component noName =
+                                          text()
+                                              .append(name)
+                                              .append(text(" does not have a nickname set"))
+                                              .color(NamedTextColor.RED)
+                                              .build();
+                                      viewer.sendWarning(success ? setName : noName);
+                                    });
+                          });
+                } else {
+                  viewer.sendWarning(formatNotFoundComponent(target));
+                }
+              });
+      return;
+    }
+
+    // Reset own nickname
     nicks
         .clearNick(viewer.getPlayer().getUniqueId())
         .thenAcceptAsync(
