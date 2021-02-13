@@ -193,9 +193,10 @@ public class VanishFeature extends FeatureBase implements VanishManager {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onQuit(PlayerQuitEvent event) {
+    if (getMatch() == null) return;
     MatchPlayer player = getMatch().getPlayer(event.getPlayer());
     // If player is vanished & joined via "vanish" subdomain. Remove vanish status on quit
-    if (isVanished(player.getId()) && tempVanish.contains(player.getId())) {
+    if (player != null && isVanished(player.getId()) && tempVanish.contains(player.getId())) {
       setVanished(player, false, true);
       // Temporary vanish status is removed before quit,
       // so prevent regular quit msg and forces a staff only broadcast
