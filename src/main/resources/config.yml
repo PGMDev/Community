@@ -94,6 +94,15 @@ broadcast:
   sound: true                  # Whether a small sound will be played
   title-seconds: 5             # Number of seconds title will stay on screen for
   prefix: "&8[&c&lAlert&8]&c " # Prefix message
+  
+  # A sub feature of Broadcasts: send messages to all players in chat with a delay
+  announcements:
+    enabled: true
+    delay-seconds: 180             # Time in seconds between different announcements
+    prefix: "&7&l[&9&lTip&7&l]&r " # Broadcast prefix
+    messages:                      # Messages sent in order (color codes allowed)
+      - "&3This is an alert, you can adjust the messages inside of &aconfig.yml"
+      - "&a&lYou can use &b&lcolor &4&lcodes &6&ltoo!"    
 
 # Freeze - Freeze players via command or observer hotbar tool (when PGM is enabled)  
 freeze:
