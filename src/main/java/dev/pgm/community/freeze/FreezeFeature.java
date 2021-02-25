@@ -52,7 +52,7 @@ public class FreezeFeature extends FeatureBase {
   private final FreezeManager freeze;
 
   public FreezeFeature(Configuration config, Logger logger) {
-    super(new FreezeConfig(config), logger);
+    super(new FreezeConfig(config), logger, "Freeze");
     this.freeze = new FreezeManager();
 
     if (getConfig().isEnabled()) {

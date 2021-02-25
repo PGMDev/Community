@@ -34,7 +34,7 @@ public class ChatManagementFeature extends FeatureBase {
   private boolean slowmode;
 
   public ChatManagementFeature(Configuration config, Logger logger) {
-    super(new ChatManagementConfig(config), logger);
+    super(new ChatManagementConfig(config), logger, "Chat Management");
     if (getConfig().isEnabled()) {
       enable();
     }

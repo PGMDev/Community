@@ -36,7 +36,7 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
 
   public SQLFriendshipFeature(
       Configuration config, Logger logger, DatabaseConnection connection, UsersFeature users) {
-    super(config, logger);
+    super(config, logger, "Friends (SQL)");
     this.service = new SQLFriendshipService(connection);
     this.users = users;
   }

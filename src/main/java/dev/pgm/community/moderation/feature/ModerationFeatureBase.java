@@ -19,6 +19,9 @@ import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
+import dev.pgm.community.network.feature.NetworkFeature;
+import dev.pgm.community.network.subs.PunishmentSubscriber;
+import dev.pgm.community.network.updates.PunishmentUpdate;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -51,20 +54,34 @@ import tc.oc.pgm.util.text.PlayerComponent;
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
 
   private final UsersFeature users;
+  private final NetworkFeature network;
   private final Set<Punishment> recents;
   private final Cache<UUID, MutePunishment> muteCache;
   private final Cache<UUID, Set<String>> banEvasionCache;
 
-  public ModerationFeatureBase(ModerationConfig config, Logger logger, UsersFeature users) {
-    super(config, logger);
-    this.recents = Sets.newHashSet();
+  public ModerationFeatureBase(
+      ModerationConfig config,
+      Logger logger,
+      String featureName,
+      UsersFeature users,
+      NetworkFeature network) {
+    super(config, logger, featureName);
     this.users = users;
+    this.network = network;
+    this.recents = Sets.newHashSet();
     this.muteCache = CacheBuilder.newBuilder().build();
     this.banEvasionCache = CacheBuilder.newBuilder().build();
 
     if (config.isEnabled()) {
       enable();
+
+      // Register punishment subscriber
+      network.registerSubscriber(new PunishmentSubscriber(this, network.getNetworkId(), logger));
     }
+  }
+
+  public NetworkFeature getNetwork() {
+    return network;
   }
 
   public UsersFeature getUsers() {
@@ -144,6 +161,11 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .collect(Collectors.toSet());
   }
 
+  @Override
+  public void sendUpdate(UUID playerId) {
+    network.sendUpdate(new PunishmentUpdate(playerId)); // Send out punishment update
+  }
+
   /** Events * */
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPunishmentEvent(PlayerPunishmentEvent event) {
@@ -152,6 +174,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     recents.add(punishment); // Cache recent punishment
 
     punishment.punish(event.isSilent()); // Perform the actual punishment
+
+    sendUpdate(punishment.getTargetId()); // Send out punishment update
 
     switch (punishment.getType()) {
       case BAN:

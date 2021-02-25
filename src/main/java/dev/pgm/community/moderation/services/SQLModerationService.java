@@ -141,6 +141,12 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
         .thenApplyAsync(query -> SelectAllRecentQuery.class.cast(query).getPunishments());
   }
 
+  public void invalidate(UUID playerId) {
+    if (punishmentCache.getIfPresent(playerId) != null) {
+      punishmentCache.invalidate(playerId);
+    }
+  }
+
   // Query SubClasses
   private class InsertQuery implements Query {
 

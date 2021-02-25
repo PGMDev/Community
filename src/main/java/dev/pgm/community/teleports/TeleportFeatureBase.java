@@ -21,7 +21,7 @@ import tc.oc.pgm.util.text.PlayerComponent;
 public class TeleportFeatureBase extends FeatureBase implements TeleportFeature {
 
   public TeleportFeatureBase(Configuration config, Logger logger) {
-    super(new TeleportConfig(config), logger);
+    super(new TeleportConfig(config), logger, "Teleports");
   }
 
   public TeleportConfig getTeleportConfig() {

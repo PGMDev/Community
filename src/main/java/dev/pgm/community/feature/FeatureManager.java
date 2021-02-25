@@ -19,6 +19,8 @@ import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.motd.MotdFeature;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
+import dev.pgm.community.network.feature.NetworkFeature;
+import dev.pgm.community.network.types.RedisNetworkFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -36,6 +38,7 @@ public class FeatureManager {
   private final ModerationFeature moderation;
   private final UsersFeature users;
   private final FriendshipFeature friends;
+  private final NetworkFeature network;
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
@@ -50,10 +53,13 @@ public class FeatureManager {
       Logger logger,
       DatabaseConnection database,
       BukkitCommandManager commands) {
+    // Networking
+    this.network = new RedisNetworkFeature(config, logger);
+
     // DB Features
     this.users = new SQLUsersFeature(config, logger, database);
     this.reports = new SQLAssistanceFeature(config, logger, database, users);
-    this.moderation = new SQLModerationFeature(config, logger, database, users);
+    this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?

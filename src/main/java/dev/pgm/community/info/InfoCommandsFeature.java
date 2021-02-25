@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 public class InfoCommandsFeature extends FeatureBase {
 
   public InfoCommandsFeature(Configuration config, Logger logger) {
-    super(new InfoCommandConfig(config), logger);
+    super(new InfoCommandConfig(config), logger, "Info Commands");
     enable();
   }
 

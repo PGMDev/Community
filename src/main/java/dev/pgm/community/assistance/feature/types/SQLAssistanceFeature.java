@@ -20,7 +20,7 @@ public class SQLAssistanceFeature extends AssistanceFeatureBase {
 
   public SQLAssistanceFeature(
       Configuration config, Logger logger, DatabaseConnection database, UsersFeature usernames) {
-    super(new ReportConfig(config), logger);
+    super(new ReportConfig(config), logger, "Assistance (SQL)");
     this.service = new SQLAssistanceService(database);
     this.usernames = usernames;
   }

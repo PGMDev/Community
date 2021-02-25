@@ -108,4 +108,8 @@ public interface ModerationFeature extends Feature {
 
   // AsyncPlayerPreLoginEvent handler
   void onPreLogin(AsyncPlayerPreLoginEvent event);
+
+  void invalidate(UUID playerId);
+
+  void sendUpdate(UUID playerId);
 }

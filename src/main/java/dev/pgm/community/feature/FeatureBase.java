@@ -11,20 +11,24 @@ public abstract class FeatureBase implements Feature, Listener {
 
   protected final Logger logger;
   private final FeatureConfig config;
+  private final String featureName;
 
-  public FeatureBase(FeatureConfig config, Logger logger) {
+  public FeatureBase(FeatureConfig config, Logger logger, String featureName) {
     this.config = config;
     this.logger = logger;
+    this.featureName = featureName;
   }
 
   @Override
   public void enable() {
     Community.get().registerListener(this);
+    logger.info(featureName + " has been enabled");
   }
 
   @Override
   public void disable() {
     HandlerList.unregisterAll(this);
+    logger.info(featureName + " has been disabled");
   }
 
   @Override

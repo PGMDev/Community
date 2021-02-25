@@ -39,7 +39,7 @@ public class MutationFeature extends FeatureBase {
   private Set<Mutation> mutations;
 
   public MutationFeature(Configuration config, Logger logger) {
-    super(new MutationConfig(config), logger);
+    super(new MutationConfig(config), logger, "Mutations (PGM)");
     this.mutations = Sets.newHashSet();
 
     if (getConfig().isEnabled() && isPGMEnabled()) {

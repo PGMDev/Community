@@ -12,7 +12,7 @@ import org.bukkit.configuration.Configuration;
 public class NoDBAssistanceFeature extends AssistanceFeatureBase {
 
   public NoDBAssistanceFeature(Configuration config, Logger logger) {
-    super(new ReportConfig(config), logger);
+    super(new ReportConfig(config), logger, "Assistance (No Database)");
   }
 
   @Override
