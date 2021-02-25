@@ -36,8 +36,8 @@ public class TempBanPunishment extends ExpirablePunishment {
   }
 
   @Override
-  public boolean punish() {
-    return kick();
+  public boolean punish(boolean silent) {
+    return kick(silent);
   }
 
   @Override

@@ -137,7 +137,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
         event.setKickMessage(
             punishment.formatPunishmentScreen(
-                getModerationConfig(), getUsers().renderUsername(punishment.getIssuerId()).join()));
+                getModerationConfig(),
+                getUsers().renderUsername(punishment.getIssuerId()).join(),
+                false));
         event.setLoginResult(Result.KICK_BANNED);
       }
 
@@ -182,7 +184,8 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                               player.kickPlayer(
                                   punishment.formatPunishmentScreen(
                                       getModerationConfig(),
-                                      getUsers().renderUsername(punishment.getIssuerId()).join()));
+                                      getUsers().renderUsername(punishment.getIssuerId()).join(),
+                                      false));
                             }
 
                             Optional<MutePunishment> mute = hasActiveMute(punishments);

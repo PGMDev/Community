@@ -84,7 +84,7 @@ public class MutePunishment extends ExpirablePunishment {
   }
 
   @Override
-  public boolean punish() {
+  public boolean punish(boolean silent) {
     getTargetPlayer()
         .map(Audience::get)
         .ifPresent(

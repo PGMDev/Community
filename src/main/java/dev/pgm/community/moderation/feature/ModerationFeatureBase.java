@@ -151,7 +151,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     recents.add(punishment); // Cache recent punishment
 
-    punishment.punish(); // Perform the actual punishment
+    punishment.punish(event.isSilent()); // Perform the actual punishment
 
     switch (punishment.getType()) {
       case BAN:

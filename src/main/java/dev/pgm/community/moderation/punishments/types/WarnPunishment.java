@@ -36,7 +36,7 @@ public class WarnPunishment extends PunishmentBase {
   }
 
   @Override
-  public boolean punish() {
+  public boolean punish(boolean silent) {
     Optional<Player> target = getTargetPlayer();
     target.ifPresent(player -> sendWarning(Audience.get(player), getReason()));
     return target.isPresent();

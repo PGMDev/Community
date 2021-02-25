@@ -69,7 +69,7 @@ public interface Punishment extends Comparable<Punishment> {
    *
    * @return true if target was online, false if not
    */
-  boolean punish();
+  boolean punish(boolean silent);
 
   /**
    * Get whether the punishment is active Active punishments (mute/ban) rely on checking this for
@@ -194,7 +194,8 @@ public interface Punishment extends Comparable<Punishment> {
   }
 
   /** Formats a string for multi-line kick message */
-  default String formatPunishmentScreen(ModerationConfig config, Component issuerName) {
+  default String formatPunishmentScreen(
+      ModerationConfig config, Component issuerName, boolean disguised) {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(empty());
@@ -214,7 +215,9 @@ public interface Punishment extends Comparable<Punishment> {
     }
 
     // Staff Sign-off
-    lines.add(translatable("moderation.screen.signoff", NamedTextColor.GRAY, issuerName));
+    if (!disguised) {
+      lines.add(translatable("moderation.screen.signoff", NamedTextColor.GRAY, issuerName));
+    }
 
     // Link to rules for review by player
     if (config.getRulesLink() != null && !config.getRulesLink().isEmpty()) {

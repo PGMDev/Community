@@ -117,7 +117,7 @@ public abstract class PunishmentBase implements Punishment {
     return Optional.ofNullable(Bukkit.getPlayer(getTargetId()));
   }
 
-  public boolean kick() {
+  public boolean kick(boolean silent) {
     Optional<Player> player = getTargetPlayer();
     if (player.isPresent()) {
       player
@@ -128,7 +128,8 @@ public abstract class PunishmentBase implements Punishment {
                   config,
                   getIssuerId().isPresent()
                       ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
-                      : MessageUtils.CONSOLE));
+                      : MessageUtils.CONSOLE,
+                  silent));
       return true;
     }
     return false;

@@ -34,8 +34,8 @@ public class BanPunishment extends PunishmentBase {
   }
 
   @Override
-  public boolean punish() {
-    return kick();
+  public boolean punish(boolean silent) {
+    return kick(silent);
   }
 
   @Override
