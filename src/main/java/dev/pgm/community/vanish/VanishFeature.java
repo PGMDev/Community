@@ -54,7 +54,7 @@ public class VanishFeature extends FeatureBase implements VanishManager {
   private boolean hotbarFlash;
 
   public VanishFeature(Configuration config, Logger logger, NickFeature nicks) {
-    super(new VanishConfig(config), logger);
+    super(new VanishConfig(config), logger, "Vanish");
 
     this.vanishedPlayers = Sets.newHashSet();
     this.nicks = nicks;
