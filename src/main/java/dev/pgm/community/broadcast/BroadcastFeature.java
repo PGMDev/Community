@@ -27,7 +27,7 @@ public class BroadcastFeature extends FeatureBase {
   private int lastAnnounceIndex;
 
   public BroadcastFeature(Configuration config, Logger logger) {
-    super(new BroadcastConfig(config), logger);
+    super(new BroadcastConfig(config), logger, "Broadcasts");
     this.lastAnnounce = Instant.now();
     this.lastAnnounceIndex = 0;
 
