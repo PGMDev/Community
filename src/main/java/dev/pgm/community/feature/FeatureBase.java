@@ -38,7 +38,7 @@ public abstract class FeatureBase implements Feature, Listener {
 
   @Override
   public void setEnabled(boolean yes) {
-    this.setEnabled(yes);
+    config.setEnabled(yes);
   }
 
   @Override
