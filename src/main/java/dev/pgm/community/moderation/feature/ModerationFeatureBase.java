@@ -50,6 +50,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.text.TextTranslations;
 
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
 
@@ -297,7 +298,12 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
                 banned))
         .hoverEvent(
             HoverEvent.showText(text("Click to issue ban evasion punishment", NamedTextColor.RED)))
-        .clickEvent(ClickEvent.runCommand("/ban " + player.getName() + " Ban Evasion"))
+        .clickEvent(
+            ClickEvent.runCommand(
+                "/ban "
+                    + player.getName()
+                    + " Ban Evasion - "
+                    + TextTranslations.translateLegacy(banned, null)))
         .build();
   }
 }
