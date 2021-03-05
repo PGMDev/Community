@@ -39,6 +39,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -302,8 +303,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             ClickEvent.runCommand(
                 "/ban "
                     + player.getName()
-                    + " Ban Evasion - "
-                    + TextTranslations.translateLegacy(banned, null)))
+                    + " Ban Evasion - ("
+                    + ChatColor.stripColor(TextTranslations.translateLegacy(banned, null) + ")")))
         .build();
   }
 }
