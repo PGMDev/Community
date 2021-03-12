@@ -8,6 +8,7 @@ import co.aikar.commands.annotation.Dependency;
 import com.google.common.collect.Sets;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +38,7 @@ public abstract class CommunityCommand extends BaseCommand {
 
   // Used to quickly format messages while in dev, move all final messages to TextComponents
   protected String format(String format, Object... args) {
-    return String.format(
-        ChatColor.translateAlternateColorCodes('&', format != null ? format : ""), args);
+    return MessageUtils.format(format, args);
   }
 
   protected CompletableFuture<Optional<UUID>> getTarget(String target, UsersFeature service)

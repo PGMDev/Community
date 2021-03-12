@@ -47,6 +47,18 @@ reports:
 users:
   enabled: true
   
+  # A list of commands/messages to execute upon a player's first time joining
+  # Replacements:
+  # %uuid% -> player uuid
+  # %name% -> player username
+  #
+  # Custom Prefix:
+  # !send - Sends the remaining text as a message to the player
+  # Example: "!send &a&lWelcome to the server &d%name%"
+  first-join:
+    - "!send &a&lWelcome to the server!"
+    - "give %name% cake"
+  
 # Friends - Settings related to friendship features/commands  
 friends:
   enabled: true

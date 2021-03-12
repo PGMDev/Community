@@ -47,4 +47,9 @@ public class MessageUtils {
         .build();
     // TODO: translate
   }
+
+  public static String format(String format, Object... args) {
+    return String.format(
+        ChatColor.translateAlternateColorCodes('&', format != null ? format : ""), args);
+  }
 }

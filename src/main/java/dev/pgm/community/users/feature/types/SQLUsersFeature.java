@@ -1,6 +1,8 @@
 package dev.pgm.community.users.feature.types;
 
+import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.events.UserProfileLoadEvent;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.UsersConfig;
@@ -12,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -111,7 +114,18 @@ public class SQLUsersFeature extends UsersFeatureBase {
         player.getUniqueId()); // Removed cached profile upon every login, so we get up to date info
     service
         .login(id, name, address)
-        .thenAcceptAsync(profile -> profiles.put(id, profile)); // Login save
+        .thenAcceptAsync(
+            profile -> {
+              profiles.put(id, profile);
+
+              // Call profile load event
+              Community.get()
+                  .getServer()
+                  .getScheduler()
+                  .runTask(
+                      Community.get(),
+                      () -> Bukkit.getPluginManager().callEvent(new UserProfileLoadEvent(profile)));
+            }); // Login save
     addresses.trackIp(id, address); // Track IP
   }
 
