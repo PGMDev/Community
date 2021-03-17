@@ -6,7 +6,7 @@ import dev.pgm.community.database.query.TableQuery;
 import java.util.concurrent.CompletableFuture;
 
 /** Base implementation of {@link SQLFeature} * */
-public abstract class SQLFeatureBase<T> implements SQLFeature<T> {
+public abstract class SQLFeatureBase<T, R> implements SQLFeature<T, R> {
 
   private final String tableName;
   private final String fields;

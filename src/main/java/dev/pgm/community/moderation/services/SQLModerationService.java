@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLModerationService extends SQLFeatureBase<Punishment> {
+public class SQLModerationService extends SQLFeatureBase<Punishment, String> {
 
   private static final String TABLE_NAME = "punishments";
   private static final String TABLE_FIELDS =

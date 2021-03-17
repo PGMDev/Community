@@ -2,11 +2,13 @@ package dev.pgm.community.users.feature;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
+import dev.pgm.community.users.UserProfileWithSessionCallback;
 import dev.pgm.community.utils.MessageUtils;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
@@ -133,4 +135,46 @@ public interface UsersFeature extends Feature {
   void onLogout(PlayerQuitEvent event);
 
   void saveImportedUser(UUID id, String name);
+
+  /**
+   * Queries the database for a user profile by either username or UUID and gets its latest session
+   *
+   * @param target Player username
+   * @param ignoreDisguised Whether the target's latest session should include disguised sessions
+   * @param callback The callback to be ran with
+   * @throws ExecutionException
+   */
+  default void findUserWithSession(
+      String target, boolean ignoreDisguised, UserProfileWithSessionCallback callback) {
+    CompletableFuture<UserProfile> profileFuture = getStoredProfile(target);
+    profileFuture.thenAcceptBothAsync(
+        profileFuture.thenApplyAsync(
+            profile -> {
+              if (profile == null) return null;
+
+              return profile.getLatestSession(ignoreDisguised).join();
+            }),
+        (profile, session) -> callback.run(profile, session));
+  }
+
+  /**
+   * Queries the database for a user profile by either username or UUID and gets its latest session
+   *
+   * @param id Player UUID
+   * @param ignoreDisguised Whether the target's latest session should include disguised sessions
+   * @param callback The callback to be ran with
+   * @throws ExecutionException
+   */
+  default void findUserWithSession(
+      UUID id, boolean ignoreDisguised, UserProfileWithSessionCallback callback) {
+    CompletableFuture<UserProfile> profileFuture = getStoredProfile(id);
+    profileFuture.thenAcceptBothAsync(
+        profileFuture.thenApplyAsync(
+            profile -> {
+              if (profile == null) return null;
+
+              return profile.getLatestSession(ignoreDisguised).join();
+            }),
+        (profile, session) -> callback.run(profile, session));
+  }
 }

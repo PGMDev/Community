@@ -27,7 +27,7 @@ public class Friendship implements Comparable<Friendship> {
   }
 
   /**
-   * A friendship is a relation between to users
+   * A friendship is a relation between two users
    *
    * @param friendshipId - ID of friendship
    * @param requesterId - ID of player who requested

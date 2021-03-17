@@ -54,6 +54,7 @@ public class Community extends JavaPlugin {
 
   @Override
   public void onDisable() {
+    features.disable();
     if (database != null) {
       database.close();
     }
@@ -143,6 +144,10 @@ public class Community extends JavaPlugin {
   public String getServerName() {
     return BukkitUtils.colorize(
         config.getServerDisplayName() == null ? "&b&lCommunity" : config.getServerDisplayName());
+  }
+
+  public String getServerId() {
+    return config.getServerId();
   }
 
   public FeatureManager getFeatures() {

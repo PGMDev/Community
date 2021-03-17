@@ -21,6 +21,8 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.types.RedisNetworkFeature;
+import dev.pgm.community.sessions.feature.SessionFeature;
+import dev.pgm.community.sessions.feature.types.SQLSessionFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -39,6 +41,7 @@ public class FeatureManager {
   private final UsersFeature users;
   private final FriendshipFeature friends;
   private final NetworkFeature network;
+  private final SessionFeature sessions;
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
@@ -61,6 +64,7 @@ public class FeatureManager {
     this.reports = new SQLAssistanceFeature(config, logger, database, users);
     this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
+    this.sessions = new SQLSessionFeature(config, logger, database);
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?
     // Ex. FileReportFeature, MongoReportFeature, RedisReportFeature...
@@ -88,6 +92,10 @@ public class FeatureManager {
 
   public UsersFeature getUsers() {
     return users;
+  }
+
+  public SessionFeature getSessions() {
+    return sessions;
   }
 
   public TeleportFeature getTeleports() {
@@ -128,6 +136,7 @@ public class FeatureManager {
     commands.registerDependency(UsersFeature.class, getUsers());
     commands.registerDependency(AssistanceFeature.class, getReports());
     commands.registerDependency(ModerationFeature.class, getModeration());
+    commands.registerDependency(SessionFeature.class, getSessions());
     commands.registerDependency(TeleportFeature.class, getTeleports());
     commands.registerDependency(ChatManagementFeature.class, getChatManagement());
     commands.registerDependency(FriendshipFeature.class, getFriendships());
@@ -168,6 +177,7 @@ public class FeatureManager {
     registerFeatureCommands(getUsers(), commands);
     registerFeatureCommands(getReports(), commands);
     registerFeatureCommands(getModeration(), commands);
+    registerFeatureCommands(getSessions(), commands);
     registerFeatureCommands(getTeleports(), commands);
     registerFeatureCommands(getChatManagement(), commands);
     registerFeatureCommands(getFriendships(), commands);
@@ -193,6 +203,7 @@ public class FeatureManager {
     getReports().getConfig().reload(config);
     getModeration().getConfig().reload(config);
     getUsers().getConfig().reload(config);
+    getSessions().getConfig().reload(config);
     getTeleports().getConfig().reload(config);
     getInfoCommands().getConfig().reload(config);
     getChatManagement().getConfig().reload(config);
@@ -203,5 +214,19 @@ public class FeatureManager {
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
+  }
+
+  public void disable() {
+    if (getReports().isEnabled()) getReports().disable();
+    if (getModeration().isEnabled()) getModeration().disable();
+    if (getUsers().isEnabled()) getUsers().disable();
+    if (getSessions().isEnabled()) getSessions().disable();
+    if (getTeleports().isEnabled()) getTeleports().disable();
+    if (getInfoCommands().isEnabled()) getInfoCommands().disable();
+    if (getChatManagement().isEnabled()) getChatManagement().disable();
+    if (getMotd().isEnabled()) getMotd().disable();
+    if (getFreeze().isEnabled()) getFreeze().disable();
+    if (getMutations().isEnabled()) getMutations().disable();
+    if (getBroadcast().isEnabled()) getBroadcast().disable();
   }
 }

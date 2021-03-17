@@ -42,49 +42,52 @@ public class UserInfoCommands extends CommunityCommand {
 
   @Dependency private UsersFeature users;
 
-  @CommandAlias("seen|lastseen")
+  @CommandAlias("seen|lastseen|find")
   @Description("View when a player was last online")
   @Syntax("[player]")
   @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.LOOKUP)
+  @CommandPermission(CommunityPermissions.FIND)
   public void seenPlayer(CommandAudience audience, String target) {
-    users
-        .getStoredProfile(target)
-        .thenAcceptAsync(
-            profile -> {
-              if (profile == null) {
-                audience.sendWarning(MessageUtils.formatUnseen(target));
-                return;
-              }
+    boolean staff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
 
-              boolean online = Bukkit.getPlayer(profile.getId()) != null;
-              boolean vanished =
-                  online && Bukkit.getPlayer(profile.getId()).hasMetadata("isVanished");
-              boolean staff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
-              boolean visible = online && (!vanished || staff);
+    users.findUserWithSession(
+        target,
+        !staff,
+        (profile, session) -> {
+          if (profile == null || session == null) {
+            audience.sendWarning(MessageUtils.formatUnseen(target));
+            return;
+          }
 
-              Component lastSeenMsg =
-                  text()
-                      .append(
-                          PlayerComponent.player(
-                              profile.getId(), profile.getUsername(), NameStyle.FANCY))
-                      .append(
-                          text(
-                              visible
-                                  ? " has been online for "
-                                  : " was last seen ")) // TODO: translate
-                      .append(
-                          (visible
-                                  ? TemporalComponent.duration(
-                                          Duration.between(profile.getLastLogin(), Instant.now()))
-                                      .build()
-                                  : TemporalComponent.relativePastApproximate(
-                                      profile.getLastLogin()))
-                              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
-                      .color(NamedTextColor.GRAY)
-                      .build();
-              audience.sendMessage(lastSeenMsg);
-            });
+          boolean online = !session.hasEnded();
+          boolean disguised = session.isDisguised();
+          boolean visible = online && (!disguised || staff);
+
+          Component lastSeenMsg =
+              text()
+                  .append(
+                      PlayerComponent.player(
+                          profile.getId(), profile.getUsername(), NameStyle.FANCY))
+                  .append(
+                      text(
+                          visible ? " has been online for " : " was last seen ")) // TODO: translate
+                  .append(
+                      (visible
+                              ? TemporalComponent.duration(
+                                      Duration.between(
+                                          session.getLatestUpdateDate(), Instant.now()))
+                                  .build()
+                              : TemporalComponent.relativePastApproximate(
+                                  session.getLatestUpdateDate()))
+                          .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+                  .append(text(session.isOnThisServer() ? "" : " on server "))
+                  .append(
+                      text(session.isOnThisServer() ? "" : session.getServerName())
+                          .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+                  .color(NamedTextColor.GRAY)
+                  .build();
+          audience.sendMessage(lastSeenMsg);
+        });
   }
 
   @CommandAlias("alts|alternateaccounts")
@@ -166,67 +169,65 @@ public class UserInfoCommands extends CommunityCommand {
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.LOOKUP)
   public void viewUserProfile(CommandAudience audience, String target) {
-    users
-        .getStoredProfile(target)
-        .thenAcceptAsync(
-            profile -> {
-              if (profile == null) {
-                audience.sendWarning(MessageUtils.formatUnseen(target));
-                return;
-              }
+    users.findUserWithSession(
+        target,
+        false,
+        (profile, session) -> {
+          if (profile == null || session == null) {
+            audience.sendWarning(MessageUtils.formatUnseen(target));
+            return;
+          }
 
-              Component header =
-                  text("Account Info", NamedTextColor.RED)
-                      .append(text(" - ", NamedTextColor.GRAY))
-                      .append(
-                          PlayerComponent.player(
-                              profile.getId(), profile.getUsername(), NameStyle.CONCISE));
+          Component header =
+              text("Account Info", NamedTextColor.RED)
+                  .append(text(" - ", NamedTextColor.GRAY))
+                  .append(
+                      PlayerComponent.player(
+                          profile.getId(), profile.getUsername(), NameStyle.CONCISE));
 
-              Component uuid =
-                  formatInfoField("UUID", text(profile.getId().toString(), NamedTextColor.YELLOW));
-              Component firstLogin =
-                  formatInfoField("First Login", formatDateWithHover(profile.getFirstLogin()));
-              Component lastLogin =
-                  formatInfoField("Last Login", formatDateWithHover(profile.getLastLogin()));
-              Component joinCount =
-                  formatInfoField(
-                      "Join Count", text(profile.getJoinCount(), NamedTextColor.YELLOW));
+          Component uuid =
+              formatInfoField("UUID", text(profile.getId().toString(), NamedTextColor.YELLOW));
+          Component firstLogin =
+              formatInfoField("First Login", formatDateWithHover(profile.getFirstLogin()));
+          Component lastLogin =
+              formatInfoField("Last Login", formatDateWithHover(session.getLatestUpdateDate()));
+          Component joinCount =
+              formatInfoField("Join Count", text(profile.getJoinCount(), NamedTextColor.YELLOW));
 
-              Component lastServer =
-                  formatInfoField(
-                      "Last Server", text(profile.getServerName(), NamedTextColor.AQUA));
+          Component lastServer =
+              formatInfoField("Last Server", text(session.getServerName(), NamedTextColor.AQUA));
 
-              Component knownIPs = formatInfoField("Known IPs", empty());
+          Component knownIPs = formatInfoField("Known IPs", empty());
 
-              audience.sendMessage(
-                  TextFormatter.horizontalLineHeading(
-                      audience.getSender(), header, NamedTextColor.DARK_GRAY));
+          audience.sendMessage(
+              TextFormatter.horizontalLineHeading(
+                  audience.getSender(), header, NamedTextColor.DARK_GRAY));
 
-              audience.sendMessage(uuid);
-              audience.sendMessage(firstLogin);
-              audience.sendMessage(lastLogin);
-              audience.sendMessage(joinCount);
-              audience.sendMessage(lastServer);
+          audience.sendMessage(uuid);
+          audience.sendMessage(firstLogin);
+          audience.sendMessage(lastLogin);
+          audience.sendMessage(joinCount);
+          audience.sendMessage(lastServer);
 
-              if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
-                users
-                    .getKnownIPs(profile.getId())
-                    .thenAccept(
-                        ips -> {
-                          audience.sendMessage(knownIPs);
-                          audience.sendMessage(
-                              formatListItems(
-                                  ips.stream()
-                                      .map(
-                                          ip ->
-                                              text()
-                                                  .append(text("      - ", NamedTextColor.YELLOW))
-                                                  .append(text(ip, NamedTextColor.DARK_AQUA))
-                                                  .build())
-                                      .collect(Collectors.toList())));
-                        });
-              }
-            });
+          if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
+            users
+                .getKnownIPs(profile.getId())
+                .thenAccept(
+                    ips -> {
+                      audience.sendMessage(knownIPs);
+                      audience.sendMessage(
+                          formatListItems(
+                              ips.stream()
+                                  .map(
+                                      ip ->
+                                          text()
+                                              .append(text("      - ", NamedTextColor.YELLOW))
+                                              .append(text(ip, NamedTextColor.DARK_AQUA))
+                                              .build())
+                                  .collect(Collectors.toList())));
+                    });
+          }
+        });
   }
 
   private Component formatDateWithHover(Instant pastDate) {
