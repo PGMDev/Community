@@ -123,10 +123,6 @@
 							<pattern>co.aikar.commands</pattern>
 							<shadedPattern>dev.pgm.community.lib.acf</shadedPattern>
 						</relocation>
-						<relocation>
-							<pattern>net.kyori</pattern>
-							<shadedPattern>tc.oc.pgm.lib.net.kyori</shadedPattern>
-						</relocation>
 					</relocations>
 				</configuration>
 				<executions>

@@ -7,9 +7,9 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.friends.FriendshipConfig;
-import dev.pgm.community.friends.PGMFriendManager;
 import dev.pgm.community.friends.commands.FriendshipCommand;
 import dev.pgm.community.utils.BroadcastUtils;
+import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -25,13 +25,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
-import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.Audience;
 
 public abstract class FriendshipFeatureBase extends FeatureBase implements FriendshipFeature {
 
-  protected @Nullable PGMFriendManager pgmFriends;
+  @Nullable protected CommunityFriendIntegration integration;
 
   public FriendshipFeatureBase(Configuration config, Logger logger, String featureName) {
     super(new FriendshipConfig(config), logger, featureName);
@@ -45,28 +44,27 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
     return (FriendshipConfig) getConfig();
   }
 
+  public boolean isPGMEnabled() {
+    return PGMUtils.isPGMEnabled() && getFriendshipConfig().isIntegrationEnabled();
+  }
+
   @Override
   public void enable() {
     super.enable();
-    enablePGMSupport();
+    enablePGM();
   }
 
-  private void enablePGMSupport() {
-    Plugin pgmPlugin = Bukkit.getServer().getPluginManager().getPlugin("PGM");
-    if (pgmPlugin != null
-        && pgmPlugin.isEnabled()
-        && getFriendshipConfig().isIntegrationEnabled()) {
-      pgmFriends = new PGMFriendManager();
-      Bukkit.getScheduler()
-          .scheduleSyncDelayedTask(
-              Community.get(),
-              new Runnable() {
-                @Override
-                public void run() {
-                  PGM.get().getFriendRegistry().setProvider(pgmFriends);
-                }
-              });
-    }
+  public void enablePGM() {
+    Bukkit.getScheduler()
+        .runTask(
+            Community.get(),
+            () -> {
+              if (isPGMEnabled()) {
+                // Setup PGM integration
+                integration = new CommunityFriendIntegration();
+                Integration.setFriendIntegration(integration);
+              }
+            });
   }
 
   @Override

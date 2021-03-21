@@ -1,25 +1,22 @@
-package dev.pgm.community.nick.providers;
+package dev.pgm.community.nick.feature;
 
 import static net.kyori.adventure.text.Component.text;
 
-import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.PGMUtils;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.integration.NickIntegration;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.util.nick.NickProvider;
 
-public class PGMNickProvider implements NickProvider {
+public class CommunityNickIntegration implements NickIntegration {
 
   private boolean hotbarColor = false;
 
@@ -27,15 +24,15 @@ public class PGMNickProvider implements NickProvider {
 
   private Future<?> hotbarTask;
 
-  public PGMNickProvider(NickFeature nick) {
+  public CommunityNickIntegration(NickFeature nick) {
     this.nick = nick;
     hotbarTask =
         PGM.get().getExecutor().scheduleAtFixedRate(this::updateHotbars, 0, 1, TimeUnit.SECONDS);
   }
 
   @Override
-  public Optional<String> getNick(@Nullable UUID playerId) {
-    return Optional.ofNullable(nick.getOnlineNick(playerId));
+  public String getNick(Player player) {
+    return nick.getOnlineNick(player.getUniqueId());
   }
 
   public void cancelTask() {

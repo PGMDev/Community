@@ -14,7 +14,6 @@ import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.NickConfig;
 import dev.pgm.community.nick.commands.NickCommands;
-import dev.pgm.community.nick.providers.PGMNickProvider;
 import dev.pgm.community.utils.NickUtils;
 import dev.pgm.community.utils.PGMUtils;
 import java.util.List;
@@ -36,12 +35,12 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.Audience;
 
 public abstract class NickFeatureBase extends FeatureBase implements NickFeature {
 
-  private @Nullable PGMNickProvider pgmNicks;
+  private @Nullable CommunityNickIntegration pgmNicks;
 
   private Map<UUID, String> nickedPlayers;
 
@@ -170,10 +169,9 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
 
   private void enablePGMSupport() {
     if (PGMUtils.isPGMEnabled() && getNickConfig().isIntegrationEnabled()) {
-      pgmNicks = new PGMNickProvider(this);
+      pgmNicks = new CommunityNickIntegration(this);
       Bukkit.getScheduler()
-          .scheduleSyncDelayedTask(
-              Community.get(), () -> PGM.get().getNickRegistry().setProvider(pgmNicks));
+          .scheduleSyncDelayedTask(Community.get(), () -> Integration.setNickIntegration(pgmNicks));
     }
   }
 
