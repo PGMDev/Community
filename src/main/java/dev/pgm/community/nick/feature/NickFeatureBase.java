@@ -7,7 +7,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
@@ -40,7 +39,7 @@ import tc.oc.pgm.util.Audience;
 
 public abstract class NickFeatureBase extends FeatureBase implements NickFeature {
 
-  private @Nullable CommunityNickIntegration pgmNicks;
+  private @Nullable PGMNickIntegration pgmNicks;
 
   private Map<UUID, String> nickedPlayers;
 
@@ -54,12 +53,24 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
 
     if (getNickConfig().isEnabled()) {
       enable();
-      enablePGMSupport();
     }
   }
 
   public NickConfig getNickConfig() {
     return (NickConfig) getConfig();
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    integrate();
+  }
+
+  private void integrate() {
+    if (isPGMEnabled()) {
+      pgmNicks = new PGMNickIntegration(this);
+      Integration.setNickIntegration(pgmNicks);
+    }
   }
 
   @Override
@@ -167,12 +178,8 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
     }
   }
 
-  private void enablePGMSupport() {
-    if (PGMUtils.isPGMEnabled() && getNickConfig().isIntegrationEnabled()) {
-      pgmNicks = new CommunityNickIntegration(this);
-      Bukkit.getScheduler()
-          .scheduleSyncDelayedTask(Community.get(), () -> Integration.setNickIntegration(pgmNicks));
-    }
+  private boolean isPGMEnabled() {
+    return PGMUtils.isPGMEnabled() && getNickConfig().isIntegrationEnabled();
   }
 
   private boolean isNickSubdomain(String address) {

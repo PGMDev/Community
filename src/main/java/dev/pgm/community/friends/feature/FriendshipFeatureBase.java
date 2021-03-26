@@ -30,7 +30,7 @@ import tc.oc.pgm.util.Audience;
 
 public abstract class FriendshipFeatureBase extends FeatureBase implements FriendshipFeature {
 
-  @Nullable protected CommunityFriendIntegration integration;
+  @Nullable protected PGMFriendIntegration integration;
 
   public FriendshipFeatureBase(Configuration config, Logger logger, String featureName) {
     super(new FriendshipConfig(config), logger, featureName);
@@ -44,27 +44,18 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
     return (FriendshipConfig) getConfig();
   }
 
-  public boolean isPGMEnabled() {
-    return PGMUtils.isPGMEnabled() && getFriendshipConfig().isIntegrationEnabled();
-  }
-
   @Override
   public void enable() {
     super.enable();
-    enablePGM();
+    integrate();
   }
 
-  public void enablePGM() {
-    Bukkit.getScheduler()
-        .runTask(
-            Community.get(),
-            () -> {
-              if (isPGMEnabled()) {
-                // Setup PGM integration
-                integration = new CommunityFriendIntegration();
-                Integration.setFriendIntegration(integration);
-              }
-            });
+  public void integrate() {
+    if (isPGMEnabled()) {
+      // Setup PGM integration
+      integration = new PGMFriendIntegration();
+      Integration.setFriendIntegration(integration);
+    }
   }
 
   @Override
@@ -110,5 +101,9 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
   @EventHandler
   public void onAsyncLogin(AsyncPlayerPreLoginEvent event) {
     this.onPreLogin(event);
+  }
+
+  private boolean isPGMEnabled() {
+    return PGMUtils.isPGMEnabled() && getFriendshipConfig().isIntegrationEnabled();
   }
 }

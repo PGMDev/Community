@@ -39,11 +39,10 @@ import tc.oc.pgm.api.Permissions;
 import tc.oc.pgm.api.event.PlayerVanishEvent;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.VanishIntegration;
-import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.party.Competitor;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.api.player.event.MatchPlayerAddEvent;
-import tc.oc.pgm.listeners.PGMListener;
+import tc.oc.pgm.listeners.JoinLeaveAnnouncer;
+import tc.oc.pgm.listeners.JoinLeaveAnnouncer.JoinVisibility;
 
 public class VanishFeature extends FeatureBase implements VanishIntegration {
 
@@ -77,36 +76,30 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
     return Bukkit.getOnlinePlayers().stream().filter(this::isVanished).collect(Collectors.toList());
   }
 
-  private void enablePGM() {
-    if (PGMUtils.isPGMEnabled() && getVanishConfig().isIntegrationEnabled()) {
-      Bukkit.getScheduler()
-          .runTask(
-              Community.get(),
-              () -> {
-                Integration.setVanishIntegration(this);
-
-                this.hotbarTask =
-                    PGM.get()
-                        .getExecutor()
-                        .scheduleAtFixedRate(
-                            () -> {
-                              getVanished().stream()
-                                  .map(p -> PGM.get().getMatchManager().getPlayer(p))
-                                  .forEach(p -> sendHotbarVanish(p, hotbarFlash));
-                              hotbarFlash =
-                                  !hotbarFlash; // Toggle boolean so we get a nice flashing effect
-                            },
-                            0,
-                            1,
-                            TimeUnit.SECONDS);
-              });
-    }
-  }
-
   @Override
   public void enable() {
     super.enable();
-    enablePGM();
+    integrate();
+  }
+
+  private void integrate() {
+    if (isPGMEnabled()) {
+      Integration.setVanishIntegration(this);
+
+      this.hotbarTask =
+          PGM.get()
+              .getExecutor()
+              .scheduleAtFixedRate(
+                  () -> {
+                    getVanished().stream()
+                        .map(p -> PGM.get().getMatchManager().getPlayer(p))
+                        .forEach(p -> sendHotbarVanish(p, hotbarFlash));
+                    hotbarFlash = !hotbarFlash; // Toggle boolean so we get a nice flashing effect
+                  },
+                  0,
+                  1,
+                  TimeUnit.SECONDS);
+    }
   }
 
   @Override
@@ -129,23 +122,11 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
       removeVanished(player);
     }
 
-    final Match match = player.getMatch();
-
-    // Ensure player is an observer
-    match.setParty(player, match.getDefaultParty());
-
-    // Set vanish status in match player
-    player.setVanished(vanish);
-
-    // Reset visibility to hide/show player
-    player.resetVisibility();
-
-    // Broadcast join/quit message
-    if (!quiet) {
-      PGMListener.announceJoinOrLeave(player, !vanish, false);
-    }
-
-    match.callEvent(new PlayerVanishEvent(player, vanish));
+    // Call vanish event to inform everywhere else
+    Community.get()
+        .getServer()
+        .getPluginManager()
+        .callEvent(new PlayerVanishEvent(player, vanish, quiet));
 
     return isVanished(player.getBukkit());
   }
@@ -190,6 +171,7 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
     if (nicks.isNicked(player.getId()) || nicks.isAutoNicked(player.getId())) {
       if (isVanished(player.getBukkit())) {
         removeVanished(player); // Unvanish nicked players
+        player.setVanished(false);
       }
       return; // No vanish for nick
     }
@@ -206,11 +188,12 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
     MatchPlayer player = getMatch().getPlayer(event.getPlayer());
     // If player is vanished & joined via "vanish" subdomain. Remove vanish status on quit
     if (player != null && isVanished(player.getBukkit()) && tempVanish.contains(player.getId())) {
-      setVanished(player, false, true);
+      removeVanished(player);
       // Temporary vanish status is removed before quit,
       // so prevent regular quit msg and forces a staff only broadcast
       event.setQuitMessage(null);
-      PGMListener.announceJoinOrLeave(player, false, true, true);
+      // ANNOUNCE TO STAFF, LEAVING
+      JoinLeaveAnnouncer.leave(player, JoinVisibility.STAFF);
     }
   }
 
@@ -221,17 +204,6 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
     if (!event.isVanished() && tempVanish.contains(event.getPlayer().getId())) {
       tempVanish.remove(event.getPlayer().getId());
     }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void checkMatchPlayer(MatchPlayerAddEvent event) {
-    MatchPlayer player = event.getPlayer();
-    // Player is joining to a team so broadcast join
-    if (event.getInitialParty() instanceof Competitor) {
-      setVanished(player, false, false);
-    }
-
-    player.setVanished(isVanished(player.getBukkit()));
   }
 
   private boolean checkVanishSubdomain(MatchPlayer player) {
@@ -248,7 +220,8 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
 
         if (nicks.isNicked(player.getId())) {
           nicks.removeOnlineNick(player.getId());
-          player.sendMessage(text("You have forcefully vanished (Nick removed)"));
+          player.sendMessage(
+              text("You have forcefully vanished (Nick removed)", NamedTextColor.YELLOW));
         }
         return true;
       }
@@ -271,5 +244,9 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
   @Override
   public Set<CommunityCommand> getCommands() {
     return Sets.newHashSet(); // Vanish command is in PGM
+  }
+
+  private boolean isPGMEnabled() {
+    return PGMUtils.isPGMEnabled() && getVanishConfig().isIntegrationEnabled();
   }
 }

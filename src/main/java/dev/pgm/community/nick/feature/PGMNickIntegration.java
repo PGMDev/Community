@@ -16,7 +16,7 @@ import tc.oc.pgm.api.integration.NickIntegration;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 
-public class CommunityNickIntegration implements NickIntegration {
+public class PGMNickIntegration implements NickIntegration {
 
   private boolean hotbarColor = false;
 
@@ -24,7 +24,7 @@ public class CommunityNickIntegration implements NickIntegration {
 
   private Future<?> hotbarTask;
 
-  public CommunityNickIntegration(NickFeature nick) {
+  public PGMNickIntegration(NickFeature nick) {
     this.nick = nick;
     hotbarTask =
         PGM.get().getExecutor().scheduleAtFixedRate(this::updateHotbars, 0, 1, TimeUnit.SECONDS);

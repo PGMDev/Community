@@ -8,11 +8,11 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.integration.FriendIntegration;
 
-public class CommunityFriendIntegration implements FriendIntegration {
+public class PGMFriendIntegration implements FriendIntegration {
 
   private Map<UUID, Set<UUID>> friends;
 
-  public CommunityFriendIntegration() {
+  public PGMFriendIntegration() {
     this.friends = Maps.newHashMap();
   }
 
