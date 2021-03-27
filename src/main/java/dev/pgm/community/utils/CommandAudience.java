@@ -36,7 +36,11 @@ public class CommandAudience {
   }
 
   public Component getStyledName() {
-    return PlayerComponent.player(sender, NameStyle.FANCY);
+    return getStyledName(NameStyle.FANCY);
+  }
+
+  public Component getStyledName(NameStyle style) {
+    return PlayerComponent.player(sender, style);
   }
 
   public @Nullable Player getPlayer() {

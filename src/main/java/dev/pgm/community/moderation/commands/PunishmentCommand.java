@@ -223,8 +223,13 @@ public class PunishmentCommand extends CommunityCommand {
 
         builder.append(
             data.formatBroadcast(
-                usernames.renderUsername(data.getIssuerId()).join(),
-                usernames.renderUsername(Optional.of(data.getTargetId())).join()));
+                usernames
+                    .renderUsername(data.getIssuerId(), NameStyle.FANCY, audience.getPlayer())
+                    .join(),
+                usernames
+                    .renderUsername(
+                        Optional.of(data.getTargetId()), NameStyle.FANCY, audience.getPlayer())
+                    .join()));
 
         TextComponent.Builder hover = text();
         hover
@@ -258,7 +263,11 @@ public class PunishmentCommand extends CommunityCommand {
           hover
               .append(newline())
               .append(text("Infraction lifted by ", NamedTextColor.GRAY)) // TODO: translate
-              .append(usernames.renderUsername(data.getLastUpdatedBy()).join())
+              .append(
+                  usernames
+                      .renderUsername(
+                          data.getLastUpdatedBy(), NameStyle.FANCY, audience.getPlayer())
+                      .join())
               .append(space())
               .append(
                   TemporalComponent.relativePastApproximate(data.getLastUpdated())

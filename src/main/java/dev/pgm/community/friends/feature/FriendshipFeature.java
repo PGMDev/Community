@@ -23,8 +23,6 @@ public interface FriendshipFeature extends Feature {
 
   void onDelayedLogin(PlayerJoinEvent event);
 
-  void removeFriend(UUID sender, Friendship friendship);
-
   CompletableFuture<List<Friendship>> getFriends(UUID playerId);
 
   CompletableFuture<List<Friendship>> getIncomingRequests(UUID playerId);

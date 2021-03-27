@@ -74,46 +74,56 @@ public class MuteCommand extends CommunityCommand {
                     .isMuted(id.get())
                     .thenAcceptAsync(
                         isMuted -> {
-                          if (isMuted.isPresent()) {
-                            moderation
-                                .unmute(id.get(), audience.getId())
-                                .thenAcceptAsync(
-                                    pardon -> {
-                                      if (!pardon) {
-                                        audience.sendWarning(
-                                            usernames
-                                                .renderUsername(id)
-                                                .join()
-                                                .append(text(" could not be ", NamedTextColor.GRAY))
-                                                .append(text("unmuted"))
-                                                .color(NamedTextColor.RED));
-                                      } else {
-                                        BroadcastUtils.sendAdminChatMessage(
-                                            usernames
-                                                .renderUsername(id)
-                                                .join()
-                                                .append(
-                                                    text(" was unmuted by ", NamedTextColor.GRAY))
-                                                .append(audience.getStyledName()),
-                                            null);
+                          usernames
+                              .renderUsername(id, NameStyle.FANCY, audience.getPlayer())
+                              .thenAcceptAsync(
+                                  name -> {
+                                    if (isMuted.isPresent()) {
+                                      moderation
+                                          .unmute(id.get(), audience.getId())
+                                          .thenAcceptAsync(
+                                              pardon -> {
+                                                if (!pardon) {
+                                                  audience.sendWarning(
+                                                      text()
+                                                          .append(name)
+                                                          .append(
+                                                              text(
+                                                                  " could not be ",
+                                                                  NamedTextColor.GRAY))
+                                                          .append(text("unmuted"))
+                                                          .color(NamedTextColor.RED)
+                                                          .build());
+                                                } else {
+                                                  BroadcastUtils.sendAdminChatMessage(
+                                                      text()
+                                                          .append(name)
+                                                          .append(
+                                                              text(
+                                                                  " was unmuted by ",
+                                                                  NamedTextColor.GRAY))
+                                                          .append(audience.getStyledName())
+                                                          .build(),
+                                                      null);
 
-                                        Player online = Bukkit.getPlayer(id.get());
-                                        if (online != null) {
-                                          Audience.get(online)
-                                              .sendWarning(
-                                                  translatable(
-                                                      "moderation.unmute.target",
-                                                      NamedTextColor.GREEN));
-                                        }
-                                      }
-                                    });
-                          } else {
-                            audience.sendWarning(
-                                usernames
-                                    .renderUsername(id)
-                                    .join()
-                                    .append(text(" is not muted", NamedTextColor.GRAY)));
-                          }
+                                                  Player online = Bukkit.getPlayer(id.get());
+                                                  if (online != null) {
+                                                    Audience.get(online)
+                                                        .sendWarning(
+                                                            translatable(
+                                                                "moderation.unmute.target",
+                                                                NamedTextColor.GREEN));
+                                                  }
+                                                }
+                                              });
+                                    } else {
+                                      audience.sendWarning(
+                                          text()
+                                              .append(name)
+                                              .append(text(" is not muted", NamedTextColor.GRAY))
+                                              .build());
+                                    }
+                                  });
                         });
               }
             });

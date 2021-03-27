@@ -12,7 +12,6 @@ import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.FriendshipFeatureBase;
 import dev.pgm.community.friends.services.SQLFriendshipService;
 import dev.pgm.community.users.feature.UsersFeature;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,10 +23,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.api.event.FriendStatusChangeEvent;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.named.NameStyle;
 
 public class SQLFriendshipFeature extends FriendshipFeatureBase {
 
@@ -91,7 +92,12 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
               service.save(request);
 
               if (Bukkit.getPlayer(target) != null) {
-                Component senderName = users.renderUsername(Optional.of(sender)).join();
+                Player targetPlayer = Bukkit.getPlayer(target);
+
+                Component senderName =
+                    users
+                        .renderUsername(Optional.of(sender), NameStyle.CONCISE, targetPlayer)
+                        .join();
                 Component accept = FriendshipFeature.createAcceptButton(sender.toString());
                 Component reject = FriendshipFeature.createRejectButton(sender.toString());
 
@@ -105,20 +111,12 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
                         .color(NamedTextColor.GOLD)
                         .build();
 
-                Audience.get(Bukkit.getPlayer(target)).sendMessage(requestMsg);
+                Audience.get(targetPlayer).sendMessage(requestMsg);
                 // TODO: play sound too?
               }
 
               return FriendRequestStatus.PENDING;
             });
-  }
-
-  @Override
-  public void removeFriend(UUID sender, Friendship friendship) {
-    friendship.setStatus(FriendshipStatus.REJECTED);
-    friendship.setLastUpdated(Instant.now());
-    service.updateFriendshipStatus(friendship);
-    update(friendship);
   }
 
   @Override
@@ -166,17 +164,13 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
 
   @Override
   public void acceptFriendship(Friendship friendship) {
-    friendship.setStatus(FriendshipStatus.ACCEPTED);
-    friendship.setLastUpdated(Instant.now());
-    service.updateFriendshipStatus(friendship);
+    service.updateFriendshipStatus(friendship, true);
     update(friendship);
   }
 
   @Override
   public void rejectFriendship(Friendship friendship) {
-    friendship.setStatus(FriendshipStatus.REJECTED);
-    friendship.setLastUpdated(Instant.now());
-    service.updateFriendshipStatus(friendship);
+    service.updateFriendshipStatus(friendship, false);
     update(friendship);
   }
 

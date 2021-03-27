@@ -3,7 +3,7 @@ package dev.pgm.community.friends.services;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.friends.Friendship;
@@ -12,7 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
@@ -43,8 +45,8 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
     getDatabase().submitQuery(new InsertQuery(friendship));
   }
 
-  public void updateFriendshipStatus(Friendship friendship) {
-    getDatabase().submitQuery(new UpdateFriendshipStatusQuery(friendship));
+  public void updateFriendshipStatus(Friendship friendship, boolean accept) {
+    getDatabase().submitQuery(new UpdateFriendshipStatusQuery(friendship, accept));
   }
 
   @Override // TODO: Query list where TARGET == requester or requested, add methods
@@ -52,11 +54,12 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
   public CompletableFuture<List<Friendship>> queryList(String target) {
     SelectFriendshipsQuery cached = friendshipCache.getUnchecked(UUID.fromString(target));
     if (cached.hasFetched()) {
-      return CompletableFuture.completedFuture(cached.getFriendships());
+      return CompletableFuture.completedFuture(new ArrayList<>(cached.getFriendships()));
     } else {
       return getDatabase()
           .submitQueryComplete(cached)
-          .thenApplyAsync(q -> SelectFriendshipsQuery.class.cast(q).getFriendships());
+          .thenApplyAsync(
+              q -> new ArrayList<>(SelectFriendshipsQuery.class.cast(q).getFriendships()));
     }
   }
 
@@ -113,13 +116,13 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
     private static final String SELECT_QUERY =
         "SELECT * from " + TABLE_NAME + " where (requester = ? OR requested = ?)";
 
-    private List<Friendship> friendships;
+    private Set<Friendship> friendships;
     private UUID target;
     private boolean fetched;
 
     public SelectFriendshipsQuery(UUID target) {
       this.target = target;
-      this.friendships = Lists.newArrayList();
+      this.friendships = Sets.newTreeSet();
       this.fetched = false;
     }
 
@@ -127,7 +130,7 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
       return fetched;
     }
 
-    public List<Friendship> getFriendships() {
+    public Set<Friendship> getFriendships() {
       return friendships;
     }
 
@@ -175,8 +178,32 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
 
     private Friendship friendship;
 
-    public UpdateFriendshipStatusQuery(Friendship friendship) {
+    public UpdateFriendshipStatusQuery(Friendship friendship, boolean accept) {
       this.friendship = friendship;
+
+      friendship.setStatus(accept ? FriendshipStatus.ACCEPTED : FriendshipStatus.REJECTED);
+      friendship.setLastUpdated(Instant.now());
+
+      SelectFriendshipsQuery cachedRequester =
+          friendshipCache.getIfPresent(friendship.getRequesterId());
+      SelectFriendshipsQuery cachedRequested =
+          friendshipCache.getIfPresent(friendship.getRequestedId());
+
+      if (cachedRequester != null) {
+        if (accept) {
+          cachedRequester.getFriendships().add(friendship);
+        } else {
+          cachedRequester.getFriendships().remove(friendship);
+        }
+      }
+
+      if (cachedRequested != null) {
+        if (accept) {
+          cachedRequested.getFriendships().add(friendship);
+        } else {
+          cachedRequested.getFriendships().remove(friendship);
+        }
+      }
     }
 
     @Override

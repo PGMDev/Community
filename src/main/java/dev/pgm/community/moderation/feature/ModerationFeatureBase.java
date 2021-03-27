@@ -222,7 +222,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     if (banEvasion.isPresent()) {
       users
-          .renderUsername(banEvasion)
+          .renderUsername(banEvasion, NameStyle.FANCY, null)
           .thenAcceptAsync(
               bannedName -> {
                 BroadcastUtils.sendAdminChatMessage(

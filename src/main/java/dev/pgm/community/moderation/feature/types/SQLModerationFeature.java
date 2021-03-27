@@ -26,6 +26,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
+import tc.oc.pgm.util.named.NameStyle;
 
 public class SQLModerationFeature extends ModerationFeatureBase {
 
@@ -142,7 +143,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
         event.setKickMessage(
             punishment.formatPunishmentScreen(
                 getModerationConfig(),
-                getUsers().renderUsername(punishment.getIssuerId()).join(),
+                getUsers().renderUsername(punishment.getIssuerId(), NameStyle.CONCISE, null).join(),
                 false));
         event.setLoginResult(Result.KICK_BANNED);
       }
@@ -188,7 +189,10 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                               player.kickPlayer(
                                   punishment.formatPunishmentScreen(
                                       getModerationConfig(),
-                                      getUsers().renderUsername(punishment.getIssuerId()).join(),
+                                      getUsers()
+                                          .renderUsername(
+                                              punishment.getIssuerId(), NameStyle.CONCISE, player)
+                                          .join(),
                                       false));
                             }
 

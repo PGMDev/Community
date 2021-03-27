@@ -29,6 +29,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
+import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("nick")
@@ -116,7 +117,7 @@ public class NickCommands extends CommunityCommand {
                         success -> {
                           if (success) {
                             users
-                                .renderUsername(uuid)
+                                .renderUsername(uuid, NameStyle.FANCY, viewer.getPlayer())
                                 .thenAcceptAsync(
                                     name -> {
                                       viewer.sendMessage(
@@ -159,7 +160,7 @@ public class NickCommands extends CommunityCommand {
               uuid -> {
                 if (uuid.isPresent()) {
                   users
-                      .renderUsername(uuid)
+                      .renderUsername(uuid, NameStyle.FANCY, player)
                       .thenAcceptAsync(
                           name -> {
                             sendNickStatus(viewer, player, uuid.get(), name);
@@ -185,7 +186,7 @@ public class NickCommands extends CommunityCommand {
               uuid -> {
                 if (uuid.isPresent()) {
                   users
-                      .renderUsername(uuid)
+                      .renderUsername(uuid, NameStyle.FANCY, viewer.getPlayer())
                       .thenAcceptAsync(
                           name -> {
                             nicks

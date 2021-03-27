@@ -163,6 +163,13 @@ public class Friendship implements Comparable<Friendship> {
   }
 
   @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof Friendship)) return false;
+    Friendship otherFriendship = (Friendship) other;
+    return otherFriendship.getFriendshipId().equals(getFriendshipId());
+  }
+
+  @Override
   public int compareTo(Friendship o) {
     return -getRequestDate().compareTo(o.getRequestDate());
   }
