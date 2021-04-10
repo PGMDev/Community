@@ -8,6 +8,7 @@ import dev.pgm.community.chat.ChatManagementFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
+import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.freeze.FreezeFeature;
@@ -201,6 +202,7 @@ public class FeatureManager {
     commands.registerCommand(new FlightCommand());
     commands.registerCommand(new StaffCommand());
     commands.registerCommand(new GamemodeCommand());
+    commands.registerCommand(new ServerInfoCommand());
   }
 
   private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {

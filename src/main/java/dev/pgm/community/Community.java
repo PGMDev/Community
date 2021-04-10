@@ -9,6 +9,7 @@ import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Random;
 import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
@@ -35,10 +36,13 @@ public class Community extends JavaPlugin {
 
   private Random random;
 
+  private Instant startTime;
+
   @Override
   public void onEnable() {
     plugin = this;
     random = new Random();
+    startTime = Instant.now();
 
     // If PGM is not enabled on running server, we need this to ensure things work :)
     if (!PGMUtils.isPGMEnabled()) {
@@ -76,6 +80,7 @@ public class Community extends JavaPlugin {
   private void setupCommands() {
     this.commands = new BukkitCommandManager(this);
     commands.registerDependency(Random.class, new Random());
+    commands.registerDependency(Instant.class, "startTime", startTime);
 
     // Contexts
     commands
