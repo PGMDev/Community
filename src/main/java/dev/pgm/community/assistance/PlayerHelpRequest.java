@@ -4,31 +4,13 @@ import java.time.Instant;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 
-public class PlayerHelpRequest {
+public class PlayerHelpRequest extends AssistanceRequest {
 
-  private UUID playerId;
-  private String reason;
-  private Instant timeRequested;
-
-  public PlayerHelpRequest(Player player, String reason) {
-    this(player.getUniqueId(), reason, Instant.now());
+  public PlayerHelpRequest(Player player, String reason, String server) {
+    this(player.getUniqueId(), reason, Instant.now(), server);
   }
 
-  public PlayerHelpRequest(UUID playerId, String reason, Instant timeRequested) {
-    this.playerId = playerId;
-    this.reason = reason;
-    this.timeRequested = timeRequested;
-  }
-
-  public UUID getPlayerId() {
-    return playerId;
-  }
-
-  public String getReason() {
-    return reason;
-  }
-
-  public Instant getTimeRequested() {
-    return timeRequested;
+  public PlayerHelpRequest(UUID playerId, String reason, Instant time, String server) {
+    super(playerId, playerId, time, reason, server, RequestType.PLAYER_HELP);
   }
 }

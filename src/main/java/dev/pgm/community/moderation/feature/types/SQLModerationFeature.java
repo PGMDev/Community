@@ -107,7 +107,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
         uuid -> {
           if (uuid.isPresent()) {
             if (service.pardon(uuid.get(), issuer).join()) {
-              sendUpdate(uuid.get());
+              sendRefresh(uuid.get());
               removeCachedBan(uuid.get());
               return true;
             }
@@ -246,7 +246,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
             success -> {
               if (success) {
                 removeMute(id);
-                sendUpdate(id); // Successful unmute will update other servers
+                sendRefresh(id); // Successful unmute will update other servers
               }
               return success;
             });
@@ -263,7 +263,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
-  public void invalidate(UUID playerId) {
+  public void recieveRefresh(UUID playerId) {
     service.invalidate(playerId);
     removeCachedBan(playerId);
     removeMute(playerId);

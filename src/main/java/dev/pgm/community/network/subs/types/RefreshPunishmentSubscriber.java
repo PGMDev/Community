@@ -1,20 +1,19 @@
-package dev.pgm.community.network.subs;
+package dev.pgm.community.network.subs.types;
 
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.network.Channels;
+import dev.pgm.community.network.subs.NetworkSubscriber;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-/**
- * PunishmentSubscriber - When update is received, will refresh player (invalidate punishment cache)
- * *
- */
-public class PunishmentSubscriber extends NetworkSubscriber {
+/** RefreshPunishmentSubscriber - Invalidates punishment cache for unbans/unmutes */
+public class RefreshPunishmentSubscriber extends NetworkSubscriber {
 
   private ModerationFeature moderation;
 
-  public PunishmentSubscriber(ModerationFeature moderation, String networkId, Logger logger) {
-    super(Channels.PUNISHMENTS, networkId, logger);
+  public RefreshPunishmentSubscriber(
+      ModerationFeature moderation, String networkId, Logger logger) {
+    super(Channels.PUNISHMENT_UPDATE, networkId, logger);
     this.moderation = moderation;
   }
 
@@ -22,7 +21,8 @@ public class PunishmentSubscriber extends NetworkSubscriber {
   public void onReceiveUpdate(String data) {
     try {
       UUID playerId = UUID.fromString(data);
-      moderation.invalidate(playerId);
+      moderation.recieveRefresh(playerId);
+      logger.info(String.format("Refreshed punishment data for %s", data));
     } catch (IllegalArgumentException e) {
       logger.warning(
           String.format(

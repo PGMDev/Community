@@ -246,8 +246,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                   active,
                   lastUpdate,
                   parseIssuer(lastUpdateBy),
-                  service,
-                  config));
+                  service));
         }
       }
     }
@@ -314,8 +313,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
                   active,
                   lastUpdate,
                   parseIssuer(lastUpdateBy),
-                  service,
-                  config));
+                  service));
         }
         fetched = true;
       }

@@ -2,7 +2,6 @@ package dev.pgm.community.moderation.punishments.types;
 
 import static net.kyori.adventure.text.Component.text;
 
-import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,9 +25,9 @@ public class MutePunishment extends ExpirablePunishment {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      String service,
-      ModerationConfig config) {
+      String service) {
     super(
+        PunishmentType.MUTE,
         id,
         targetId,
         issuerId,
@@ -38,8 +37,7 @@ public class MutePunishment extends ExpirablePunishment {
         active,
         lastUpdated,
         lastUpdatedBy,
-        service,
-        config);
+        service);
   }
 
   // When muted player attempts to chat
@@ -93,10 +91,5 @@ public class MutePunishment extends ExpirablePunishment {
               player.sendWarning(getMutedMessage());
             });
     return getTargetPlayer().isPresent();
-  }
-
-  @Override
-  public PunishmentType getType() {
-    return PunishmentType.MUTE;
   }
 }

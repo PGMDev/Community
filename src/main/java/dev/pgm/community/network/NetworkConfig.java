@@ -1,6 +1,7 @@
 package dev.pgm.community.network;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
+import dev.pgm.community.utils.NetworkUtils;
 import java.util.UUID;
 import org.bukkit.configuration.Configuration;
 
@@ -28,7 +29,7 @@ public class NetworkConfig extends FeatureConfigImpl {
   }
 
   public String getNetworkId() {
-    return networkId;
+    return NetworkUtils.getServerVar(networkId);
   }
 
   public String getHost() {

@@ -6,6 +6,7 @@ import static net.kyori.adventure.text.Component.translatable;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.events.PlayerPunishmentEvent;
 import dev.pgm.community.feature.FeatureBase;
@@ -15,13 +16,15 @@ import dev.pgm.community.moderation.commands.KickCommand;
 import dev.pgm.community.moderation.commands.MuteCommand;
 import dev.pgm.community.moderation.commands.PunishmentCommand;
 import dev.pgm.community.moderation.commands.WarnCommand;
+import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.network.feature.NetworkFeature;
-import dev.pgm.community.network.subs.PunishmentSubscriber;
-import dev.pgm.community.network.updates.PunishmentUpdate;
+import dev.pgm.community.network.subs.types.PunishmentSubscriber;
+import dev.pgm.community.network.updates.types.PunishmentUpdate;
+import dev.pgm.community.network.updates.types.RefreshPunishmentUpdate;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -34,6 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -116,8 +120,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             active,
             time,
             getSenderId(issuer.getSender()),
-            getModerationConfig().getService(),
-            getModerationConfig());
+            getModerationConfig().getService());
     save(punishment);
     Bukkit.getPluginManager().callEvent(new PlayerPunishmentEvent(issuer, punishment, silent));
     return punishment;
@@ -164,8 +167,25 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   @Override
-  public void sendUpdate(UUID playerId) {
-    network.sendUpdate(new PunishmentUpdate(playerId)); // Send out punishment update
+  public void sendUpdate(NetworkPunishment punishment) {
+    network.sendUpdate(new PunishmentUpdate(punishment)); // Send out punishment update
+  }
+
+  @Override
+  public void recieveUpdate(NetworkPunishment punishment) {
+    recieveRefresh(punishment.getPunishment().getTargetId());
+    broadcastPunishment(punishment.getPunishment(), true, punishment.getServer(), null);
+    // Extra step due to gson limitation (maybe look into type tokens)
+    Punishment typedPunishment = Punishment.of(punishment.getPunishment());
+    Community.get()
+        .getServer()
+        .getScheduler()
+        .scheduleSyncDelayedTask(Community.get(), () -> typedPunishment.punish(true));
+  }
+
+  @Override
+  public void sendRefresh(UUID playerId) {
+    network.sendUpdate(new RefreshPunishmentUpdate(playerId));
   }
 
   /** Events * */
@@ -177,7 +197,9 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     punishment.punish(event.isSilent()); // Perform the actual punishment
 
-    sendUpdate(punishment.getTargetId()); // Send out punishment update
+    sendUpdate(
+        new NetworkPunishment(
+            punishment, network.getNetworkId())); // Send out network punishment update
 
     switch (punishment.getType()) {
       case BAN:
@@ -195,17 +217,31 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         break;
     }
 
-    PunishmentFormats.formatBroadcast(punishment, getUsers())
+    broadcastPunishment(punishment, event.isSilent(), event.getSender().getAudience());
+  }
+
+  private void broadcastPunishment(
+      Punishment punishment, boolean silent, @Nullable Audience audience) {
+    broadcastPunishment(punishment, silent, null, audience);
+  }
+
+  private void broadcastPunishment(
+      Punishment punishment, boolean silent, @Nullable String server, @Nullable Audience sender) {
+    PunishmentFormats.formatBroadcast(punishment, server, getUsers())
         .thenAcceptAsync(
             broadcast -> {
               if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
-                if (event.isSilent() || !getModerationConfig().isPunishmentPublic(punishment)) {
+                if (silent || !getModerationConfig().isPunishmentPublic(punishment)) {
                   BroadcastUtils.sendAdminChatMessage(broadcast);
                 } else {
                   BroadcastUtils.sendGlobalMessage(broadcast);
                 }
               } else { // Send feedback if not broadcast
-                event.getSender().sendMessage(broadcast);
+                Audience viewer = sender;
+                if (viewer == null) {
+                  viewer = Audience.console();
+                }
+                viewer.sendMessage(broadcast);
               }
             });
   }

@@ -3,14 +3,9 @@ package dev.pgm.community.assistance;
 import java.time.Instant;
 import java.util.UUID;
 
-public class Report implements Comparable<Report> {
+public class Report extends AssistanceRequest implements Comparable<Report> {
 
   private final UUID reportId;
-  private final UUID reportedId;
-  private final UUID reporterId;
-  private final String reason;
-  private final Instant time;
-  private final String server;
 
   /**
    * Report Holds information related to a report
@@ -27,13 +22,10 @@ public class Report implements Comparable<Report> {
 
   public Report(
       UUID reportId, UUID reportedId, UUID reporterId, String reason, Instant time, String server) {
+    super(reporterId, reportedId, time, reason, server, RequestType.REPORT);
     this.reportId = reportId;
-    this.reportedId = reportedId;
-    this.reporterId = reporterId;
-    this.reason = reason;
-    this.time = time;
-    this.server = server;
   }
+
   /**
    * Get the {@link UUID} which identifies the report
    *
@@ -41,63 +33,6 @@ public class Report implements Comparable<Report> {
    */
   public UUID getId() {
     return reportId;
-  }
-
-  /**
-   * Get the reported UUID
-   *
-   * @return A UUID of the reported
-   */
-  public UUID getReportedId() {
-    return reportedId;
-  }
-
-  /**
-   * Get the reporter UUID
-   *
-   * @return A UUID of the reporter
-   */
-  public UUID getReporterId() {
-    return reporterId;
-  }
-
-  /**
-   * Get the reason for the report
-   *
-   * @return A string reason for report
-   */
-  public String getReason() {
-    return reason;
-  }
-
-  /**
-   * Get the time of the report
-   *
-   * @return Time of the report
-   */
-  public Instant getTime() {
-    return time;
-  }
-
-  /**
-   * Get the name of server where report was made
-   *
-   * @return name of report's server
-   */
-  public String getServer() {
-    return server;
-  }
-
-  @Override
-  public String toString() {
-    return String.format(
-        "{id: %s, reported: %s, sender: %s, reason:%s, time:%s, server:%s }",
-        getId().toString(),
-        getReportedId().toString(),
-        getReporterId().toString(),
-        getReason(),
-        getTime().toString(),
-        getServer());
   }
 
   @Override

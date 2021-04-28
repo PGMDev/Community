@@ -1,8 +1,7 @@
 package dev.pgm.community.moderation.punishments.types;
 
-import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
-import dev.pgm.community.moderation.punishments.PunishmentBase;
+import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -10,11 +9,10 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 /** A punishment that can expire * */
-public abstract class ExpirablePunishment extends PunishmentBase {
-
-  private Duration duration;
+public abstract class ExpirablePunishment extends Punishment {
 
   public ExpirablePunishment(
+      PunishmentType type,
       UUID id,
       UUID targetId,
       Optional<UUID> issuerId,
@@ -24,20 +22,19 @@ public abstract class ExpirablePunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      String service,
-      ModerationConfig config) {
+      String service) {
     super(
+        type,
         id,
         targetId,
         issuerId,
         reason,
+        length,
         timeIssued,
         active,
         lastUpdated,
         lastUpdatedBy,
-        service,
-        config);
-    this.duration = length;
+        service);
   }
 
   @Override
@@ -46,10 +43,6 @@ public abstract class ExpirablePunishment extends PunishmentBase {
     return super.isActive()
         ? Instant.now().isBefore(expires)
         : false; // If expired return false, otherwise return true until expires
-  }
-
-  public Duration getDuration() {
-    return duration;
   }
 
   public Instant getExpireTime() {

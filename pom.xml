@@ -74,7 +74,7 @@
 
 
 	<build>
-		<finalName>Community-${project.version}</finalName>
+        <finalName>Community</finalName>
 		<resources>
 			<!-- Include the required plugin.yml and config.yml for Bukkit -->
 			<resource>
@@ -169,7 +169,7 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			
 			<!-- Allows for building of java docs, although not used yet -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -4,7 +4,8 @@ import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
 import dev.pgm.community.broadcast.BroadcastFeature;
-import dev.pgm.community.chat.ChatManagementFeature;
+import dev.pgm.community.chat.management.ChatManagementFeature;
+import dev.pgm.community.chat.network.NetworkChatFeature;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
@@ -47,7 +48,8 @@ public class FeatureManager {
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
-  private final ChatManagementFeature chat;
+  private final ChatManagementFeature chatManagement;
+  private final NetworkChatFeature chatNetwork;
   private final MotdFeature motd;
   private final FreezeFeature freeze;
   private final MutationFeature mutation;
@@ -64,7 +66,7 @@ public class FeatureManager {
 
     // DB Features
     this.users = new SQLUsersFeature(config, logger, database);
-    this.reports = new SQLAssistanceFeature(config, logger, database, users);
+    this.reports = new SQLAssistanceFeature(config, logger, database, users, network);
     this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
     this.nick = new SQLNickFeature(config, logger, database, users);
@@ -76,12 +78,13 @@ public class FeatureManager {
     // Non-DB Features
     this.teleports = new TeleportFeatureBase(config, logger);
     this.infoCommands = new InfoCommandsFeature(config, logger);
-    this.chat = new ChatManagementFeature(config, logger);
+    this.chatManagement = new ChatManagementFeature(config, logger);
     this.motd = new MotdFeature(config, logger);
     this.freeze = new FreezeFeature(config, logger);
     this.mutation = new MutationFeature(config, logger);
     this.broadcast = new BroadcastFeature(config, logger);
     this.vanish = new VanishFeature(config, logger, nick);
+    this.chatNetwork = new NetworkChatFeature(config, logger, network);
 
     this.registerCommands(commands);
   }
@@ -107,7 +110,7 @@ public class FeatureManager {
   }
 
   public ChatManagementFeature getChatManagement() {
-    return chat;
+    return chatManagement;
   }
 
   public FriendshipFeature getFriendships() {
@@ -136,6 +139,10 @@ public class FeatureManager {
 
   public VanishFeature getVanish() {
     return vanish;
+  }
+
+  public NetworkChatFeature getNetworkChat() {
+    return chatNetwork;
   }
 
   // Register Feature commands and any dependency
@@ -223,6 +230,7 @@ public class FeatureManager {
     getBroadcast().getConfig().reload(config);
     getNick().getConfig().reload(config);
     getVanish().getConfig().reload(config);
+    getNetworkChat().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

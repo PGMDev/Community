@@ -142,8 +142,8 @@ public class ReportCommands extends CommunityCommand {
       new PaginatedComponentResults<Report>(formattedHeader, perPage) {
         @Override
         public Component format(Report data, int index) {
-          Component reporterName = getReportFormatName(data.getReporterId()).join();
-          Component reportedName = getReportFormatName(data.getReportedId()).join();
+          Component reporterName = getReportFormatName(data.getSenderId()).join();
+          Component reportedName = getReportFormatName(data.getTargetId()).join();
 
           Component serverName =
               text("Server ", NamedTextColor.GRAY)

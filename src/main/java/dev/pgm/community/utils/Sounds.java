@@ -35,4 +35,7 @@ public class Sounds {
 
   // Played when a message is broadcasted (/broadcast)
   public static final Sound BROADCAST = sound(key("note.pling"), Sound.Source.MASTER, 1f, 1.4f);
+
+  // Played when a message is sent to admin chat
+  public static final Sound ADMIN_CHAT = sound(key("random.orb"), Sound.Source.MASTER, 1f, 0.7f);
 }

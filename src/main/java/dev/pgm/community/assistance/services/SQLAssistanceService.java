@@ -74,7 +74,7 @@ public class SQLAssistanceService extends SQLFeatureBase<Report> {
       this.report = report;
 
       // Cache newly saved reports to prevent further lookups while server is online
-      SelectQuery cached = cachedReports.getIfPresent(report.getReportedId());
+      SelectQuery cached = cachedReports.getIfPresent(report.getTargetId());
       if (cached != null) {
         cached.getReports().add(report);
       }
@@ -88,8 +88,8 @@ public class SQLAssistanceService extends SQLFeatureBase<Report> {
     @Override
     public void query(PreparedStatement statement) throws SQLException {
       statement.setString(1, report.getId().toString());
-      statement.setString(2, report.getReporterId().toString());
-      statement.setString(3, report.getReportedId().toString());
+      statement.setString(2, report.getSenderId().toString());
+      statement.setString(3, report.getTargetId().toString());
       statement.setString(4, report.getReason());
       statement.setLong(5, report.getTime().toEpochMilli());
       statement.setString(6, Community.get().getServerConfig().getServerId());
@@ -149,5 +149,9 @@ public class SQLAssistanceService extends SQLFeatureBase<Report> {
         fetched = true;
       }
     }
+  }
+
+  public void invalidate(UUID playerId) {
+    cachedReports.invalidate(playerId);
   }
 }

@@ -146,7 +146,16 @@ network:
     password: ""
     port: 6379
     ssl: false
-    
+  
+  # Network Chat - Sub feature of Networking, exclusive to PGM servers. 
+  # Allows for chat to broadcast across servers  
+  chat:
+    enabled: true
+# TODO: Coming Soon...    
+#    types:
+#      admin: true
+#      global: false
+#      message: false
   
   
 # Database

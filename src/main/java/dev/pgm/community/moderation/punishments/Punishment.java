@@ -3,6 +3,7 @@ package dev.pgm.community.moderation.punishments;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.title.Title.title;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
@@ -15,6 +16,8 @@ import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.NetworkUtils;
+import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -23,148 +26,160 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title.Times;
+import net.kyori.adventure.util.Ticks;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import tc.oc.pgm.api.text.PlayerComponent;
+import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextTranslations;
 
-public interface Punishment extends Comparable<Punishment> {
+public class Punishment implements Comparable<Punishment> {
 
-  /**
-   * Get the the Punishment ID A Unique id is assigned to each punishment
-   *
-   * @return The punishment id
-   */
-  UUID getId();
+  private PunishmentType type;
 
-  /**
-   * Get the target player's UUID
-   *
-   * @return The target {@link UUID}
-   */
-  UUID getTargetId();
+  private UUID punishmentId;
+  private UUID targetId;
+  private Optional<UUID> issuerId;
+  private String reason;
+  private Instant timeIssued;
+  private boolean active;
+  private @Nullable Duration duration;
 
-  /**
-   * Get an optional UUID of the punishment issuer Note: If punishment is issued by console, will be
-   * empty
-   *
-   * @return A optional {@link UUID}
-   */
-  Optional<UUID> getIssuerId();
+  private Instant lastUpdated;
+  private Optional<UUID> lastUpdatedBy;
 
-  /**
-   * Get the reason for the punishment
-   *
-   * @return punishment reason
-   */
-  String getReason();
+  private String service;
 
-  /**
-   * Get the time punishment was issued
-   *
-   * @return {@link Instant} punishment was issued
-   */
-  Instant getTimeIssued();
+  public Punishment() {}
 
-  /**
-   * Perform the punishment on online player
-   *
-   * @return true if target was online, false if not
-   */
-  boolean punish(boolean silent);
-
-  /**
-   * Get whether the punishment is active Active punishments (mute/ban) rely on checking this for
-   * certain functionality. This has no effect on one-time punishments (kick/warn)
-   *
-   * @return true if punishment is active, false if not
-   */
-  boolean isActive();
-
-  /**
-   * Get the time punishment was last updated (i.e. player pardon)
-   *
-   * @return {@link Instant} punishment was last updated
-   */
-  Instant getLastUpdated();
-
-  /**
-   * Get who updated the punishment last Note: Optional will be empty if console
-   *
-   * @return An optional {@link UUID}
-   */
-  Optional<UUID> getLastUpdatedBy();
-
-  /**
-   * Get the type of punishment
-   *
-   * @return {@link PunishmentType} of punishment
-   */
-  PunishmentType getType();
-
-  /**
-   * Get the name of the service punishment was issued under
-   *
-   * @return The name of punishment service
-   */
-  String getService();
-
-  default boolean wasUpdated() {
-    return !getTimeIssued().equals(getLastUpdated());
-  }
-
-  static Punishment of(
-      UUID id,
-      UUID target,
-      Optional<UUID> issuer,
-      String reason,
-      Instant time,
-      @Nullable Duration length,
+  public Punishment(
       PunishmentType type,
+      UUID punishmentId,
+      UUID targetId,
+      Optional<UUID> issuerId,
+      String reason,
+      Duration duration,
+      Instant timeIssued,
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      String service,
-      ModerationConfig config) {
-    switch (type) {
-      case WARN:
-        return new WarnPunishment(
-            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service, config);
-      case MUTE:
-        return new MutePunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            length,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            service,
-            config);
-      case KICK:
-        return new KickPunishment(
-            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service, config);
-      case TEMP_BAN:
-        return new TempBanPunishment(
-            id,
-            target,
-            issuer,
-            reason,
-            time,
-            length,
-            active,
-            lastUpdated,
-            lastUpdatedBy,
-            service,
-            config);
-      case BAN:
-        return new BanPunishment(
-            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service, config);
-    }
-    return null;
+      String service) {
+    this.type = type;
+    this.punishmentId = punishmentId;
+    this.targetId = targetId;
+    this.issuerId = issuerId;
+    this.reason = reason;
+    this.timeIssued = timeIssued;
+    this.active = active;
+    this.lastUpdated = lastUpdated;
+    this.lastUpdatedBy = lastUpdatedBy;
+    this.service = service;
+    this.duration = duration;
   }
 
-  default Component formatBroadcast(Component issuer, Component target) {
+  public boolean punish(boolean silent) {
+    return false;
+  }
+
+  public PunishmentType getType() {
+    return type;
+  }
+
+  public UUID getId() {
+    return punishmentId;
+  }
+
+  public UUID getTargetId() {
+    return targetId;
+  }
+
+  public Optional<UUID> getIssuerId() {
+    return issuerId;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public Instant getTimeIssued() {
+    return timeIssued;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public Instant getLastUpdated() {
+    return lastUpdated;
+  }
+
+  public Optional<UUID> getLastUpdatedBy() {
+    return lastUpdatedBy;
+  }
+
+  public String getService() {
+    return service;
+  }
+
+  public Duration getDuration() {
+    return duration;
+  }
+
+  public boolean wasUpdated() {
+    return !getTimeIssued().equals(getLastUpdated());
+  }
+
+  @Override
+  public int compareTo(Punishment o) {
+    return -getTimeIssued().compareTo(o.getTimeIssued());
+  }
+
+  public ModerationConfig getConfig() {
+    return (ModerationConfig) Community.get().getFeatures().getModeration().getConfig();
+  }
+
+  public Optional<Player> getTargetPlayer() {
+    return Optional.ofNullable(Bukkit.getPlayer(getTargetId()));
+  }
+
+  public boolean kick(boolean silent) {
+    Optional<Player> player = getTargetPlayer();
+    if (player.isPresent()) {
+      player
+          .get()
+          .getPlayer()
+          .kickPlayer(
+              formatPunishmentScreen(
+                  getConfig(),
+                  getIssuerId().isPresent()
+                      ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
+                      : MessageUtils.CONSOLE,
+                  silent));
+      return true;
+    }
+    return false;
+  }
+
+  private static final Component WARN_SYMBOL = text(" \u26a0 ", NamedTextColor.YELLOW);
+
+  /*
+   * Sends a formatted title and plays a sound warning a user of their actions
+   */
+  public void sendWarning(Audience target, String reason) {
+    Component titleWord = translatable("misc.warning", NamedTextColor.DARK_RED);
+    Component title = text().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
+    Component subtitle = text(reason, NamedTextColor.GOLD);
+
+    target.showTitle(
+        title(
+            title, subtitle, Times.of(Ticks.duration(5), Ticks.duration(200), Ticks.duration(10))));
+    target.playSound(Sounds.WARN_SOUND);
+  }
+
+  public Component formatBroadcast(Component issuer, Component target, String server) {
     Component prefix = getType().getPunishmentPrefix();
     if (this instanceof ExpirablePunishment
         && !((ExpirablePunishment) this).getDuration().isZero()) {
@@ -183,6 +198,7 @@ public interface Punishment extends Comparable<Punishment> {
       prefix = getType().getPunishmentPrefix(text(time, NamedTextColor.GOLD));
     }
     return text()
+        .append(NetworkUtils.server(server))
         .append(issuer)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(prefix)
@@ -194,7 +210,7 @@ public interface Punishment extends Comparable<Punishment> {
   }
 
   /** Formats a string for multi-line kick message */
-  default String formatPunishmentScreen(
+  public String formatPunishmentScreen(
       ModerationConfig config, Component issuerName, boolean disguised) {
     List<Component> lines = Lists.newArrayList();
 
@@ -239,5 +255,52 @@ public interface Punishment extends Comparable<Punishment> {
     lines.add(empty());
 
     return MessageUtils.formatKickScreenMessage(Community.get().getServerName(), lines);
+  }
+
+  public static Punishment of(Punishment punishment) {
+    return of(
+        punishment.getId(),
+        punishment.getTargetId(),
+        punishment.getIssuerId(),
+        punishment.getReason(),
+        punishment.getTimeIssued(),
+        punishment.getDuration(),
+        punishment.getType(),
+        punishment.isActive(),
+        punishment.getLastUpdated(),
+        punishment.getLastUpdatedBy(),
+        punishment.getService());
+  }
+
+  public static Punishment of(
+      UUID id,
+      UUID target,
+      Optional<UUID> issuer,
+      String reason,
+      Instant time,
+      @Nullable Duration length,
+      PunishmentType type,
+      boolean active,
+      Instant lastUpdated,
+      Optional<UUID> lastUpdatedBy,
+      String service) {
+    switch (type) {
+      case WARN:
+        return new WarnPunishment(
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
+      case MUTE:
+        return new MutePunishment(
+            id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, service);
+      case KICK:
+        return new KickPunishment(
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
+      case TEMP_BAN:
+        return new TempBanPunishment(
+            id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, service);
+      case BAN:
+        return new BanPunishment(
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
+    }
+    return null;
   }
 }
