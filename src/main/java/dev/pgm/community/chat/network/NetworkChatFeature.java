@@ -10,7 +10,6 @@ import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.subs.types.ChatSubscriber;
 import dev.pgm.community.network.updates.types.ChatUpdate;
 import dev.pgm.community.utils.BroadcastUtils;
-import dev.pgm.community.utils.NetworkUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.util.Set;
@@ -45,19 +44,13 @@ public class NetworkChatFeature extends FeatureBase {
 
   public void recieveUpdate(NetworkChatMessage message) {
     if (message.getChannel() == Channel.ADMIN) {
-      Component formatted =
-          formatMessage(message.getServer(), message.getSender(), message.getMessage());
-      BroadcastUtils.sendAdminChatMessage(formatted, Sounds.ADMIN_CHAT);
+      Component formatted = formatMessage(message.getSender(), message.getMessage());
+      BroadcastUtils.sendAdminChatMessage(formatted, message.getServer(), Sounds.ADMIN_CHAT);
     }
   }
 
-  private Component formatMessage(String server, Component sender, Component message) {
-    return text()
-        .append(NetworkUtils.formatServer(server))
-        .append(sender)
-        .append(text(": ", NamedTextColor.WHITE))
-        .append(message)
-        .build();
+  private Component formatMessage(Component sender, Component message) {
+    return text().append(sender).append(text(": ", NamedTextColor.WHITE)).append(message).build();
   }
 
   @Override

@@ -18,9 +18,7 @@ public class NetworkUtils {
 
   public static Component formatServer(String server) {
     return text()
-        .append(text("["))
-        .append(text(server, NamedTextColor.AQUA))
-        .append(text("] "))
+        .append(text(server, NamedTextColor.GREEN))
         .hoverEvent(
             HoverEvent.showText(
                 text()

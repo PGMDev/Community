@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
@@ -33,12 +34,33 @@ public class BroadcastUtils {
           .append(space())
           .build();
 
+  private static Component formatPrefix(String server, Component message) {
+    TextComponent.Builder builder = text();
+
+    if (server == null) {
+      builder.append(ADMIN_CHAT_PREFIX);
+    } else {
+      builder
+          .append(text("[", NamedTextColor.WHITE))
+          .append(text("A ", NamedTextColor.GOLD))
+          .append(text(server, NamedTextColor.GREEN))
+          .append(text("]"));
+    }
+
+    return builder.append(message).build();
+  }
+
   public static void sendAdminChatMessage(Component message) {
     sendAdminChatMessage(message, null);
   }
 
   public static void sendAdminChatMessage(Component message, @Nullable Sound sound) {
-    Component formatted = text().append(ADMIN_CHAT_PREFIX).append(message).build();
+    sendAdminChatMessage(message, null, sound);
+  }
+
+  public static void sendAdminChatMessage(
+      Component message, @Nullable String server, @Nullable Sound sound) {
+    Component formatted = formatPrefix(server, message);
     Bukkit.getOnlinePlayers().stream()
         .filter(player -> player.hasPermission(CommunityPermissions.STAFF))
         .map(Audience::get)
