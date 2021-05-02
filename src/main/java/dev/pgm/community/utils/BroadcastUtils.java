@@ -14,6 +14,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
@@ -42,7 +43,7 @@ public class BroadcastUtils {
       builder
           .append(text("[", NamedTextColor.WHITE))
           .append(text("A ", NamedTextColor.GOLD))
-          .append(text(server, NamedTextColor.GREEN))
+          .append(text(StringUtils.capitalize(server.toLowerCase()), NamedTextColor.GREEN))
           .append(text("]", NamedTextColor.WHITE));
     }
 
