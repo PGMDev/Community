@@ -26,12 +26,11 @@ public class BroadcastUtils {
   public static final Component BROADCAST_DIV =
       text().append(space()).append(RIGHT_DIV).append(space()).build();
 
-  public static final Component ADMIN_CHAT_PREFIX =
+  private static final Component ADMIN_CHAT_PREFIX =
       text()
           .append(text("[", NamedTextColor.WHITE))
           .append(text("A", NamedTextColor.GOLD))
           .append(text("]", NamedTextColor.WHITE))
-          .append(space())
           .build();
 
   private static Component formatPrefix(String server, Component message) {
@@ -44,10 +43,10 @@ public class BroadcastUtils {
           .append(text("[", NamedTextColor.WHITE))
           .append(text("A ", NamedTextColor.GOLD))
           .append(text(server, NamedTextColor.GREEN))
-          .append(text("]"));
+          .append(text("]", NamedTextColor.WHITE));
     }
 
-    return builder.append(message).build();
+    return builder.append(space()).append(message).build();
   }
 
   public static void sendAdminChatMessage(Component message) {

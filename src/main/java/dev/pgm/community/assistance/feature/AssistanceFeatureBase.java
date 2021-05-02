@@ -1,6 +1,5 @@
 package dev.pgm.community.assistance.feature;
 
-import static dev.pgm.community.utils.NetworkUtils.server;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -195,7 +194,7 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
   }
 
   private void broadcastRequest(AssistanceRequest request) {
-    final Component server = server(request.getServer());
+    final String server = request.getServer();
     final String reason = request.getReason();
     final boolean report = request.getType() == RequestType.REPORT;
     CompletableFuture<Component> sender =
@@ -213,32 +212,26 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
   }
 
   private void broadcastRequest(
-      Component server, Component sender, Component target, String reason, boolean report) {
+      String server, Component sender, Component target, String reason, boolean report) {
     Component component =
         report
-            ? formatReportBroadcast(server, sender, target, reason)
-            : formatHelpBroadcast(server, sender, reason);
+            ? formatReportBroadcast(sender, target, reason)
+            : formatHelpBroadcast(sender, reason);
     Sound sound = report ? Sounds.PLAYER_REPORT : Sounds.HELP_REQUEST;
-    BroadcastUtils.sendAdminChatMessage(component, sound);
+    BroadcastUtils.sendAdminChatMessage(component, server, sound);
   }
 
-  private Component formatReportBroadcast(
-      Component server, Component sender, Component target, String reason) {
-    return text()
-        .append(server)
-        .append(
-            translatable(
-                "moderation.report.notify",
-                NamedTextColor.GRAY,
-                sender,
-                target,
-                text(reason, NamedTextColor.WHITE)))
-        .build();
+  private Component formatReportBroadcast(Component sender, Component target, String reason) {
+    return translatable(
+        "moderation.report.notify",
+        NamedTextColor.GRAY,
+        sender,
+        target,
+        text(reason, NamedTextColor.WHITE));
   }
 
-  private Component formatHelpBroadcast(Component server, Component sender, String reason) {
+  private Component formatHelpBroadcast(Component sender, String reason) {
     return text()
-        .append(server)
         .append(sender)
         .append(text(" requires assistance ", NamedTextColor.GRAY)) // TODO: translate
         .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.YELLOW))
