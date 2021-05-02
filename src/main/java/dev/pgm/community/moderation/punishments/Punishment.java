@@ -16,7 +16,6 @@ import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
-import dev.pgm.community.utils.NetworkUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
@@ -179,11 +178,10 @@ public class Punishment implements Comparable<Punishment> {
     target.playSound(Sounds.WARN_SOUND);
   }
 
-  public Component formatBroadcast(Component issuer, Component target, String server) {
+  public Component formatBroadcast(Component issuer, Component target) {
     Component prefix = getType().getPunishmentPrefix();
-    if (this instanceof ExpirablePunishment
-        && !((ExpirablePunishment) this).getDuration().isZero()) {
-      Duration length = ((ExpirablePunishment) this).getDuration();
+    if (this.getDuration() != null) {
+      Duration length = this.getDuration();
       String time =
           TextTranslations.translateLegacy(TemporalComponent.duration(length).build(), null);
 
@@ -198,7 +196,6 @@ public class Punishment implements Comparable<Punishment> {
       prefix = getType().getPunishmentPrefix(text(time, NamedTextColor.GOLD));
     }
     return text()
-        .append(NetworkUtils.server(server))
         .append(issuer)
         .append(BroadcastUtils.BROADCAST_DIV)
         .append(prefix)

@@ -232,7 +232,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             broadcast -> {
               if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
                 if (silent || !getModerationConfig().isPunishmentPublic(punishment)) {
-                  BroadcastUtils.sendAdminChatMessage(broadcast);
+                  BroadcastUtils.sendAdminChatMessage(broadcast, server, null);
                 } else {
                   BroadcastUtils.sendGlobalMessage(broadcast);
                 }

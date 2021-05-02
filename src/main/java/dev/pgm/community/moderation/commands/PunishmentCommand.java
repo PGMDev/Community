@@ -229,8 +229,7 @@ public class PunishmentCommand extends CommunityCommand {
                 usernames
                     .renderUsername(
                         Optional.of(data.getTargetId()), NameStyle.FANCY, audience.getPlayer())
-                    .join(),
-                null));
+                    .join()));
 
         TextComponent.Builder hover = text();
         hover

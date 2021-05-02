@@ -19,7 +19,7 @@ public class PunishmentFormats {
     CompletableFuture.allOf(issuer, target)
         .thenAcceptAsync(
             x -> {
-              Component msg = punishment.formatBroadcast(issuer.join(), target.join(), server);
+              Component msg = punishment.formatBroadcast(issuer.join(), target.join());
               broadcast.complete(msg);
             });
     return broadcast;
