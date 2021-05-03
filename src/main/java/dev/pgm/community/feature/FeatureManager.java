@@ -6,6 +6,7 @@ import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
 import dev.pgm.community.broadcast.BroadcastFeature;
 import dev.pgm.community.chat.management.ChatManagementFeature;
 import dev.pgm.community.chat.network.NetworkChatFeature;
+import dev.pgm.community.commands.ChestCommand;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
@@ -210,6 +211,7 @@ public class FeatureManager {
     commands.registerCommand(new StaffCommand());
     commands.registerCommand(new GamemodeCommand());
     commands.registerCommand(new ServerInfoCommand());
+    commands.registerCommand(new ChestCommand());
   }
 
   private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {

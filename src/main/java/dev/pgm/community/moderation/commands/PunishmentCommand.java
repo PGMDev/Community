@@ -238,7 +238,7 @@ public class PunishmentCommand extends CommunityCommand {
                 TemporalComponent.relativePastApproximate(data.getTimeIssued())
                     .color(NamedTextColor.YELLOW));
 
-        Duration length = ExpirablePunishment.getDuration(data);
+        Duration length = data.getDuration();
         // When a punishments can expire, show expire time on hover
         if (length != null) {
           Instant endDate = data.getTimeIssued().plus(length);
