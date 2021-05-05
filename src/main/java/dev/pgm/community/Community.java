@@ -160,6 +160,10 @@ public class Community extends JavaPlugin {
         config.getServerDisplayName() == null ? "&b&lCommunity" : config.getServerDisplayName());
   }
 
+  public String getServerId() {
+    return config.getServerId();
+  }
+
   public FeatureManager getFeatures() {
     return features;
   }

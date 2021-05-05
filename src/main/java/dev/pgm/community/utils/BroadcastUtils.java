@@ -5,6 +5,7 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.title.Title.title;
 
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -34,10 +35,14 @@ public class BroadcastUtils {
           .append(text("]", NamedTextColor.WHITE))
           .build();
 
+  private static boolean isLocal(String server) {
+    return Community.get().getServerId().equalsIgnoreCase(server);
+  }
+
   private static Component formatPrefix(String server, Component message) {
     TextComponent.Builder builder = text();
 
-    if (server == null) {
+    if (server == null || isLocal(server)) {
       builder.append(ADMIN_CHAT_PREFIX);
     } else {
       builder

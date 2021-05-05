@@ -49,7 +49,7 @@ public class ChestCommand extends CommunityCommand implements Listener {
       audience.sendWarning(EXIT_MESSAGE);
     } else {
       clickingPlayers.add(player.getUniqueId());
-      audience.sendWarning(text("Click a chest to start editing", NamedTextColor.GRAY));
+      audience.sendWarning(text("Left-Click a chest to start editing", NamedTextColor.GRAY));
     }
   }
 
