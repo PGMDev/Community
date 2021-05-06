@@ -142,7 +142,7 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
     Bukkit.getPluginManager().callEvent(new PlayerReportEvent(report));
 
     // Reset cooldown
-    cooldown.put(sender.getUniqueId(), Instant.now());
+    startCooldown(sender);
 
     return report;
   }
@@ -164,7 +164,7 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
     sendHelpRequestFeedback(sender);
 
     // Reset cooldown
-    cooldown.put(sender.getUniqueId(), Instant.now());
+    startCooldown(sender);
   }
 
   @Override
@@ -189,8 +189,13 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
 
   @EventHandler
   public void onPlayerRequestHelp(PlayerHelpRequestEvent event) {
+    recentHelp.put(event.getRequest(), Instant.now());
     sendUpdate(event.getRequest());
     broadcastRequest(event.getRequest());
+  }
+
+  private void startCooldown(Player sender) {
+    cooldown.put(sender.getUniqueId(), Instant.now());
   }
 
   private void broadcastRequest(AssistanceRequest request) {
