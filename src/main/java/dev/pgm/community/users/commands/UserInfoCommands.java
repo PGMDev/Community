@@ -146,7 +146,8 @@ public class UserInfoCommands extends CommunityCommand {
                                 .collect(Collectors.toSet());
 
                         Component altNameList =
-                            targetPlayer
+                            text()
+                                .append(targetPlayer)
                                 .append(text(" has "))
                                 .append(
                                     text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD))
@@ -154,7 +155,8 @@ public class UserInfoCommands extends CommunityCommand {
                                 .append(text(alts.size() != 1 ? "s" : ""))
                                 .append(text(": "))
                                 .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
-                                .color(NamedTextColor.GRAY);
+                                .color(NamedTextColor.GRAY)
+                                .build();
                         audience.sendMessage(altNameList);
                       });
             });
