@@ -2,7 +2,6 @@ package dev.pgm.community.users.feature;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
-import dev.pgm.community.utils.MessageUtils;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +15,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponentProvider;
 
 /**
  * UsersFeature
@@ -40,10 +40,11 @@ public interface UsersFeature extends Feature {
    */
   default CompletableFuture<Component> renderUsername(
       Optional<UUID> userId, NameStyle style, @Nullable Player viewer) {
-    if (!userId.isPresent()) return CompletableFuture.completedFuture(MessageUtils.CONSOLE);
+    if (!userId.isPresent())
+      return CompletableFuture.completedFuture(PlayerComponentProvider.CONSOLE);
     return getStoredUsername(userId.get())
         .thenApplyAsync(
-            name -> PlayerComponent.player(Bukkit.getPlayer(userId.get()), name, style, viewer));
+            name -> PlayerComponent.player(Bukkit.getPlayer(userId.get()), name, style));
   }
 
   /**

@@ -13,7 +13,6 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
@@ -25,7 +24,6 @@ public class BanCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
-  @Dependency private NickFeature nicks;
   @Dependency private Community plugin;
 
   @CommandAlias("tempban|tb")
@@ -44,7 +42,7 @@ public class BanCommand extends CommunityCommand {
                     reason,
                     length,
                     true,
-                    isDisguised(audience, nicks));
+                    isDisguised(audience));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }
@@ -66,7 +64,7 @@ public class BanCommand extends CommunityCommand {
                     reason,
                     null,
                     true,
-                    isDisguised(audience, nicks));
+                    isDisguised(audience));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }

@@ -32,6 +32,7 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponentProvider;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextTranslations;
 
@@ -155,7 +156,7 @@ public class Punishment implements Comparable<Punishment> {
                   getConfig(),
                   getIssuerId().isPresent()
                       ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
-                      : MessageUtils.CONSOLE,
+                      : PlayerComponentProvider.CONSOLE,
                   silent));
       return true;
     }

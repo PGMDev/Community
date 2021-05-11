@@ -31,15 +31,14 @@ public class StaffCommand extends CommunityCommand {
 
   @Default
   public void staff(CommandAudience viewer, CommandSender sender) {
-    // List of online staff based off of permission
     List<Component> onlineStaff =
         plugin.getServer().getOnlinePlayers().stream()
             .filter(
                 player ->
                     (player.hasPermission(Permissions.STAFF)
-                        && (!isDisguised(player, nicks)
+                        && (!isDisguised(player)
                             || sender.hasPermission(CommunityPermissions.STAFF))))
-            .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE, viewer.getPlayer()))
+            .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
 
     // FORMAT: Online Staff ({count}): {names}
@@ -55,7 +54,6 @@ public class StaffCommand extends CommunityCommand {
     Component staff =
         translatable("moderation.staff.name", NamedTextColor.GRAY, staffCount, content);
 
-    // Send message
     viewer.sendMessage(staff);
   }
 }

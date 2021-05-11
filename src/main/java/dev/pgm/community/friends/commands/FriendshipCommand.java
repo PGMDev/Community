@@ -20,6 +20,7 @@ import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -224,7 +225,8 @@ public class FriendshipCommand extends CommunityCommand {
 
                               // Notify online requester
                               Player onlineFriend = Bukkit.getPlayer(storedId.get());
-                              if (onlineFriend != null) {
+                              if (onlineFriend != null
+                                  && !VisibilityUtils.isDisguised(sender.getPlayer())) {
                                 Audience.get(onlineFriend)
                                     .sendMessage(
                                         text()
@@ -338,7 +340,9 @@ public class FriendshipCommand extends CommunityCommand {
                     audience.getPlayer())
                 .join();
 
-        return name.append(space())
+        return text()
+            .append(name)
+            .append(space())
             .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
             .append(text(" Sent "))
             .append(
@@ -348,7 +352,8 @@ public class FriendshipCommand extends CommunityCommand {
             .append(FriendshipFeature.createAcceptButton(data.getRequesterId().toString()))
             .append(space())
             .append(FriendshipFeature.createRejectButton(data.getRequesterId().toString()))
-            .color(NamedTextColor.GRAY);
+            .color(NamedTextColor.GRAY)
+            .build();
       }
 
       @Override

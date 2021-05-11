@@ -1,13 +1,11 @@
 package dev.pgm.community.utils;
 
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.translatable;
 
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.md_5.bungee.api.ChatColor;
 import tc.oc.pgm.util.LegacyFormatUtils;
 import tc.oc.pgm.util.text.TextTranslations;
@@ -17,9 +15,6 @@ public class MessageUtils {
   public static final Component DENY = text("\u2715", NamedTextColor.DARK_RED);
   public static final Component ACCEPT = text("\u2714", NamedTextColor.GREEN);
   public static final Component WARNING = text("\u26a0", NamedTextColor.YELLOW);
-
-  public static final Component CONSOLE =
-      translatable("misc.console", NamedTextColor.DARK_AQUA, TextDecoration.ITALIC);
 
   public static String formatKickScreenMessage(String headerTitle, List<Component> lines) {
     List<Component> message = Lists.newArrayList();

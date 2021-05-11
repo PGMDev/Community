@@ -171,14 +171,7 @@ public class VanishFeature extends FeatureBase implements VanishIntegration {
     if (nicks.isNicked(player.getId()) || nicks.isAutoNicked(player.getId())) {
       if (isVanished(player.getBukkit())) {
         removeVanished(player); // Unvanish nicked players
-        player.setVanished(false);
       }
-      return; // No vanish for nick
-    }
-
-    if (isVanished(player.getBukkit())) { // Player is already vanished
-      player.setVanished(true);
-      return;
     }
   }
 

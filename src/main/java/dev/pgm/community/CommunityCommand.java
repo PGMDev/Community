@@ -6,11 +6,11 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.Dependency;
 import com.google.common.collect.Sets;
-import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -184,17 +184,23 @@ public abstract class CommunityCommand extends BaseCommand {
     return value;
   }
 
+  private boolean isNicked(CommandAudience viewer, Player player) {
+    if (viewer.hasPermission(CommunityPermissions.STAFF)) return false;
+    return Community.get().getFeatures().getNick().isNicked(player.getUniqueId());
+  }
+
   @Nullable
   protected Player getSinglePlayer(CommandAudience viewer, String target, boolean allowNicks) {
     Player player = Bukkit.getPlayer(target);
-
     Player nicked = Community.get().getFeatures().getNick().getPlayerFromNick(target);
 
     if (player == null && nicked != null && allowNicks) {
       player = nicked;
     }
 
-    if (player == null || (player != null && !canView(viewer, player))) {
+    if (player == null
+        || (player != null && !canViewVanished(viewer, player))
+        || (player != null && nicked == null && isNicked(viewer, player))) {
       viewer.sendWarning(formatNotFoundComponent(target));
       return null;
     }
@@ -230,19 +236,19 @@ public abstract class CommunityCommand extends BaseCommand {
     return id;
   }
 
-  protected boolean isDisguised(CommandAudience audience, NickFeature nicks) {
-    return !audience.isPlayer() || isDisguised(audience.getPlayer(), nicks);
+  protected boolean isDisguised(CommandAudience audience) {
+    return !audience.isPlayer() || isDisguised(audience.getPlayer());
   }
 
-  protected boolean isDisguised(Player player, NickFeature nicks) {
-    return isVanished(player) || nicks.isNicked(player.getUniqueId());
+  protected boolean isDisguised(Player player) {
+    return VisibilityUtils.isDisguised(player);
   }
 
   private boolean isVanished(@Nullable Player player) {
     return player != null && player.hasMetadata("isVanished");
   }
 
-  public boolean canView(CommandAudience viewer, Player player) {
+  public boolean canViewVanished(CommandAudience viewer, Player player) {
     boolean vanished = isVanished(player);
     if (vanished
         && viewer.isPlayer()

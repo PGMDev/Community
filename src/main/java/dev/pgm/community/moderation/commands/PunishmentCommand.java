@@ -92,7 +92,7 @@ public class PunishmentCommand extends CommunityCommand {
                       reason,
                       length,
                       true,
-                      isDisguised(audience, nicks));
+                      isDisguised(audience));
                 } else {
                   // No target supplied, show last punishment
                   PunishmentFormats.formatBroadcast(lastPunishment, null, usernames)
@@ -186,7 +186,7 @@ public class PunishmentCommand extends CommunityCommand {
             PlayerComponent.player(
                 targetID, usernames.getStoredUsername(targetID).join(), NameStyle.FANCY);
       } else {
-        targetName = PlayerComponent.player(null, target, NameStyle.FANCY, null);
+        targetName = PlayerComponent.player(targetID, target, NameStyle.FANCY);
       }
     }
 

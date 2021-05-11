@@ -37,7 +37,7 @@ public class WarnCommand extends CommunityCommand {
                     reason,
                     null,
                     false,
-                    isDisguised(audience, nicks));
+                    isDisguised(audience));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }

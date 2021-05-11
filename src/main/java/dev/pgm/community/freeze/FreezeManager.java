@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -128,19 +129,19 @@ public class FreezeManager {
     Component freeze = translatable("moderation.freeze.frozen");
     Component by = translatable("misc.by", senderName);
 
-    Component freezeTitle = freeze;
+    TextComponent.Builder freezeTitle = text().append(freeze);
     if (!silent) {
       freezeTitle.append(space()).append(by);
     }
-    Component title = freezeTitle.color(NamedTextColor.RED);
+    freezeTitle.color(NamedTextColor.RED);
     if (isLegacy(freezee)) {
-      Audience.get(freezee).sendWarning(title);
+      Audience.get(freezee).sendWarning(freezeTitle.build());
     } else {
       Audience.get(freezee)
           .showTitle(
               title(
                   empty(),
-                  title,
+                  freezeTitle.build(),
                   Times.of(Ticks.duration(5), Ticks.duration(9999), Ticks.duration(5))));
     }
     Audience.get(freezee).playSound(FREEZE_SOUND);
@@ -174,7 +175,7 @@ public class FreezeManager {
                 String.format("moderation.freeze.broadcast.%s", frozen ? "frozen" : "thaw"),
                 NamedTextColor.GRAY,
                 senderName,
-                PlayerComponent.player(freezee, NameStyle.CONCISE)))
+                PlayerComponent.player(freezee, NameStyle.FANCY)))
         .hoverEvent(
             HoverEvent.showText(
                 translatable("moderation.freeze.broadcast.hover", NamedTextColor.GRAY)))
