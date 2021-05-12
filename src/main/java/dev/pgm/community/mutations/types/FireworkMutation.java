@@ -4,11 +4,15 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.MutationType;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.bukkit.ChatColor;
@@ -25,7 +29,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.api.match.MatchScope;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
@@ -38,17 +47,64 @@ public class FireworkMutation extends KitMutationBase {
   // match has been running for Y
   private static final String FIREWORK_METADATA = "mutation_firework";
   private static final ItemTag<String> FIREWORK_TAG = ItemTag.newString(FIREWORK_METADATA);
+  private static final int FIREWORK_POWER = 2;
 
   private Cache<UUID, String> lastFirework =
       CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.SECONDS).build();
+  private Set<Firework> fireworks;
+
+  private ScheduledFuture<?> task;
 
   public FireworkMutation(Match match) {
     super(match, MutationType.FIREWORK);
+    this.fireworks = Sets.newHashSet();
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    task =
+        match
+            .getExecutor(MatchScope.RUNNING)
+            .scheduleAtFixedRate(this::task, 0, 250, TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public void disable() {
+    super.disable();
+    this.fireworks.clear();
+    if (task != null) {
+      task.cancel(true);
+      task = null;
+    }
   }
 
   @Override
   public List<Kit> getKits() {
     return Lists.newArrayList(getFireworkKit());
+  }
+
+  public void task() {
+    Iterator<Firework> iterator = fireworks.iterator();
+    while (iterator.hasNext()) {
+      Firework firework = iterator.next();
+      if (firework.isDead()) {
+        match
+            .getExecutor(MatchScope.RUNNING)
+            .schedule(() -> fling(firework), 30, TimeUnit.MILLISECONDS);
+        iterator.remove();
+      }
+    }
+  }
+
+  private void fling(Firework firework) {
+    if (!firework.hasMetadata(FIREWORK_METADATA)) return;
+    if (firework.getPassenger() != null && firework.getPassenger() instanceof Player) {
+      Player player = (Player) firework.getPassenger();
+      Vector velocity = player.getLocation().getDirection().multiply(7).setY(0);
+      player.setVelocity(velocity);
+      player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 5, 5));
+    }
   }
 
   @EventHandler
@@ -64,10 +120,13 @@ public class FireworkMutation extends KitMutationBase {
         Firework firework =
             player.getLocation().getWorld().spawn(player.getLocation(), Firework.class);
         firework.setFireworkMeta(fireworkMeta);
+        firework.setMetadata(FIREWORK_METADATA, new FixedMetadataValue(Community.get(), true));
         firework.setPassenger(player);
 
         player.getInventory().remove(event.getItem());
         player.updateInventory();
+
+        fireworks.add(firework);
       }
     }
   }
@@ -86,7 +145,8 @@ public class FireworkMutation extends KitMutationBase {
   }
 
   private static ItemKit getFireworkKit() {
-    return new ItemKit(Maps.newHashMap(), Lists.newArrayList(getFirework(null, Type.BURST, 2)));
+    return new ItemKit(
+        Maps.newHashMap(), Lists.newArrayList(getFirework(null, Type.BURST, FIREWORK_POWER)));
   }
 
   private static ItemStack getFirework(@Nullable Color color, Type type, int power) {
@@ -104,10 +164,10 @@ public class FireworkMutation extends KitMutationBase {
             .with(type)
             .build());
     meta.setDisplayName(ChatColor.GREEN + "Mutation Firework");
-    meta.setLore(Lists.newArrayList(ChatColor.GRAY + "Launch me for a special surprise"));
+    meta.setLore(Lists.newArrayList(ChatColor.GRAY + "Launch to make a quick getaway"));
     meta.addItemFlags(ItemFlag.values());
-    firework.setItemMeta(meta);
     meta.setPower(power);
+    firework.setItemMeta(meta);
     FIREWORK_TAG.set(firework, FIREWORK_METADATA);
     return firework;
   }
