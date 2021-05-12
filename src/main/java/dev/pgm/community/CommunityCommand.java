@@ -72,13 +72,22 @@ public abstract class CommunityCommand extends BaseCommand {
     }
 
     public Component getText() {
-      return selectionText.hoverEvent(
-          HoverEvent.showText(
-              TextFormatter.list(
-                  getPlayers().stream()
-                      .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
-                      .collect(Collectors.toList()),
-                  NamedTextColor.GRAY)));
+      List<Component> names =
+          players.stream()
+              .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
+              .limit(Math.min(players.size(), 10))
+              .collect(Collectors.toList());
+
+      Component hover = TextFormatter.list(names, NamedTextColor.GRAY);
+      if (getPlayers().size() > names.size()) {
+        int leftOver = getPlayers().size() - names.size();
+        hover
+            .append(text(" plus "))
+            .append(text(leftOver, NamedTextColor.YELLOW))
+            .append(text(" other player" + (leftOver != 1 ? "s" : "")))
+            .color(NamedTextColor.GRAY);
+      }
+      return selectionText.hoverEvent(HoverEvent.showText(hover));
     }
 
     public void sendNoPlayerComponent(CommandAudience audience) {
