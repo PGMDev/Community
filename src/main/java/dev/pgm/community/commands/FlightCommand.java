@@ -11,22 +11,43 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.util.Audience;
 
 public class FlightCommand extends CommunityCommand {
 
   @CommandAlias("fly|flight")
   @Description("Toggle your flight mode")
   @CommandPermission(CommunityPermissions.FLIGHT)
-  public void fly(CommandAudience audience, Player player) {
+  public void fly(CommandAudience sender, @Optional String targets) {
+    if (sender.isPlayer() && targets == null) {
+      toggleFlight(sender.getPlayer());
+    } else {
+      PlayerSelection selection = getPlayers(sender, targets);
+      if (!selection.getPlayers().isEmpty()) {
+        selection.getPlayers().forEach(this::toggleFlight);
+        sender.sendMessage(
+            text()
+                .append(text("Flight has been toggled for "))
+                .append(selection.getText())
+                .color(NamedTextColor.GRAY)
+                .build());
+      } else {
+        selection.sendNoPlayerComponent(sender);
+      }
+    }
+  }
+
+  private void toggleFlight(Player player) {
     boolean fly = player.getAllowFlight();
     player.setAllowFlight(!fly);
     player.setFlying(!fly);
-    audience.sendMessage(
-        text("Toggled flying mode ", NamedTextColor.GRAY)
-            .append(
-                text(
-                    player.isFlying() ? "On" : "Off",
-                    player.isFlying() ? NamedTextColor.GREEN : NamedTextColor.RED)));
+    Audience.get(player)
+        .sendMessage(
+            text("Toggled flying mode ", NamedTextColor.GRAY)
+                .append(
+                    text(
+                        player.isFlying() ? "On" : "Off",
+                        player.isFlying() ? NamedTextColor.GREEN : NamedTextColor.RED)));
   }
 
   @CommandAlias("flyspeed")

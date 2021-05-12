@@ -8,6 +8,9 @@ public interface CommunityPermissions {
   // Root permission node
   String ROOT = "community";
 
+  // Admin - Reserved for restricted features
+  String ADMIN = ROOT + ".admin";
+
   // Moderation:
 
   // Punishment Types

@@ -37,6 +37,8 @@ public abstract class CommunityCommand extends BaseCommand {
 
   @Dependency private Random randoms;
 
+  public static final String SELECTION = "<*, ?=1, team=Name, name1,name2...>";
+
   // Used to quickly format messages while in dev, move all final messages to TextComponents
   protected String format(String format, Object... args) {
     return MessageUtils.format(format, args);

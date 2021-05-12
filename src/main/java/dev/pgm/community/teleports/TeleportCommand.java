@@ -30,7 +30,7 @@ public class TeleportCommand extends CommunityCommand {
 
   @CommandAlias("tp|teleport")
   @Description("Teleport to another player")
-  @Syntax("<player> <other player> | <*, ?=1, team=Name, name1,name2...> <target>")
+  @Syntax("<player> <other player> | " + SELECTION + " <target>")
   @CommandCompletion("@visible @visible")
   @CommandPermission(CommunityPermissions.TELEPORT)
   public void teleportCommand(CommandAudience viewer, String target1, @Optional String target2) {

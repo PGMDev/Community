@@ -214,10 +214,10 @@ public class Punishment implements Comparable<Punishment> {
 
     lines.add(empty());
     lines.add(getType().getScreenComponent(text(getReason(), NamedTextColor.RED)));
-    lines.add(empty());
 
     // If punishment expires, display when
     if (this instanceof ExpirablePunishment) {
+      lines.add(empty());
       Duration banLength = ((ExpirablePunishment) this).getDuration();
       Duration timeSince = Duration.between(getTimeIssued(), Instant.now());
 
@@ -225,12 +225,22 @@ public class Punishment implements Comparable<Punishment> {
 
       Component timeLeft = TemporalComponent.briefNaturalApproximate(remaining);
       lines.add(translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft));
-      lines.add(empty());
     }
 
     // Staff Sign-off
     if (!disguised) {
+      lines.add(empty());
       lines.add(translatable("moderation.screen.signoff", NamedTextColor.GRAY, issuerName));
+    }
+
+    // Alert match banned players they won't be able to participate
+    if (getType() == PunishmentType.KICK && config.getMatchBanDuration() != null) {
+      lines.add(empty());
+      lines.add(
+          text("You may rejoin, but will be unable to participate for ")
+              .append(
+                  TemporalComponent.duration(config.getMatchBanDuration(), NamedTextColor.YELLOW))
+              .color(NamedTextColor.GRAY));
     }
 
     // Link to rules for review by player

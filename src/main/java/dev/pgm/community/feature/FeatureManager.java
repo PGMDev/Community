@@ -12,6 +12,7 @@ import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
 import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
+import dev.pgm.community.commands.SudoCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.freeze.FreezeFeature;
 import dev.pgm.community.friends.feature.FriendshipFeature;
@@ -212,6 +213,7 @@ public class FeatureManager {
     commands.registerCommand(new GamemodeCommand());
     commands.registerCommand(new ServerInfoCommand());
     commands.registerCommand(new ChestCommand());
+    commands.registerCommand(new SudoCommand());
   }
 
   private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {

@@ -26,6 +26,7 @@ moderation:
   kick:
     enabled: true
     public: true
+    match-ban: "10m" # Bans player from playing for given time. Set to -1 to disable (PGM)
   ban:
     enabled: true
     public: true

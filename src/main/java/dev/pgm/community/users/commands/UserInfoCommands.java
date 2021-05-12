@@ -62,6 +62,7 @@ public class UserInfoCommands extends CommunityCommand {
                   online && Bukkit.getPlayer(profile.getId()).hasMetadata("isVanished");
               boolean staff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
               boolean visible = online && (!vanished || staff);
+              NamedTextColor color = (online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
 
               Component lastSeenMsg =
                   text()
@@ -75,12 +76,12 @@ public class UserInfoCommands extends CommunityCommand {
                                   : " was last seen ")) // TODO: translate
                       .append(
                           (visible
-                                  ? TemporalComponent.duration(
-                                          Duration.between(profile.getLastLogin(), Instant.now()))
-                                      .build()
-                                  : TemporalComponent.relativePastApproximate(
-                                      profile.getLastLogin()))
-                              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+                              ? TemporalComponent.duration(
+                                      Duration.between(profile.getLastLogin(), Instant.now()),
+                                      color)
+                                  .build()
+                              : TemporalComponent.relativePastApproximate(profile.getLastLogin())
+                                  .color(color)))
                       .color(NamedTextColor.GRAY)
                       .build();
               audience.sendMessage(lastSeenMsg);

@@ -2,6 +2,7 @@ package dev.pgm.community.moderation.feature;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -35,6 +36,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -52,7 +54,9 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.api.text.PlayerComponent;
+import tc.oc.pgm.events.PlayerParticipationStartEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextTranslations;
@@ -64,6 +68,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   private final Set<Punishment> recents;
   private final Cache<UUID, MutePunishment> muteCache;
   private final Cache<UUID, Set<String>> banEvasionCache;
+
+  private Cache<UUID, Punishment> matchBan;
 
   public ModerationFeatureBase(
       ModerationConfig config,
@@ -77,6 +83,13 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     this.recents = Sets.newHashSet();
     this.muteCache = CacheBuilder.newBuilder().build();
     this.banEvasionCache = CacheBuilder.newBuilder().build();
+
+    if (config.getMatchBanDuration() != null) {
+      this.matchBan =
+          CacheBuilder.newBuilder()
+              .expireAfterWrite(config.getMatchBanDuration().getSeconds(), TimeUnit.SECONDS)
+              .build();
+    }
 
     if (config.isEnabled()) {
       enable();
@@ -213,6 +226,11 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         muteCache.put(
             event.getPunishment().getTargetId(), MutePunishment.class.cast(event.getPunishment()));
         break;
+      case KICK:
+        if (matchBan != null) { // Store match ban
+          matchBan.put(event.getPunishment().getTargetId(), punishment);
+        }
+        break;
       default:
         break;
     }
@@ -265,6 +283,30 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
                     formatBanEvasion(event.getPlayer(), banEvasion.get(), bannedName),
                     Sounds.BAN_EVASION);
               });
+    }
+  }
+
+  @EventHandler
+  public void onMatchJoin(PlayerParticipationStartEvent event) {
+    MatchPlayer player = event.getPlayer();
+    if (matchBan != null) {
+      Punishment punishment = matchBan.getIfPresent(player.getId());
+
+      if (punishment != null) {
+        Duration elasped = Duration.between(punishment.getTimeIssued(), Instant.now());
+        Duration remaining = getModerationConfig().getMatchBanDuration().minus(elasped);
+        Component reason =
+            text()
+                .append(text("You are banned from this match for "))
+                .append(duration(remaining, NamedTextColor.YELLOW))
+                .hoverEvent(
+                    HoverEvent.showText(
+                        text()
+                            .append(text("Reason: ", NamedTextColor.AQUA))
+                            .append(text(punishment.getReason(), NamedTextColor.GRAY))))
+                .build();
+        event.cancel(reason);
+      }
     }
   }
 
