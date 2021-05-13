@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.bukkit.ViaUtils;
 
 public class BroadcastUtils {
 
@@ -80,7 +81,19 @@ public class BroadcastUtils {
   }
 
   public static void sendGlobalMessage(Component message) {
-    Bukkit.getOnlinePlayers().stream().map(Audience::get).forEach(p -> p.sendMessage(message));
+    sendGlobalMessage(message, null);
+  }
+
+  public static void sendGlobalMessage(Component message, @Nullable Sound sound) {
+    Bukkit.getOnlinePlayers().stream()
+        .map(Audience::get)
+        .forEach(
+            p -> {
+              p.sendMessage(message);
+              if (sound != null) {
+                p.playSound(sound);
+              }
+            });
     Audience.get(Bukkit.getConsoleSender()).sendMessage(message);
   }
 
@@ -91,16 +104,29 @@ public class BroadcastUtils {
 
   public static void sendGlobalTitle(
       @Nullable Component title, @Nullable Component subTitle, int stay) {
+    sendGlobalTitle(title, subTitle, stay, null);
+  }
+
+  public static void sendGlobalTitle(
+      @Nullable Component title, @Nullable Component subTitle, int stay, @Nullable Sound sound) {
     Bukkit.getOnlinePlayers().stream()
-        .map(Audience::get)
         .forEach(
-            p ->
-                p.showTitle(
-                    title(
-                        title == null ? empty() : title,
-                        subTitle == null ? empty() : subTitle,
-                        Times.of(
-                            Ticks.duration(5), Ticks.duration(20 * stay), Ticks.duration(15)))));
+            p -> {
+              Audience viewer = Audience.get(p);
+              // Support legacy players
+              if (ViaUtils.getProtocolVersion(p) <= ViaUtils.VERSION_1_7) {
+                viewer.sendMessage(text().append(title).append(subTitle));
+              }
+              viewer.showTitle(
+                  title(
+                      title == null ? empty() : title,
+                      subTitle == null ? empty() : subTitle,
+                      Times.of(Ticks.duration(5), Ticks.duration(20 * stay), Ticks.duration(15))));
+
+              if (sound != null) {
+                viewer.playSound(sound);
+              }
+            });
   }
 
   public static void playSelectSound(Sound sound, Predicate<Player> filter) {

@@ -32,6 +32,7 @@ import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import dev.pgm.community.vanish.VanishFeature;
+import fr.minuskube.inv.InventoryManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,7 +63,8 @@ public class FeatureManager {
       Configuration config,
       Logger logger,
       DatabaseConnection database,
-      BukkitCommandManager commands) {
+      BukkitCommandManager commands,
+      InventoryManager inventory) {
     // Networking
     this.network = new RedisNetworkFeature(config, logger);
 
@@ -83,7 +85,7 @@ public class FeatureManager {
     this.chatManagement = new ChatManagementFeature(config, logger);
     this.motd = new MotdFeature(config, logger);
     this.freeze = new FreezeFeature(config, logger);
-    this.mutation = new MutationFeature(config, logger);
+    this.mutation = new MutationFeature(config, logger, inventory);
     this.broadcast = new BroadcastFeature(config, logger);
     this.vanish = new VanishFeature(config, logger, nick);
     this.chatNetwork = new NetworkChatFeature(config, logger, network);

@@ -7,6 +7,7 @@ import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
+import fr.minuskube.inv.InventoryManager;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -33,6 +34,8 @@ public class Community extends JavaPlugin {
 
   // Feature Manager
   private FeatureManager features;
+
+  private InventoryManager inventory;
 
   private Random random;
 
@@ -81,6 +84,7 @@ public class Community extends JavaPlugin {
     this.commands = new BukkitCommandManager(this);
     commands.registerDependency(Random.class, new Random());
     commands.registerDependency(Instant.class, "startTime", startTime);
+    commands.registerDependency(InventoryManager.class, inventory);
 
     // Contexts
     commands
@@ -137,6 +141,11 @@ public class Community extends JavaPlugin {
             });
   }
 
+  private void setupInventory() {
+    this.inventory = new InventoryManager(this);
+    this.inventory.init();
+  }
+
   public void registerListener(Listener listener) {
     getServer().getPluginManager().registerEvents(listener, this);
   }
@@ -151,8 +160,9 @@ public class Community extends JavaPlugin {
   }
 
   private void setupFeatures() {
+    this.setupInventory();
     this.setupCommands();
-    this.features = new FeatureManager(getConfig(), getLogger(), database, commands);
+    this.features = new FeatureManager(getConfig(), getLogger(), database, commands, inventory);
   }
 
   public String getServerName() {

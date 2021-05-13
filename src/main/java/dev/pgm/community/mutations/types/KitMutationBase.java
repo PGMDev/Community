@@ -31,9 +31,13 @@ public abstract class KitMutationBase extends MutationBase {
     return kits;
   }
 
+  public void spawn(MatchPlayer player) {
+    givePlayerKit(player, getKits());
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
   public void onSpawn(ParticipantKitApplyEvent event) {
-    givePlayerKit(event.getPlayer(), getKits()); // Apply all kits upon respawn
+    spawn(event.getPlayer());
   }
 
   protected void giveAllKit(Kit... kit) {

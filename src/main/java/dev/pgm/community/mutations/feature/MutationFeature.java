@@ -1,6 +1,7 @@
 package dev.pgm.community.mutations.feature;
 
 import static dev.pgm.community.utils.PGMUtils.isPGMEnabled;
+import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
 import co.aikar.commands.InvalidCommandArgument;
@@ -11,21 +12,28 @@ import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationConfig;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.commands.MutationCommands;
+import dev.pgm.community.mutations.menu.MutationToggleMenu;
+import dev.pgm.community.mutations.types.BlindMutation;
 import dev.pgm.community.mutations.types.BlitzMutation;
 import dev.pgm.community.mutations.types.DoubleJumpMutation;
 import dev.pgm.community.mutations.types.ExplosionMutation;
 import dev.pgm.community.mutations.types.FireworkMutation;
 import dev.pgm.community.mutations.types.FlyMutation;
+import dev.pgm.community.mutations.types.HealthMutation;
 import dev.pgm.community.mutations.types.PotionMutation;
 import dev.pgm.community.mutations.types.RageMutation;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.Sounds;
+import fr.minuskube.inv.InventoryManager;
+import fr.minuskube.inv.SmartInventory;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
 import tc.oc.pgm.api.PGM;
@@ -38,8 +46,11 @@ public class MutationFeature extends FeatureBase {
 
   private Set<Mutation> mutations;
 
-  public MutationFeature(Configuration config, Logger logger) {
+  private final InventoryManager inventory;
+
+  public MutationFeature(Configuration config, Logger logger, InventoryManager inventory) {
     super(new MutationConfig(config), logger, "Mutations (PGM)");
+    this.inventory = inventory;
     this.mutations = Sets.newHashSet();
 
     if (getConfig().isEnabled() && isPGMEnabled()) {
@@ -119,7 +130,7 @@ public class MutationFeature extends FeatureBase {
       mutation.disable();
       if (broadcast) {
         BroadcastUtils.sendGlobalTitle(
-            mutation.getName(), text(" has been disabled", NamedTextColor.GRAY), 3);
+            mutation.getName(), text(" mutation has been disabled", NamedTextColor.GRAY), 3);
       }
     }
   }
@@ -152,6 +163,10 @@ public class MutationFeature extends FeatureBase {
         return new FireworkMutation(getMatch());
       case POTION:
         return new PotionMutation(getMatch());
+      case BLIND:
+        return new BlindMutation(getMatch());
+      case HEALTH:
+        return new HealthMutation(getMatch());
     }
 
     return null;
@@ -172,15 +187,23 @@ public class MutationFeature extends FeatureBase {
     boolean single = names.size() == 1;
     Component broadcast =
         text()
+            .append(
+                TextFormatter.horizontalLine(
+                    NamedTextColor.DARK_GREEN, TextFormatter.MAX_CHAT_WIDTH))
+            .append(newline())
             .append(TextFormatter.list(names, NamedTextColor.GRAY))
             .append(text(" mutation" + (single ? "" : "s")))
             .append(text(single ? " has " : " have "))
             .append(text("been enabled"))
+            .append(newline())
+            .append(
+                TextFormatter.horizontalLine(
+                    NamedTextColor.DARK_GREEN, TextFormatter.MAX_CHAT_WIDTH))
             .color(NamedTextColor.GRAY)
             .build();
 
     if (!mutations.isEmpty()) {
-      BroadcastUtils.sendGlobalWarning(broadcast);
+      BroadcastUtils.sendGlobalMessage(broadcast, Sounds.ALERT);
     }
   }
 
@@ -188,5 +211,14 @@ public class MutationFeature extends FeatureBase {
   public void onMatchEnd(MatchFinishEvent event) {
     mutations.forEach(Mutation::disable);
     mutations.clear();
+  }
+
+  public SmartInventory getMenu() {
+    return SmartInventory.builder()
+        .title(ChatColor.GREEN + "Toggle Mutations")
+        .manager(inventory)
+        .provider(new MutationToggleMenu(this))
+        .size(1, 9)
+        .build();
   }
 }

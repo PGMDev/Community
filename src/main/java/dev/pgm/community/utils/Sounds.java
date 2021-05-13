@@ -38,4 +38,6 @@ public class Sounds {
 
   // Played when a message is sent to admin chat
   public static final Sound ADMIN_CHAT = sound(key("random.orb"), Sound.Source.MASTER, 1f, 0.7f);
+
+  public static final Sound ALERT = sound(key("note.harp"), Sound.Source.MASTER, 1f, 0.1f);
 }
