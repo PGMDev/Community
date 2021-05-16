@@ -17,7 +17,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -26,30 +25,31 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.InventoryHolder;
 import tc.oc.pgm.util.Audience;
 
-public class ChestCommand extends CommunityCommand implements Listener {
+public class ContainerCommand extends CommunityCommand implements Listener {
 
   private Set<UUID> clickingPlayers = Sets.newHashSet();
   private Set<UUID> editingPlayers = Sets.newHashSet();
 
   private static final Component EXIT_MESSAGE =
-      text("Exited chest editing mode", NamedTextColor.GRAY);
+      text("Exited container editing mode", NamedTextColor.GRAY);
 
-  public ChestCommand() {
+  public ContainerCommand() {
     Community.get().getServer().getPluginManager().registerEvents(this, Community.get());
   }
 
-  @CommandAlias("chestedit|ce")
-  @Description("Edit chest contents of target block")
-  @CommandPermission(CommunityPermissions.CHEST)
-  public void chestEditCommand(CommandAudience audience, Player player) {
+  @CommandAlias("chestedit|ce|cedit|containeredit")
+  @Description("Edit inventory contents of target block")
+  @CommandPermission(CommunityPermissions.CONTAINER)
+  public void containerEditCommand(CommandAudience audience, Player player) {
     if (isChoosing(player)) {
       clickingPlayers.remove(player.getUniqueId());
       audience.sendWarning(EXIT_MESSAGE);
     } else {
       clickingPlayers.add(player.getUniqueId());
-      audience.sendWarning(text("Left-Click a chest to start editing", NamedTextColor.GRAY));
+      audience.sendWarning(text("Left-Click a container to start editing", NamedTextColor.GRAY));
     }
   }
 
@@ -59,7 +59,20 @@ public class ChestCommand extends CommunityCommand implements Listener {
   }
 
   private boolean canOpen(Block block) {
-    return block != null && block.getType() == Material.CHEST;
+    return block != null && isTypeAllowed(block.getType());
+  }
+
+  private boolean isTypeAllowed(Material type) {
+    switch (type) {
+      case CHEST:
+      case ENDER_CHEST:
+      case FURNACE:
+      case DISPENSER:
+      case BEACON:
+        return true;
+      default:
+        return false;
+    }
   }
 
   private Component formatCoords(Block block, NamedTextColor coordColor) {
@@ -80,7 +93,7 @@ public class ChestCommand extends CommunityCommand implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGH)
-  public void onChestClick(PlayerInteractEvent event) {
+  public void onContainerClick(PlayerInteractEvent event) {
     Player player = event.getPlayer();
     Audience viewer = Audience.get(player);
     Block block = event.getClickedBlock();
@@ -89,12 +102,12 @@ public class ChestCommand extends CommunityCommand implements Listener {
       event.setCancelled(true);
       viewer.sendMessage(
           text()
-              .append(text("Now opening chest at ", NamedTextColor.GRAY))
+              .append(text("Now opening container at ", NamedTextColor.GRAY))
               .append(formatCoords(block, NamedTextColor.GREEN)));
 
-      Chest chest = (Chest) block.getState();
+      InventoryHolder container = (InventoryHolder) block.getState();
       editingPlayers.add(player.getUniqueId());
-      player.openInventory(chest.getInventory());
+      player.openInventory(container.getInventory());
       clickingPlayers.remove(player.getUniqueId());
     }
   }

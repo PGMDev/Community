@@ -68,7 +68,7 @@ public interface CommunityPermissions {
   String FLIGHT_SPEED = FLIGHT + ".speed";
   String GAMEMODE = ROOT + ".gamemode";
   String BROADCAST = ROOT + ".broadcast";
-  String CHEST = ROOT + ".chest";
+  String CONTAINER = ROOT + ".container";
 
   // Player Selectors
   String SELECTOR = ROOT + ".selector"; // Allow access to targeting more than 1 player

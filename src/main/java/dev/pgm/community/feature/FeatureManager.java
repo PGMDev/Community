@@ -6,8 +6,8 @@ import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
 import dev.pgm.community.broadcast.BroadcastFeature;
 import dev.pgm.community.chat.management.ChatManagementFeature;
 import dev.pgm.community.chat.network.NetworkChatFeature;
-import dev.pgm.community.commands.ChestCommand;
 import dev.pgm.community.commands.CommunityPluginCommand;
+import dev.pgm.community.commands.ContainerCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
 import dev.pgm.community.commands.ServerInfoCommand;
@@ -214,7 +214,7 @@ public class FeatureManager {
     commands.registerCommand(new StaffCommand());
     commands.registerCommand(new GamemodeCommand());
     commands.registerCommand(new ServerInfoCommand());
-    commands.registerCommand(new ChestCommand());
+    commands.registerCommand(new ContainerCommand());
     commands.registerCommand(new SudoCommand());
   }
 
