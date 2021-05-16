@@ -30,6 +30,10 @@ moderation:
   ban:
     enabled: true
     public: true
+    # Observe Bans - Allows banned players to join obs, but not interact any further
+    observe:
+      enabled: true   # Whether to enable or not (false for traditional bans)
+      max-online: 20  # The max amount of online banned players
   mute:
     enabled: true
     public: true

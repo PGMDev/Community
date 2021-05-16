@@ -139,13 +139,22 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       Optional<Punishment> ban = hasActiveBan(punishments);
       if (ban.isPresent()) {
         Punishment punishment = ban.get();
-
         event.setKickMessage(
             punishment.formatPunishmentScreen(
                 getModerationConfig(),
                 getUsers().renderUsername(punishment.getIssuerId(), NameStyle.CONCISE, null).join(),
-                false));
-        event.setLoginResult(Result.KICK_BANNED);
+                false,
+                isServerSpaceAvaiable()));
+
+        if (getModerationConfig().isObservingBan()
+            && punishment.isBan()
+            && isServerSpaceAvaiable()) {
+          // Observer ban
+          addBan(event.getUniqueId(), punishment);
+        } else {
+          // Normal ban
+          event.setLoginResult(Result.KICK_BANNED);
+        }
       }
 
       Optional<MutePunishment> mute = hasActiveMute(punishments);
@@ -193,7 +202,8 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                                           .renderUsername(
                                               punishment.getIssuerId(), NameStyle.CONCISE, player)
                                           .join(),
-                                      false));
+                                      false,
+                                      isServerSpaceAvaiable()));
                             }
 
                             Optional<MutePunishment> mute = hasActiveMute(punishments);

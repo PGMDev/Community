@@ -25,6 +25,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
@@ -132,6 +133,10 @@ public class Punishment implements Comparable<Punishment> {
     return !getTimeIssued().equals(getLastUpdated());
   }
 
+  public boolean isBan() {
+    return getType() == PunishmentType.BAN || getType() == PunishmentType.TEMP_BAN;
+  }
+
   @Override
   public int compareTo(Punishment o) {
     return -getTimeIssued().compareTo(o.getTimeIssued());
@@ -157,7 +162,8 @@ public class Punishment implements Comparable<Punishment> {
                   getIssuerId().isPresent()
                       ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
                       : PlayerComponentProvider.CONSOLE,
-                  silent));
+                  silent,
+                  Community.get().getFeatures().getModeration().isServerSpaceAvaiable()));
       return true;
     }
     return false;
@@ -207,9 +213,17 @@ public class Punishment implements Comparable<Punishment> {
         .build();
   }
 
+  public Component getExpireDateMessage() {
+    Duration banLength = ((ExpirablePunishment) this).getDuration();
+    Duration timeSince = Duration.between(getTimeIssued(), Instant.now());
+    Duration remaining = banLength.minus(timeSince);
+    Component timeLeft = TemporalComponent.briefNaturalApproximate(remaining);
+    return translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft);
+  }
+
   /** Formats a string for multi-line kick message */
   public String formatPunishmentScreen(
-      ModerationConfig config, Component issuerName, boolean disguised) {
+      ModerationConfig config, Component issuerName, boolean disguised, boolean space) {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(empty());
@@ -218,13 +232,7 @@ public class Punishment implements Comparable<Punishment> {
     // If punishment expires, display when
     if (this instanceof ExpirablePunishment) {
       lines.add(empty());
-      Duration banLength = ((ExpirablePunishment) this).getDuration();
-      Duration timeSince = Duration.between(getTimeIssued(), Instant.now());
-
-      Duration remaining = banLength.minus(timeSince);
-
-      Component timeLeft = TemporalComponent.briefNaturalApproximate(remaining);
-      lines.add(translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft));
+      lines.add(getExpireDateMessage());
     }
 
     // Staff Sign-off
@@ -243,9 +251,20 @@ public class Punishment implements Comparable<Punishment> {
               .color(NamedTextColor.GRAY));
     }
 
+    if (isBan() && config.isObservingBan() && space) {
+      lines.add(empty());
+      lines.add(
+          text()
+              .append(text("You may rejoin, but will "))
+              .append(text("not", NamedTextColor.RED, TextDecoration.UNDERLINED))
+              .append(text(" be allowed to participate"))
+              .color(NamedTextColor.GRAY)
+              .build());
+    }
+
     // Link to rules for review by player
     if (config.getRulesLink() != null && !config.getRulesLink().isEmpty()) {
-      Component rules = text(config.getRulesLink(), NamedTextColor.AQUA);
+      Component rules = text(config.getRulesLink(), NamedTextColor.BLUE, TextDecoration.UNDERLINED);
 
       lines.add(empty());
       lines.add(

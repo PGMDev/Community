@@ -29,6 +29,9 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   private static final String MATCH_BAN_KEY = KICK_KEY + ".match-ban";
 
+  private static final String OBS_BANS = BAN_KEY + ".observe";
+  private static final String MAX_ONLINE = OBS_BANS + ".max-online";
+
   // General options
   private boolean persist;
   private boolean broadcast;
@@ -58,6 +61,10 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   // 1. Kicks
   private Duration matchBanDuration;
+
+  // 2. Bans
+  private boolean observingBans;
+  private int maxOnlineBans;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -178,6 +185,14 @@ public class ModerationConfig extends FeatureConfigImpl {
     return type + ".public";
   }
 
+  public boolean isObservingBan() {
+    return observingBans;
+  }
+
+  public int getMaxOnlineBans() {
+    return maxOnlineBans;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -210,5 +225,9 @@ public class ModerationConfig extends FeatureConfigImpl {
     if (matchBanDuration != null && matchBanDuration.isNegative()) {
       matchBanDuration = null;
     }
+
+    // Bans - observe ban
+    this.observingBans = config.getBoolean(getEnabledKey(OBS_BANS));
+    this.maxOnlineBans = config.getInt(MAX_ONLINE);
   }
 }

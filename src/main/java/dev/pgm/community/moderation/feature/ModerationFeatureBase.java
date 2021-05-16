@@ -1,7 +1,6 @@
 package dev.pgm.community.moderation.feature;
 
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.cache.Cache;
@@ -41,11 +40,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -53,23 +51,30 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import tc.oc.pgm.api.event.NameDecorationChangeEvent;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.events.PlayerParticipationStartEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.TextTranslations;
 
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
+
+  private static final String BANNED_GROUP = "pgm.group.banned";
 
   private final UsersFeature users;
   private final NetworkFeature network;
   private final Set<Punishment> recents;
   private final Cache<UUID, MutePunishment> muteCache;
   private final Cache<UUID, Set<String>> banEvasionCache;
-
+  private final Cache<UUID, Punishment> observerBanCache;
   private Cache<UUID, Punishment> matchBan;
+
+  private PGMPunishmentIntegration integration;
+  private boolean color = false;
 
   public ModerationFeatureBase(
       ModerationConfig config,
@@ -83,6 +88,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     this.recents = Sets.newHashSet();
     this.muteCache = CacheBuilder.newBuilder().build();
     this.banEvasionCache = CacheBuilder.newBuilder().build();
+    this.observerBanCache = CacheBuilder.newBuilder().build();
+    this.integration = new PGMPunishmentIntegration(this);
 
     if (config.getMatchBanDuration() != null) {
       this.matchBan =
@@ -93,6 +100,14 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     if (config.isEnabled()) {
       enable();
+
+      // Set PGM punishment integration
+      Integration.setPunishmentIntegration(integration);
+
+      Community.get()
+          .getServer()
+          .getScheduler()
+          .scheduleSyncRepeatingTask(Community.get(), this::banHover, 0, 20L);
 
       // Register punishment subscriber
       network.registerSubscriber(new PunishmentSubscriber(this, network.getNetworkId(), logger));
@@ -179,6 +194,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .collect(Collectors.toSet());
   }
 
+  // Networking
   @Override
   public void sendUpdate(NetworkPunishment punishment) {
     network.sendUpdate(new PunishmentUpdate(punishment)); // Send out punishment update
@@ -201,7 +217,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     network.sendUpdate(new RefreshPunishmentUpdate(playerId));
   }
 
-  /** Events * */
+  // EVENTS
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPunishmentEvent(PlayerPunishmentEvent event) {
     final Punishment punishment = event.getPunishment();
@@ -218,13 +234,13 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
       case BAN:
       case TEMP_BAN: // Cache known IPS of a recently banned player, so if they rejoin on an alt can
         // find them
+        addBan(punishment.getId(), punishment);
         users
             .getKnownIPs(punishment.getTargetId())
             .thenAcceptAsync(ips -> banEvasionCache.put(punishment.getTargetId(), ips));
         break;
       case MUTE: // Cache mute for easy lookup for sign/chat events
-        muteCache.put(
-            event.getPunishment().getTargetId(), MutePunishment.class.cast(event.getPunishment()));
+        addMute(punishment.getTargetId(), MutePunishment.class.cast(punishment));
         break;
       case KICK:
         if (matchBan != null) { // Store match ban
@@ -238,39 +254,39 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     broadcastPunishment(punishment, event.isSilent(), event.getSender().getAudience());
   }
 
-  private void broadcastPunishment(
-      Punishment punishment, boolean silent, @Nullable Audience audience) {
-    broadcastPunishment(punishment, silent, null, audience);
-  }
-
-  private void broadcastPunishment(
-      Punishment punishment, boolean silent, @Nullable String server, @Nullable Audience sender) {
-    PunishmentFormats.formatBroadcast(punishment, server, getUsers())
-        .thenAcceptAsync(
-            broadcast -> {
-              if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
-                if (silent || !getModerationConfig().isPunishmentPublic(punishment)) {
-                  BroadcastUtils.sendAdminChatMessage(broadcast, server, null);
-                } else {
-                  BroadcastUtils.sendGlobalMessage(broadcast);
-                }
-              } else { // Send feedback if not broadcast
-                Audience viewer = sender;
-                if (viewer == null) {
-                  viewer = Audience.console();
-                }
-                viewer.sendMessage(broadcast);
-              }
-            });
-  }
-
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPreLoginEvent(AsyncPlayerPreLoginEvent event) {
     this.onPreLogin(event);
   }
 
+  @EventHandler(priority = EventPriority.LOW)
+  public void onPlayerJoinBanned(PlayerJoinEvent event) {
+    getOnlineBan(event.getPlayer().getUniqueId())
+        .ifPresent(
+            ban -> {
+              event.setJoinMessage(null); // Hide join message
+              updateBanPrefix(event.getPlayer(), true); // assign banned group
+              Bukkit.getScheduler()
+                  .runTaskLater(
+                      Community.get(),
+                      () ->
+                          PunishmentFormats.sendNoPlayBanWelcome(
+                              event.getPlayer(), ban, getModerationConfig().getAppealMessage()),
+                      15L);
+            });
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onPlayerQuitBanned(PlayerQuitEvent event) {
+    getOnlineBan(event.getPlayer().getUniqueId())
+        .ifPresent(
+            ban -> {
+              event.setQuitMessage(null); // Hide quit message
+            });
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerJoin(PlayerJoinEvent event) {
+  public void onPlayerJoinEvasionCheck(PlayerJoinEvent event) {
     String host = event.getPlayer().getAddress().getAddress().getHostAddress();
     Optional<UUID> banEvasion = isBanEvasion(host);
 
@@ -279,9 +295,12 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
           .renderUsername(banEvasion, NameStyle.FANCY, null)
           .thenAcceptAsync(
               bannedName -> {
-                BroadcastUtils.sendAdminChatMessage(
-                    formatBanEvasion(event.getPlayer(), banEvasion.get(), bannedName),
-                    Sounds.BAN_EVASION);
+                if (!banEvasion.get().equals(event.getPlayer().getUniqueId())) {
+                  BroadcastUtils.sendAdminChatMessage(
+                      PunishmentFormats.formatBanEvasion(
+                          event.getPlayer(), banEvasion.get(), bannedName),
+                      Sounds.BAN_EVASION);
+                }
               });
     }
   }
@@ -308,11 +327,48 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         event.cancel(reason);
       }
     }
+
+    getOnlineBan(player.getId())
+        .ifPresent(
+            ban -> {
+              Component reason =
+                  text()
+                      .append(text("You have been banned and are unable to play"))
+                      .hoverEvent(
+                          HoverEvent.showText(
+                              text()
+                                  .append(text("Reason: ", NamedTextColor.AQUA))
+                                  .append(text(ban.getReason(), NamedTextColor.GRAY))))
+                      .build();
+              event.cancel(reason);
+            });
   }
 
-  // Cancel chat for muted players
+  // Cancel ALL commands for shadow banned
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onCommand(PlayerCommandPreprocessEvent event) {
+    getOnlineBan(event.getPlayer().getUniqueId())
+        .ifPresent(
+            ban -> {
+              event.setCancelled(true);
+              Audience.get(event.getPlayer())
+                  .sendWarning(PunishmentFormats.formatBanDenyError(ban, "use commands"));
+            });
+  }
+
+  // Cancel chat for muted/banned players
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent event) {
+    // Observer Banned
+    getOnlineBan(event.getPlayer().getUniqueId())
+        .ifPresent(
+            ban -> {
+              event.setCancelled(true);
+              Audience.get(event.getPlayer())
+                  .sendWarning(PunishmentFormats.formatBanDenyError(ban, "chat"));
+            });
+
+    // MUTES
     getCachedMute(event.getPlayer().getUniqueId())
         .ifPresent(
             mute -> {
@@ -334,6 +390,40 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             });
   }
 
+  // BANS
+  protected void addBan(UUID playerId, Punishment punishment) {
+    if (getModerationConfig().isObservingBan()) {
+      observerBanCache.put(playerId, punishment);
+      logger.info("Cached observing ban for " + playerId.toString());
+    }
+  }
+
+  protected void removeCachedBan(UUID playerId) {
+    banEvasionCache.invalidate(playerId);
+    observerBanCache.invalidate(playerId);
+
+    if (Bukkit.getPlayer(playerId) != null) {
+      updateBanPrefix(Bukkit.getPlayer(playerId), false);
+    }
+  }
+
+  public Optional<Punishment> getOnlineBan(UUID playerId) {
+    return Optional.ofNullable(observerBanCache.getIfPresent(playerId));
+  }
+
+  @Override
+  public boolean isServerSpaceAvaiable() {
+    return (getModerationConfig().getMaxOnlineBans() - getOnlineBanCount()) > 0;
+  }
+
+  public int getOnlineBanCount() {
+    return Math.toIntExact(
+        observerBanCache.asMap().keySet().stream()
+            .filter(id -> Bukkit.getPlayer(id) != null)
+            .count());
+  }
+
+  // MUTES
   protected void addMute(UUID playerId, MutePunishment punishment) {
     muteCache.put(playerId, punishment);
   }
@@ -342,11 +432,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     muteCache.invalidate(playerId);
   }
 
-  protected void removeCachedBan(UUID playerId) {
-    banEvasionCache.invalidate(playerId);
-  }
-
-  private Optional<MutePunishment> getCachedMute(UUID playerId) {
+  public Optional<MutePunishment> getCachedMute(UUID playerId) {
     MutePunishment mute = muteCache.getIfPresent(playerId);
     if (mute != null && !mute.isActive()) {
       muteCache.invalidate(playerId);
@@ -355,6 +441,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     return Optional.ofNullable(mute);
   }
 
+  // ETC.
   private Optional<UUID> getSenderId(CommandSender sender) {
     return Optional.ofNullable(sender instanceof Player ? ((Player) sender).getUniqueId() : null);
   }
@@ -367,22 +454,55 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     return Optional.ofNullable(cached.isPresent() ? cached.get().getKey() : null);
   }
 
-  private Component formatBanEvasion(Player player, UUID bannedId, Component banned) {
-    return text()
-        .append(
-            translatable(
-                "moderation.similarIP.loginEvent",
-                NamedTextColor.GRAY,
-                PlayerComponent.player(player, NameStyle.FANCY),
-                banned))
-        .hoverEvent(
-            HoverEvent.showText(text("Click to issue ban evasion punishment", NamedTextColor.RED)))
-        .clickEvent(
-            ClickEvent.runCommand(
-                "/ban "
-                    + player.getName()
-                    + " Ban Evasion - ("
-                    + ChatColor.stripColor(TextTranslations.translateLegacy(banned, null) + ")")))
-        .build();
+  private void updateBanPrefix(Player player, boolean apply) {
+    player.addAttachment(Community.get(), BANNED_GROUP, apply);
+    Bukkit.getPluginManager().callEvent(new NameDecorationChangeEvent(player.getUniqueId()));
+  }
+
+  private void banHover() {
+    color = !color;
+    NamedTextColor alertColor = color ? NamedTextColor.YELLOW : NamedTextColor.DARK_RED;
+    Component warning = text(" \u26a0 ", alertColor);
+    Component banned =
+        text()
+            .append(warning)
+            .append(text("You have been banned", NamedTextColor.RED, TextDecoration.BOLD))
+            .append(warning)
+            .build();
+
+    this.observerBanCache.asMap().keySet().stream()
+        .filter(id -> Bukkit.getPlayer(id) != null)
+        .map(Bukkit::getPlayer)
+        .map(Audience::get)
+        .forEach(
+            viewer -> {
+              viewer.sendActionBar(banned);
+            });
+  }
+
+  private void broadcastPunishment(
+      Punishment punishment, boolean silent, @Nullable Audience audience) {
+    broadcastPunishment(punishment, silent, null, audience);
+  }
+
+  private void broadcastPunishment(
+      Punishment punishment, boolean silent, @Nullable String server, @Nullable Audience sender) {
+    PunishmentFormats.formatBroadcast(punishment, server, getUsers())
+        .thenAcceptAsync(
+            broadcast -> {
+              if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
+                if (silent || !getModerationConfig().isPunishmentPublic(punishment)) {
+                  BroadcastUtils.sendAdminChatMessage(broadcast, server, null);
+                } else {
+                  BroadcastUtils.sendGlobalMessage(broadcast);
+                }
+              } else { // Send feedback if not broadcast
+                Audience viewer = sender;
+                if (viewer == null) {
+                  viewer = Audience.console();
+                }
+                viewer.sendMessage(broadcast);
+              }
+            });
   }
 }

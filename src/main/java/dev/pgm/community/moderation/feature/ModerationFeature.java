@@ -118,4 +118,6 @@ public interface ModerationFeature extends Feature {
   void recieveUpdate(NetworkPunishment punishment);
 
   void recieveRefresh(UUID playerId);
+
+  boolean isServerSpaceAvaiable();
 }
