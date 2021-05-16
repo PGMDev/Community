@@ -1,7 +1,10 @@
 package dev.pgm.community.moderation;
 
+import static tc.oc.pgm.util.text.TextParser.parseDuration;
+
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import dev.pgm.community.moderation.punishments.Punishment;
+import java.time.Duration;
 import org.bukkit.configuration.Configuration;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 
@@ -23,6 +26,11 @@ public class ModerationConfig extends FeatureConfigImpl {
   private static final String SERVICE_KEY = KEY + ".service";
 
   private static final String TIMEOUT_KEY = KEY + ".login-timeout";
+
+  private static final String MATCH_BAN_KEY = KICK_KEY + ".match-ban";
+
+  private static final String OBS_BANS = BAN_KEY + ".observe";
+  private static final String MAX_ONLINE = OBS_BANS + ".max-online";
 
   // General options
   private boolean persist;
@@ -48,6 +56,15 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   // Login
   private int loginTimeout;
+
+  // Punishment Options
+
+  // 1. Kicks
+  private Duration matchBanDuration;
+
+  // 2. Bans
+  private boolean observingBans;
+  private int maxOnlineBans;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -160,8 +177,20 @@ public class ModerationConfig extends FeatureConfigImpl {
     return Math.max(1, loginTimeout);
   }
 
+  public Duration getMatchBanDuration() {
+    return matchBanDuration;
+  }
+
   private String getBroadcastKey(String type) {
     return type + ".public";
+  }
+
+  public boolean isObservingBan() {
+    return observingBans;
+  }
+
+  public int getMaxOnlineBans() {
+    return maxOnlineBans;
   }
 
   @Override
@@ -190,5 +219,15 @@ public class ModerationConfig extends FeatureConfigImpl {
 
     // Logins
     this.loginTimeout = config.getInt(TIMEOUT_KEY);
+
+    // Kicks - match ban
+    this.matchBanDuration = parseDuration(config.getString(MATCH_BAN_KEY, "-1"));
+    if (matchBanDuration != null && matchBanDuration.isNegative()) {
+      matchBanDuration = null;
+    }
+
+    // Bans - observe ban
+    this.observingBans = config.getBoolean(getEnabledKey(OBS_BANS));
+    this.maxOnlineBans = config.getInt(MAX_ONLINE);
   }
 }

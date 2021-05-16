@@ -22,6 +22,7 @@ import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -37,8 +38,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
@@ -49,6 +50,7 @@ public class PunishmentCommand extends CommunityCommand {
 
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
+  @Dependency private NickFeature nicks;
 
   @CommandAlias("punishmenthistory|ph")
   @Description("View a list of recent punishments")
@@ -90,10 +92,10 @@ public class PunishmentCommand extends CommunityCommand {
                       reason,
                       length,
                       true,
-                      isVanished(audience));
+                      isDisguised(audience));
                 } else {
                   // No target supplied, show last punishment
-                  PunishmentFormats.formatBroadcast(lastPunishment, usernames)
+                  PunishmentFormats.formatBroadcast(lastPunishment, null, usernames)
                       .thenAcceptAsync(
                           lpm -> {
                             Component lastPunishMsg =
@@ -184,7 +186,7 @@ public class PunishmentCommand extends CommunityCommand {
             PlayerComponent.player(
                 targetID, usernames.getStoredUsername(targetID).join(), NameStyle.FANCY);
       } else {
-        targetName = PlayerComponent.player(null, target, NameStyle.FANCY, null);
+        targetName = PlayerComponent.player(targetID, target, NameStyle.FANCY);
       }
     }
 
@@ -221,8 +223,13 @@ public class PunishmentCommand extends CommunityCommand {
 
         builder.append(
             data.formatBroadcast(
-                usernames.renderUsername(data.getIssuerId()).join(),
-                usernames.renderUsername(Optional.of(data.getTargetId())).join()));
+                usernames
+                    .renderUsername(data.getIssuerId(), NameStyle.FANCY, audience.getPlayer())
+                    .join(),
+                usernames
+                    .renderUsername(
+                        Optional.of(data.getTargetId()), NameStyle.FANCY, audience.getPlayer())
+                    .join()));
 
         TextComponent.Builder hover = text();
         hover
@@ -231,7 +238,7 @@ public class PunishmentCommand extends CommunityCommand {
                 TemporalComponent.relativePastApproximate(data.getTimeIssued())
                     .color(NamedTextColor.YELLOW));
 
-        Duration length = ExpirablePunishment.getDuration(data);
+        Duration length = data.getDuration();
         // When a punishments can expire, show expire time on hover
         if (length != null) {
           Instant endDate = data.getTimeIssued().plus(length);
@@ -256,7 +263,11 @@ public class PunishmentCommand extends CommunityCommand {
           hover
               .append(newline())
               .append(text("Infraction lifted by ", NamedTextColor.GRAY)) // TODO: translate
-              .append(usernames.renderUsername(data.getLastUpdatedBy()).join())
+              .append(
+                  usernames
+                      .renderUsername(
+                          data.getLastUpdatedBy(), NameStyle.FANCY, audience.getPlayer())
+                      .join())
               .append(space())
               .append(
                   TemporalComponent.relativePastApproximate(data.getLastUpdated())

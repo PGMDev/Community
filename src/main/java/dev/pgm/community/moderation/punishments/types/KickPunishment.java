@@ -1,13 +1,12 @@
 package dev.pgm.community.moderation.punishments.types;
 
-import dev.pgm.community.moderation.ModerationConfig;
-import dev.pgm.community.moderation.punishments.PunishmentBase;
+import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-public class KickPunishment extends PunishmentBase {
+public class KickPunishment extends Punishment {
 
   public KickPunishment(
       UUID id,
@@ -18,28 +17,23 @@ public class KickPunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      String service,
-      ModerationConfig config) {
+      String service) {
     super(
+        PunishmentType.KICK,
         id,
         targetId,
         issuerId,
         reason,
+        null,
         timeIssued,
         active,
         lastUpdated,
         lastUpdatedBy,
-        service,
-        config);
+        service);
   }
 
   @Override
   public boolean punish(boolean silent) {
     return kick(silent);
-  }
-
-  @Override
-  public PunishmentType getType() {
-    return PunishmentType.KICK;
   }
 }

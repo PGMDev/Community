@@ -1,7 +1,6 @@
 package dev.pgm.community.moderation.punishments.types;
 
-import dev.pgm.community.moderation.ModerationConfig;
-import dev.pgm.community.moderation.punishments.PunishmentBase;
+import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Instant;
 import java.util.Optional;
@@ -9,7 +8,7 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 
-public class WarnPunishment extends PunishmentBase {
+public class WarnPunishment extends Punishment {
 
   public WarnPunishment(
       UUID id,
@@ -20,19 +19,19 @@ public class WarnPunishment extends PunishmentBase {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      String service,
-      ModerationConfig config) {
+      String service) {
     super(
+        PunishmentType.WARN,
         id,
         targetId,
         issuerId,
         reason,
+        null,
         timeIssued,
         active,
         lastUpdated,
         lastUpdatedBy,
-        service,
-        config);
+        service);
   }
 
   @Override
@@ -40,10 +39,5 @@ public class WarnPunishment extends PunishmentBase {
     Optional<Player> target = getTargetPlayer();
     target.ifPresent(player -> sendWarning(Audience.get(player), getReason()));
     return target.isPresent();
-  }
-
-  @Override
-  public PunishmentType getType() {
-    return PunishmentType.WARN;
   }
 }

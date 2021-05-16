@@ -1,6 +1,5 @@
 package dev.pgm.community.moderation.punishments.types;
 
-import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,9 +18,9 @@ public class TempBanPunishment extends ExpirablePunishment {
       boolean active,
       Instant lastUpdated,
       Optional<UUID> lastUpdatedBy,
-      String service,
-      ModerationConfig config) {
+      String service) {
     super(
+        PunishmentType.TEMP_BAN,
         id,
         targetId,
         issuerId,
@@ -31,17 +30,11 @@ public class TempBanPunishment extends ExpirablePunishment {
         active,
         lastUpdated,
         lastUpdatedBy,
-        service,
-        config);
+        service);
   }
 
   @Override
   public boolean punish(boolean silent) {
     return kick(silent);
-  }
-
-  @Override
-  public PunishmentType getType() {
-    return PunishmentType.TEMP_BAN;
   }
 }

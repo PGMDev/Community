@@ -42,7 +42,7 @@ public class BanCommand extends CommunityCommand {
                     reason,
                     length,
                     true,
-                    isVanished(audience));
+                    isDisguised(audience));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }
@@ -64,7 +64,7 @@ public class BanCommand extends CommunityCommand {
                     reason,
                     null,
                     true,
-                    isVanished(audience));
+                    isDisguised(audience));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }

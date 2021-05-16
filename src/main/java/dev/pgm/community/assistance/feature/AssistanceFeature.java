@@ -1,5 +1,6 @@
 package dev.pgm.community.assistance.feature;
 
+import dev.pgm.community.assistance.AssistanceRequest;
 import dev.pgm.community.assistance.Report;
 import dev.pgm.community.feature.Feature;
 import java.util.List;
@@ -27,4 +28,10 @@ public interface AssistanceFeature extends Feature {
   int getCooldownSeconds(UUID playerId);
 
   Component getCooldownMessage(UUID playerId);
+
+  void invalidate(UUID playerId);
+
+  void sendUpdate(AssistanceRequest request);
+
+  void recieveUpdate(AssistanceRequest request);
 }

@@ -12,6 +12,7 @@ import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -19,6 +20,7 @@ import org.bukkit.entity.Player;
 public class TeleportCommand extends CommunityCommand {
 
   @Dependency private TeleportFeature teleport;
+  @Dependency private NickFeature nick;
 
   // NEW TARGET SELECTORS
 
@@ -28,15 +30,15 @@ public class TeleportCommand extends CommunityCommand {
 
   @CommandAlias("tp|teleport")
   @Description("Teleport to another player")
-  @Syntax("<player> <other player> | <*, ?=1, team=Name, name1,name2...> <target>")
+  @Syntax("<player> <other player> | " + SELECTION + " <target>")
   @CommandCompletion("@visible @visible")
   @CommandPermission(CommunityPermissions.TELEPORT)
   public void teleportCommand(CommandAudience viewer, String target1, @Optional String target2) {
 
     if (viewer.isPlayer()) {
-      Player sender = (Player) viewer.getSender();
+      Player sender = viewer.getPlayer();
       if (target2 == null) {
-        Player player = getSinglePlayer(viewer, target1);
+        Player player = getSinglePlayer(viewer, target1, true);
         if (player != null) {
           teleport.teleport(viewer, sender, player);
         }
@@ -52,7 +54,7 @@ public class TeleportCommand extends CommunityCommand {
     if (target2 != null) {
       PlayerSelection targets = getPlayers(viewer, target1);
 
-      Player player2 = getSinglePlayer(viewer, target2);
+      Player player2 = getSinglePlayer(viewer, target2, true);
       if (!targets.getPlayers().isEmpty() && player2 != null) {
         teleport.teleport(viewer, targets.getPlayers(), player2, targets.getText());
       } else {

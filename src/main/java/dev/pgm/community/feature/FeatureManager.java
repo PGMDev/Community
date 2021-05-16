@@ -4,11 +4,15 @@ import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
 import dev.pgm.community.broadcast.BroadcastFeature;
-import dev.pgm.community.chat.ChatManagementFeature;
+import dev.pgm.community.chat.management.ChatManagementFeature;
+import dev.pgm.community.chat.network.NetworkChatFeature;
+import dev.pgm.community.commands.ChestCommand;
 import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
+import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
+import dev.pgm.community.commands.SudoCommand;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.freeze.FreezeFeature;
 import dev.pgm.community.friends.feature.FriendshipFeature;
@@ -21,10 +25,14 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.types.RedisNetworkFeature;
+import dev.pgm.community.nick.feature.NickFeature;
+import dev.pgm.community.nick.feature.types.SQLNickFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
+import dev.pgm.community.vanish.VanishFeature;
+import fr.minuskube.inv.InventoryManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,28 +47,33 @@ public class FeatureManager {
   private final UsersFeature users;
   private final FriendshipFeature friends;
   private final NetworkFeature network;
+  private final NickFeature nick;
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
-  private final ChatManagementFeature chat;
+  private final ChatManagementFeature chatManagement;
+  private final NetworkChatFeature chatNetwork;
   private final MotdFeature motd;
   private final FreezeFeature freeze;
   private final MutationFeature mutation;
   private final BroadcastFeature broadcast;
+  private final VanishFeature vanish;
 
   public FeatureManager(
       Configuration config,
       Logger logger,
       DatabaseConnection database,
-      BukkitCommandManager commands) {
+      BukkitCommandManager commands,
+      InventoryManager inventory) {
     // Networking
     this.network = new RedisNetworkFeature(config, logger);
 
     // DB Features
     this.users = new SQLUsersFeature(config, logger, database);
-    this.reports = new SQLAssistanceFeature(config, logger, database, users);
+    this.reports = new SQLAssistanceFeature(config, logger, database, users, network);
     this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
+    this.nick = new SQLNickFeature(config, logger, database, users);
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?
     // Ex. FileReportFeature, MongoReportFeature, RedisReportFeature...
@@ -69,11 +82,13 @@ public class FeatureManager {
     // Non-DB Features
     this.teleports = new TeleportFeatureBase(config, logger);
     this.infoCommands = new InfoCommandsFeature(config, logger);
-    this.chat = new ChatManagementFeature(config, logger);
+    this.chatManagement = new ChatManagementFeature(config, logger);
     this.motd = new MotdFeature(config, logger);
     this.freeze = new FreezeFeature(config, logger);
-    this.mutation = new MutationFeature(config, logger);
+    this.mutation = new MutationFeature(config, logger, inventory);
     this.broadcast = new BroadcastFeature(config, logger);
+    this.vanish = new VanishFeature(config, logger, nick);
+    this.chatNetwork = new NetworkChatFeature(config, logger, network);
 
     this.registerCommands(commands);
   }
@@ -99,7 +114,7 @@ public class FeatureManager {
   }
 
   public ChatManagementFeature getChatManagement() {
-    return chat;
+    return chatManagement;
   }
 
   public FriendshipFeature getFriendships() {
@@ -118,8 +133,20 @@ public class FeatureManager {
     return mutation;
   }
 
+  public NickFeature getNick() {
+    return nick;
+  }
+
   public BroadcastFeature getBroadcast() {
     return broadcast;
+  }
+
+  public VanishFeature getVanish() {
+    return vanish;
+  }
+
+  public NetworkChatFeature getNetworkChat() {
+    return chatNetwork;
   }
 
   // Register Feature commands and any dependency
@@ -134,6 +161,8 @@ public class FeatureManager {
     commands.registerDependency(FreezeFeature.class, getFreeze());
     commands.registerDependency(MutationFeature.class, getMutations());
     commands.registerDependency(BroadcastFeature.class, getBroadcast());
+    commands.registerDependency(NickFeature.class, getNick());
+    commands.registerDependency(VanishFeature.class, getVanish());
 
     // Custom command completions
     commands
@@ -174,6 +203,8 @@ public class FeatureManager {
     registerFeatureCommands(getFreeze(), commands);
     registerFeatureCommands(getMutations(), commands);
     registerFeatureCommands(getBroadcast(), commands);
+    registerFeatureCommands(getNick(), commands);
+    registerFeatureCommands(getVanish(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -182,6 +213,9 @@ public class FeatureManager {
     commands.registerCommand(new FlightCommand());
     commands.registerCommand(new StaffCommand());
     commands.registerCommand(new GamemodeCommand());
+    commands.registerCommand(new ServerInfoCommand());
+    commands.registerCommand(new ChestCommand());
+    commands.registerCommand(new SudoCommand());
   }
 
   private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {
@@ -200,6 +234,9 @@ public class FeatureManager {
     getFreeze().getConfig().reload(config);
     getMutations().getConfig().reload(config);
     getBroadcast().getConfig().reload(config);
+    getNick().getConfig().reload(config);
+    getVanish().getConfig().reload(config);
+    getNetworkChat().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

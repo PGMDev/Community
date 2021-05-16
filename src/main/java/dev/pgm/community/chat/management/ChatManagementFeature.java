@@ -1,4 +1,4 @@
-package dev.pgm.community.chat;
+package dev.pgm.community.chat.management;
 
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;

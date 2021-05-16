@@ -10,6 +10,7 @@ import co.aikar.commands.annotation.Description;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,8 +18,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import tc.oc.pgm.api.Permissions;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("staff|mods|admins")
@@ -26,16 +27,16 @@ import tc.oc.pgm.util.text.TextFormatter;
 public class StaffCommand extends CommunityCommand {
 
   @Dependency private Community plugin;
+  @Dependency private NickFeature nicks;
 
   @Default
   public void staff(CommandAudience viewer, CommandSender sender) {
-    // List of online staff based off of permission
     List<Component> onlineStaff =
         plugin.getServer().getOnlinePlayers().stream()
             .filter(
                 player ->
                     (player.hasPermission(Permissions.STAFF)
-                        && (!isVanished(player)
+                        && (!isDisguised(player)
                             || sender.hasPermission(CommunityPermissions.STAFF))))
             .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
@@ -53,7 +54,6 @@ public class StaffCommand extends CommunityCommand {
     Component staff =
         translatable("moderation.staff.name", NamedTextColor.GRAY, staffCount, content);
 
-    // Send message
     viewer.sendMessage(staff);
   }
 }

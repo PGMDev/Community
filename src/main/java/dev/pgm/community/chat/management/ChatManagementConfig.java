@@ -1,4 +1,4 @@
-package dev.pgm.community.chat;
+package dev.pgm.community.chat.management;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

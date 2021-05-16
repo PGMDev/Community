@@ -44,10 +44,8 @@ public class RedisNetworkFeature extends NetworkFeatureBase {
 
     testConnection();
 
-    Community.get()
-        .getServer()
-        .getScheduler()
-        .runTaskAsynchronously(Community.get(), this::subscribe);
+    // Delay subscriber so all features can register
+    Community.get().getServer().getScheduler().runTaskLater(Community.get(), this::subscribe, 20l);
   }
 
   @Override
@@ -70,18 +68,35 @@ public class RedisNetworkFeature extends NetworkFeatureBase {
   }
 
   private void subscribe() {
-    try (Jedis jedi = pool.getResource()) {
-      logger.info("- REDIS: Subbed to " + subscribers.size());
-      subscribers.forEach(sub -> jedi.subscribe(sub, sub.getChannel()));
-    }
+    subscribers.forEach(this::asyncSubscribe);
+  }
+
+  private void asyncSubscribe(NetworkSubscriber sub) {
+    Community.get()
+        .getServer()
+        .getScheduler()
+        .runTaskAsynchronously(
+            Community.get(),
+            () -> {
+              try (Jedis jedi = pool.getResource()) {
+                jedi.subscribe(sub, sub.getChannel());
+              }
+            });
   }
 
   @Override
   public void sendUpdate(NetworkUpdate update) {
-    try (Jedis jedi = pool.getResource()) {
-      jedi.publish(
-          update.getChannel(),
-          String.format("%s;%s", getNetworkConfig().getNetworkId(), update.getData()));
-    }
+    Community.get()
+        .getServer()
+        .getScheduler()
+        .runTaskAsynchronously(
+            Community.get(),
+            () -> {
+              try (Jedis jedi = pool.getResource()) {
+                jedi.publish(
+                    update.getChannel(),
+                    String.format("%s;%s", getNetworkConfig().getNetworkId(), update.getData()));
+              }
+            });
   }
 }

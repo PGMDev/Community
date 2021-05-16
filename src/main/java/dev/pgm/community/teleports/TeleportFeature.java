@@ -10,8 +10,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 /** TeleportFeature - Teleport players to other locations * */
 public interface TeleportFeature extends Feature {

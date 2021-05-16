@@ -1,5 +1,6 @@
 package dev.pgm.community;
 
+import dev.pgm.community.utils.NetworkUtils;
 import java.io.File;
 import org.bukkit.configuration.Configuration;
 
@@ -54,6 +55,6 @@ public class CommunityConfig {
   }
 
   public String getServerId() {
-    return serverId;
+    return NetworkUtils.getServerVar(serverId);
   }
 }

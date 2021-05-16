@@ -6,8 +6,10 @@ import dev.pgm.community.assistance.ReportConfig;
 import dev.pgm.community.assistance.feature.AssistanceFeatureBase;
 import dev.pgm.community.assistance.services.SQLAssistanceService;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
@@ -16,13 +18,15 @@ import org.bukkit.entity.Player;
 public class SQLAssistanceFeature extends AssistanceFeatureBase {
 
   private final SQLAssistanceService service;
-  private final UsersFeature usernames;
 
   public SQLAssistanceFeature(
-      Configuration config, Logger logger, DatabaseConnection database, UsersFeature usernames) {
-    super(new ReportConfig(config), logger, "Assistance (SQL)");
+      Configuration config,
+      Logger logger,
+      DatabaseConnection database,
+      UsersFeature usernames,
+      NetworkFeature network) {
+    super(new ReportConfig(config), logger, "Assistance (SQL)", network, usernames);
     this.service = new SQLAssistanceService(database);
-    this.usernames = usernames;
   }
 
   @Override
@@ -44,7 +48,7 @@ public class SQLAssistanceFeature extends AssistanceFeatureBase {
   public CompletableFuture<List<Report>> query(String target) {
     if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
       // CONVERT TO UUID if username
-      return usernames
+      return users
           .getStoredId(target)
           .thenApplyAsync(
               uuid ->
@@ -59,5 +63,10 @@ public class SQLAssistanceFeature extends AssistanceFeatureBase {
   @Override
   public CompletableFuture<Integer> count() {
     return service.count();
+  }
+
+  @Override
+  public void invalidate(UUID playerId) {
+    service.invalidate(playerId);
   }
 }

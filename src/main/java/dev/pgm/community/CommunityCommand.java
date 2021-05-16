@@ -10,6 +10,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -26,15 +27,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public abstract class CommunityCommand extends BaseCommand {
 
   @Dependency private Random randoms;
+
+  public static final String SELECTION = "<*, ?=1, team=Name, name1,name2...>";
 
   // Used to quickly format messages while in dev, move all final messages to TextComponents
   protected String format(String format, Object... args) {
@@ -69,13 +72,22 @@ public abstract class CommunityCommand extends BaseCommand {
     }
 
     public Component getText() {
-      return selectionText.hoverEvent(
-          HoverEvent.showText(
-              TextFormatter.list(
-                  getPlayers().stream()
-                      .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
-                      .collect(Collectors.toList()),
-                  NamedTextColor.GRAY)));
+      List<Component> names =
+          players.stream()
+              .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
+              .limit(Math.min(players.size(), 10))
+              .collect(Collectors.toList());
+
+      Component hover = TextFormatter.list(names, NamedTextColor.GRAY);
+      if (getPlayers().size() > names.size()) {
+        int leftOver = getPlayers().size() - names.size();
+        hover
+            .append(text(" plus "))
+            .append(text(leftOver, NamedTextColor.YELLOW))
+            .append(text(" other player" + (leftOver != 1 ? "s" : "")))
+            .color(NamedTextColor.GRAY);
+      }
+      return selectionText.hoverEvent(HoverEvent.showText(hover));
     }
 
     public void sendNoPlayerComponent(CommandAudience audience) {
@@ -183,10 +195,23 @@ public abstract class CommunityCommand extends BaseCommand {
     return value;
   }
 
-  protected Player getSinglePlayer(CommandAudience viewer, String target) {
-    Player player = Bukkit.getPlayer(target);
+  private boolean isNicked(CommandAudience viewer, Player player) {
+    if (viewer.hasPermission(CommunityPermissions.STAFF)) return false;
+    return Community.get().getFeatures().getNick().isNicked(player.getUniqueId());
+  }
 
-    if (player == null || (player != null && !canView(viewer, player))) {
+  @Nullable
+  protected Player getSinglePlayer(CommandAudience viewer, String target, boolean allowNicks) {
+    Player player = Bukkit.getPlayer(target);
+    Player nicked = Community.get().getFeatures().getNick().getPlayerFromNick(target);
+
+    if (player == null && nicked != null && allowNicks) {
+      player = nicked;
+    }
+
+    if (player == null
+        || (player != null && !canViewVanished(viewer, player))
+        || (player != null && nicked == null && isNicked(viewer, player))) {
       viewer.sendWarning(formatNotFoundComponent(target));
       return null;
     }
@@ -222,15 +247,19 @@ public abstract class CommunityCommand extends BaseCommand {
     return id;
   }
 
-  protected boolean isVanished(CommandAudience audience) {
-    return audience.isPlayer() ? isVanished(audience.getPlayer()) : true;
+  protected boolean isDisguised(CommandAudience audience) {
+    return !audience.isPlayer() || isDisguised(audience.getPlayer());
   }
 
-  protected boolean isVanished(@Nullable Player player) {
-    return player != null ? player.hasMetadata("isVanished") : false;
+  protected boolean isDisguised(Player player) {
+    return VisibilityUtils.isDisguised(player);
   }
 
-  public boolean canView(CommandAudience viewer, Player player) {
+  private boolean isVanished(@Nullable Player player) {
+    return player != null && player.hasMetadata("isVanished");
+  }
+
+  public boolean canViewVanished(CommandAudience viewer, Player player) {
     boolean vanished = isVanished(player);
     if (vanished
         && viewer.isPlayer()

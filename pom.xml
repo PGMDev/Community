@@ -45,13 +45,13 @@
 		<dependency>
 			<groupId>tc.oc.pgm</groupId>
 			<artifactId>util</artifactId>
-			<version>0.11-SNAPSHOT</version>
+			<version>0.12-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>tc.oc.pgm</groupId>
 			<artifactId>core</artifactId>
-			<version>0.11-SNAPSHOT</version>
+			<version>0.12-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -70,11 +70,18 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		
+		<!-- Smart Invs - https://github.com/MinusKube/SmartInvs -->
+		<dependency>
+			<groupId>fr.minuskube.inv</groupId>
+			<artifactId>smart-invs</artifactId>
+			<version>1.2.7</version>
+		</dependency>		
 	</dependencies>
 
 
 	<build>
-		<finalName>Community-${project.version}</finalName>
+        <finalName>Community</finalName>
 		<resources>
 			<!-- Include the required plugin.yml and config.yml for Bukkit -->
 			<resource>
@@ -108,6 +115,7 @@
 							<include>tc.oc.pgm:util</include>
 							<include>redis.clients:jedis</include>
 							<include>org.apache.commons:commons-pool2</include>
+							<include>fr.minuskube.inv:smart-invs</include>
 						</includes>
 					</artifactSet>
 					<filters>
@@ -122,10 +130,6 @@
 						<relocation>
 							<pattern>co.aikar.commands</pattern>
 							<shadedPattern>dev.pgm.community.lib.acf</shadedPattern>
-						</relocation>
-						<relocation>
-							<pattern>net.kyori</pattern>
-							<shadedPattern>tc.oc.pgm.lib.net.kyori</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>
@@ -173,7 +177,7 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			
 			<!-- Allows for building of java docs, although not used yet -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

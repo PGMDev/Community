@@ -4,15 +4,17 @@ import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.InvalidCommandArgument;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.FeatureManager;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
+import fr.minuskube.inv.InventoryManager;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Random;
 import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -33,12 +35,17 @@ public class Community extends JavaPlugin {
   // Feature Manager
   private FeatureManager features;
 
+  private InventoryManager inventory;
+
   private Random random;
+
+  private Instant startTime;
 
   @Override
   public void onEnable() {
     plugin = this;
     random = new Random();
+    startTime = Instant.now();
 
     // If PGM is not enabled on running server, we need this to ensure things work :)
     if (!PGMUtils.isPGMEnabled()) {
@@ -76,6 +83,8 @@ public class Community extends JavaPlugin {
   private void setupCommands() {
     this.commands = new BukkitCommandManager(this);
     commands.registerDependency(Random.class, new Random());
+    commands.registerDependency(Instant.class, "startTime", startTime);
+    commands.registerDependency(InventoryManager.class, inventory);
 
     // Contexts
     commands
@@ -117,9 +126,24 @@ public class Community extends JavaPlugin {
                       p ->
                           !p.hasMetadata("isVanished")
                               || c.getPlayer() != null && c.getPlayer().hasPermission("pgm.vanish"))
-                  .map(Player::getName)
+                  .map(
+                      player -> {
+                        // Replace nicked user names
+                        if (features.getNick() != null) {
+                          NickFeature nicks = features.getNick();
+                          if (nicks.isNicked(player.getUniqueId())) {
+                            return nicks.getOnlineNick(player.getUniqueId());
+                          }
+                        }
+                        return player.getName();
+                      })
                   .collect(Collectors.toSet());
             });
+  }
+
+  private void setupInventory() {
+    this.inventory = new InventoryManager(this);
+    this.inventory.init();
   }
 
   public void registerListener(Listener listener) {
@@ -136,13 +160,18 @@ public class Community extends JavaPlugin {
   }
 
   private void setupFeatures() {
+    this.setupInventory();
     this.setupCommands();
-    this.features = new FeatureManager(getConfig(), getLogger(), database, commands);
+    this.features = new FeatureManager(getConfig(), getLogger(), database, commands, inventory);
   }
 
   public String getServerName() {
     return BukkitUtils.colorize(
         config.getServerDisplayName() == null ? "&b&lCommunity" : config.getServerDisplayName());
+  }
+
+  public String getServerId() {
+    return config.getServerId();
   }
 
   public FeatureManager getFeatures() {

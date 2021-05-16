@@ -7,6 +7,7 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +128,7 @@ public class FreezeFeature extends FeatureBase {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+  @EventHandler(priority = EventPriority.LOW)
   public void onObserverToolFreeze(final ObserverInteractEvent event) {
     if (!PGMUtils.isPGMEnabled() || !getFreezeConfig().isIntegrationEnabled()) return;
     if (event.getPlayer().isDead()) return;
@@ -146,7 +147,7 @@ public class FreezeFeature extends FeatureBase {
             new CommandAudience(event.getPlayer().getBukkit()),
             event.getClickedPlayer().getBukkit(),
             !freeze.isFrozen(event.getClickedEntity()),
-            event.getPlayer().isVanished());
+            VisibilityUtils.isDisguised(event.getPlayer().getBukkit()));
       }
     }
   }

@@ -32,8 +32,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
@@ -62,6 +62,7 @@ public class UserInfoCommands extends CommunityCommand {
                   online && Bukkit.getPlayer(profile.getId()).hasMetadata("isVanished");
               boolean staff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
               boolean visible = online && (!vanished || staff);
+              NamedTextColor color = (online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
 
               Component lastSeenMsg =
                   text()
@@ -75,12 +76,12 @@ public class UserInfoCommands extends CommunityCommand {
                                   : " was last seen ")) // TODO: translate
                       .append(
                           (visible
-                                  ? TemporalComponent.duration(
-                                          Duration.between(profile.getLastLogin(), Instant.now()))
-                                      .build()
-                                  : TemporalComponent.relativePastApproximate(
-                                      profile.getLastLogin()))
-                              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+                              ? TemporalComponent.duration(
+                                      Duration.between(profile.getLastLogin(), Instant.now()),
+                                      color)
+                                  .build()
+                              : TemporalComponent.relativePastApproximate(profile.getLastLogin())
+                                  .color(color)))
                       .color(NamedTextColor.GRAY)
                       .build();
               audience.sendMessage(lastSeenMsg);
@@ -146,7 +147,8 @@ public class UserInfoCommands extends CommunityCommand {
                                 .collect(Collectors.toSet());
 
                         Component altNameList =
-                            targetPlayer
+                            text()
+                                .append(targetPlayer)
                                 .append(text(" has "))
                                 .append(
                                     text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD))
@@ -154,7 +156,8 @@ public class UserInfoCommands extends CommunityCommand {
                                 .append(text(alts.size() != 1 ? "s" : ""))
                                 .append(text(": "))
                                 .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
-                                .color(NamedTextColor.GRAY);
+                                .color(NamedTextColor.GRAY)
+                                .build();
                         audience.sendMessage(altNameList);
                       });
             });

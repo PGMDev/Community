@@ -26,6 +26,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
+import tc.oc.pgm.util.named.NameStyle;
 
 public class SQLModerationFeature extends ModerationFeatureBase {
 
@@ -106,7 +107,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
         uuid -> {
           if (uuid.isPresent()) {
             if (service.pardon(uuid.get(), issuer).join()) {
-              sendUpdate(uuid.get());
+              sendRefresh(uuid.get());
               removeCachedBan(uuid.get());
               return true;
             }
@@ -138,13 +139,22 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       Optional<Punishment> ban = hasActiveBan(punishments);
       if (ban.isPresent()) {
         Punishment punishment = ban.get();
-
         event.setKickMessage(
             punishment.formatPunishmentScreen(
                 getModerationConfig(),
-                getUsers().renderUsername(punishment.getIssuerId()).join(),
-                false));
-        event.setLoginResult(Result.KICK_BANNED);
+                getUsers().renderUsername(punishment.getIssuerId(), NameStyle.CONCISE, null).join(),
+                false,
+                isServerSpaceAvaiable()));
+
+        if (getModerationConfig().isObservingBan()
+            && punishment.isBan()
+            && isServerSpaceAvaiable()) {
+          // Observer ban
+          addBan(event.getUniqueId(), punishment);
+        } else {
+          // Normal ban
+          event.setLoginResult(Result.KICK_BANNED);
+        }
       }
 
       Optional<MutePunishment> mute = hasActiveMute(punishments);
@@ -188,8 +198,12 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                               player.kickPlayer(
                                   punishment.formatPunishmentScreen(
                                       getModerationConfig(),
-                                      getUsers().renderUsername(punishment.getIssuerId()).join(),
-                                      false));
+                                      getUsers()
+                                          .renderUsername(
+                                              punishment.getIssuerId(), NameStyle.CONCISE, player)
+                                          .join(),
+                                      false,
+                                      isServerSpaceAvaiable()));
                             }
 
                             Optional<MutePunishment> mute = hasActiveMute(punishments);
@@ -242,7 +256,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
             success -> {
               if (success) {
                 removeMute(id);
-                sendUpdate(id); // Successful unmute will update other servers
+                sendRefresh(id); // Successful unmute will update other servers
               }
               return success;
             });
@@ -259,7 +273,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
-  public void invalidate(UUID playerId) {
+  public void recieveRefresh(UUID playerId) {
     service.invalidate(playerId);
     removeCachedBan(playerId);
     removeMute(playerId);

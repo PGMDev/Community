@@ -25,7 +25,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.UsernameResolver;
 import tc.oc.pgm.util.text.TextFormatter;
 
-// TODO: Maybe move to a different place
 @CommandAlias("community")
 @Description("Manage the community plugin")
 @CommandPermission(CommunityPermissions.RELOAD)

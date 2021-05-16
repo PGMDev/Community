@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation.feature;
 
 import dev.pgm.community.feature.Feature;
+import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.utils.CommandAudience;
@@ -109,7 +110,14 @@ public interface ModerationFeature extends Feature {
   // AsyncPlayerPreLoginEvent handler
   void onPreLogin(AsyncPlayerPreLoginEvent event);
 
-  void invalidate(UUID playerId);
+  // NETWORK STUFF
+  void sendUpdate(NetworkPunishment punishment);
 
-  void sendUpdate(UUID playerId);
+  void sendRefresh(UUID playerId);
+
+  void recieveUpdate(NetworkPunishment punishment);
+
+  void recieveRefresh(UUID playerId);
+
+  boolean isServerSpaceAvaiable();
 }

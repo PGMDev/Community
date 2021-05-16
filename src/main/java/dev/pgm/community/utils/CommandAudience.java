@@ -7,9 +7,9 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 public class CommandAudience {
 
@@ -36,7 +36,11 @@ public class CommandAudience {
   }
 
   public Component getStyledName() {
-    return PlayerComponent.player(sender, NameStyle.FANCY);
+    return getStyledName(NameStyle.FANCY);
+  }
+
+  public Component getStyledName(NameStyle style) {
+    return PlayerComponent.player(sender, style);
   }
 
   public @Nullable Player getPlayer() {

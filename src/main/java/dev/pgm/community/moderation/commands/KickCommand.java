@@ -35,7 +35,7 @@ public class KickCommand extends CommunityCommand {
                     reason,
                     null,
                     false,
-                    isVanished(audience));
+                    isDisguised(audience));
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }

@@ -65,49 +65,54 @@ public class MutationCommands extends CommunityCommand {
   public void list(CommandAudience audience, @Default("1") int page) {
     checkForMatch();
 
-    Set<Mutation> mts = mutations.getMutations();
+    if (audience.isPlayer() && audience.getPlayer().hasPermission(CommunityPermissions.MUTATION)) {
+      mutations.getMenu().open(audience.getPlayer());
+    } else {
 
-    Component headerResultCount = text(Integer.toString(mts.size()), NamedTextColor.DARK_GREEN);
+      Set<Mutation> mts = mutations.getMutations();
 
-    int perPage = 7;
-    int pages = (mts.size() + perPage - 1) / perPage;
-    page = Math.max(1, Math.min(page, pages));
+      Component headerResultCount = text(Integer.toString(mts.size()), NamedTextColor.DARK_GREEN);
 
-    NamedTextColor featureColor = NamedTextColor.DARK_GREEN;
+      int perPage = 7;
+      int pages = (mts.size() + perPage - 1) / perPage;
+      page = Math.max(1, Math.min(page, pages));
 
-    Component pageNum =
-        translatable(
-            "command.simplePageHeader",
-            NamedTextColor.GRAY,
-            text(Integer.toString(page), featureColor),
-            text(Integer.toString(pages), featureColor));
+      NamedTextColor featureColor = NamedTextColor.DARK_GREEN;
 
-    Component header =
-        text()
-            .append(text("Active Mutations", featureColor))
-            .append(text(" ("))
-            .append(headerResultCount)
-            .append(text(") » "))
-            .append(pageNum)
-            .colorIfAbsent(NamedTextColor.GRAY)
-            .build();
+      Component pageNum =
+          translatable(
+              "command.simplePageHeader",
+              NamedTextColor.GRAY,
+              text(Integer.toString(page), featureColor),
+              text(Integer.toString(pages), featureColor));
 
-    Component formattedHeader =
-        TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.YELLOW);
+      Component header =
+          text()
+              .append(text("Active Mutations", featureColor))
+              .append(text(" ("))
+              .append(headerResultCount)
+              .append(text(") » "))
+              .append(pageNum)
+              .colorIfAbsent(NamedTextColor.GRAY)
+              .build();
 
-    new PaginatedComponentResults<Mutation>(formattedHeader, perPage) {
+      Component formattedHeader =
+          TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.YELLOW);
 
-      @Override
-      public Component format(Mutation data, int index) {
-        return text().append(text("- ", NamedTextColor.GOLD)).append(data.getName()).build();
-      }
+      new PaginatedComponentResults<Mutation>(formattedHeader, perPage) {
 
-      @Override
-      public Component formatEmpty() {
-        // TODO: Translate
-        return text("No mutations are enabled", NamedTextColor.RED);
-      }
-    }.display(audience.getAudience(), mutations.getMutations(), page);
+        @Override
+        public Component format(Mutation data, int index) {
+          return text().append(text("- ", NamedTextColor.GOLD)).append(data.getName()).build();
+        }
+
+        @Override
+        public Component formatEmpty() {
+          // TODO: Translate
+          return text("No mutations are enabled", NamedTextColor.RED);
+        }
+      }.display(audience.getAudience(), mutations.getMutations(), page);
+    }
   }
 
   private void checkForMatch() {

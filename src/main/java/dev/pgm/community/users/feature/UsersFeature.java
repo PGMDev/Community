@@ -2,7 +2,6 @@ package dev.pgm.community.users.feature;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
-import dev.pgm.community.utils.MessageUtils;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -10,10 +9,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.text.PlayerComponentProvider;
 
 /**
  * UsersFeature
@@ -26,16 +28,23 @@ public interface UsersFeature extends Feature {
   // But better than calling XMLUtils
   static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
 
+  default CompletableFuture<Component> renderUsername(
+      UUID userId, NameStyle style, @Nullable Player viewer) {
+    return renderUsername(Optional.ofNullable(userId), style, viewer);
+  }
   /**
    * Render a player name by looking up cached value or using database stored name
    *
    * @param userId Optional UUID of player, empty will result in console name
    * @return The rendered name component of provided UUID
    */
-  default CompletableFuture<Component> renderUsername(Optional<UUID> userId) {
-    if (!userId.isPresent()) return CompletableFuture.completedFuture(MessageUtils.CONSOLE);
+  default CompletableFuture<Component> renderUsername(
+      Optional<UUID> userId, NameStyle style, @Nullable Player viewer) {
+    if (!userId.isPresent())
+      return CompletableFuture.completedFuture(PlayerComponentProvider.CONSOLE);
     return getStoredUsername(userId.get())
-        .thenApplyAsync(name -> PlayerComponent.player(userId.get(), name, NameStyle.FANCY));
+        .thenApplyAsync(
+            name -> PlayerComponent.player(Bukkit.getPlayer(userId.get()), name, style));
   }
 
   /**

@@ -14,12 +14,12 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
-import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.assistance.Report;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Collection;
@@ -34,8 +34,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
@@ -44,12 +44,13 @@ public class ReportCommands extends CommunityCommand {
 
   @Dependency private AssistanceFeature reports;
   @Dependency private UsersFeature usernames;
+  @Dependency private NickFeature nick;
 
   @CommandAlias("report")
   @Description("Report a player who is breaking the rules")
-  @CommandCompletion("@players *")
+  @CommandCompletion("@visible *")
   @Syntax("[username] (reason)")
-  public void report(CommandAudience viewer, Player sender, OnlinePlayer target, String reason) {
+  public void report(CommandAudience viewer, Player sender, String target, String reason) {
     checkEnabled();
 
     if (!reports.canRequest(sender.getUniqueId())) {
@@ -60,7 +61,8 @@ public class ReportCommands extends CommunityCommand {
       }
     }
 
-    if (reports.report(sender, target.getPlayer(), reason) != null) {
+    Player targetPlayer = getSinglePlayer(viewer, target, true);
+    if (targetPlayer != null && reports.report(sender, targetPlayer, reason) != null) {
       Component thanks =
           text()
               .append(translatable("misc.thankYou", NamedTextColor.GREEN))
@@ -140,8 +142,8 @@ public class ReportCommands extends CommunityCommand {
       new PaginatedComponentResults<Report>(formattedHeader, perPage) {
         @Override
         public Component format(Report data, int index) {
-          Component reporterName = getReportFormatName(data.getReporterId()).join();
-          Component reportedName = getReportFormatName(data.getReportedId()).join();
+          Component reporterName = getReportFormatName(data.getSenderId()).join();
+          Component reportedName = getReportFormatName(data.getTargetId()).join();
 
           Component serverName =
               text("Server ", NamedTextColor.GRAY)

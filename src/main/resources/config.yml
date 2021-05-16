@@ -26,9 +26,14 @@ moderation:
   kick:
     enabled: true
     public: true
+    match-ban: "10m" # Bans player from playing for given time. Set to -1 to disable (PGM)
   ban:
     enabled: true
     public: true
+    # Observe Bans - Allows banned players to join obs, but not interact any further
+    observe:
+      enabled: true   # Whether to enable or not (false for traditional bans)
+      max-online: 20  # The max amount of online banned players
   mute:
     enabled: true
     public: true
@@ -58,6 +63,11 @@ users:
   first-join:
     - "!send &a&lWelcome to the server!"
     - "give %name% cake"
+
+# Nicknames - Able to adjust username of player to hide from unwanted eyes (todo wow change this message)  
+nick:
+  enabled: true 
+  pgm-integration: true
   
 # Friends - Settings related to friendship features/commands  
 friends:
@@ -121,6 +131,11 @@ freeze:
   enabled: true  
   pgm-integration: true # Whether Community will attempt to hook into PGM
   
+# Vanish - Hide youself from non-staff players  
+vanish:
+  enabled: true
+  pgm-integration: true # Whether Community will attempt to hook into PGM
+  
 # Mutations - a PGM exclusive feature. Allows for a variety of fun gameplay altering mechanics
 mutations:
   enabled: true  
@@ -136,7 +151,16 @@ network:
     password: ""
     port: 6379
     ssl: false
-    
+  
+  # Network Chat - Sub feature of Networking, exclusive to PGM servers. 
+  # Allows for chat to broadcast across servers  
+  chat:
+    enabled: true
+# TODO: Coming Soon...    
+#    types:
+#      admin: true
+#      global: false
+#      message: false
   
   
 # Database

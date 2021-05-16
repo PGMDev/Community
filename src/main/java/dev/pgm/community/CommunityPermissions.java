@@ -8,6 +8,9 @@ public interface CommunityPermissions {
   // Root permission node
   String ROOT = "community";
 
+  // Admin - Reserved for restricted features
+  String ADMIN = ROOT + ".admin";
+
   // Moderation:
 
   // Punishment Types
@@ -42,6 +45,11 @@ public interface CommunityPermissions {
   // Friends
   String FRIENDSHIP = ROOT + ".friendship"; // Access to /friend commands
 
+  // Nicknames
+  String NICKNAME = ROOT + ".nick"; // Access to /nick (random)
+  String NICKNAME_SET = NICKNAME + ".set"; // Access to /nick set
+  String NICKNAME_OTHER = NICKNAME_SET + ".other"; // Access to /nick setother
+
   // General Staff
   String STAFF =
       ROOT + ".staff"; // Receive staff broadcasts and see disguised players (maybe add a different
@@ -60,6 +68,7 @@ public interface CommunityPermissions {
   String FLIGHT_SPEED = FLIGHT + ".speed";
   String GAMEMODE = ROOT + ".gamemode";
   String BROADCAST = ROOT + ".broadcast";
+  String CHEST = ROOT + ".chest";
 
   // Player Selectors
   String SELECTOR = ROOT + ".selector"; // Allow access to targeting more than 1 player

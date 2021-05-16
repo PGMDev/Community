@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 public class FreezeCommand extends CommunityCommand {
 
@@ -29,7 +29,7 @@ public class FreezeCommand extends CommunityCommand {
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.FREEZE)
   public void freeze(CommandAudience sender, @Flags("other") Player target) {
-    freeze.setFrozen(sender, target, !freeze.isFrozen(target), isVanished(sender));
+    freeze.setFrozen(sender, target, !freeze.isFrozen(target), isDisguised(sender));
   }
 
   @CommandAlias("frozenlist|fls|flist")

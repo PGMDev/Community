@@ -7,6 +7,7 @@ import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Optional;
+import co.aikar.commands.annotation.Syntax;
 import com.google.common.collect.Maps;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -24,6 +25,7 @@ public class GamemodeCommand extends CommunityCommand {
 
   @CommandAlias("gamemode|gm")
   @Description("Adjust your or another player's gamemode")
+  @Syntax("<gamemode> " + SELECTION)
   @CommandPermission(CommunityPermissions.GAMEMODE)
   public void gamemode(
       CommandAudience viewer, @Optional String gamemode, @Optional String targets) {
