@@ -109,7 +109,7 @@ public class PunishmentFormats {
     return text()
         .append(text("You are unable to "))
         .append(text(action))
-        .append(text(" while banned: "))
+        .append(text(" while banned for: "))
         .append(text(punishment.getReason(), NamedTextColor.RED))
         .color(NamedTextColor.GRAY)
         .build();

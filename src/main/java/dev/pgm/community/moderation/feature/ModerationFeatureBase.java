@@ -282,6 +282,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .ifPresent(
             ban -> {
               event.setQuitMessage(null); // Hide quit message
+              observerBanCache.invalidate(event.getPlayer().getUniqueId());
             });
   }
 
