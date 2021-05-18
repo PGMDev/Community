@@ -1,7 +1,6 @@
 package dev.pgm.community.moderation.feature;
 
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -41,7 +40,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -55,8 +53,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.events.PlayerParticipationStartEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
@@ -305,45 +301,6 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     }
   }
 
-  @EventHandler
-  public void onMatchJoin(PlayerParticipationStartEvent event) {
-    MatchPlayer player = event.getPlayer();
-    if (matchBan != null) {
-      Punishment punishment = matchBan.getIfPresent(player.getId());
-
-      if (punishment != null) {
-        Duration elasped = Duration.between(punishment.getTimeIssued(), Instant.now());
-        Duration remaining = getModerationConfig().getMatchBanDuration().minus(elasped);
-        Component reason =
-            text()
-                .append(text("You are banned from this match for "))
-                .append(duration(remaining, NamedTextColor.YELLOW))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        text()
-                            .append(text("Reason: ", NamedTextColor.AQUA))
-                            .append(text(punishment.getReason(), NamedTextColor.GRAY))))
-                .build();
-        event.cancel(reason);
-      }
-    }
-
-    getOnlineBan(player.getId())
-        .ifPresent(
-            ban -> {
-              Component reason =
-                  text()
-                      .append(text("You have been banned and are unable to play"))
-                      .hoverEvent(
-                          HoverEvent.showText(
-                              text()
-                                  .append(text("Reason: ", NamedTextColor.AQUA))
-                                  .append(text(ban.getReason(), NamedTextColor.GRAY))))
-                      .build();
-              event.cancel(reason);
-            });
-  }
-
   // Cancel ALL commands for shadow banned
   @EventHandler(priority = EventPriority.MONITOR)
   public void onCommand(PlayerCommandPreprocessEvent event) {
@@ -391,6 +348,11 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   // BANS
+  @Nullable
+  public Cache<UUID, Punishment> getMatchBans() {
+    return matchBan;
+  }
+
   protected void addBan(UUID playerId, Punishment punishment) {
     if (getModerationConfig().isObservingBan()) {
       observerBanCache.put(playerId, punishment);

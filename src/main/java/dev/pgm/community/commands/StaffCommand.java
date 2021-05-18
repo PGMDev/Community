@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
-import tc.oc.pgm.api.Permissions;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -35,7 +34,7 @@ public class StaffCommand extends CommunityCommand {
         plugin.getServer().getOnlinePlayers().stream()
             .filter(
                 player ->
-                    (player.hasPermission(Permissions.STAFF)
+                    (player.hasPermission(CommunityPermissions.STAFF)
                         && (!isDisguised(player)
                             || sender.hasPermission(CommunityPermissions.STAFF))))
             .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))

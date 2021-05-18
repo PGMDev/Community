@@ -50,7 +50,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
     super(new NickConfig(config), logger, featureName);
     this.nickedPlayers = Maps.newHashMap();
 
-    if (getNickConfig().isEnabled()) {
+    if (getNickConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
     }
   }
