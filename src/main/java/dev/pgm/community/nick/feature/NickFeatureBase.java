@@ -34,7 +34,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.Audience;
 
 public abstract class NickFeatureBase extends FeatureBase implements NickFeature {
@@ -69,7 +68,6 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
   private void integrate() {
     if (isPGMEnabled()) {
       pgmNicks = new PGMNickIntegration(this);
-      Integration.setNickIntegration(pgmNicks);
     }
   }
 

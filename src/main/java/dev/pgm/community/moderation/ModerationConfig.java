@@ -4,6 +4,7 @@ import static tc.oc.pgm.util.text.TextParser.parseDuration;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import dev.pgm.community.moderation.punishments.Punishment;
+import dev.pgm.community.utils.PGMUtils;
 import java.time.Duration;
 import org.bukkit.configuration.Configuration;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -186,7 +187,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   }
 
   public boolean isObservingBan() {
-    return observingBans;
+    return observingBans && PGMUtils.isPGMEnabled();
   }
 
   public int getMaxOnlineBans() {

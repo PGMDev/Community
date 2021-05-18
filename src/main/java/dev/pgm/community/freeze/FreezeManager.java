@@ -34,11 +34,11 @@ import org.bukkit.entity.TNTPrimed;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.bukkit.OnlinePlayerMapAdapter;
 import tc.oc.pgm.util.bukkit.ViaUtils;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 
 /** FreezeManager - Handles freezing of players */
 public class FreezeManager {

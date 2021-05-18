@@ -3,7 +3,6 @@ package dev.pgm.community.friends.feature.types;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 
-import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.friends.FriendRequestStatus;
 import dev.pgm.community.friends.Friendship;
@@ -26,7 +25,6 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.api.event.FriendStatusChangeEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
@@ -189,14 +187,9 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
               // Sends updated friendship status to PGM for hook-in
               if (integration != null) {
                 integration.setFriends(playerId, friendIds);
+                integration.callUpdateEvents(playerId, friendIds);
               }
-              friendIds.stream().forEach(this::callUpdateEvent);
-              callUpdateEvent(playerId);
             });
-  }
-
-  private void callUpdateEvent(UUID playerId) {
-    Community.get().getServer().getPluginManager().callEvent(new FriendStatusChangeEvent(playerId));
   }
 
   public CompletableFuture<Integer> count() {

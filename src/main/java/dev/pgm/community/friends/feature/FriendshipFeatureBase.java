@@ -25,7 +25,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.Audience;
 
 public abstract class FriendshipFeatureBase extends FeatureBase implements FriendshipFeature {
@@ -47,14 +46,8 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
   @Override
   public void enable() {
     super.enable();
-    integrate();
-  }
-
-  public void integrate() {
     if (isPGMEnabled()) {
-      // Setup PGM integration
-      integration = new PGMFriendIntegration();
-      Integration.setFriendIntegration(integration);
+      this.integration = new PGMFriendIntegration();
     }
   }
 

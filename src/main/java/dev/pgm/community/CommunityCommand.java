@@ -27,10 +27,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public abstract class CommunityCommand extends BaseCommand {

@@ -18,8 +18,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import tc.oc.pgm.api.Permissions;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("staff|mods|admins")

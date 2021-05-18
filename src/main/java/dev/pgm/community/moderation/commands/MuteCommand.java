@@ -24,9 +24,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 
 public class MuteCommand extends CommunityCommand {
 
