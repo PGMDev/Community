@@ -212,6 +212,9 @@ public class UserInfoCommands extends CommunityCommand {
               audience.sendMessage(lastServer);
 
               if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
+                Player onlinePlayer = Bukkit.getPlayer(profile.getId());
+                String currentIP =
+                    onlinePlayer != null ? onlinePlayer.getAddress().getHostString() : "";
                 users
                     .getKnownIPs(profile.getId())
                     .thenAccept(
@@ -221,11 +224,23 @@ public class UserInfoCommands extends CommunityCommand {
                               formatListItems(
                                   ips.stream()
                                       .map(
-                                          ip ->
-                                              text()
-                                                  .append(text("      - ", NamedTextColor.YELLOW))
-                                                  .append(text(ip, NamedTextColor.DARK_AQUA))
-                                                  .build())
+                                          ip -> {
+                                            boolean current = currentIP.equalsIgnoreCase(ip);
+                                            return text()
+                                                .append(
+                                                    text(
+                                                        "     - ",
+                                                        current
+                                                            ? NamedTextColor.GREEN
+                                                            : NamedTextColor.YELLOW))
+                                                .append(
+                                                    text(
+                                                        ip,
+                                                        current
+                                                            ? NamedTextColor.AQUA
+                                                            : NamedTextColor.DARK_AQUA))
+                                                .build();
+                                          })
                                       .collect(Collectors.toList())));
                         });
               }
