@@ -142,7 +142,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
         event.setKickMessage(
             punishment.formatPunishmentScreen(
                 getModerationConfig(),
-                getUsers().renderUsername(punishment.getIssuerId(), NameStyle.CONCISE, null).join(),
+                getUsers().renderUsername(punishment.getIssuerId(), NameStyle.CONCISE).join(),
                 false,
                 isServerSpaceAvaiable()));
 
@@ -200,7 +200,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                                       getModerationConfig(),
                                       getUsers()
                                           .renderUsername(
-                                              punishment.getIssuerId(), NameStyle.CONCISE, player)
+                                              punishment.getIssuerId(), NameStyle.CONCISE)
                                           .join(),
                                       false,
                                       isServerSpaceAvaiable()));

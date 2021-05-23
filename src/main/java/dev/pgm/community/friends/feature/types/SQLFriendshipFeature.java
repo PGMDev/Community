@@ -93,9 +93,7 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
                 Player targetPlayer = Bukkit.getPlayer(target);
 
                 Component senderName =
-                    users
-                        .renderUsername(Optional.of(sender), NameStyle.CONCISE, targetPlayer)
-                        .join();
+                    users.renderUsername(Optional.of(sender), NameStyle.CONCISE).join();
                 Component accept = FriendshipFeature.createAcceptButton(sender.toString());
                 Component reject = FriendshipFeature.createRejectButton(sender.toString());
 

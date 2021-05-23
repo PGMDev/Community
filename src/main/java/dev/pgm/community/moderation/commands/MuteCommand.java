@@ -73,7 +73,7 @@ public class MuteCommand extends CommunityCommand {
                     .thenAcceptAsync(
                         isMuted -> {
                           usernames
-                              .renderUsername(id, NameStyle.FANCY, audience.getPlayer())
+                              .renderUsername(id, NameStyle.FANCY)
                               .thenAcceptAsync(
                                   name -> {
                                     if (isMuted.isPresent()) {

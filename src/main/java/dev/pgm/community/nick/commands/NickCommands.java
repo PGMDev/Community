@@ -117,7 +117,7 @@ public class NickCommands extends CommunityCommand {
                         success -> {
                           if (success) {
                             users
-                                .renderUsername(uuid, NameStyle.FANCY, viewer.getPlayer())
+                                .renderUsername(uuid, NameStyle.FANCY)
                                 .thenAcceptAsync(
                                     name -> {
                                       viewer.sendMessage(
@@ -160,7 +160,7 @@ public class NickCommands extends CommunityCommand {
               uuid -> {
                 if (uuid.isPresent()) {
                   users
-                      .renderUsername(uuid, NameStyle.FANCY, player)
+                      .renderUsername(uuid, NameStyle.FANCY)
                       .thenAcceptAsync(
                           name -> {
                             sendNickStatus(viewer, player, uuid.get(), name);
@@ -186,7 +186,7 @@ public class NickCommands extends CommunityCommand {
               uuid -> {
                 if (uuid.isPresent()) {
                   users
-                      .renderUsername(uuid, NameStyle.FANCY, viewer.getPlayer())
+                      .renderUsername(uuid, NameStyle.FANCY)
                       .thenAcceptAsync(
                           name -> {
                             nicks

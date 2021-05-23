@@ -230,9 +230,9 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
     final String reason = request.getReason();
     final boolean report = request.getType() == RequestType.REPORT;
     CompletableFuture<Component> sender =
-        users.renderUsername(request.getSenderId(), NameStyle.FANCY, null);
+        users.renderUsername(request.getSenderId(), NameStyle.FANCY);
     CompletableFuture<Component> target =
-        users.renderUsername(request.getTargetId(), NameStyle.FANCY, null);
+        users.renderUsername(request.getTargetId(), NameStyle.FANCY);
 
     CompletableFuture.allOf(sender, target)
         .thenAcceptAsync(

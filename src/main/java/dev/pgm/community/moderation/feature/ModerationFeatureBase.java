@@ -294,7 +294,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     if (banEvasion.isPresent() && !exclude) {
       users
-          .renderUsername(banEvasion, NameStyle.FANCY, null)
+          .renderUsername(banEvasion, NameStyle.FANCY)
           .thenAcceptAsync(
               bannedName -> {
                 if (!banEvasion.get().equals(event.getPlayer().getUniqueId())) {

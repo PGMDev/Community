@@ -96,10 +96,7 @@ public class FriendshipCommand extends CommunityCommand {
                       .thenAcceptAsync(
                           status -> {
                             users
-                                .renderUsername(
-                                    Optional.of(storedId.get()),
-                                    NameStyle.CONCISE,
-                                    sender.getPlayer())
+                                .renderUsername(Optional.of(storedId.get()), NameStyle.CONCISE)
                                 .thenAcceptAsync(
                                     name -> {
                                       switch (status) {
@@ -167,7 +164,7 @@ public class FriendshipCommand extends CommunityCommand {
                             Optional<Friendship> existing =
                                 friendList.stream().filter(fr -> fr.isInvolved(targetId)).findAny();
                             users
-                                .renderUsername(storedId, NameStyle.CONCISE, sender.getPlayer())
+                                .renderUsername(storedId, NameStyle.CONCISE)
                                 .thenAcceptAsync(
                                     name -> {
                                       if (existing.isPresent()) {
@@ -212,7 +209,7 @@ public class FriendshipCommand extends CommunityCommand {
                           .findAny();
 
                   users
-                      .renderUsername(storedId, NameStyle.CONCISE, sender.getPlayer())
+                      .renderUsername(storedId, NameStyle.CONCISE)
                       .thenAcceptAsync(
                           name -> {
                             if (pending.isPresent()) {
@@ -272,7 +269,7 @@ public class FriendshipCommand extends CommunityCommand {
                           .filter(fr -> fr.getRequesterId().equals(storedId.get()))
                           .findAny();
                   users
-                      .renderUsername(storedId, NameStyle.CONCISE, sender.getPlayer())
+                      .renderUsername(storedId, NameStyle.CONCISE)
                       .thenAcceptAsync(
                           name -> {
                             if (pending.isPresent()) {
@@ -335,9 +332,7 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             users
                 .renderUsername(
-                    data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                    NameStyle.CONCISE,
-                    audience.getPlayer())
+                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.CONCISE)
                 .join();
 
         return text()
@@ -421,9 +416,7 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             users
                 .renderUsername(
-                    data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                    NameStyle.CONCISE,
-                    audience.getPlayer())
+                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.CONCISE)
                 .join();
 
         TextComponent.Builder builder =

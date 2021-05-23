@@ -29,9 +29,9 @@ public class PunishmentFormats {
       Punishment punishment, String server, UsersFeature users) {
     CompletableFuture<Component> broadcast = new CompletableFuture<>();
     CompletableFuture<Component> issuer =
-        users.renderUsername(punishment.getIssuerId(), NameStyle.FANCY, null);
+        users.renderUsername(punishment.getIssuerId(), NameStyle.FANCY);
     CompletableFuture<Component> target =
-        users.renderUsername(Optional.of(punishment.getTargetId()), NameStyle.FANCY, null);
+        users.renderUsername(Optional.of(punishment.getTargetId()), NameStyle.FANCY);
     CompletableFuture.allOf(issuer, target)
         .thenAcceptAsync(
             x -> {
