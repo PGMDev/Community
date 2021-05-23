@@ -32,6 +32,7 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   private static final String OBS_BANS = BAN_KEY + ".observe";
   private static final String MAX_ONLINE = OBS_BANS + ".max-online";
+  private static final String EVASION_MINS = BAN_KEY + ".evasion-expires";
 
   // General options
   private boolean persist;
@@ -66,6 +67,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   // 2. Bans
   private boolean observingBans;
   private int maxOnlineBans;
+  private int evasionMins;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -194,6 +196,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     return maxOnlineBans;
   }
 
+  public int getEvasionExpireMins() {
+    return evasionMins;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -230,5 +236,6 @@ public class ModerationConfig extends FeatureConfigImpl {
     // Bans - observe ban
     this.observingBans = config.getBoolean(getEnabledKey(OBS_BANS));
     this.maxOnlineBans = config.getInt(MAX_ONLINE);
+    this.evasionMins = config.getInt(EVASION_MINS);
   }
 }

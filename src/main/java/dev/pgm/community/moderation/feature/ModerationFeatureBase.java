@@ -64,6 +64,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   private final Cache<UUID, MutePunishment> muteCache;
   private final Cache<UUID, Set<String>> banEvasionCache;
   private final Cache<UUID, Punishment> observerBanCache;
+  private final Cache<UUID, Instant> pardonedPlayers;
   private Cache<UUID, Punishment> matchBan;
 
   private PGMPunishmentIntegration integration;
@@ -80,8 +81,12 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     this.network = network;
     this.recents = Sets.newHashSet();
     this.muteCache = CacheBuilder.newBuilder().build();
-    this.banEvasionCache = CacheBuilder.newBuilder().build();
+    this.banEvasionCache =
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(config.getEvasionExpireMins(), TimeUnit.MINUTES)
+            .build();
     this.observerBanCache = CacheBuilder.newBuilder().build();
+    this.pardonedPlayers = CacheBuilder.newBuilder().build();
 
     if (config.getMatchBanDuration() != null) {
       this.matchBan =
@@ -285,8 +290,9 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   public void onPlayerJoinEvasionCheck(PlayerJoinEvent event) {
     String host = event.getPlayer().getAddress().getAddress().getHostAddress();
     Optional<UUID> banEvasion = isBanEvasion(host);
+    boolean exclude = hasRecentPardon(event.getPlayer().getUniqueId());
 
-    if (banEvasion.isPresent()) {
+    if (banEvasion.isPresent() && !exclude) {
       users
           .renderUsername(banEvasion, NameStyle.FANCY, null)
           .thenAcceptAsync(
@@ -363,6 +369,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   protected void removeCachedBan(UUID playerId) {
     banEvasionCache.invalidate(playerId);
     observerBanCache.invalidate(playerId);
+    pardonedPlayers.put(playerId, Instant.now());
 
     if (Bukkit.getPlayer(playerId) != null && getModerationConfig().isObservingBan()) {
       integration.updateBanPrefix(Bukkit.getPlayer(playerId), false);
@@ -414,6 +421,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             .filter(s -> s.getValue().contains(address))
             .findAny();
     return Optional.ofNullable(cached.isPresent() ? cached.get().getKey() : null);
+  }
+
+  private boolean hasRecentPardon(UUID playerId) {
+    return pardonedPlayers.getIfPresent(playerId) != null;
   }
 
   private void banHover() {
