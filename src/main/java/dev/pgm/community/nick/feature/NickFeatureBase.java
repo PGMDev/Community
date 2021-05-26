@@ -13,8 +13,8 @@ import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.NickConfig;
 import dev.pgm.community.nick.commands.NickCommands;
-import dev.pgm.community.utils.NickUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -140,7 +140,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
                     nickedPlayers.put(player.getUniqueId(), nick.getName());
                   } else {
                     // Auto apply a random name if none set
-                    NickUtils.getRandomName()
+                    WebUtils.getRandomName()
                         .thenAcceptAsync(
                             name -> {
                               this.setNick(player.getUniqueId(), name)

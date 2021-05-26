@@ -19,6 +19,8 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.WebUtils;
+import dev.pgm.community.utils.WebUtils.NameEntry;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -41,6 +43,47 @@ import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 public class UserInfoCommands extends CommunityCommand {
 
   @Dependency private UsersFeature users;
+
+  @CommandAlias("usernamehistory|uh")
+  public void usernameHistoryTest(CommandAudience audience, String target) {
+    WebUtils.getUsernameHistory(target)
+        .thenAcceptAsync(
+            history -> {
+              Component username = text(history.getCurrentName(), NamedTextColor.AQUA);
+
+              if (history.getHistory().isEmpty()) {
+                audience.sendWarning(
+                    text()
+                        .append(username)
+                        .append(text(" has never changed their username.", NamedTextColor.GRAY))
+                        .build());
+                return;
+              }
+
+              Component headerText =
+                  text()
+                      .append(text("Username History", NamedTextColor.YELLOW))
+                      .append(text(" - ", NamedTextColor.GRAY))
+                      .append(username)
+                      .build();
+              audience.sendMessage(
+                  TextFormatter.horizontalLineHeading(
+                      audience.getSender(), headerText, NamedTextColor.GRAY));
+
+              int i = 1;
+              for (NameEntry name : history.getHistory()) {
+                audience.sendMessage(
+                    text()
+                        .append(text(i++ + ". ", NamedTextColor.WHITE))
+                        .append(text(name.getUsername(), NamedTextColor.YELLOW))
+                        .append(BroadcastUtils.BROADCAST_DIV)
+                        .append(
+                            TemporalComponent.relativePastApproximate(name.getDateChanged())
+                                .color(NamedTextColor.DARK_AQUA))
+                        .build());
+              }
+            });
+  }
 
   @CommandAlias("seen|lastseen")
   @Description("View when a player was last online")

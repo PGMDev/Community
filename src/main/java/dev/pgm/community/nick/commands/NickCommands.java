@@ -19,7 +19,7 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
-import dev.pgm.community.utils.NickUtils;
+import dev.pgm.community.utils.WebUtils;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -42,7 +42,7 @@ public class NickCommands extends CommunityCommand {
   @Subcommand("random")
   @Description("Set a random nickname")
   public void setRandomNick(CommandAudience viewer, Player player) {
-    NickUtils.getRandomName()
+    WebUtils.getRandomName()
         .thenAcceptAsync(
             name -> {
               setOwnNick(viewer, player, name);
