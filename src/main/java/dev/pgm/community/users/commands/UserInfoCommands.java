@@ -45,6 +45,10 @@ public class UserInfoCommands extends CommunityCommand {
   @Dependency private UsersFeature users;
 
   @CommandAlias("usernamehistory|uh")
+  @Description("View the name history of a user")
+  @Syntax("[player]")
+  @CommandCompletion("@players")
+  @CommandPermission(CommunityPermissions.LOOKUP)
   public void usernameHistoryTest(CommandAudience audience, String target) {
     WebUtils.getUsernameHistory(target)
         .thenAcceptAsync(
