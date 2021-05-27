@@ -4,8 +4,10 @@ import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import dev.pgm.community.Community;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
+import dev.pgm.community.moderation.tools.ModerationToolManager;
 import java.time.Duration;
 import java.time.Instant;
 import net.kyori.adventure.text.Component;
@@ -19,15 +21,19 @@ import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.PunishmentIntegration;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 import tc.oc.pgm.events.PlayerParticipationStartEvent;
+import tc.oc.pgm.spawns.events.ObserverKitApplyEvent;
 
 public class PGMPunishmentIntegration implements PunishmentIntegration, Listener {
 
   private static final String BANNED_GROUP = "pgm.group.banned";
   private ModerationFeatureBase moderation;
+  private ModerationToolManager tools;
 
   public PGMPunishmentIntegration(ModerationFeatureBase moderation) {
     this.moderation = moderation;
+    this.tools = new ModerationToolManager();
   }
 
   public void enable() {
@@ -58,6 +64,20 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
   @Override
   public boolean isHidden(Player player) {
     return moderation.getOnlineBan(player.getUniqueId()).isPresent();
+  }
+
+  @EventHandler
+  public void giveTools(ObserverKitApplyEvent event) {
+    if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
+      tools.giveTools(event.getPlayer().getBukkit());
+    }
+  }
+
+  @EventHandler
+  public void onInteractEvent(ObserverInteractEvent event) {
+    if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
+      tools.onInteract(event);
+    }
   }
 
   @EventHandler
