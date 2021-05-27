@@ -16,6 +16,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.Integration;
@@ -73,7 +74,7 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     }
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.LOW)
   public void onInteractEvent(ObserverInteractEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
       tools.onInteract(event);

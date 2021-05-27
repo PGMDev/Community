@@ -46,6 +46,7 @@ public class ModerationToolManager {
           if (event.getClickedPlayer() != null) {
             MatchPlayer target = event.getClickedPlayer();
             targetPlayer(event.getPlayer().getBukkit(), target.getBukkit());
+            event.setCancelled(true);
           }
         } else {
           // Teleport
