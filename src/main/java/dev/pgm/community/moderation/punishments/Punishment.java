@@ -237,7 +237,7 @@ public class Punishment implements Comparable<Punishment> {
     }
 
     // Staff Sign-off
-    if (!disguised) {
+    if (!disguised && config.isStaffSignoff()) {
       lines.add(empty());
       lines.add(translatable("moderation.screen.signoff", NamedTextColor.GRAY, issuerName));
     }

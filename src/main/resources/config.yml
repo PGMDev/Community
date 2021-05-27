@@ -16,8 +16,9 @@ moderation:
   service: "occ"  # Name of service that punishments will be recorded under.
   
   #Message options for kick screen
-  rules-link: "https://pgm.dev/rules" #Link to rules
+  rules-link: "https://pgm.dev/rules" # Link to rules
   appeal-link: "&7If this ban was made in error, contact &estaff@pgm.dev" # Appeal message (Only shown for perm-bans)
+  staff-signoff: true # Whether staff name will be revealed in kick screen (for non disguised staff)
   
   #Punishments types - TODO: more options will be found under each punishment type  
   warn:

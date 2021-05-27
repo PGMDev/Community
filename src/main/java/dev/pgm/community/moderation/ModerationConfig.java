@@ -34,6 +34,8 @@ public class ModerationConfig extends FeatureConfigImpl {
   private static final String MAX_ONLINE = OBS_BANS + ".max-online";
   private static final String EVASION_MINS = BAN_KEY + ".evasion-expires";
 
+  private static final String STAFF_SIGNOFF_KEY = KEY + ".staff-signoff";
+
   // General options
   private boolean persist;
   private boolean broadcast;
@@ -52,6 +54,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   // Messages
   private String rulesLink;
   private String appealMessage;
+  private boolean includeStaffSignoff;
 
   // Service
   private String service;
@@ -200,6 +203,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     return evasionMins;
   }
 
+  public boolean isStaffSignoff() {
+    return includeStaffSignoff;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -220,6 +227,7 @@ public class ModerationConfig extends FeatureConfigImpl {
     // Messages
     this.rulesLink = config.getString(RULES_KEY);
     this.appealMessage = config.getString(APPEAL_KEY);
+    this.includeStaffSignoff = config.getBoolean(STAFF_SIGNOFF_KEY);
 
     // Service
     this.service = config.getString(SERVICE_KEY);
