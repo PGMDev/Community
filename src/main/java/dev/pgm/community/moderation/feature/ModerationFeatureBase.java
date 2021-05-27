@@ -14,6 +14,7 @@ import dev.pgm.community.moderation.commands.BanCommand;
 import dev.pgm.community.moderation.commands.KickCommand;
 import dev.pgm.community.moderation.commands.MuteCommand;
 import dev.pgm.community.moderation.commands.PunishmentCommand;
+import dev.pgm.community.moderation.commands.ToolCommand;
 import dev.pgm.community.moderation.commands.WarnCommand;
 import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
@@ -172,6 +173,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     if (getModerationConfig().isMuteEnabled()) {
       commands.add(new MuteCommand());
+    }
+
+    if (PGMUtils.isPGMEnabled() && integration != null) {
+      commands.add(new ToolCommand(integration));
     }
 
     commands.add(new PunishmentCommand());

@@ -42,6 +42,10 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     Community.get().registerListener(this);
   }
 
+  public ModerationToolManager getToolManager() {
+    return tools;
+  }
+
   public void updateBanPrefix(Player player, boolean apply) {
     player.addAttachment(Community.get(), BANNED_GROUP, apply);
     Bukkit.getPluginManager().callEvent(new NameDecorationChangeEvent(player.getUniqueId()));

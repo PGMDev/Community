@@ -75,7 +75,7 @@ public class ModerationToolManager {
     }
   }
 
-  private void targetPlayer(Player sender, Player target) {
+  public void targetPlayer(Player sender, Player target) {
     this.hooks.put(sender.getUniqueId(), target.getUniqueId());
 
     Audience viewer = Audience.get(sender);
