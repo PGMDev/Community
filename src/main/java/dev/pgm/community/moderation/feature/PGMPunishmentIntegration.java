@@ -7,7 +7,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
-import dev.pgm.community.moderation.tools.ModerationToolManager;
+import dev.pgm.community.moderation.tools.TeleportToolManager;
 import java.time.Duration;
 import java.time.Instant;
 import net.kyori.adventure.text.Component;
@@ -30,11 +30,11 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
 
   private static final String BANNED_GROUP = "pgm.group.banned";
   private ModerationFeatureBase moderation;
-  private ModerationToolManager tools;
+  private TeleportToolManager tools;
 
   public PGMPunishmentIntegration(ModerationFeatureBase moderation) {
     this.moderation = moderation;
-    this.tools = new ModerationToolManager();
+    this.tools = new TeleportToolManager();
   }
 
   public void enable() {
@@ -42,7 +42,7 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     Community.get().registerListener(this);
   }
 
-  public ModerationToolManager getToolManager() {
+  public TeleportToolManager getToolManager() {
     return tools;
   }
 

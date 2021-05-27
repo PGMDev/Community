@@ -8,12 +8,12 @@ import co.aikar.commands.annotation.Flags;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.PGMPunishmentIntegration;
-import dev.pgm.community.moderation.tools.ModerationToolManager;
+import dev.pgm.community.moderation.tools.TeleportToolManager;
 import org.bukkit.entity.Player;
 
 public class ToolCommand extends CommunityCommand {
 
-  private ModerationToolManager tools;
+  private TeleportToolManager tools;
 
   public ToolCommand(PGMPunishmentIntegration integration) {
     this.tools = integration.getToolManager();
