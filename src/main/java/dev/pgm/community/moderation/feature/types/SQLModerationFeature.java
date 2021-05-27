@@ -155,6 +155,18 @@ public class SQLModerationFeature extends ModerationFeatureBase {
           // Normal ban
           event.setLoginResult(Result.KICK_BANNED);
         }
+
+        if (punishment.getType() == PunishmentType.NAME_BAN) {
+          String bannedName = punishment.getReason();
+          if (!event.getName().equalsIgnoreCase(bannedName)) {
+            pardon(punishment.getTargetId().toString(), Optional.empty());
+            event.setLoginResult(Result.ALLOWED);
+            logger.info(
+                String.format(
+                    "Name change detected for (%s) | %s -> %s | Account unbanned",
+                    punishment.getTargetId().toString(), punishment.getReason(), event.getName()));
+          }
+        }
       }
 
       Optional<MutePunishment> mute = hasActiveMute(punishments);
@@ -238,7 +250,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
         .filter(
             p ->
                 p.isActive()
-                    && PunishmentType.isBan(p.getType())
+                    && p.getType().isLoginPrevented()
                     && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
         .findAny();
   }

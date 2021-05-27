@@ -16,6 +16,7 @@ import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
+import org.bukkit.Bukkit;
 
 @CommandAlias("ban|permban|pb")
 @Description("Ban a player from the server")
@@ -25,6 +26,36 @@ public class BanCommand extends CommunityCommand {
   @Dependency private ModerationFeature moderation;
   @Dependency private UsersFeature usernames;
   @Dependency private Community plugin;
+
+  @CommandAlias("nameban|nb")
+  @Subcommand("username|name")
+  @Syntax("[player] - No reason required")
+  @CommandCompletion("@players")
+  public void nameBan(CommandAudience audience, String target) {
+    usernames
+        .getStoredProfile(target)
+        .thenAccept(
+            profile -> {
+              if (profile != null) {
+                Bukkit.getScheduler()
+                    .runTask(
+                        Community.get(),
+                        () -> {
+                          // Due to async username lookup, must run task sync to avoid async kick
+                          moderation.punish(
+                              PunishmentType.NAME_BAN,
+                              profile.getId(),
+                              audience,
+                              profile.getUsername(),
+                              null,
+                              true,
+                              isDisguised(audience));
+                        });
+              } else {
+                audience.sendWarning(formatNotFoundComponent(target));
+              }
+            });
+  }
 
   @CommandAlias("tempban|tb")
   @Subcommand("temp|temporary|t")

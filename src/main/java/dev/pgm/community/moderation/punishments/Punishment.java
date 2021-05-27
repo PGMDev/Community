@@ -13,6 +13,7 @@ import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
 import dev.pgm.community.moderation.punishments.types.KickPunishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
+import dev.pgm.community.moderation.punishments.types.UsernameBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
@@ -251,6 +252,13 @@ public class Punishment implements Comparable<Punishment> {
               .color(NamedTextColor.GRAY));
     }
 
+    // Alert name banned players when their ban will be lifted
+    if (getType() == PunishmentType.NAME_BAN) {
+      lines.add(empty());
+      lines.add(text("Please change your username", NamedTextColor.GRAY));
+      lines.add(text("Once complete, ban will automatically be removed", NamedTextColor.GRAY));
+    }
+
     if (isBan() && config.isObservingBan() && space) {
       lines.add(empty());
       lines.add(
@@ -326,6 +334,9 @@ public class Punishment implements Comparable<Punishment> {
             id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, service);
       case BAN:
         return new BanPunishment(
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
+      case NAME_BAN:
+        return new UsernameBanPunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
     }
     return null;

@@ -233,6 +233,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     switch (punishment.getType()) {
       case BAN:
       case TEMP_BAN: // Cache known IPS of a recently banned player, so if they rejoin on an alt can
+      case NAME_BAN:
         // find them
         addBan(punishment.getId(), punishment);
         users
