@@ -482,8 +482,8 @@ public class FriendshipCommand extends CommunityCommand {
     if (!viewer.isPlayer()) return true;
     if (isDisguised(player)) {
       if (Community.get().getFeatures().getNick().isNicked(player.getUniqueId())
-          && player.hasPermission(CommunityPermissions.ADMIN)) {
-        return viewer.hasPermission(CommunityPermissions.ADMIN);
+          && player.hasPermission(CommunityPermissions.OVERRIDE)) {
+        return viewer.hasPermission(CommunityPermissions.OVERRIDE);
       }
       return viewer.hasPermission(CommunityPermissions.STAFF);
     }

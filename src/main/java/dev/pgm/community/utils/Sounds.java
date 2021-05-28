@@ -23,7 +23,7 @@ public class Sounds {
 
   // Played when a player is teleported via command
   public static final Sound TELEPORT =
-      sound(key("mob.endermen.portal"), Sound.Source.MASTER, 1f, 0.9f);
+      sound(key("mob.endermen.portal"), Sound.Source.MASTER, 0.7f, 0.9f);
 
   // Played when player logs in and has a pending friend request
   public static final Sound FRIEND_REQUEST_LOGIN =

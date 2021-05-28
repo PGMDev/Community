@@ -76,6 +76,6 @@ public interface CommunityPermissions {
   String RANDOM_SELECTOR = SELECTOR + ".random"; // ? - select a random player
   String TEAM_SELECTOR = SELECTOR + ".team"; // team='Name' - select a match's team
 
-  String OVERRIDE = ROOT + ".override"; // Access to override
+  String OVERRIDE = "pgm.admin"; // Access to override
   // TODO Setup different groups like moderation
 }

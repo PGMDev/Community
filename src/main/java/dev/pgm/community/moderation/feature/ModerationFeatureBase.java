@@ -230,8 +230,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     Optional<Player> onlineTarget = punishment.getTargetPlayer();
     if (onlineTarget.isPresent()) {
-      if (!event.getSender().hasPermission(CommunityPermissions.OVERRIDE)
-          && onlineTarget.get().hasPermission(CommunityPermissions.OVERRIDE)) {
+      if (!event.getSender().hasPermission(CommunityPermissions.ADMIN)
+          && onlineTarget.get().hasPermission(CommunityPermissions.ADMIN)) {
         event
             .getSender()
             .sendWarning(

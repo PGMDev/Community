@@ -2,6 +2,8 @@ package dev.pgm.community.menu;
 
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
+import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.utils.VisibilityUtils;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -75,11 +77,17 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
     return ClickableItem.of(icon, c -> getInventory().open(player, page));
   }
 
-  private Comparator<Player> COMPARE = Comparator.comparing(Player::getName);
+  private Comparator<Player> COMPARE = Comparator.comparing(Player::getName).reversed();
 
   private ClickableItem[] getAllPlayers(Player viewer) {
     List<Player> online =
-        Bukkit.getOnlinePlayers().stream().sorted(COMPARE).collect(Collectors.toList());
+        Bukkit.getOnlinePlayers().stream()
+            .filter(
+                p ->
+                    !VisibilityUtils.hasOverride(p)
+                        || viewer.hasPermission(CommunityPermissions.OVERRIDE))
+            .sorted(COMPARE)
+            .collect(Collectors.toList());
     ClickableItem[] items = new ClickableItem[online.size()];
     for (int i = 0; i < online.size(); i++) {
       Player player = online.get(i);
