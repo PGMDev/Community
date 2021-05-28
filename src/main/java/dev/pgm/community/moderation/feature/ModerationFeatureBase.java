@@ -1,12 +1,14 @@
 package dev.pgm.community.moderation.feature;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.text.PlayerComponent.player;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.events.PlayerPunishmentEvent;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
@@ -150,7 +152,6 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             time,
             getSenderId(issuer.getSender()),
             getModerationConfig().getService());
-    save(punishment);
     Bukkit.getPluginManager().callEvent(new PlayerPunishmentEvent(issuer, punishment, silent));
     return punishment;
   }
@@ -226,6 +227,23 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPunishmentEvent(PlayerPunishmentEvent event) {
     final Punishment punishment = event.getPunishment();
+
+    Optional<Player> onlineTarget = punishment.getTargetPlayer();
+    if (onlineTarget.isPresent()) {
+      if (!event.getSender().hasPermission(CommunityPermissions.OVERRIDE)
+          && onlineTarget.get().hasPermission(CommunityPermissions.OVERRIDE)) {
+        event
+            .getSender()
+            .sendWarning(
+                text()
+                    .append(player(onlineTarget.get(), NameStyle.FANCY))
+                    .append(text(" is exempt from punishment"))
+                    .build());
+        return;
+      }
+    }
+
+    save(punishment); // Save punishment to database
 
     recents.add(punishment); // Cache recent punishment
 

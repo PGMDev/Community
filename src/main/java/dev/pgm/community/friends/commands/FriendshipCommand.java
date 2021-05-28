@@ -12,6 +12,7 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.friends.Friendship;
@@ -374,10 +375,13 @@ public class FriendshipCommand extends CommunityCommand {
             Player online1 = Bukkit.getPlayer(f1);
             Player online2 = Bukkit.getPlayer(f2);
 
+            boolean canSee1 = canSee(online1, audience);
+            boolean canSee2 = canSee(online2, audience);
+
             // Sort online friends before offline friends
-            if (online1 != null && online2 == null) {
+            if (canSee1 && !canSee2) {
               return -1;
-            } else if (online2 != null && online1 == null) {
+            } else if (canSee2 && !canSee1) {
               return 1;
             }
 
@@ -426,8 +430,7 @@ public class FriendshipCommand extends CommunityCommand {
                 .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
                 .append(
                     renderOnlineStatus(
-                            data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                            audience.getSender().hasPermission(CommunityPermissions.STAFF))
+                            data.getOtherPlayer(audience.getPlayer().getUniqueId()), audience)
                         .join());
 
         if (data.getLastUpdated() != null) {
@@ -451,14 +454,15 @@ public class FriendshipCommand extends CommunityCommand {
     }.display(audience.getAudience(), friends, page);
   }
 
-  private CompletableFuture<Component> renderOnlineStatus(UUID playerId, boolean staff) {
+  private CompletableFuture<Component> renderOnlineStatus(UUID playerId, CommandAudience viewer) {
     return users
         .getStoredProfile(playerId)
         .thenApplyAsync(
             profile -> {
-              boolean online = Bukkit.getPlayer(playerId) != null;
-              boolean vanished = online && Bukkit.getPlayer(playerId).hasMetadata("isVanished");
-              boolean visible = online && (!vanished || staff);
+              Player player = Bukkit.getPlayer(playerId);
+              boolean online = player != null;
+              boolean disguised = online && VisibilityUtils.isDisguised(player);
+              boolean visible = online && (!disguised || canSee(player, viewer));
 
               Component status =
                   (visible
@@ -471,5 +475,18 @@ public class FriendshipCommand extends CommunityCommand {
                   .append(status)
                   .color(NamedTextColor.GRAY);
             });
+  }
+
+  private boolean canSee(Player player, CommandAudience viewer) {
+    if (player == null) return false;
+    if (!viewer.isPlayer()) return true;
+    if (isDisguised(player)) {
+      if (Community.get().getFeatures().getNick().isNicked(player.getUniqueId())
+          && player.hasPermission(CommunityPermissions.ADMIN)) {
+        return viewer.hasPermission(CommunityPermissions.ADMIN);
+      }
+      return viewer.hasPermission(CommunityPermissions.STAFF);
+    }
+    return true;
   }
 }

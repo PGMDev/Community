@@ -247,6 +247,12 @@ public abstract class CommunityCommand extends BaseCommand {
     return id;
   }
 
+  protected boolean hasOverride(Player player, CommandAudience viewer) {
+    return Community.get().getFeatures().getNick().isNicked(player.getUniqueId())
+        && player.hasPermission(CommunityPermissions.OVERRIDE)
+        && !viewer.hasPermission(CommunityPermissions.OVERRIDE);
+  }
+
   protected boolean isDisguised(CommandAudience audience) {
     return !audience.isPlayer() || isDisguised(audience.getPlayer());
   }
