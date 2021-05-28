@@ -6,6 +6,7 @@ import dev.pgm.community.assistance.ReportConfig;
 import dev.pgm.community.assistance.feature.AssistanceFeatureBase;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
+import fr.minuskube.inv.InventoryManager;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -15,8 +16,12 @@ import org.bukkit.configuration.Configuration;
 public class NoDBAssistanceFeature extends AssistanceFeatureBase {
 
   public NoDBAssistanceFeature(
-      Configuration config, Logger logger, NetworkFeature network, UsersFeature users) {
-    super(new ReportConfig(config), logger, "Assistance (No Database)", network, users);
+      Configuration config,
+      Logger logger,
+      NetworkFeature network,
+      UsersFeature users,
+      InventoryManager inventory) {
+    super(new ReportConfig(config), logger, "Assistance (No Database)", network, users, inventory);
   }
 
   @Override

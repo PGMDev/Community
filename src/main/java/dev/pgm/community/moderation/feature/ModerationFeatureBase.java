@@ -1,13 +1,14 @@
 package dev.pgm.community.moderation.feature;
 
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.text.TemporalComponent.duration;
+import static tc.oc.pgm.util.text.PlayerComponent.player;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.events.PlayerPunishmentEvent;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
@@ -15,6 +16,7 @@ import dev.pgm.community.moderation.commands.BanCommand;
 import dev.pgm.community.moderation.commands.KickCommand;
 import dev.pgm.community.moderation.commands.MuteCommand;
 import dev.pgm.community.moderation.commands.PunishmentCommand;
+import dev.pgm.community.moderation.commands.ToolCommand;
 import dev.pgm.community.moderation.commands.WarnCommand;
 import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
@@ -28,6 +30,7 @@ import dev.pgm.community.network.updates.types.RefreshPunishmentUpdate;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
@@ -40,7 +43,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -54,16 +56,10 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.event.NameDecorationChangeEvent;
-import tc.oc.pgm.api.integration.Integration;
-import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.events.PlayerParticipationStartEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
-
-  private static final String BANNED_GROUP = "pgm.group.banned";
 
   private final UsersFeature users;
   private final NetworkFeature network;
@@ -71,6 +67,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   private final Cache<UUID, MutePunishment> muteCache;
   private final Cache<UUID, Set<String>> banEvasionCache;
   private final Cache<UUID, Punishment> observerBanCache;
+  private final Cache<UUID, Instant> pardonedPlayers;
   private Cache<UUID, Punishment> matchBan;
 
   private PGMPunishmentIntegration integration;
@@ -87,9 +84,12 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     this.network = network;
     this.recents = Sets.newHashSet();
     this.muteCache = CacheBuilder.newBuilder().build();
-    this.banEvasionCache = CacheBuilder.newBuilder().build();
+    this.banEvasionCache =
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(config.getEvasionExpireMins(), TimeUnit.MINUTES)
+            .build();
     this.observerBanCache = CacheBuilder.newBuilder().build();
-    this.integration = new PGMPunishmentIntegration(this);
+    this.pardonedPlayers = CacheBuilder.newBuilder().build();
 
     if (config.getMatchBanDuration() != null) {
       this.matchBan =
@@ -102,7 +102,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
       enable();
 
       // Set PGM punishment integration
-      Integration.setPunishmentIntegration(integration);
+      if (PGMUtils.isPGMEnabled()) {
+        this.integration = new PGMPunishmentIntegration(this);
+        this.integration.enable();
+      }
 
       Community.get()
           .getServer()
@@ -149,7 +152,6 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             time,
             getSenderId(issuer.getSender()),
             getModerationConfig().getService());
-    save(punishment);
     Bukkit.getPluginManager().callEvent(new PlayerPunishmentEvent(issuer, punishment, silent));
     return punishment;
   }
@@ -172,6 +174,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     if (getModerationConfig().isMuteEnabled()) {
       commands.add(new MuteCommand());
+    }
+
+    if (PGMUtils.isPGMEnabled() && integration != null) {
+      commands.add(new ToolCommand(integration));
     }
 
     commands.add(new PunishmentCommand());
@@ -222,6 +228,23 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   public void onPunishmentEvent(PlayerPunishmentEvent event) {
     final Punishment punishment = event.getPunishment();
 
+    Optional<Player> onlineTarget = punishment.getTargetPlayer();
+    if (onlineTarget.isPresent()) {
+      if (!event.getSender().hasPermission(CommunityPermissions.ADMIN)
+          && onlineTarget.get().hasPermission(CommunityPermissions.ADMIN)) {
+        event
+            .getSender()
+            .sendWarning(
+                text()
+                    .append(player(onlineTarget.get(), NameStyle.FANCY))
+                    .append(text(" is exempt from punishment"))
+                    .build());
+        return;
+      }
+    }
+
+    save(punishment); // Save punishment to database
+
     recents.add(punishment); // Cache recent punishment
 
     punishment.punish(event.isSilent()); // Perform the actual punishment
@@ -233,6 +256,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     switch (punishment.getType()) {
       case BAN:
       case TEMP_BAN: // Cache known IPS of a recently banned player, so if they rejoin on an alt can
+      case NAME_BAN:
         // find them
         addBan(punishment.getId(), punishment);
         users
@@ -265,7 +289,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .ifPresent(
             ban -> {
               event.setJoinMessage(null); // Hide join message
-              updateBanPrefix(event.getPlayer(), true); // assign banned group
+              integration.updateBanPrefix(event.getPlayer(), true); // assign banned group
               Bukkit.getScheduler()
                   .runTaskLater(
                       Community.get(),
@@ -282,6 +306,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         .ifPresent(
             ban -> {
               event.setQuitMessage(null); // Hide quit message
+              observerBanCache.invalidate(event.getPlayer().getUniqueId());
             });
   }
 
@@ -289,10 +314,11 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   public void onPlayerJoinEvasionCheck(PlayerJoinEvent event) {
     String host = event.getPlayer().getAddress().getAddress().getHostAddress();
     Optional<UUID> banEvasion = isBanEvasion(host);
+    boolean exclude = hasRecentPardon(event.getPlayer().getUniqueId());
 
-    if (banEvasion.isPresent()) {
+    if (banEvasion.isPresent() && !exclude) {
       users
-          .renderUsername(banEvasion, NameStyle.FANCY, null)
+          .renderUsername(banEvasion, NameStyle.FANCY)
           .thenAcceptAsync(
               bannedName -> {
                 if (!banEvasion.get().equals(event.getPlayer().getUniqueId())) {
@@ -303,45 +329,6 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
                 }
               });
     }
-  }
-
-  @EventHandler
-  public void onMatchJoin(PlayerParticipationStartEvent event) {
-    MatchPlayer player = event.getPlayer();
-    if (matchBan != null) {
-      Punishment punishment = matchBan.getIfPresent(player.getId());
-
-      if (punishment != null) {
-        Duration elasped = Duration.between(punishment.getTimeIssued(), Instant.now());
-        Duration remaining = getModerationConfig().getMatchBanDuration().minus(elasped);
-        Component reason =
-            text()
-                .append(text("You are banned from this match for "))
-                .append(duration(remaining, NamedTextColor.YELLOW))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        text()
-                            .append(text("Reason: ", NamedTextColor.AQUA))
-                            .append(text(punishment.getReason(), NamedTextColor.GRAY))))
-                .build();
-        event.cancel(reason);
-      }
-    }
-
-    getOnlineBan(player.getId())
-        .ifPresent(
-            ban -> {
-              Component reason =
-                  text()
-                      .append(text("You have been banned and are unable to play"))
-                      .hoverEvent(
-                          HoverEvent.showText(
-                              text()
-                                  .append(text("Reason: ", NamedTextColor.AQUA))
-                                  .append(text(ban.getReason(), NamedTextColor.GRAY))))
-                      .build();
-              event.cancel(reason);
-            });
   }
 
   // Cancel ALL commands for shadow banned
@@ -391,6 +378,11 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   // BANS
+  @Nullable
+  public Cache<UUID, Punishment> getMatchBans() {
+    return matchBan;
+  }
+
   protected void addBan(UUID playerId, Punishment punishment) {
     if (getModerationConfig().isObservingBan()) {
       observerBanCache.put(playerId, punishment);
@@ -401,9 +393,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   protected void removeCachedBan(UUID playerId) {
     banEvasionCache.invalidate(playerId);
     observerBanCache.invalidate(playerId);
+    pardonedPlayers.put(playerId, Instant.now());
 
-    if (Bukkit.getPlayer(playerId) != null) {
-      updateBanPrefix(Bukkit.getPlayer(playerId), false);
+    if (Bukkit.getPlayer(playerId) != null && getModerationConfig().isObservingBan()) {
+      integration.updateBanPrefix(Bukkit.getPlayer(playerId), false);
     }
   }
 
@@ -454,9 +447,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     return Optional.ofNullable(cached.isPresent() ? cached.get().getKey() : null);
   }
 
-  private void updateBanPrefix(Player player, boolean apply) {
-    player.addAttachment(Community.get(), BANNED_GROUP, apply);
-    Bukkit.getPluginManager().callEvent(new NameDecorationChangeEvent(player.getUniqueId()));
+  private boolean hasRecentPardon(UUID playerId) {
+    return pardonedPlayers.getIfPresent(playerId) != null;
   }
 
   private void banHover() {

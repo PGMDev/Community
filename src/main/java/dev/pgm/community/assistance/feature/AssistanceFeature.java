@@ -15,6 +15,8 @@ import org.bukkit.entity.Player;
  */
 public interface AssistanceFeature extends Feature {
 
+  void requestAssistance(Player sender, Player target, String reason);
+
   void assist(Player sender, String reason);
 
   Report report(Player sender, Player target, String reason);
@@ -34,4 +36,6 @@ public interface AssistanceFeature extends Feature {
   void sendUpdate(AssistanceRequest request);
 
   void recieveUpdate(AssistanceRequest request);
+
+  void openReportsMenu(Player sender, Player target);
 }

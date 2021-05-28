@@ -70,7 +70,7 @@ public class FeatureManager {
 
     // DB Features
     this.users = new SQLUsersFeature(config, logger, database);
-    this.reports = new SQLAssistanceFeature(config, logger, database, users, network);
+    this.reports = new SQLAssistanceFeature(config, logger, database, users, network, inventory);
     this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
     this.nick = new SQLNickFeature(config, logger, database, users);

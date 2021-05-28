@@ -13,6 +13,7 @@ import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
 import dev.pgm.community.moderation.punishments.types.KickPunishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
+import dev.pgm.community.moderation.punishments.types.UsernameBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
@@ -30,9 +31,9 @@ import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.PlayerComponentProvider;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextTranslations;
@@ -236,7 +237,7 @@ public class Punishment implements Comparable<Punishment> {
     }
 
     // Staff Sign-off
-    if (!disguised) {
+    if (!disguised && config.isStaffSignoff()) {
       lines.add(empty());
       lines.add(translatable("moderation.screen.signoff", NamedTextColor.GRAY, issuerName));
     }
@@ -249,6 +250,13 @@ public class Punishment implements Comparable<Punishment> {
               .append(
                   TemporalComponent.duration(config.getMatchBanDuration(), NamedTextColor.YELLOW))
               .color(NamedTextColor.GRAY));
+    }
+
+    // Alert name banned players when their ban will be lifted
+    if (getType() == PunishmentType.NAME_BAN) {
+      lines.add(empty());
+      lines.add(text("Please change your username", NamedTextColor.GRAY));
+      lines.add(text("Once complete, ban will automatically be removed", NamedTextColor.GRAY));
     }
 
     if (isBan() && config.isObservingBan() && space) {
@@ -326,6 +334,9 @@ public class Punishment implements Comparable<Punishment> {
             id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, service);
       case BAN:
         return new BanPunishment(
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
+      case NAME_BAN:
+        return new UsernameBanPunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
     }
     return null;

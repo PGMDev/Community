@@ -13,8 +13,8 @@ import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.NickConfig;
 import dev.pgm.community.nick.commands.NickCommands;
-import dev.pgm.community.utils.NickUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +34,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.Audience;
 
 public abstract class NickFeatureBase extends FeatureBase implements NickFeature {
@@ -51,7 +50,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
     super(new NickConfig(config), logger, featureName);
     this.nickedPlayers = Maps.newHashMap();
 
-    if (getNickConfig().isEnabled()) {
+    if (getNickConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
     }
   }
@@ -69,7 +68,6 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
   private void integrate() {
     if (isPGMEnabled()) {
       pgmNicks = new PGMNickIntegration(this);
-      Integration.setNickIntegration(pgmNicks);
     }
   }
 
@@ -142,7 +140,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
                     nickedPlayers.put(player.getUniqueId(), nick.getName());
                   } else {
                     // Auto apply a random name if none set
-                    NickUtils.getRandomName()
+                    WebUtils.getRandomName()
                         .thenAcceptAsync(
                             name -> {
                               this.setNick(player.getUniqueId(), name)

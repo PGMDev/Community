@@ -19,6 +19,8 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.WebUtils;
+import dev.pgm.community.utils.WebUtils.NameEntry;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -32,8 +34,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
@@ -41,6 +43,51 @@ import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 public class UserInfoCommands extends CommunityCommand {
 
   @Dependency private UsersFeature users;
+
+  @CommandAlias("usernamehistory|uh")
+  @Description("View the name history of a user")
+  @Syntax("[player]")
+  @CommandCompletion("@players")
+  @CommandPermission(CommunityPermissions.LOOKUP)
+  public void usernameHistoryTest(CommandAudience audience, String target) {
+    WebUtils.getUsernameHistory(target)
+        .thenAcceptAsync(
+            history -> {
+              Component username = text(history.getCurrentName(), NamedTextColor.AQUA);
+
+              if (history.getHistory().isEmpty()) {
+                audience.sendWarning(
+                    text()
+                        .append(username)
+                        .append(text(" has never changed their username.", NamedTextColor.GRAY))
+                        .build());
+                return;
+              }
+
+              Component headerText =
+                  text()
+                      .append(text("Username History", NamedTextColor.YELLOW))
+                      .append(text(" - ", NamedTextColor.GRAY))
+                      .append(username)
+                      .build();
+              audience.sendMessage(
+                  TextFormatter.horizontalLineHeading(
+                      audience.getSender(), headerText, NamedTextColor.GRAY));
+
+              int i = 1;
+              for (NameEntry name : history.getHistory()) {
+                audience.sendMessage(
+                    text()
+                        .append(text(i++ + ". ", NamedTextColor.WHITE))
+                        .append(text(name.getUsername(), NamedTextColor.YELLOW))
+                        .append(BroadcastUtils.BROADCAST_DIV)
+                        .append(
+                            TemporalComponent.relativePastApproximate(name.getDateChanged())
+                                .color(NamedTextColor.DARK_AQUA))
+                        .build());
+              }
+            });
+  }
 
   @CommandAlias("seen|lastseen")
   @Description("View when a player was last online")
@@ -212,6 +259,9 @@ public class UserInfoCommands extends CommunityCommand {
               audience.sendMessage(lastServer);
 
               if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
+                Player onlinePlayer = Bukkit.getPlayer(profile.getId());
+                String currentIP =
+                    onlinePlayer != null ? onlinePlayer.getAddress().getHostString() : "";
                 users
                     .getKnownIPs(profile.getId())
                     .thenAccept(
@@ -221,11 +271,23 @@ public class UserInfoCommands extends CommunityCommand {
                               formatListItems(
                                   ips.stream()
                                       .map(
-                                          ip ->
-                                              text()
-                                                  .append(text("      - ", NamedTextColor.YELLOW))
-                                                  .append(text(ip, NamedTextColor.DARK_AQUA))
-                                                  .build())
+                                          ip -> {
+                                            boolean current = currentIP.equalsIgnoreCase(ip);
+                                            return text()
+                                                .append(
+                                                    text(
+                                                        "     - ",
+                                                        current
+                                                            ? NamedTextColor.GREEN
+                                                            : NamedTextColor.YELLOW))
+                                                .append(
+                                                    text(
+                                                        ip,
+                                                        current
+                                                            ? NamedTextColor.AQUA
+                                                            : NamedTextColor.DARK_AQUA))
+                                                .build();
+                                          })
                                       .collect(Collectors.toList())));
                         });
               }

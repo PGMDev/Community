@@ -15,6 +15,7 @@ import dev.pgm.community.assistance.Report;
 import dev.pgm.community.assistance.ReportConfig;
 import dev.pgm.community.assistance.commands.PlayerHelpCommand;
 import dev.pgm.community.assistance.commands.ReportCommands;
+import dev.pgm.community.assistance.menu.ReportCategoryMenu;
 import dev.pgm.community.events.PlayerHelpRequestEvent;
 import dev.pgm.community.events.PlayerReportEvent;
 import dev.pgm.community.feature.FeatureBase;
@@ -25,6 +26,8 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.NetworkUtils;
 import dev.pgm.community.utils.Sounds;
+import fr.minuskube.inv.InventoryManager;
+import fr.minuskube.inv.SmartInventory;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
@@ -32,6 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -40,6 +44,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.named.NameStyle;
 
 public abstract class AssistanceFeatureBase extends FeatureBase implements AssistanceFeature {
@@ -49,6 +54,7 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
 
   private final NetworkFeature network;
   protected final UsersFeature users;
+  private final InventoryManager inventory;
 
   protected final Cache<UUID, Instant> cooldown;
   protected final Cache<Report, Instant> recentReports;
@@ -59,7 +65,8 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
       Logger logger,
       String featureName,
       NetworkFeature network,
-      UsersFeature users) {
+      UsersFeature users,
+      InventoryManager inventory) {
     super(config, logger, featureName);
     cooldown =
         CacheBuilder.newBuilder().expireAfterWrite(config.getCooldown(), TimeUnit.SECONDS).build();
@@ -69,6 +76,7 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
         CacheBuilder.newBuilder().expireAfterWrite(EXPIRES_AFTER, RECENT_TIME_UNIT).build();
     this.network = network;
     this.users = users;
+    this.inventory = inventory;
 
     if (config.isEnabled()) {
       enable();
@@ -122,7 +130,23 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
   }
 
   @Override
+  public void requestAssistance(Player sender, Player target, @Nullable String reason) {
+    if (!getReportConfig().isMenu()
+        || sender == target
+        || (getReportConfig().isInputAllowed() && reason != null)) {
+      report(sender, target, reason);
+    } else {
+      openReportsMenu(sender, target);
+    }
+  }
+
+  @Override
   public Report report(Player sender, Player target, String reason) {
+    if (reason == null || reason.isEmpty()) {
+      Audience.get(sender).sendWarning(text("Please provide a reason"));
+      return null;
+    }
+
     // Self reporting results in an assistance message
     if (sender.equals(target)) {
       assist(sender, reason);
@@ -140,6 +164,9 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
 
     // Call Event
     Bukkit.getPluginManager().callEvent(new PlayerReportEvent(report));
+
+    // Send user feedback
+    sendReportFeedback(sender);
 
     // Reset cooldown
     startCooldown(sender);
@@ -203,9 +230,9 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
     final String reason = request.getReason();
     final boolean report = request.getType() == RequestType.REPORT;
     CompletableFuture<Component> sender =
-        users.renderUsername(request.getSenderId(), NameStyle.FANCY, null);
+        users.renderUsername(request.getSenderId(), NameStyle.FANCY);
     CompletableFuture<Component> target =
-        users.renderUsername(request.getTargetId(), NameStyle.FANCY, null);
+        users.renderUsername(request.getTargetId(), NameStyle.FANCY);
 
     CompletableFuture.allOf(sender, target)
         .thenAcceptAsync(
@@ -261,5 +288,27 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
                         NamedTextColor.GRAY)))
             .build();
     Audience.get(player).sendMessage(thanks);
+  }
+
+  private void sendReportFeedback(Player player) {
+    Component thanks =
+        text()
+            .append(translatable("misc.thankYou", NamedTextColor.GREEN))
+            .append(space())
+            .append(translatable("moderation.report.acknowledge", NamedTextColor.GOLD))
+            .build();
+    Audience.get(player).sendMessage(thanks);
+  }
+
+  @Override
+  public void openReportsMenu(Player player, Player target) {
+    SmartInventory.builder()
+        .size(1, 9)
+        .title(BukkitUtils.colorize("&eSelect a category&7:"))
+        .manager(inventory)
+        .provider(
+            new ReportCategoryMenu(inventory, target, this, getReportConfig().getCategories()))
+        .build()
+        .open(player);
   }
 }

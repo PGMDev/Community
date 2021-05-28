@@ -23,7 +23,7 @@ public class Sounds {
 
   // Played when a player is teleported via command
   public static final Sound TELEPORT =
-      sound(key("mob.endermen.portal"), Sound.Source.MASTER, 1f, 0.9f);
+      sound(key("mob.endermen.portal"), Sound.Source.MASTER, 0.7f, 0.9f);
 
   // Played when player logs in and has a pending friend request
   public static final Sound FRIEND_REQUEST_LOGIN =
@@ -39,5 +39,10 @@ public class Sounds {
   // Played when a message is sent to admin chat
   public static final Sound ADMIN_CHAT = sound(key("random.orb"), Sound.Source.MASTER, 1f, 0.7f);
 
+  // Played when a a prominent message is broadcasted
   public static final Sound ALERT = sound(key("note.harp"), Sound.Source.MASTER, 1f, 0.1f);
+
+  // Played when a target is selected for the teleport hook
+  public static final Sound TARGET_CONFIRM =
+      sound(key("random.wood_click"), Sound.Source.MASTER, 1f, 1.5f);
 }

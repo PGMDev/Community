@@ -16,8 +16,9 @@ moderation:
   service: "occ"  # Name of service that punishments will be recorded under.
   
   #Message options for kick screen
-  rules-link: "https://pgm.dev/rules" #Link to rules
+  rules-link: "https://pgm.dev/rules" # Link to rules
   appeal-link: "&7If this ban was made in error, contact &estaff@pgm.dev" # Appeal message (Only shown for perm-bans)
+  staff-signoff: true # Whether staff name will be revealed in kick screen (for non disguised staff)
   
   #Punishments types - TODO: more options will be found under each punishment type  
   warn:
@@ -28,6 +29,7 @@ moderation:
     public: true
     match-ban: "10m" # Bans player from playing for given time. Set to -1 to disable (PGM)
   ban:
+    evasion-expires: 30 # Minutes
     enabled: true
     public: true
     # Observe Bans - Allows banned players to join obs, but not interact any further
@@ -47,6 +49,27 @@ reports:
   enabled:  true   # Whether reports are enabled
   persist:  true   # Whether to save to database 
   cooldown: 15     # Duration of cooldown in seconds
+  
+  menu: true        # Whether /report will utilize a menu, false for custom input only
+  allow-input: true # If we should always accept custom reports when provided a reason
+  
+  # Interactive menu layout (enabled when menu -> true)
+  # Color codes are allowed in name & description fields
+  categories:
+    # A Report Category - Cheating
+    cheating:                    # ID of category
+      name: "&cCheating"         # Display name of the category
+      icon: "IRON_SWORD"         # Material used for icon
+      description: 
+        - "&7Hacking"            # Description explaining what the category is
+      
+      # Reasons - A list of reasons for given category
+      reasons:
+        hacker:                   # ID of reason
+          name: "&cHacking"       # Display name of the reason
+          icon: "DIAMOND_SWORD"   # Material used for icon
+          description: 
+            - "&7This user hacks" # Description explaining what the reason is
 
 # Users - Track user related info including, name/uuid, first/last logins, join count, and IP history
 users:

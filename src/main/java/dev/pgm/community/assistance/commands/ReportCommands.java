@@ -1,7 +1,6 @@
 package dev.pgm.community.assistance.commands;
 
 import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
@@ -12,6 +11,7 @@ import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
 import dev.pgm.community.Community;
@@ -34,8 +34,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
@@ -50,7 +50,8 @@ public class ReportCommands extends CommunityCommand {
   @Description("Report a player who is breaking the rules")
   @CommandCompletion("@visible *")
   @Syntax("[username] (reason)")
-  public void report(CommandAudience viewer, Player sender, String target, String reason) {
+  public void report(
+      CommandAudience viewer, Player sender, String target, @Optional String reason) {
     checkEnabled();
 
     if (!reports.canRequest(sender.getUniqueId())) {
@@ -62,14 +63,8 @@ public class ReportCommands extends CommunityCommand {
     }
 
     Player targetPlayer = getSinglePlayer(viewer, target, true);
-    if (targetPlayer != null && reports.report(sender, targetPlayer, reason) != null) {
-      Component thanks =
-          text()
-              .append(translatable("misc.thankYou", NamedTextColor.GREEN))
-              .append(space())
-              .append(translatable("moderation.report.acknowledge", NamedTextColor.GOLD))
-              .build();
-      viewer.sendMessage(thanks);
+    if (targetPlayer != null) {
+      reports.requestAssistance(sender, targetPlayer, reason);
     }
   }
 

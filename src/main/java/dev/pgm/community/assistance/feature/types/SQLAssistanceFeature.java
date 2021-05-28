@@ -8,6 +8,7 @@ import dev.pgm.community.assistance.services.SQLAssistanceService;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
+import fr.minuskube.inv.InventoryManager;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -24,8 +25,9 @@ public class SQLAssistanceFeature extends AssistanceFeatureBase {
       Logger logger,
       DatabaseConnection database,
       UsersFeature usernames,
-      NetworkFeature network) {
-    super(new ReportConfig(config), logger, "Assistance (SQL)", network, usernames);
+      NetworkFeature network,
+      InventoryManager inventory) {
+    super(new ReportConfig(config), logger, "Assistance (SQL)", network, usernames, inventory);
     this.service = new SQLAssistanceService(database);
   }
 

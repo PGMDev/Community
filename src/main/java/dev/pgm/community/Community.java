@@ -178,6 +178,10 @@ public class Community extends JavaPlugin {
     return features;
   }
 
+  public InventoryManager getInventory() {
+    return inventory;
+  }
+
   // Not the best practice, only use where makes sense
   private static Community plugin;
 

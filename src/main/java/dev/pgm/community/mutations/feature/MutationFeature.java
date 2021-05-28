@@ -64,7 +64,9 @@ public class MutationFeature extends FeatureBase {
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() ? Sets.newHashSet(new MutationCommands()) : Sets.newHashSet();
+    return getConfig().isEnabled() && isPGMEnabled()
+        ? Sets.newHashSet(new MutationCommands())
+        : Sets.newHashSet();
   }
 
   public boolean addMutation(CommandAudience sender, MutationType type, boolean broadcast) {

@@ -12,6 +12,7 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.friends.Friendship;
@@ -96,10 +97,7 @@ public class FriendshipCommand extends CommunityCommand {
                       .thenAcceptAsync(
                           status -> {
                             users
-                                .renderUsername(
-                                    Optional.of(storedId.get()),
-                                    NameStyle.CONCISE,
-                                    sender.getPlayer())
+                                .renderUsername(Optional.of(storedId.get()), NameStyle.CONCISE)
                                 .thenAcceptAsync(
                                     name -> {
                                       switch (status) {
@@ -167,7 +165,7 @@ public class FriendshipCommand extends CommunityCommand {
                             Optional<Friendship> existing =
                                 friendList.stream().filter(fr -> fr.isInvolved(targetId)).findAny();
                             users
-                                .renderUsername(storedId, NameStyle.CONCISE, sender.getPlayer())
+                                .renderUsername(storedId, NameStyle.CONCISE)
                                 .thenAcceptAsync(
                                     name -> {
                                       if (existing.isPresent()) {
@@ -212,7 +210,7 @@ public class FriendshipCommand extends CommunityCommand {
                           .findAny();
 
                   users
-                      .renderUsername(storedId, NameStyle.CONCISE, sender.getPlayer())
+                      .renderUsername(storedId, NameStyle.CONCISE)
                       .thenAcceptAsync(
                           name -> {
                             if (pending.isPresent()) {
@@ -272,7 +270,7 @@ public class FriendshipCommand extends CommunityCommand {
                           .filter(fr -> fr.getRequesterId().equals(storedId.get()))
                           .findAny();
                   users
-                      .renderUsername(storedId, NameStyle.CONCISE, sender.getPlayer())
+                      .renderUsername(storedId, NameStyle.CONCISE)
                       .thenAcceptAsync(
                           name -> {
                             if (pending.isPresent()) {
@@ -335,9 +333,7 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             users
                 .renderUsername(
-                    data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                    NameStyle.CONCISE,
-                    audience.getPlayer())
+                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.CONCISE)
                 .join();
 
         return text()
@@ -379,10 +375,13 @@ public class FriendshipCommand extends CommunityCommand {
             Player online1 = Bukkit.getPlayer(f1);
             Player online2 = Bukkit.getPlayer(f2);
 
+            boolean canSee1 = canSee(online1, audience);
+            boolean canSee2 = canSee(online2, audience);
+
             // Sort online friends before offline friends
-            if (online1 != null && online2 == null) {
+            if (canSee1 && !canSee2) {
               return -1;
-            } else if (online2 != null && online1 == null) {
+            } else if (canSee2 && !canSee1) {
               return 1;
             }
 
@@ -421,9 +420,7 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             users
                 .renderUsername(
-                    data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                    NameStyle.CONCISE,
-                    audience.getPlayer())
+                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.CONCISE)
                 .join();
 
         TextComponent.Builder builder =
@@ -433,8 +430,7 @@ public class FriendshipCommand extends CommunityCommand {
                 .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
                 .append(
                     renderOnlineStatus(
-                            data.getOtherPlayer(audience.getPlayer().getUniqueId()),
-                            audience.getSender().hasPermission(CommunityPermissions.STAFF))
+                            data.getOtherPlayer(audience.getPlayer().getUniqueId()), audience)
                         .join());
 
         if (data.getLastUpdated() != null) {
@@ -458,14 +454,15 @@ public class FriendshipCommand extends CommunityCommand {
     }.display(audience.getAudience(), friends, page);
   }
 
-  private CompletableFuture<Component> renderOnlineStatus(UUID playerId, boolean staff) {
+  private CompletableFuture<Component> renderOnlineStatus(UUID playerId, CommandAudience viewer) {
     return users
         .getStoredProfile(playerId)
         .thenApplyAsync(
             profile -> {
-              boolean online = Bukkit.getPlayer(playerId) != null;
-              boolean vanished = online && Bukkit.getPlayer(playerId).hasMetadata("isVanished");
-              boolean visible = online && (!vanished || staff);
+              Player player = Bukkit.getPlayer(playerId);
+              boolean online = player != null;
+              boolean disguised = online && VisibilityUtils.isDisguised(player);
+              boolean visible = online && (!disguised || canSee(player, viewer));
 
               Component status =
                   (visible
@@ -478,5 +475,18 @@ public class FriendshipCommand extends CommunityCommand {
                   .append(status)
                   .color(NamedTextColor.GRAY);
             });
+  }
+
+  private boolean canSee(Player player, CommandAudience viewer) {
+    if (player == null) return false;
+    if (!viewer.isPlayer()) return true;
+    if (isDisguised(player)) {
+      if (Community.get().getFeatures().getNick().isNicked(player.getUniqueId())
+          && player.hasPermission(CommunityPermissions.OVERRIDE)) {
+        return viewer.hasPermission(CommunityPermissions.OVERRIDE);
+      }
+      return viewer.hasPermission(CommunityPermissions.STAFF);
+    }
+    return true;
   }
 }

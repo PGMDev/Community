@@ -56,9 +56,13 @@ public class FreezeFeature extends FeatureBase {
     super(new FreezeConfig(config), logger, "Freeze");
     this.freeze = new FreezeManager();
 
-    if (getConfig().isEnabled()) {
+    if (getFreezeConfig().isEnabled() && isPGMEnabled()) {
       enable();
     }
+  }
+
+  private boolean isPGMEnabled() {
+    return (PGMUtils.isPGMEnabled() && getFreezeConfig().isIntegrationEnabled());
   }
 
   public FreezeConfig getFreezeConfig() {
@@ -67,7 +71,9 @@ public class FreezeFeature extends FeatureBase {
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() ? Sets.newHashSet(new FreezeCommand()) : Sets.newHashSet();
+    return getConfig().isEnabled() && isPGMEnabled()
+        ? Sets.newHashSet(new FreezeCommand())
+        : Sets.newHashSet();
   }
 
   public boolean isFrozen(Player player) {

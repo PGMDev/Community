@@ -16,10 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.command.CommandSender;
-import tc.oc.pgm.api.Permissions;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("staff|mods|admins")
@@ -30,14 +28,15 @@ public class StaffCommand extends CommunityCommand {
   @Dependency private NickFeature nicks;
 
   @Default
-  public void staff(CommandAudience viewer, CommandSender sender) {
+  public void staff(CommandAudience viewer) {
     List<Component> onlineStaff =
         plugin.getServer().getOnlinePlayers().stream()
             .filter(
                 player ->
-                    (player.hasPermission(Permissions.STAFF)
+                    (player.hasPermission(CommunityPermissions.STAFF)
                         && (!isDisguised(player)
-                            || sender.hasPermission(CommunityPermissions.STAFF))))
+                            || (viewer.hasPermission(CommunityPermissions.STAFF)
+                                && !hasOverride(player, viewer)))))
             .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
 

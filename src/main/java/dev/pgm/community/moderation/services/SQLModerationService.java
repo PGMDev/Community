@@ -109,7 +109,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
             punishments -> {
               boolean banned = false;
               for (Punishment p : punishments) {
-                if (PunishmentType.isBan(p.getType()) && p.isActive()) {
+                if (p.getType().isLoginPrevented() && p.isActive()) {
                   banned = true;
                   break;
                 }
@@ -322,7 +322,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
 
   private class PardonPunishmentQuery implements Query {
     private static final String SINGLE_TYPE = "AND type = ?";
-    private static final String MULTI_TYPE = "AND (type = ? OR type = ?)";
+    private static final String MULTI_TYPE = "AND (type = ? OR type = ? OR type = ?)";
     private static final String QUERY_FORMAT =
         "UPDATE "
             + TABLE_NAME
@@ -336,7 +336,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
     public PardonPunishmentQuery(UUID id, Optional<UUID> issuer, PunishmentType type) {
       this.id = id;
       this.issuer = issuer;
-      this.ban = PunishmentType.isBan(type);
+      this.ban = type.isLoginPrevented();
 
       punishmentCache.invalidate(id);
     }
@@ -362,6 +362,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment> {
       if (ban) {
         statement.setString(6, PunishmentType.BAN.toString());
         statement.setString(7, PunishmentType.TEMP_BAN.toString());
+        statement.setString(8, PunishmentType.NAME_BAN.toString());
       } else {
         statement.setString(6, PunishmentType.MUTE.toString());
       }

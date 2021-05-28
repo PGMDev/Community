@@ -12,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.NickIntegration;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -28,6 +29,7 @@ public class PGMNickIntegration implements NickIntegration {
     this.nick = nick;
     hotbarTask =
         PGM.get().getExecutor().scheduleAtFixedRate(this::updateHotbars, 0, 1, TimeUnit.SECONDS);
+    Integration.setNickIntegration(this);
   }
 
   @Override

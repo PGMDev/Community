@@ -16,9 +16,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.text.PlayerComponent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.TextTranslations;
 
@@ -29,9 +29,9 @@ public class PunishmentFormats {
       Punishment punishment, String server, UsersFeature users) {
     CompletableFuture<Component> broadcast = new CompletableFuture<>();
     CompletableFuture<Component> issuer =
-        users.renderUsername(punishment.getIssuerId(), NameStyle.FANCY, null);
+        users.renderUsername(punishment.getIssuerId(), NameStyle.FANCY);
     CompletableFuture<Component> target =
-        users.renderUsername(Optional.of(punishment.getTargetId()), NameStyle.FANCY, null);
+        users.renderUsername(Optional.of(punishment.getTargetId()), NameStyle.FANCY);
     CompletableFuture.allOf(issuer, target)
         .thenAcceptAsync(
             x -> {
@@ -109,7 +109,7 @@ public class PunishmentFormats {
     return text()
         .append(text("You are unable to "))
         .append(text(action))
-        .append(text(" while banned: "))
+        .append(text(" while banned for: "))
         .append(text(punishment.getReason(), NamedTextColor.RED))
         .color(NamedTextColor.GRAY)
         .build();

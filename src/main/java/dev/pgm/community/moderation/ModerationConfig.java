@@ -4,6 +4,7 @@ import static tc.oc.pgm.util.text.TextParser.parseDuration;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import dev.pgm.community.moderation.punishments.Punishment;
+import dev.pgm.community.utils.PGMUtils;
 import java.time.Duration;
 import org.bukkit.configuration.Configuration;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -31,6 +32,9 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   private static final String OBS_BANS = BAN_KEY + ".observe";
   private static final String MAX_ONLINE = OBS_BANS + ".max-online";
+  private static final String EVASION_MINS = BAN_KEY + ".evasion-expires";
+
+  private static final String STAFF_SIGNOFF_KEY = KEY + ".staff-signoff";
 
   // General options
   private boolean persist;
@@ -50,6 +54,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   // Messages
   private String rulesLink;
   private String appealMessage;
+  private boolean includeStaffSignoff;
 
   // Service
   private String service;
@@ -65,6 +70,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   // 2. Bans
   private boolean observingBans;
   private int maxOnlineBans;
+  private int evasionMins;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -186,11 +192,19 @@ public class ModerationConfig extends FeatureConfigImpl {
   }
 
   public boolean isObservingBan() {
-    return observingBans;
+    return observingBans && PGMUtils.isPGMEnabled();
   }
 
   public int getMaxOnlineBans() {
     return maxOnlineBans;
+  }
+
+  public int getEvasionExpireMins() {
+    return evasionMins;
+  }
+
+  public boolean isStaffSignoff() {
+    return includeStaffSignoff;
   }
 
   @Override
@@ -213,6 +227,7 @@ public class ModerationConfig extends FeatureConfigImpl {
     // Messages
     this.rulesLink = config.getString(RULES_KEY);
     this.appealMessage = config.getString(APPEAL_KEY);
+    this.includeStaffSignoff = config.getBoolean(STAFF_SIGNOFF_KEY);
 
     // Service
     this.service = config.getString(SERVICE_KEY);
@@ -229,5 +244,6 @@ public class ModerationConfig extends FeatureConfigImpl {
     // Bans - observe ban
     this.observingBans = config.getBoolean(getEnabledKey(OBS_BANS));
     this.maxOnlineBans = config.getInt(MAX_ONLINE);
+    this.evasionMins = config.getInt(EVASION_MINS);
   }
 }
