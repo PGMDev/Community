@@ -7,6 +7,7 @@ import static tc.oc.pgm.util.text.PlayerComponent.player;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
+import dev.pgm.community.moderation.tools.menu.TeleportTargetMenu;
 import dev.pgm.community.utils.Sounds;
 import java.util.Map;
 import java.util.UUID;
@@ -32,7 +33,10 @@ public class TeleportToolManager {
       new ItemBuilder()
           .material(HOOK)
           .name(colorize("&c&lPlayer Hook"))
-          .lore(colorize("&7Right-click to select target"), colorize("&7Left-Click to teleport"))
+          .lore(
+              colorize("&7Right-click &bplayer &7to select target"),
+              colorize("&7Right-click &bair &7to open menu"),
+              colorize("&7Left-Click to &ateleport"))
           .build();
 
   private final Cache<UUID, String> clickCache;
@@ -89,6 +93,15 @@ public class TeleportToolManager {
     }
   }
 
+  public void unTarget(Player sender) {
+    this.hooks.remove(sender.getUniqueId());
+    Audience viewer = Audience.get(sender);
+
+    Component unTargetConfirmation =
+        text("You no longer have a teleport target set", NamedTextColor.GRAY);
+    viewer.sendMessage(unTargetConfirmation);
+  }
+
   public void targetPlayer(Player sender, Player target) {
     this.hooks.put(sender.getUniqueId(), target.getUniqueId());
 
@@ -106,5 +119,9 @@ public class TeleportToolManager {
   public boolean isTarget(Player viewer, Player target) {
     UUID targetID = hooks.get(viewer.getUniqueId());
     return targetID != null && target.getUniqueId().equals(targetID);
+  }
+
+  public boolean hasTarget(Player player) {
+    return hooks.containsKey(player.getUniqueId());
   }
 }

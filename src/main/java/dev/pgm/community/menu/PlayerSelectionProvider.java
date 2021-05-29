@@ -76,7 +76,7 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
     return ClickableItem.of(icon, c -> getInventory().open(player, page));
   }
 
-  private ItemStack getNamedItem(String text, Material material, int amount) {
+  public ItemStack getNamedItem(String text, Material material, int amount) {
     ItemStack stack = new ItemStack(material, amount);
     ItemMeta meta = stack.getItemMeta();
     meta.setDisplayName(colorize(text));
@@ -85,7 +85,12 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
     return stack;
   }
 
-  private Comparator<Player> COMPARE = Comparator.comparing(Player::getName).reversed();
+  private Comparator<Player> COMPARE =
+      Comparator.comparing(
+          Player::getName,
+          (p1, p2) -> {
+            return p1.compareToIgnoreCase(p2);
+          });
 
   private ClickableItem[] getAllPlayers(Player viewer) {
     List<Player> online =

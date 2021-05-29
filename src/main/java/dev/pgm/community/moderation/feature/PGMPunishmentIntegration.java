@@ -30,11 +30,12 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
 
   private static final String BANNED_GROUP = "pgm.group.banned";
   private ModerationFeatureBase moderation;
-  private TeleportToolManager tools;
+
+  private TeleportToolManager tpHook;
 
   public PGMPunishmentIntegration(ModerationFeatureBase moderation) {
     this.moderation = moderation;
-    this.tools = new TeleportToolManager();
+    this.tpHook = new TeleportToolManager();
   }
 
   public void enable() {
@@ -43,7 +44,7 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
   }
 
   public TeleportToolManager getToolManager() {
-    return tools;
+    return tpHook;
   }
 
   public void updateBanPrefix(Player player, boolean apply) {
@@ -74,14 +75,14 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
   @EventHandler
   public void giveTools(ObserverKitApplyEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
-      tools.giveTools(event.getPlayer().getBukkit());
+      tpHook.giveTools(event.getPlayer().getBukkit());
     }
   }
 
   @EventHandler(priority = EventPriority.LOW)
   public void onInteractEvent(ObserverInteractEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
-      tools.onInteract(event);
+      tpHook.onInteract(event);
     }
   }
 
