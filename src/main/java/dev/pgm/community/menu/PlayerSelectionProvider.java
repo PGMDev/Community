@@ -18,14 +18,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import tc.oc.pgm.util.inventory.ItemBuilder;
 import tc.oc.pgm.util.nms.NMSHacks;
 
 public abstract class PlayerSelectionProvider implements InventoryProvider {
 
-  private final Material PAGE_MATERIAL = Material.FLINT;
+  private final Material PAGE_MATERIAL = Material.ARROW;
 
   public abstract SmartInventory getInventory();
 
@@ -39,22 +40,20 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
 
   @Override
   public void init(Player player, InventoryContents contents) {
-    Pagination pages = contents.pagination();
-    pages.setItems(getAllPlayers(player));
-    pages.setItemsPerPage(46);
+    Pagination page = contents.pagination();
+    page.setItems(getAllPlayers(player));
+    page.setItemsPerPage(45);
 
-    pages.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 0, 0));
+    page.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 0, 0));
 
     // Previous
-    if (!pages.isFirst()) {
-      Pagination prev = pages.previous();
-      contents.set(5, 3, getPrevPageItem(player, prev.getPage()));
+    if (!page.isFirst()) {
+      contents.set(5, 0, getPrevPageItem(player, page.getPage() - 1));
     }
 
     // Next
-    if (!pages.isLast()) {
-      Pagination next = pages.next();
-      contents.set(5, 5, getNextPageItem(player, next.getPage()));
+    if (!page.isLast()) {
+      contents.set(5, 8, getNextPageItem(player, page.getPage() + 1));
     }
   }
 
@@ -62,19 +61,28 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
   public void update(Player player, InventoryContents contents) {}
 
   private final ItemStack getPageIcon(String text, int page) {
-    return new ItemBuilder().name(colorize(text)).amount(page).material(PAGE_MATERIAL).build();
+    return getNamedItem(text, PAGE_MATERIAL, page);
   }
 
   private ClickableItem getNextPageItem(Player player, int nextPage) {
-    return getPageItem(player, nextPage, getPageIcon("&e&lNext Page", nextPage));
+    return getPageItem(player, nextPage, getPageIcon("&e&lNext Page", nextPage + 1));
   }
 
-  private ClickableItem getPrevPageItem(Player player, int nextPage) {
-    return getPageItem(player, nextPage, getPageIcon("&e&lPrevious Page", nextPage));
+  private ClickableItem getPrevPageItem(Player player, int prevPage) {
+    return getPageItem(player, prevPage, getPageIcon("&e&lPrevious Page", prevPage + 1));
   }
 
   private ClickableItem getPageItem(Player player, int page, ItemStack icon) {
     return ClickableItem.of(icon, c -> getInventory().open(player, page));
+  }
+
+  private ItemStack getNamedItem(String text, Material material, int amount) {
+    ItemStack stack = new ItemStack(material, amount);
+    ItemMeta meta = stack.getItemMeta();
+    meta.setDisplayName(colorize(text));
+    meta.addItemFlags(ItemFlag.values());
+    stack.setItemMeta(meta);
+    return stack;
   }
 
   private Comparator<Player> COMPARE = Comparator.comparing(Player::getName).reversed();

@@ -1,5 +1,6 @@
 package dev.pgm.community.nick.feature.types;
 
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.feature.NickFeatureBase;
@@ -8,6 +9,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 
 public class SQLNickFeature extends NickFeatureBase {
@@ -32,7 +34,10 @@ public class SQLNickFeature extends NickFeatureBase {
     return isNameAvailable(nickName)
         .thenApplyAsync(
             free -> {
-              if (!free) {
+              boolean override =
+                  Bukkit.getPlayer(playerId) != null
+                      && Bukkit.getPlayer(playerId).hasPermission(CommunityPermissions.ADMIN);
+              if (!free && !override) {
                 return false;
               }
 
