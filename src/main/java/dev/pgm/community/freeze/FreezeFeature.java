@@ -109,7 +109,7 @@ public class FreezeFeature extends FeatureBase {
         PGMUtils.isPGMEnabled() && getFreezeConfig().isIntegrationEnabled());
   }
 
-  private ItemStack getFreezeTool(CommandSender viewer) {
+  public static ItemStack getFreezeTool(CommandSender viewer) {
     ItemStack stack = new ItemStack(TOOL_MATERIAL);
     ItemMeta meta = stack.getItemMeta();
     meta.setDisplayName(

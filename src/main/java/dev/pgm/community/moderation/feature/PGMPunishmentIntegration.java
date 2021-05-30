@@ -7,7 +7,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
-import dev.pgm.community.moderation.tools.TeleportToolManager;
+import dev.pgm.community.moderation.tools.ModerationTools;
 import java.time.Duration;
 import java.time.Instant;
 import net.kyori.adventure.text.Component;
@@ -31,11 +31,11 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
   private static final String BANNED_GROUP = "pgm.group.banned";
   private ModerationFeatureBase moderation;
 
-  private TeleportToolManager tpHook;
+  private ModerationTools tools;
 
   public PGMPunishmentIntegration(ModerationFeatureBase moderation) {
     this.moderation = moderation;
-    this.tpHook = new TeleportToolManager();
+    this.tools = new ModerationTools();
   }
 
   public void enable() {
@@ -43,8 +43,8 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     Community.get().registerListener(this);
   }
 
-  public TeleportToolManager getToolManager() {
-    return tpHook;
+  public ModerationTools getTools() {
+    return tools;
   }
 
   public void updateBanPrefix(Player player, boolean apply) {
@@ -72,17 +72,19 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     return moderation.getOnlineBan(player.getUniqueId()).isPresent();
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.HIGH)
   public void giveTools(ObserverKitApplyEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
-      tpHook.giveTools(event.getPlayer().getBukkit());
+      tools.getTeleportHook().giveHook(event.getPlayer().getBukkit());
+      tools.giveTool(event.getPlayer().getBukkit());
     }
   }
 
   @EventHandler(priority = EventPriority.LOW)
   public void onInteractEvent(ObserverInteractEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
-      tpHook.onInteract(event);
+      tools.getTeleportHook().onInteract(event);
+      tools.onInteract(event);
     }
   }
 

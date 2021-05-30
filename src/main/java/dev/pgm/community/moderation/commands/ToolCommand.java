@@ -8,15 +8,17 @@ import co.aikar.commands.annotation.Flags;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.PGMPunishmentIntegration;
-import dev.pgm.community.moderation.tools.TeleportToolManager;
+import dev.pgm.community.moderation.tools.ModerationTools;
+import dev.pgm.community.utils.PGMUtils;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.match.Match;
 
 public class ToolCommand extends CommunityCommand {
 
-  private TeleportToolManager tools;
+  private final ModerationTools tools;
 
   public ToolCommand(PGMPunishmentIntegration integration) {
-    this.tools = integration.getToolManager();
+    this.tools = integration.getTools();
   }
 
   @CommandAlias("tptarget|tptg|tg")
@@ -24,6 +26,17 @@ public class ToolCommand extends CommunityCommand {
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.STAFF)
   public void targetCommand(Player sender, @Flags("other") Player target) {
-    tools.targetPlayer(sender, target);
+    tools.getTeleportHook().targetPlayer(sender, target);
+  }
+
+  @CommandAlias("modtools|mtools")
+  @Description("Give moderator tool to observer")
+  @CommandPermission(CommunityPermissions.STAFF)
+  public void modTools(Player sender) {
+    Match match = PGMUtils.getMatch();
+    if (match != null && match.getPlayer(sender) != null && match.getPlayer(sender).isObserving()) {
+      tools.giveTool(sender);
+      tools.openMenu(sender);
+    }
   }
 }

@@ -74,7 +74,7 @@ public class TeleportToolManager {
     }
   }
 
-  public void giveTools(Player player) {
+  public void giveHook(Player player) {
     player.getInventory().setItem(3, TP_HOOK);
   }
 
