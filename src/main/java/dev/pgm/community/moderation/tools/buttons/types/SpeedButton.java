@@ -1,8 +1,8 @@
-package dev.pgm.community.moderation.tools.obs;
+package dev.pgm.community.moderation.tools.buttons.types;
 
 import static net.kyori.adventure.text.Component.translatable;
 
-import dev.pgm.community.moderation.tools.TranslatableTool;
+import dev.pgm.community.moderation.tools.buttons.TranslatableToolButton;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -11,14 +11,14 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
-public class FlightSpeedTool extends TranslatableTool {
+public class SpeedButton extends TranslatableToolButton {
 
   private static final String NAME_KEY = "setting.flyspeed";
   private static final String LORE_KEY = NAME_KEY + ".lore";
   private static final Material MATERIAL = Material.FEATHER;
   private static final NamedTextColor COLOR = NamedTextColor.DARK_RED;
 
-  public FlightSpeedTool(Player viewer) {
+  public SpeedButton(Player viewer) {
     super(viewer, NAME_KEY, COLOR, LORE_KEY, MATERIAL, 1);
   }
 

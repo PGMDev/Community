@@ -75,15 +75,13 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
   @EventHandler(priority = EventPriority.HIGH)
   public void giveTools(ObserverKitApplyEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
-      tools.getTeleportHook().giveHook(event.getPlayer().getBukkit());
-      tools.giveTool(event.getPlayer().getBukkit());
+      tools.giveTools(event.getPlayer().getBukkit());
     }
   }
 
   @EventHandler(priority = EventPriority.LOW)
   public void onInteractEvent(ObserverInteractEvent event) {
     if (event.getPlayer().getBukkit().hasPermission(CommunityPermissions.STAFF)) {
-      tools.getTeleportHook().onInteract(event);
       tools.onInteract(event);
     }
   }

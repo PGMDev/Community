@@ -30,13 +30,12 @@ public class ToolCommand extends CommunityCommand {
   }
 
   @CommandAlias("modtools|mtools")
-  @Description("Give moderator tool to observer")
+  @Description("Give moderator tools to observer")
   @CommandPermission(CommunityPermissions.STAFF)
   public void modTools(Player sender) {
     Match match = PGMUtils.getMatch();
     if (match != null && match.getPlayer(sender) != null && match.getPlayer(sender).isObserving()) {
-      tools.giveTool(sender);
-      tools.openMenu(sender);
+      tools.giveTools(sender);
     }
   }
 }

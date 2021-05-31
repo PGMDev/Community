@@ -1,8 +1,8 @@
-package dev.pgm.community.moderation.tools.obs;
+package dev.pgm.community.moderation.tools.buttons.types;
 
 import static net.kyori.adventure.text.Component.translatable;
 
-import dev.pgm.community.moderation.tools.TranslatableTool;
+import dev.pgm.community.moderation.tools.buttons.TranslatableToolButton;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,7 +15,7 @@ import tc.oc.pgm.api.setting.SettingKey;
 import tc.oc.pgm.api.setting.SettingValue;
 import tc.oc.pgm.api.setting.Settings;
 
-public class ObsVisibilityTool extends TranslatableTool {
+public class ObserverVisibilityButton extends TranslatableToolButton {
 
   private static final String NAME_KEY = "setting.visibility";
   private static final String LORE_KEY = NAME_KEY + ".lore";
@@ -25,7 +25,7 @@ public class ObsVisibilityTool extends TranslatableTool {
   private static final NamedTextColor ON_COLOR = NamedTextColor.GREEN;
   private static final NamedTextColor OFF_COLOR = NamedTextColor.RED;
 
-  public ObsVisibilityTool(Player viewer) {
+  public ObserverVisibilityButton(Player viewer) {
     super(viewer, NAME_KEY, COLOR, LORE_KEY, ON_MATERIAL, 1);
   }
 

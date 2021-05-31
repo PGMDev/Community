@@ -1,4 +1,4 @@
-package dev.pgm.community.moderation.tools;
+package dev.pgm.community.moderation.tools.buttons;
 
 import static net.kyori.adventure.text.Component.translatable;
 
@@ -11,13 +11,13 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.text.TextTranslations;
 
-public abstract class TranslatableTool extends ToolBase {
+public abstract class TranslatableToolButton extends ToolButtonBase {
 
   private String nameKey;
   private String loreKey;
   private NamedTextColor nameColor;
 
-  public TranslatableTool(
+  public TranslatableToolButton(
       Player viewer,
       String nameKey,
       NamedTextColor color,

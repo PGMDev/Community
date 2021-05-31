@@ -1,68 +1,54 @@
 package dev.pgm.community.moderation.tools;
 
+import static dev.pgm.community.utils.MessageUtils.colorizeList;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
-import java.util.List;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import tc.oc.pgm.api.player.event.ObserverInteractEvent;
+import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public abstract class ToolBase implements Tool {
 
-  private Player viewer;
+  private int slot;
 
-  private String name;
-  private List<String> lore;
-  private Material material;
-  private int amount;
+  public ToolBase(int slot) {
+    this.slot = slot;
+  }
 
-  public ToolBase(Player viewer, String name, List<String> lore, Material material, int amount) {
-    this.viewer = viewer;
-    this.name = name;
-    this.lore = lore;
-    this.material = material;
-    this.amount = amount;
+  public abstract void onLeftClick(ObserverInteractEvent event);
+
+  public abstract void onRightClick(ObserverInteractEvent event);
+
+  @Override
+  public void onInteract(ObserverInteractEvent event) {
+    if (event.getClickedItem() != null) {
+      ItemStack clickedItem = event.getClickedItem();
+      if (clickedItem.isSimilar(getItem())) {
+        if (event.getClickType() == ClickType.RIGHT) {
+          onRightClick(event);
+        } else {
+          onLeftClick(event);
+        }
+        event.setCancelled(true);
+      }
+    }
   }
 
   @Override
-  public Player getViewer() {
-    return viewer;
+  public void give(Player player) {
+    player.getInventory().setItem(slot, getItem());
   }
 
   @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public List<String> getLore() {
-    return lore;
-  }
-
-  @Override
-  public Material getMaterial() {
-    return material;
-  }
-
-  @Override
-  public int getAmount() {
-    return amount;
-  }
-
-  @Override
-  public ItemStack getIcon() {
-    return getItem(getName(), getMaterial(), getLore(), getAmount());
-  }
-
-  protected ItemStack getItem(String text, Material material, List<String> lore, int amount) {
-    ItemStack stack = new ItemStack(material, amount);
-    ItemMeta meta = stack.getItemMeta();
-    meta.setDisplayName(colorize(text));
-    meta.setLore(lore);
-    meta.addItemFlags(ItemFlag.values());
-    stack.setItemMeta(meta);
-    return stack;
+  public ItemStack getItem() {
+    return new ItemBuilder()
+        .material(getMaterial())
+        .name(colorize(getName()))
+        .lore(colorizeList(getLore()).toArray(new String[getLore().size()]))
+        .flags(ItemFlag.values())
+        .build();
   }
 }

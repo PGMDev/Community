@@ -5,7 +5,7 @@ import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
 import dev.pgm.community.menu.PlayerSelectionProvider;
-import dev.pgm.community.moderation.tools.TeleportToolManager;
+import dev.pgm.community.moderation.tools.types.TeleportHook;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -18,9 +18,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 public class TeleportTargetMenu extends PlayerSelectionProvider {
 
   private final SmartInventory inventory;
-  private final TeleportToolManager tools;
+  private final TeleportHook tools;
 
-  public TeleportTargetMenu(TeleportToolManager tools) {
+  public TeleportTargetMenu(TeleportHook tools) {
     this.tools = tools;
     this.inventory =
         SmartInventory.builder()

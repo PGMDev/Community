@@ -1,30 +1,22 @@
 package dev.pgm.community.moderation.tools;
 
-import fr.minuskube.inv.ClickableItem;
 import java.util.List;
-import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 
 public interface Tool {
 
-  Player getViewer();
+  void onInteract(ObserverInteractEvent event);
 
-  Material getMaterial();
-
-  int getAmount();
+  void give(Player player);
 
   String getName();
 
   List<String> getLore();
 
-  ItemStack getIcon();
+  Material getMaterial();
 
-  Consumer<InventoryClickEvent> getClickEvent();
-
-  default ClickableItem getItem() {
-    return ClickableItem.of(getIcon(), getClickEvent());
-  }
+  ItemStack getItem();
 }

@@ -1,11 +1,11 @@
-package dev.pgm.community.moderation.tools.obs;
+package dev.pgm.community.moderation.tools.buttons.types;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 import static net.kyori.adventure.text.event.HoverEvent.showText;
 
-import dev.pgm.community.moderation.tools.TranslatableTool;
+import dev.pgm.community.moderation.tools.buttons.TranslatableToolButton;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import tc.oc.pgm.util.Audience;
 
-public class GamemodeTool extends TranslatableTool {
+public class GamemodeButton extends TranslatableToolButton {
 
   private static final String NAME_KEY = "setting.gamemode";
   private static final String LORE_KEY = NAME_KEY + ".lore";
@@ -25,7 +25,7 @@ public class GamemodeTool extends TranslatableTool {
   private static final Material OFF_MATERIAL = Material.PRISMARINE;
   private static final NamedTextColor COLOR = NamedTextColor.DARK_AQUA;
 
-  public GamemodeTool(Player viewer) {
+  public GamemodeButton(Player viewer) {
     super(viewer, NAME_KEY, COLOR, LORE_KEY, ON_MATERIAL, 1);
   }
 

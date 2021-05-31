@@ -1,14 +1,16 @@
-package dev.pgm.community.moderation.tools;
+package dev.pgm.community.moderation.tools.types;
 
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 import static tc.oc.pgm.util.text.PlayerComponent.player;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import dev.pgm.community.moderation.tools.ToolBase;
 import dev.pgm.community.moderation.tools.menu.TeleportTargetMenu;
 import dev.pgm.community.utils.Sounds;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -17,65 +19,65 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 import tc.oc.pgm.util.Audience;
-import tc.oc.pgm.util.inventory.ItemBuilder;
 import tc.oc.pgm.util.named.NameStyle;
 
-public class TeleportToolManager {
+public class TeleportHook extends ToolBase {
 
-  private static final Material HOOK = Material.TRIPWIRE_HOOK;
+  private static final Material MATERIAL = Material.TRIPWIRE_HOOK;
+  private static final int SLOT = 3;
 
-  public static final ItemStack TP_HOOK =
-      new ItemBuilder()
-          .material(HOOK)
-          .name(colorize("&c&lPlayer Hook"))
-          .lore(
-              colorize("&7Right-click &bplayer &7to select target"),
-              colorize("&7Right-click &bair &7to open menu"),
-              colorize("&7Left-Click to &ateleport"))
-          .build();
+  private static final String NAME = "&c&lPlayer Hook";
+  private static final List<String> LORE =
+      Lists.newArrayList(
+          "&7Right-click &bplayer &7to select target",
+          "&7Right-click &bair &7to open menu",
+          "&7Left-Click to &ateleport");
 
   private final Cache<UUID, String> clickCache;
   private final Map<UUID, UUID> hooks;
   private final TeleportTargetMenu menu;
 
-  public TeleportToolManager() {
+  public TeleportHook() {
+    super(SLOT);
     this.hooks = Maps.newHashMap();
     this.clickCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.SECONDS).build();
     this.menu = new TeleportTargetMenu(this);
   }
 
-  public void onInteract(ObserverInteractEvent event) {
-    if (event.getClickedItem() != null) {
-      ItemStack tool = event.getClickedItem();
-      // TP HOOK TOOL
-      if (tool.isSimilar(TP_HOOK)) {
-        if (event.getClickType() == ClickType.RIGHT) {
-          // Target the player
-          if (event.getClickedPlayer() != null) {
-            MatchPlayer target = event.getClickedPlayer();
-            targetPlayer(event.getPlayer().getBukkit(), target.getBukkit());
-            clickCache.put(event.getPlayer().getId(), "");
-            event.setCancelled(true);
-          } else if (clickCache.getIfPresent(event.getPlayer().getId()) == null) {
-            // Open player GUI when performing empty right-click
-            menu.open(event.getPlayer().getBukkit());
-            event.setCancelled(true);
-          }
-        } else {
-          // Teleport
-          teleportPlayer(event.getPlayer().getBukkit());
-        }
-      }
-    }
+  @Override
+  public String getName() {
+    return NAME;
   }
 
-  public void giveHook(Player player) {
-    player.getInventory().setItem(3, TP_HOOK);
+  @Override
+  public List<String> getLore() {
+    return LORE;
+  }
+
+  @Override
+  public Material getMaterial() {
+    return MATERIAL;
+  }
+
+  @Override
+  public void onLeftClick(ObserverInteractEvent event) {
+    teleportPlayer(event.getPlayer().getBukkit());
+  }
+
+  @Override
+  public void onRightClick(ObserverInteractEvent event) {
+    if (event.getClickedPlayer() != null) {
+      // Target a player if clicked
+      MatchPlayer target = event.getClickedPlayer();
+      targetPlayer(event.getPlayer().getBukkit(), target.getBukkit());
+      clickCache.put(event.getPlayer().getId(), "");
+    } else if (clickCache.getIfPresent(event.getPlayer().getId()) == null) {
+      // Open GUI if no player is present
+      menu.open(event.getPlayer().getBukkit());
+    }
   }
 
   private void teleportPlayer(Player sender) {

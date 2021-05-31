@@ -4,10 +4,12 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.ChatColor;
 import tc.oc.pgm.util.LegacyFormatUtils;
+import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.text.TextTranslations;
 
 public class MessageUtils {
@@ -41,6 +43,10 @@ public class MessageUtils {
         .append(text(" has never joined the server", NamedTextColor.RED))
         .build();
     // TODO: translate
+  }
+
+  public static List<String> colorizeList(List<String> list) {
+    return list.stream().map(BukkitUtils::colorize).collect(Collectors.toList());
   }
 
   public static String format(String format, Object... args) {
