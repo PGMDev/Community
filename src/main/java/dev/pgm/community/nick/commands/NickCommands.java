@@ -14,6 +14,7 @@ import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.nick.feature.NickFeature;
@@ -27,6 +28,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.named.NameStyle;
@@ -46,6 +48,40 @@ public class NickCommands extends CommunityCommand {
         .thenAcceptAsync(
             name -> {
               setOwnNick(viewer, player, name);
+            });
+  }
+
+  @Subcommand("skin")
+  @Description("Set skin for current nick session")
+  @Syntax("[username] - Name of skin to copy")
+  @CommandPermission(CommunityPermissions.NICKNAME_SET)
+  public void setOwnSkin(CommandAudience viewer, Player player, String target) {
+    if (target.equalsIgnoreCase("reset") || target.equalsIgnoreCase("clear")) {
+      nicks.getSkinManager().removeSkin(player);
+      viewer.sendWarning(text("You have reset your skin"));
+      return;
+    }
+
+    WebUtils.getSkin(target)
+        .thenAcceptAsync(
+            skin -> {
+              if (skin == null) {
+                viewer.sendWarning(
+                    text()
+                        .append(text("No skin was found for "))
+                        .append(text(target, NamedTextColor.AQUA))
+                        .build());
+                return;
+              }
+              // Run sync
+              Bukkit.getScheduler()
+                  .runTask(Community.get(), () -> nicks.getSkinManager().setSkin(player, skin));
+              viewer.sendMessage(
+                  text()
+                      .append(text("You have set your custom skin to "))
+                      .append(text(target, NamedTextColor.AQUA))
+                      .color(NamedTextColor.GRAY)
+                      .build());
             });
   }
 

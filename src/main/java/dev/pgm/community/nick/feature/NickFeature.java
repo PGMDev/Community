@@ -28,4 +28,6 @@ public interface NickFeature extends Feature {
 
   boolean isAutoNicked(
       UUID playerId); // Whether the player was nicked via logging in with nick.<domain>
+
+  SkinManager getSkinManager();
 }

@@ -39,16 +39,18 @@ import tc.oc.pgm.util.Audience;
 public abstract class NickFeatureBase extends FeatureBase implements NickFeature {
 
   private @Nullable PGMNickIntegration pgmNicks;
-
-  private Map<UUID, String> nickedPlayers;
-
-  private final Cache<UUID, String> loginSubdomains =
-      CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS).build();
-  private final List<UUID> autoNicked = Lists.newArrayList();
+  private final Map<UUID, String> nickedPlayers;
+  private final Cache<UUID, String> loginSubdomains;
+  private final List<UUID> autoNicked;
+  private final SkinManager skins;
 
   public NickFeatureBase(Configuration config, Logger logger, String featureName) {
     super(new NickConfig(config), logger, featureName);
     this.nickedPlayers = Maps.newHashMap();
+    this.loginSubdomains =
+        CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS).build();
+    this.autoNicked = Lists.newArrayList();
+    this.skins = new SkinManager();
 
     if (getNickConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
@@ -57,6 +59,11 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
 
   public NickConfig getNickConfig() {
     return (NickConfig) getConfig();
+  }
+
+  @Override
+  public SkinManager getSkinManager() {
+    return skins;
   }
 
   @Override

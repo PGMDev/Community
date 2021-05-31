@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import org.bukkit.Skin;
 
 public class WebUtils {
 
@@ -50,6 +51,20 @@ public class WebUtils {
 
           return response;
         });
+  }
+
+  public static CompletableFuture<Skin> getSkin(String input) {
+    return getProfile(input)
+        .thenApplyAsync(
+            profile -> {
+              if (profile == null || !profile.get("textures").isJsonObject()) {
+                return null;
+              }
+              JsonObject texture = profile.get("textures").getAsJsonObject();
+              String data = texture.get("raw").getAsJsonObject().get("value").getAsString();
+              String sign = texture.get("raw").getAsJsonObject().get("signature").getAsString();
+              return new Skin(data, sign);
+            });
   }
 
   public static CompletableFuture<UsernameHistory> getUsernameHistory(String input) {
