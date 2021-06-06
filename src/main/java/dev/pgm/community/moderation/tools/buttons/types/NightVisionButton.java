@@ -14,7 +14,7 @@ import org.bukkit.potion.PotionEffectType;
 
 public class NightVisionButton extends TranslatableToolButton {
 
-  private static final String NAME_KEY = "setting.flyspeed";
+  private static final String NAME_KEY = "setting.nightvision";
   private static final String LORE_KEY = NAME_KEY + ".lore";
   private static final Material MATERIAL = Material.POTION;
   private static final NamedTextColor COLOR = NamedTextColor.DARK_PURPLE;
