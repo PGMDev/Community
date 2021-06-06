@@ -1,6 +1,8 @@
 package dev.pgm.community.moderation.punishments.types;
 
+import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
@@ -8,10 +10,8 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.Audience;
-import tc.oc.pgm.util.text.TemporalComponent;
 
 public class MutePunishment extends ExpirablePunishment {
 
@@ -43,7 +43,9 @@ public class MutePunishment extends ExpirablePunishment {
   // When muted player attempts to chat
   public Component getChatMuteMessage() {
     Component chat =
-        text("You are unable to chat while muted: ")
+        text("You are muted. Expires in ")
+            .append(getExpireTimeComponent())
+            .append(text(": "))
             .append(text(getReason(), NamedTextColor.RED))
             .color(NamedTextColor.GRAY);
     return formatWithHover(chat);
@@ -69,15 +71,24 @@ public class MutePunishment extends ExpirablePunishment {
 
   // Include expire time on hover
   private Component formatWithHover(Component message) {
-    return text()
-        .append(message)
-        .hoverEvent(
-            HoverEvent.showText(
-                text("Expires in ", NamedTextColor.GRAY)
-                    .append(
-                        TemporalComponent.briefNaturalApproximate(
-                                Duration.between(Instant.now(), getExpireTime()))
-                            .color(NamedTextColor.YELLOW))))
+    Component hover =
+        text()
+            .append(text("Issued: "))
+            .append(text(this.getTimeIssued().toString(), NamedTextColor.YELLOW))
+            .append(newline())
+            .append(text("Total duration: "))
+            .append(duration(this.getDuration(), NamedTextColor.YELLOW))
+            .append(newline())
+            .append(text("Expires: "))
+            .append(getExpireTimeComponent())
+            .color(NamedTextColor.GRAY)
+            .build();
+
+    return text().append(message).hoverEvent(hover).build();
+  }
+
+  private Component getExpireTimeComponent() {
+    return duration(Duration.between(Instant.now(), getExpireTime()), NamedTextColor.YELLOW)
         .build();
   }
 
