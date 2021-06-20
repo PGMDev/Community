@@ -4,6 +4,7 @@ import dev.pgm.community.feature.Feature;
 import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
+import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.util.List;
@@ -106,6 +107,8 @@ public interface ModerationFeature extends Feature {
    * @return The last punishment issued
    */
   Optional<Punishment> getLastPunishment(UUID issuer);
+
+  Optional<MutePunishment> getCachedMute(UUID playerId);
 
   // AsyncPlayerPreLoginEvent handler
   void onPreLogin(AsyncPlayerPreLoginEvent event);

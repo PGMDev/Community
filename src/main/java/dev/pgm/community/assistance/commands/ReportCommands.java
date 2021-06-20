@@ -19,6 +19,8 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.assistance.Report;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
+import dev.pgm.community.moderation.feature.ModerationFeature;
+import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
@@ -45,6 +47,7 @@ public class ReportCommands extends CommunityCommand {
   @Dependency private AssistanceFeature reports;
   @Dependency private UsersFeature usernames;
   @Dependency private NickFeature nick;
+  @Dependency private ModerationFeature moderation;
 
   @CommandAlias("report")
   @Description("Report a player who is breaking the rules")
@@ -53,6 +56,11 @@ public class ReportCommands extends CommunityCommand {
   public void report(
       CommandAudience viewer, Player sender, String target, @Optional String reason) {
     checkEnabled();
+    java.util.Optional<MutePunishment> mute = moderation.getCachedMute(sender.getUniqueId());
+    if (mute.isPresent()) {
+      viewer.sendWarning(mute.get().getChatMuteMessage());
+      return;
+    }
 
     if (!reports.canRequest(sender.getUniqueId())) {
       int cooldown = reports.getCooldownSeconds(sender.getUniqueId());

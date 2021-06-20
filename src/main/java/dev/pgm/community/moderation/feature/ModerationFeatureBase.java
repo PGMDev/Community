@@ -425,6 +425,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     muteCache.invalidate(playerId);
   }
 
+  @Override
   public Optional<MutePunishment> getCachedMute(UUID playerId) {
     MutePunishment mute = muteCache.getIfPresent(playerId);
     if (mute != null && !mute.isActive()) {
