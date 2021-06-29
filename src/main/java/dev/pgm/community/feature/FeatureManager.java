@@ -27,10 +27,13 @@ import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.types.RedisNetworkFeature;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.nick.feature.types.SQLNickFeature;
+import dev.pgm.community.requests.feature.RequestFeature;
+import dev.pgm.community.requests.feature.types.SQLRequestFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
+import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.vanish.VanishFeature;
 import fr.minuskube.inv.InventoryManager;
 import java.util.logging.Logger;
@@ -48,6 +51,7 @@ public class FeatureManager {
   private final FriendshipFeature friends;
   private final NetworkFeature network;
   private final NickFeature nick;
+  private final RequestFeature requests;
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
@@ -74,6 +78,8 @@ public class FeatureManager {
     this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
     this.nick = new SQLNickFeature(config, logger, database, users);
+    this.requests = new SQLRequestFeature(config, logger, database);
+
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?
     // Ex. FileReportFeature, MongoReportFeature, RedisReportFeature...
@@ -149,6 +155,10 @@ public class FeatureManager {
     return chatNetwork;
   }
 
+  public RequestFeature getRequests() {
+    return requests;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -163,6 +173,7 @@ public class FeatureManager {
     commands.registerDependency(BroadcastFeature.class, getBroadcast());
     commands.registerDependency(NickFeature.class, getNick());
     commands.registerDependency(VanishFeature.class, getVanish());
+    commands.registerDependency(RequestFeature.class, getRequests());
 
     // Custom command completions
     commands
@@ -193,6 +204,11 @@ public class FeatureManager {
                     .map(MutationType::name)
                     .collect(Collectors.toSet()));
 
+    commands.getCommandCompletions().registerCompletion("maps", x -> PGMUtils.getMapNames());
+    commands
+        .getCommandCompletions()
+        .registerCompletion("allowedMaps", x -> PGMUtils.getAllowedMapNames());
+
     // Feature commands
     registerFeatureCommands(getUsers(), commands);
     registerFeatureCommands(getReports(), commands);
@@ -205,6 +221,7 @@ public class FeatureManager {
     registerFeatureCommands(getBroadcast(), commands);
     registerFeatureCommands(getNick(), commands);
     registerFeatureCommands(getVanish(), commands);
+    registerFeatureCommands(getRequests(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -237,6 +254,7 @@ public class FeatureManager {
     getNick().getConfig().reload(config);
     getVanish().getConfig().reload(config);
     getNetworkChat().getConfig().reload(config);
+    getRequests().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

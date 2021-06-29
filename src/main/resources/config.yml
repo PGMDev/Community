@@ -163,6 +163,19 @@ vanish:
 mutations:
   enabled: true  
   
+# Requests - A PGM exclusive feature. Allows for players to submit map requests
+requests:
+  enabled: true    # Whether /request is enabled
+  cooldown: "15s"  # Duration of cooldown between requests
+  
+  sponsors: 
+    enabled: true      # Whether /sponsor is enabled
+    cooldown: "1h"     # Duration of cooldown between /sponsor requests
+    limit: 10          # Maximum number of sponsor requests allowed at one time
+    daily-tokens: 1    # Amount of tokens given on a daily basis (community.token.daily perm)
+    weekly-tokens: 1   # Amount of tokens given on a weekly basis (community.token.weekly perm)
+    max-tokens: 7      # Maximum amount of tokens an account can collect
+  
 # Network - Features which assist in running Community on multiple servers  
 network:
   enabled: false  
