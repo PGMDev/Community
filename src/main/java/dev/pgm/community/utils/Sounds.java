@@ -45,4 +45,12 @@ public class Sounds {
   // Played when a target is selected for the teleport hook
   public static final Sound TARGET_CONFIRM =
       sound(key("random.wood_click"), Sound.Source.MASTER, 1f, 1.5f);
+
+  // Played when a player receives tokens (login or /token give)
+  public static final Sound GET_TOKENS =
+      sound(key("random.levelup"), Sound.Source.MASTER, 1f, 1.1f);
+
+  // Played when a player spends tokens (/sponsor)
+  public static final Sound SPEND_TOKENS =
+      sound(key("random.anvil_land"), Sound.Source.MASTER, 1f, 1.3f);
 }

@@ -63,6 +63,15 @@ public interface CommunityPermissions {
   // Mutations
   String MUTATION = ROOT + ".mutation"; // Access to /mutate
 
+  // Requests
+  String REQUEST = ROOT + ".request"; // Access to /request
+  String REQUEST_SPONSOR = REQUEST + ".sponsor"; // Access to /sponsor
+  String REQUEST_STAFF = REQUEST + ".staff"; // Access to /requests
+
+  String TOKEN = ROOT + ".token"; // Access to view /token
+  String TOKEN_DAILY = TOKEN + ".daily"; // Receives token refresh daily
+  String TOKEN_WEEKLY = TOKEN + ".weekly"; // Receives token refresh weekly
+
   // General Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";
