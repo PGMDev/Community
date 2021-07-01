@@ -1,6 +1,6 @@
 package dev.pgm.community.requests.feature;
 
-import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.text.PlayerComponent.player;
 
@@ -32,8 +32,8 @@ public class PGMRequestIntegration implements RequestIntegration {
     if (isSponsor(map)) {
       UUID playerId = requests.getCurrentSponsor().getPlayerId();
       return Lists.newArrayList(
+          empty(),
           text()
-              .append(newline())
               .append(text(" Sponsored by "))
               .append(player(playerId, users.getUsername(playerId), NameStyle.FANCY))
               .color(NamedTextColor.GRAY)
