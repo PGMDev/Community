@@ -25,6 +25,7 @@ import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import dev.pgm.community.requests.commands.RequestCommands;
+import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
@@ -72,9 +73,9 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   private PGMRequestIntegration integration;
 
-  public RequestFeatureBase(RequestConfig config, Logger logger, String featureName) {
+  public RequestFeatureBase(
+      RequestConfig config, Logger logger, String featureName, UsersFeature users) {
     super(config, logger, "Requests (" + featureName + ")");
-
     this.requests = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
     this.cooldown =
         CacheBuilder.newBuilder()
@@ -85,7 +86,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     if (getConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
-      this.integration = new PGMRequestIntegration(this);
+      this.integration = new PGMRequestIntegration(this, users);
     }
   }
 
@@ -157,8 +158,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       currentSponsor = null;
     }
 
-    if (getVotingPool() != null) {
-      if (!sponsors.isEmpty()) {
+    VotingPool pool = getVotingPool();
+
+    if (pool != null) {
+      if (!sponsors.isEmpty() && pool.getOptions().canAddVote()) {
         SponsorRequest nextRequest = sponsors.poll();
         if (nextRequest != null) {
           // Notify PGM of sponsored map

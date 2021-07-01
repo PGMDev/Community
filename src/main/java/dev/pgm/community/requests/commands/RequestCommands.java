@@ -117,7 +117,11 @@ public class RequestCommands extends CommunityCommand {
             .append(text((index + 1) + ". "))
             .append(mapName)
             .append(BroadcastUtils.BROADCAST_DIV)
-            .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
+            .append(
+                player(
+                    sponsor.getPlayerId(),
+                    users.getUsername(sponsor.getPlayerId()),
+                    NameStyle.FANCY))
             .color(NamedTextColor.GRAY)
             .build();
       }
@@ -312,7 +316,7 @@ public class RequestCommands extends CommunityCommand {
         buttons.append(
             text()
                 .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
-                .append(text(" Previous Page"))
+                .append(text(" Previous Page", NamedTextColor.BLUE))
                 .hoverEvent(
                     HoverEvent.showText(text("Click to view previous page", NamedTextColor.GRAY)))
                 .clickEvent(ClickEvent.runCommand("/sponsormaps " + (page - 1))));
@@ -325,7 +329,7 @@ public class RequestCommands extends CommunityCommand {
       if (page < pages) {
         buttons.append(
             text()
-                .append(text("Next Page "))
+                .append(text("Next Page ", NamedTextColor.BLUE))
                 .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
                 .hoverEvent(
                     HoverEvent.showText(text("Click to view next page", NamedTextColor.GRAY)))

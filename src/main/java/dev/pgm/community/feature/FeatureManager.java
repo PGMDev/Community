@@ -78,7 +78,7 @@ public class FeatureManager {
     this.moderation = new SQLModerationFeature(config, logger, database, users, network);
     this.friends = new SQLFriendshipFeature(config, logger, database, users);
     this.nick = new SQLNickFeature(config, logger, database, users);
-    this.requests = new SQLRequestFeature(config, logger, database);
+    this.requests = new SQLRequestFeature(config, logger, database, users);
 
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?

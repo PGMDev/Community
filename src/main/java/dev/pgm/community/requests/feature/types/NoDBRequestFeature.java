@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.feature.RequestFeatureBase;
+import dev.pgm.community.users.feature.UsersFeature;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -24,8 +25,8 @@ public class NoDBRequestFeature extends RequestFeatureBase {
                 }
               });
 
-  public NoDBRequestFeature(Configuration config, Logger logger) {
-    super(new RequestConfig(config), logger, "NoDb");
+  public NoDBRequestFeature(Configuration config, Logger logger, UsersFeature users) {
+    super(new RequestConfig(config), logger, "NoDb", users);
   }
 
   @Override

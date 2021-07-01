@@ -5,6 +5,7 @@ import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.feature.RequestFeatureBase;
 import dev.pgm.community.requests.services.SQLRequestService;
+import dev.pgm.community.users.feature.UsersFeature;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -15,8 +16,9 @@ public class SQLRequestFeature extends RequestFeatureBase {
 
   private SQLRequestService service;
 
-  public SQLRequestFeature(Configuration config, Logger logger, DatabaseConnection database) {
-    super(new RequestConfig(config), logger, "Requests (SQL)");
+  public SQLRequestFeature(
+      Configuration config, Logger logger, DatabaseConnection database, UsersFeature users) {
+    super(new RequestConfig(config), logger, "Requests (SQL)", users);
     this.service = new SQLRequestService(database);
   }
 
