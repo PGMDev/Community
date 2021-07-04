@@ -4,7 +4,6 @@ import static dev.pgm.community.utils.MessageUtils.formatTokenTransaction;
 import static dev.pgm.community.utils.PGMUtils.compareMatchLength;
 import static dev.pgm.community.utils.PGMUtils.isMapSizeAllowed;
 import static dev.pgm.community.utils.PGMUtils.isMatchRunning;
-import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -472,14 +471,9 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   private void alertStaff(Player player, MapInfo map, boolean sponsor) {
     Component alert =
         text()
-            .append(sponsor ? SPONSOR : empty())
-            .append(space())
             .append(player(player, NameStyle.FANCY))
             .append(text(" has "))
-            .append(
-                text(
-                    sponsor ? "sponsored " : "requested ",
-                    sponsor ? NamedTextColor.GREEN : NamedTextColor.YELLOW))
+            .append(text(sponsor ? "sponsored " : "requested "))
             .append(map.getStyledName(MapNameStyle.COLOR))
             .color(NamedTextColor.YELLOW)
             .build();
