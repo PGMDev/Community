@@ -25,6 +25,18 @@ public class WebUtils {
   private static final String RANDOM_NAME_API = "https://api.gamertag.dev/random"; // :)
   private static final String USERNAME_API = "https://api.ashcon.app/mojang/v2/user/";;
 
+  /** Fetch a list of random minecraft usernames */
+  public static CompletableFuture<List<String>> getRandomNameList(int size) {
+    return CompletableFuture.supplyAsync(
+        () -> {
+          List<String> names = Lists.newArrayList();
+          for (int i = 0; i < size; i++) {
+            names.add(getRandomName().join());
+          }
+          return names;
+        });
+  }
+
   /** Fetch a random minecraft username */
   public static CompletableFuture<String> getRandomName() {
     return CompletableFuture.supplyAsync(

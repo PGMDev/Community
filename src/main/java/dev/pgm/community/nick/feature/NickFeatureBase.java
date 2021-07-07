@@ -13,6 +13,7 @@ import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.NickConfig;
 import dev.pgm.community.nick.commands.NickCommands;
+import dev.pgm.community.nick.data.NickSelection;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -44,6 +46,8 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
   private final List<UUID> autoNicked;
   private final SkinManager skins;
 
+  private Cache<UUID, NickSelection> nickChoices;
+
   public NickFeatureBase(Configuration config, Logger logger, String featureName) {
     super(new NickConfig(config), logger, featureName);
     this.nickedPlayers = Maps.newHashMap();
@@ -51,6 +55,8 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
         CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS).build();
     this.autoNicked = Lists.newArrayList();
     this.skins = new SkinManager();
+
+    this.nickChoices = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
 
     if (getNickConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
@@ -106,6 +112,21 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
             .map(Entry::getKey)
             .findAny();
     return player.isPresent() ? Bukkit.getPlayer(player.get()) : null;
+  }
+
+  @Override
+  public CompletableFuture<NickSelection> getNickSelection(UUID playerId) {
+    NickSelection cached = nickChoices.getIfPresent(playerId);
+    if (cached != null && !cached.canRefresh()) {
+      return CompletableFuture.completedFuture(cached);
+    }
+    return WebUtils.getRandomNameList(10)
+        .thenApplyAsync(
+            names -> {
+              NickSelection selection = new NickSelection(names);
+              nickChoices.put(playerId, selection);
+              return selection;
+            });
   }
 
   @Override

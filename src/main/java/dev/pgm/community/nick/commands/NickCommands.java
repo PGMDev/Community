@@ -21,6 +21,7 @@ import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.WebUtils;
+import java.util.List;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -33,6 +34,7 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
+import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 @CommandAlias("nick")
 @CommandPermission(CommunityPermissions.NICKNAME)
@@ -43,10 +45,96 @@ public class NickCommands extends CommunityCommand {
 
   @Subcommand("random")
   @Description("Set a random nickname")
-  public void setRandomNick(CommandAudience viewer, Player player) {
-    WebUtils.getRandomName()
+  public void setRandomNick(CommandAudience audience, Player player, @Default("1") int page) {
+    nicks
+        .getNickSelection(player.getUniqueId())
         .thenAcceptAsync(
-            name -> {
+            names -> {
+              List<String> selection = names.getNames();
+
+              int resultsPerPage = 5;
+              int pages = (selection.size() + resultsPerPage - 1) / resultsPerPage;
+
+              Component formattedTitle =
+                  TextFormatter.horizontalLineHeading(
+                      audience.getSender(),
+                      text("Select a nickname"),
+                      NamedTextColor.DARK_AQUA,
+                      250);
+
+              new PaginatedComponentResults<String>(formattedTitle, resultsPerPage) {
+                @Override
+                public Component format(String nick, int index) {
+                  return text()
+                      .append(text(" - ", NamedTextColor.GOLD))
+                      .append(text(nick, NamedTextColor.YELLOW))
+                      .hoverEvent(
+                          HoverEvent.showText(
+                              text("Click to set nick to ", NamedTextColor.GRAY)
+                                  .append(text(nick, NamedTextColor.YELLOW))))
+                      .clickEvent(ClickEvent.runCommand("/nick confirm " + nick))
+                      .color(NamedTextColor.GRAY)
+                      .build();
+                }
+
+                @Override
+                public Component formatEmpty() {
+                  return text("Issue loading names, please try again!", NamedTextColor.RED);
+                }
+              }.display(audience.getAudience(), selection, page);
+
+              // Add page button when more than 1 page
+              if (pages > 1) {
+                TextComponent.Builder buttons = text();
+
+                if (page > 1) {
+                  buttons.append(
+                      text()
+                          .append(text("Click for more names", NamedTextColor.BLUE))
+                          .hoverEvent(
+                              HoverEvent.showText(
+                                  text("Click to refresh nick selection", NamedTextColor.GRAY)))
+                          .clickEvent(ClickEvent.runCommand("/nick random " + (page - 1))));
+                }
+
+                if (page > 1 && page < pages) {
+                  buttons.append(text(" | ", NamedTextColor.DARK_GRAY));
+                }
+
+                if (page < pages) {
+                  buttons.append(
+                      text()
+                          .append(text("Click for more names", NamedTextColor.BLUE))
+                          .hoverEvent(
+                              HoverEvent.showText(
+                                  text("Click to refresh nick selection", NamedTextColor.GRAY)))
+                          .clickEvent(ClickEvent.runCommand("/nick random " + (page + 1))));
+                }
+                audience.sendMessage(
+                    TextFormatter.horizontalLineHeading(
+                        audience.getSender(), buttons.build(), NamedTextColor.DARK_AQUA, 250));
+              }
+            });
+  }
+
+  @Subcommand("confirm")
+  @Description("Confirm random nickname choice")
+  @Syntax("[name] - Confirm name from nick selection")
+  public void selectNick(CommandAudience viewer, Player player, String name) {
+    nicks
+        .getNickSelection(player.getUniqueId())
+        .thenAcceptAsync(
+            selection -> {
+              if (!selection.isValid(name)) {
+                viewer.sendWarning(
+                    text()
+                        .append(text(name, NamedTextColor.YELLOW))
+                        .append(text(" is not a valid nick"))
+                        .build());
+                viewer.sendWarning(text("Please select one below:", NamedTextColor.RED));
+                setRandomNick(viewer, player, 1);
+                return;
+              }
               setOwnNick(viewer, player, name);
             });
   }
@@ -314,7 +402,7 @@ public class NickCommands extends CommunityCommand {
               if (nick == null || nick.getName().isEmpty()) {
                 if (self) {
                   // No nickname set, then random one will be assigned
-                  setRandomNick(viewer, player);
+                  setRandomNick(viewer, player, 1);
                 } else {
                   // Other target has no nickname
                   viewer.sendWarning(

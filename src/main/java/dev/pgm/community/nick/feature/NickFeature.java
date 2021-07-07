@@ -2,6 +2,7 @@ package dev.pgm.community.nick.feature;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.nick.Nick;
+import dev.pgm.community.nick.data.NickSelection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
@@ -30,4 +31,6 @@ public interface NickFeature extends Feature {
       UUID playerId); // Whether the player was nicked via logging in with nick.<domain>
 
   SkinManager getSkinManager();
+
+  CompletableFuture<NickSelection> getNickSelection(UUID playerId);
 }
