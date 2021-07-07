@@ -45,6 +45,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
@@ -262,6 +263,7 @@ public class RequestCommands extends CommunityCommand {
     Set<MapInfo> maps =
         Sets.newHashSet(PGM.get().getMapLibrary().getMaps()).stream()
             .filter(PGMUtils::isMapSizeAllowed)
+            .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
             .collect(Collectors.toSet());
 
     int resultsPerPage = 8;
