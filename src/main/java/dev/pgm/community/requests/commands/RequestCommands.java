@@ -445,9 +445,9 @@ public class RequestCommands extends CommunityCommand {
 
       viewer.sendMessage(
           text()
-              .append(text("  -", NamedTextColor.YELLOW, TextDecoration.STRIKETHROUGH))
-              .append(text("Token refresh ("))
-              .append(text("+", NamedTextColor.GREEN))
+              .append(text("-  ", NamedTextColor.YELLOW))
+              .append(text("Next token ("))
+              .append(text("+", NamedTextColor.GREEN, TextDecoration.BOLD))
               .append(text(amount, NamedTextColor.GREEN, TextDecoration.BOLD))
               .append(text(") in "))
               .append(duration(timeLeft, NamedTextColor.YELLOW))

@@ -145,7 +145,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
                 if (refresh > 0 && profile.getSponsorTokens() < getRequestConfig().getMaxTokens()) {
                   profile.refreshTokens(refresh); // Set new token amount
                   update(profile); // Save new token balance to database
-                  sendDelayedTokenRefreshMessage(event.getPlayer(), refresh, daily);
+                  sendDelayedTokenRefreshMessage(
+                      event.getPlayer(), refresh, daily, profile.getSponsorTokens());
                 }
               }
             });
@@ -438,13 +439,18 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         .build();
   }
 
-  private Component getTokenRefreshMessage(int amount, boolean daily) {
+  private Component getTokenRefreshMessage(int amount, int total, boolean daily) {
     return text()
         .append(TOKEN)
         .append(text(" Recieved "))
-        .append(text(amount, NamedTextColor.GREEN, TextDecoration.BOLD))
-        .append(text(" sponsor token" + (amount != 1 ? "s" : "") + ". "))
-        .append(text("Spend using ", NamedTextColor.GRAY))
+        .append(text("+" + amount, NamedTextColor.GREEN, TextDecoration.BOLD))
+        .append(text(" sponsor token" + (amount != 1 ? "s" : "")))
+        .append(text(" ("))
+        .append(text("Total: ", NamedTextColor.GRAY))
+        .append(text(total, NamedTextColor.YELLOW, TextDecoration.BOLD))
+        .append(text(")"))
+        .append(newline())
+        .append(text("Spend tokens by using ", NamedTextColor.GRAY))
         .append(text("/sponsor", NamedTextColor.YELLOW))
         .color(NamedTextColor.GOLD)
         .hoverEvent(
@@ -454,7 +460,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         .build();
   }
 
-  private void sendDelayedTokenRefreshMessage(Player player, int amount, boolean daily) {
+  private void sendDelayedTokenRefreshMessage(Player player, int amount, boolean daily, int total) {
     Community.get()
         .getServer()
         .getScheduler()
@@ -462,7 +468,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
             Community.get(),
             () -> {
               Audience viewer = Audience.get(player);
-              viewer.sendMessage(getTokenRefreshMessage(amount, daily));
+              viewer.sendMessage(getTokenRefreshMessage(amount, total, daily));
               viewer.playSound(Sounds.GET_TOKENS);
             },
             20L * 3);
