@@ -20,8 +20,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -282,6 +284,22 @@ public abstract class CommunityCommand extends BaseCommand {
     return text()
         .append(text(target, NamedTextColor.AQUA))
         .append(text(" could not be found.", NamedTextColor.RED))
+        .build();
+  }
+
+  protected Component button(String text, NamedTextColor color, String command, String hover) {
+    return button(
+        text(text, color, TextDecoration.BOLD), command, text(hover, NamedTextColor.GRAY));
+  }
+
+  protected Component button(Component component, String command, Component hover) {
+    return text()
+        .append(text("["))
+        .append(component)
+        .append(text("]"))
+        .color(NamedTextColor.GRAY)
+        .clickEvent(ClickEvent.runCommand(command))
+        .hoverEvent(HoverEvent.showText(hover))
         .build();
   }
 }

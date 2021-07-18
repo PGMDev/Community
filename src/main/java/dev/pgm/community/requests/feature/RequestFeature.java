@@ -6,6 +6,7 @@ import dev.pgm.community.feature.Feature;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -121,4 +122,16 @@ public interface RequestFeature extends Feature {
    * @return a {@link Queue}
    */
   Queue<SponsorRequest> getSponsorQueue();
+
+  /**
+   * Removes any sponsor requests for the given {@link UUID}
+   *
+   * @param playerId UUID of the player
+   * @return Whether a sponsor request was found and removed
+   */
+  boolean cancelSponsorRequest(UUID playerId);
+
+  Optional<SponsorRequest> getPendingSponsor(UUID playerId);
+
+  int queueIndex(SponsorRequest request);
 }

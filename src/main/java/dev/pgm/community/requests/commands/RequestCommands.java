@@ -41,6 +41,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
@@ -66,72 +67,301 @@ public class RequestCommands extends CommunityCommand {
     requests.request(player, parseMapText(mapName));
   }
 
-  @CommandAlias("sponsor|sponsorequest")
-  @Description("Sponsor a map request")
-  @Syntax("[map] - Name of map to sponsor")
-  @CommandCompletion("@allowedMaps")
-  @CommandPermission(CommunityPermissions.REQUEST_SPONSOR)
-  public void sponsor(CommandAudience audience, Player player, @Optional String mapName) {
-    if (mapName != null) {
-      requests.sponsor(player, parseMapText(mapName));
-    } else {
-      viewMapList(audience, 1); // Display list when no map name provided
+  @CommandAlias("sponsor")
+  @Description("View the sponsor request menu")
+  public class SponsorCommands extends CommunityCommand {
+
+    @Subcommand("cancel")
+    public void cancel(CommandAudience audience, Player player) {
+      if (requests.cancelSponsorRequest(player.getUniqueId())) {
+        audience.sendMessage(text("Removed sponsor request!", NamedTextColor.GREEN));
+      } else {
+        audience.sendWarning(text("You don't have any pending sponsor requests to cancel"));
+      }
     }
-  }
 
-  @CommandAlias("queue|sponsorqueue|sq")
-  @Description("View the sponsored maps queue")
-  public void viewQueue(CommandAudience audience, @Default("1") int page) {
-    Queue<SponsorRequest> queue = requests.getSponsorQueue();
+    @Default
+    @Subcommand("info")
+    public void info(CommandAudience audience, Player player) {
+      Component header =
+          TextFormatter.horizontalLineHeading(
+              audience.getSender(),
+              text("Sponsor", NamedTextColor.YELLOW, TextDecoration.BOLD),
+              NamedTextColor.GOLD,
+              TextFormatter.MAX_CHAT_WIDTH);
 
-    int resultsPerPage = ((RequestConfig) requests.getConfig()).getMaxQueue();
-    int pages = (queue.size() + resultsPerPage - 1) / resultsPerPage;
+      Component footer =
+          TextFormatter.horizontalLine(NamedTextColor.GOLD, TextFormatter.MAX_CHAT_WIDTH);
 
-    Component paginated =
-        TextFormatter.paginate(
-            text("Sponsor Queue"),
-            page,
-            pages,
-            NamedTextColor.DARK_AQUA,
-            NamedTextColor.AQUA,
-            true);
+      requests
+          .getRequestProfile(player.getUniqueId())
+          .thenAcceptAsync(
+              profile -> {
+                Component tokenBalance =
+                    text()
+                        .append(RequestFeature.TOKEN)
+                        .append(text("Token balance: "))
+                        .append(text(profile.getSponsorTokens(), NamedTextColor.YELLOW))
+                        .append(renderRefreshTime(player, profile.getLastTokenRefreshTime()))
+                        .color(NamedTextColor.GRAY)
+                        .clickEvent(ClickEvent.runCommand("/tokens"))
+                        .hoverEvent(
+                            HoverEvent.showText(text("Click to view tokens", NamedTextColor.GRAY)))
+                        .build();
 
-    Component formattedTitle =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+                Component buttons =
+                    text()
+                        .append(text("              "))
+                        .append(
+                            button(
+                                "Maps",
+                                NamedTextColor.DARK_AQUA,
+                                "/sponsor maps 1",
+                                "Click to view available maps"))
+                        .append(text("                  "))
+                        .append(
+                            button(
+                                "Queue",
+                                NamedTextColor.DARK_GREEN,
+                                "/queue",
+                                "View a list of waiting sponsor requests ("
+                                    + ChatColor.YELLOW
+                                    + requests.getSponsorQueue().size()
+                                    + ChatColor.GRAY
+                                    + ")"))
+                        .build();
 
-    new PaginatedComponentResults<SponsorRequest>(formattedTitle, resultsPerPage) {
-      @Override
-      public Component format(SponsorRequest sponsor, int index) {
-        MapInfo map = sponsor.getMap();
-        Component mapName =
-            map.getStyledName(MapNameStyle.COLOR)
-                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        translatable(
-                            "command.maps.hover",
-                            NamedTextColor.GRAY,
-                            map.getStyledName(MapNameStyle.COLOR))));
+                audience.sendMessage(header);
 
+                // TOKEN BALANCE
+                audience.sendMessage(tokenBalance);
+
+                requests
+                    .getPendingSponsor(player.getUniqueId())
+                    .ifPresent(
+                        sponsor -> {
+                          int queueIndex = requests.queueIndex(sponsor);
+                          boolean next = queueIndex == 0;
+
+                          Component current =
+                              text("Current Request: ", NamedTextColor.GRAY, TextDecoration.BOLD)
+                                  .append(
+                                      button(
+                                          "Cancel",
+                                          NamedTextColor.RED,
+                                          "/sponsor cancel",
+                                          "Click to cancel this request"));
+                          Component queue =
+                              next
+                                  ? text(
+                                      "(Will be added to the next vote)",
+                                      NamedTextColor.GRAY,
+                                      TextDecoration.ITALIC)
+                                  : text()
+                                      .append(text("(Queue location: "))
+                                      .append(text("#" + queueIndex, NamedTextColor.YELLOW))
+                                      .append(text(")"))
+                                      .color(NamedTextColor.GRAY)
+                                      .hoverEvent(
+                                          HoverEvent.showText(
+                                              text(
+                                                  "Your request's location in the queue",
+                                                  NamedTextColor.GRAY)))
+                                      .build();
+
+                          audience.sendMessage(empty());
+                          audience.sendMessage(current);
+                          audience.sendMessage(
+                              text()
+                                  .append(text(" - ", NamedTextColor.YELLOW))
+                                  .append(
+                                      sponsor
+                                          .getMap()
+                                          .getStyledName(MapNameStyle.COLOR_WITH_AUTHORS))
+                                  .build());
+                          audience.sendMessage(queue);
+                        });
+
+                audience.sendMessage(empty());
+
+                // [Maps] [Queue]
+                audience.sendMessage(buttons);
+
+                audience.sendMessage(footer);
+              });
+    }
+
+    @Subcommand("request|submit|add")
+    @Description("Sponsor a map request")
+    @Syntax("[map] - Name of map to sponsor")
+    @CommandCompletion("@allowedMaps")
+    public void sponsor(CommandAudience audience, Player player, @Optional String mapName) {
+      if (mapName != null) {
+        requests.sponsor(player, parseMapText(mapName));
+      } else {
+        audience.sendWarning(text("Please provide a map to sponsor."));
+      }
+    }
+
+    @Subcommand("maps")
+    @Description("View a list of maps which can be sponsored")
+    public void viewMapList(CommandAudience audience, @Default("1") int page) {
+      Set<MapInfo> maps =
+          Sets.newHashSet(PGM.get().getMapLibrary().getMaps()).stream()
+              .filter(PGMUtils::isMapSizeAllowed)
+              .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
+              .collect(Collectors.toSet());
+
+      int resultsPerPage = 8;
+      int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
+
+      Component paginated =
+          TextFormatter.paginate(
+              text("Available Maps"),
+              page,
+              pages,
+              NamedTextColor.DARK_AQUA,
+              NamedTextColor.AQUA,
+              true);
+
+      Component formattedTitle =
+          TextFormatter.horizontalLineHeading(
+              audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+
+      new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
+        @Override
+        public Component format(MapInfo map, int index) {
+          Component mapName =
+              map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
+                  .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+                  .hoverEvent(
+                      HoverEvent.showText(
+                          translatable(
+                              "command.maps.hover",
+                              NamedTextColor.GRAY,
+                              map.getStyledName(MapNameStyle.COLOR))));
+
+          return text()
+              .append(text((index + 1) + ". "))
+              .append(mapName)
+              .append(renderSponsorButton(audience.getSender(), map))
+              .color(NamedTextColor.GRAY)
+              .build();
+        }
+
+        @Override
+        public Component formatEmpty() {
+          return text("There are no available maps to sponsor!", NamedTextColor.RED);
+        }
+      }.display(audience.getAudience(), maps, page);
+
+      // Add page button when more than 1 page
+      if (pages > 1) {
+        TextComponent.Builder buttons = text();
+
+        if (page > 1) {
+          buttons.append(
+              text()
+                  .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
+                  .append(text(" Previous Page", NamedTextColor.BLUE))
+                  .hoverEvent(
+                      HoverEvent.showText(text("Click to view previous page", NamedTextColor.GRAY)))
+                  .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page - 1))));
+        }
+
+        if (page > 1 && page < pages) {
+          buttons.append(text(" | ", NamedTextColor.DARK_GRAY));
+        }
+
+        if (page < pages) {
+          buttons.append(
+              text()
+                  .append(text("Next Page ", NamedTextColor.BLUE))
+                  .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
+                  .hoverEvent(
+                      HoverEvent.showText(text("Click to view next page", NamedTextColor.GRAY)))
+                  .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page + 1))));
+        }
+        audience.sendMessage(
+            TextFormatter.horizontalLineHeading(
+                audience.getSender(), buttons.build(), NamedTextColor.DARK_PURPLE, 250));
+      }
+    }
+
+    @CommandAlias("queue|sponsorqueue|sq")
+    @Subcommand("queue")
+    @Description("View the sponsored maps queue")
+    public void viewQueue(CommandAudience audience, @Default("1") int page) {
+      Queue<SponsorRequest> queue = requests.getSponsorQueue();
+
+      int resultsPerPage = ((RequestConfig) requests.getConfig()).getMaxQueue();
+      int pages = (queue.size() + resultsPerPage - 1) / resultsPerPage;
+
+      Component paginated =
+          TextFormatter.paginate(
+              text("Sponsor Queue"),
+              page,
+              pages,
+              NamedTextColor.DARK_AQUA,
+              NamedTextColor.AQUA,
+              true);
+
+      Component formattedTitle =
+          TextFormatter.horizontalLineHeading(
+              audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+
+      new PaginatedComponentResults<SponsorRequest>(formattedTitle, resultsPerPage) {
+        @Override
+        public Component format(SponsorRequest sponsor, int index) {
+          MapInfo map = sponsor.getMap();
+          Component mapName =
+              map.getStyledName(MapNameStyle.COLOR)
+                  .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+                  .hoverEvent(
+                      HoverEvent.showText(
+                          translatable(
+                              "command.maps.hover",
+                              NamedTextColor.GRAY,
+                              map.getStyledName(MapNameStyle.COLOR))));
+
+          return text()
+              .append(text((index + 1) + ". "))
+              .append(mapName)
+              .append(BroadcastUtils.BROADCAST_DIV)
+              .append(
+                  player(
+                      sponsor.getPlayerId(),
+                      users.getUsername(sponsor.getPlayerId()),
+                      NameStyle.FANCY))
+              .color(NamedTextColor.GRAY)
+              .build();
+        }
+
+        @Override
+        public Component formatEmpty() {
+          return text("There are no maps in the sponsor queue!", NamedTextColor.RED);
+        }
+      }.display(audience.getAudience(), queue, page);
+    }
+
+    private Component renderRefreshTime(Player player, Instant lastRefresh) {
+      TokenRefreshAmount info = getTimeLeft(player, lastRefresh);
+
+      if (info.getDuration() != null) {
         return text()
-            .append(text((index + 1) + ". "))
-            .append(mapName)
-            .append(BroadcastUtils.BROADCAST_DIV)
+            .append(text(" | "))
+            .append(text("Next token ("))
+            .append(text("+" + info.getAmount(), NamedTextColor.GREEN, TextDecoration.BOLD))
+            .append(text("): "))
             .append(
-                player(
-                    sponsor.getPlayerId(),
-                    users.getUsername(sponsor.getPlayerId()),
-                    NameStyle.FANCY))
-            .color(NamedTextColor.GRAY)
+                info.getDuration().isNegative()
+                    ? text("Now! Please rejoin")
+                    : duration(info.getDuration(), NamedTextColor.YELLOW))
             .build();
       }
 
-      @Override
-      public Component formatEmpty() {
-        return text("There are no maps in the sponsor queue!", NamedTextColor.RED);
-      }
-    }.display(audience.getAudience(), queue, page);
+      return empty();
+    }
   }
 
   @CommandAlias("requests|reqs")
@@ -257,105 +487,28 @@ public class RequestCommands extends CommunityCommand {
         .build();
   }
 
-  @CommandAlias("sponsormaps|smaps")
-  @Description("View a list of maps which can be sponsored")
-  public void viewMapList(CommandAudience audience, @Default("1") int page) {
-    Set<MapInfo> maps =
-        Sets.newHashSet(PGM.get().getMapLibrary().getMaps()).stream()
-            .filter(PGMUtils::isMapSizeAllowed)
-            .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
-            .collect(Collectors.toSet());
-
-    int resultsPerPage = 8;
-    int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
-
-    Component paginated =
-        TextFormatter.paginate(
-            text("Available Maps"),
-            page,
-            pages,
-            NamedTextColor.DARK_AQUA,
-            NamedTextColor.AQUA,
-            true);
-
-    Component formattedTitle =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
-
-    new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
-      @Override
-      public Component format(MapInfo map, int index) {
-        Component mapName =
-            map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
-                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        translatable(
-                            "command.maps.hover",
-                            NamedTextColor.GRAY,
-                            map.getStyledName(MapNameStyle.COLOR))));
-
-        return text()
-            .append(text((index + 1) + ". "))
-            .append(mapName)
-            .append(BroadcastUtils.BROADCAST_DIV)
-            .append(renderSponsorButton(audience.getSender(), map))
-            .color(NamedTextColor.GRAY)
-            .build();
-      }
-
-      @Override
-      public Component formatEmpty() {
-        return text("There are no available maps to sponsor!", NamedTextColor.RED);
-      }
-    }.display(audience.getAudience(), maps, page);
-
-    // Add page button when more than 1 page
-    if (pages > 1) {
-      TextComponent.Builder buttons = text();
-
-      if (page > 1) {
-        buttons.append(
-            text()
-                .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
-                .append(text(" Previous Page", NamedTextColor.BLUE))
-                .hoverEvent(
-                    HoverEvent.showText(text("Click to view previous page", NamedTextColor.GRAY)))
-                .clickEvent(ClickEvent.runCommand("/sponsormaps " + (page - 1))));
-      }
-
-      if (page > 1 && page < pages) {
-        buttons.append(text(" | ", NamedTextColor.DARK_GRAY));
-      }
-
-      if (page < pages) {
-        buttons.append(
-            text()
-                .append(text("Next Page ", NamedTextColor.BLUE))
-                .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
-                .hoverEvent(
-                    HoverEvent.showText(text("Click to view next page", NamedTextColor.GRAY)))
-                .clickEvent(ClickEvent.runCommand("/sponsormaps " + (page + 1))));
-      }
-      audience.sendMessage(
-          TextFormatter.horizontalLineHeading(
-              audience.getSender(), buttons.build(), NamedTextColor.DARK_PURPLE, 250));
-    }
-  }
-
   private Component renderSponsorButton(CommandSender sender, MapInfo map) {
-    if (!sender.hasPermission(CommunityPermissions.REQUEST_SPONSOR)) return empty();
-    return text()
-        .append(text("["))
-        .append(RequestFeature.SPONSOR)
-        .append(text("]"))
-        .hoverEvent(
-            HoverEvent.showText(
-                text("Click to sponsor ", NamedTextColor.GRAY)
-                    .append(map.getStyledName(MapNameStyle.COLOR))))
-        .clickEvent(ClickEvent.runCommand("/sponsor " + map.getName()))
-        .color(NamedTextColor.GRAY)
-        .build();
+    if (sender instanceof Player) {
+      Player player = (Player) sender;
+      if (requests.getCached(player.getUniqueId()) != null) {
+        RequestProfile profile = requests.getCached(player.getUniqueId());
+        if (profile.getSponsorTokens() > 0) {
+          return text()
+              .append(BroadcastUtils.BROADCAST_DIV)
+              .append(text("["))
+              .append(RequestFeature.SPONSOR)
+              .append(text("]"))
+              .hoverEvent(
+                  HoverEvent.showText(
+                      text("Click to sponsor ", NamedTextColor.GRAY)
+                          .append(map.getStyledName(MapNameStyle.COLOR))))
+              .clickEvent(ClickEvent.runCommand("/sponsor add " + map.getName()))
+              .color(NamedTextColor.GRAY)
+              .build();
+        }
+      }
+    }
+    return empty();
   }
 
   @CommandAlias("tokens|sponsortokens|token")
@@ -416,15 +569,25 @@ public class RequestCommands extends CommunityCommand {
     }
   }
 
-  private void sendRefreshDuration(Audience viewer, Player player, Instant lastRefresh) {
-    if (!player.hasPermission(CommunityPermissions.REQUEST_SPONSOR)) return;
+  private class TokenRefreshAmount {
+    private Duration timeLeft;
+    private int amount;
 
-    if (lastRefresh == null) {
-      viewer.sendWarning(
-          text("Please rejoin the server to claim your tokens!", NamedTextColor.GOLD));
-      return;
+    public TokenRefreshAmount(Duration timeLeft, int amount) {
+      this.timeLeft = timeLeft;
+      this.amount = amount;
     }
 
+    public Duration getDuration() {
+      return timeLeft;
+    }
+
+    public int getAmount() {
+      return amount;
+    }
+  }
+
+  private TokenRefreshAmount getTimeLeft(Player player, Instant lastRefresh) {
     RequestConfig config = (RequestConfig) requests.getConfig();
     int amount = 0;
     Duration timeLeft = null;
@@ -435,9 +598,21 @@ public class RequestCommands extends CommunityCommand {
       amount = config.getWeeklyTokenAmount();
       timeLeft = Duration.ofDays(7).minus(Duration.between(lastRefresh, Instant.now()));
     }
+    return new TokenRefreshAmount(timeLeft, amount);
+  }
 
-    if (timeLeft != null) {
-      if (timeLeft.isNegative()) {
+  private void sendRefreshDuration(Audience viewer, Player player, Instant lastRefresh) {
+    if (!player.hasPermission(CommunityPermissions.REQUEST_SPONSOR)) return;
+
+    if (lastRefresh == null) {
+      viewer.sendWarning(
+          text("Please rejoin the server to claim more tokens!", NamedTextColor.GOLD));
+      return;
+    }
+
+    TokenRefreshAmount info = getTimeLeft(player, lastRefresh);
+    if (info.getDuration() != null) {
+      if (info.getDuration().isNegative()) {
         viewer.sendMessage(
             text("Token refresh ready! Please rejoin the server to claim", NamedTextColor.GRAY));
         return;
@@ -448,9 +623,9 @@ public class RequestCommands extends CommunityCommand {
               .append(text("-  ", NamedTextColor.YELLOW))
               .append(text("Next token ("))
               .append(text("+", NamedTextColor.GREEN, TextDecoration.BOLD))
-              .append(text(amount, NamedTextColor.GREEN, TextDecoration.BOLD))
+              .append(text(info.getAmount(), NamedTextColor.GREEN, TextDecoration.BOLD))
               .append(text(") in "))
-              .append(duration(timeLeft, NamedTextColor.YELLOW))
+              .append(duration(info.getDuration(), NamedTextColor.YELLOW))
               .color(NamedTextColor.GRAY)
               .build());
     }

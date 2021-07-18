@@ -51,6 +51,7 @@ public class RequestProfile {
   public void sponsor(MapInfo map) {
     this.lastSponsorMap = map.getId();
     this.lastSponsorTime = Instant.now();
+    award(-1);
   }
 
   public Instant getLastRequestTime() {

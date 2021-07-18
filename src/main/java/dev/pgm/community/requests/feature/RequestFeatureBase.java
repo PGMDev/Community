@@ -30,8 +30,10 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -66,7 +68,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   private Cache<UUID, Instant> cooldown;
 
-  private Queue<SponsorRequest> sponsors;
+  private LinkedList<SponsorRequest> sponsors;
 
   private SponsorRequest currentSponsor;
 
@@ -176,7 +178,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
           getRequestProfile(nextRequest.getPlayerId())
               .thenAcceptAsync(
                   profile -> {
-                    profile.award(-1);
+                    // Update RequestProfile with sponsor map info
+                    profile.sponsor(nextRequest.getMap());
                     update(profile);
                   });
 
@@ -315,10 +318,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
               // -> Add to queue, don't charge token until sponsor is processed
               queueRequest(player, map);
 
-              // Update RequestProfile with sponsor map info
-              profile.sponsor(map);
-              update(profile);
-
               // Send confirmation, including map queue position
               viewer.sendMessage(
                   text()
@@ -328,13 +327,13 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
               if (sponsors.size() > 1) {
                 viewer.sendMessage(
                     text()
-                        .append(text("Queue position"))
+                        .append(text("Queue position "))
                         .append(text("#" + sponsors.size(), NamedTextColor.YELLOW))
-                        .append(text(" Use"))
+                        .append(text(" Use "))
                         .append(text("/queue", NamedTextColor.AQUA))
-                        .append(text("to track status"))
+                        .append(text(" to track status"))
                         .color(NamedTextColor.GRAY)
-                        .clickEvent(ClickEvent.runCommand("/queue"))
+                        .clickEvent(ClickEvent.runCommand("/sponsor queue"))
                         .hoverEvent(
                             showText(text("Click to view queue status", NamedTextColor.GRAY)))
                         .build());
@@ -379,6 +378,21 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   @Override
   public void clearAllRequests() {
     requests.invalidateAll();
+  }
+
+  @Override
+  public boolean cancelSponsorRequest(UUID playerId) {
+    return this.sponsors.removeIf(s -> s.getPlayerId().equals(playerId));
+  }
+
+  @Override
+  public Optional<SponsorRequest> getPendingSponsor(UUID playerId) {
+    return this.sponsors.stream().filter(sr -> sr.getPlayerId().equals(playerId)).findAny();
+  }
+
+  @Override
+  public int queueIndex(SponsorRequest request) {
+    return sponsors.indexOf(request);
   }
 
   private Component getCooldownMessage(Instant lastRequest, Duration cooldownTime) {
@@ -449,9 +463,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         .append(text("Total: ", NamedTextColor.GRAY))
         .append(text(total, NamedTextColor.YELLOW, TextDecoration.BOLD))
         .append(text(")"))
-        .append(newline())
-        .append(text("Spend tokens by using ", NamedTextColor.GRAY))
-        .append(text("/sponsor", NamedTextColor.YELLOW))
         .color(NamedTextColor.GOLD)
         .hoverEvent(
             HoverEvent.showText(
@@ -469,6 +480,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
             () -> {
               Audience viewer = Audience.get(player);
               viewer.sendMessage(getTokenRefreshMessage(amount, total, daily));
+              viewer.sendMessage(
+                  text()
+                      .append(text("Spend tokens by using ", NamedTextColor.GRAY))
+                      .append(text("/sponsor", NamedTextColor.YELLOW)));
               viewer.playSound(Sounds.GET_TOKENS);
             },
             20L * 3);
