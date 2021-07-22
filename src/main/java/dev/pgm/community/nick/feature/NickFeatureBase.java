@@ -1,5 +1,6 @@
 package dev.pgm.community.nick.feature;
 
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.cache.Cache;
@@ -7,6 +8,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
@@ -26,7 +28,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
@@ -37,6 +42,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.text.TextFormatter;
 
 public abstract class NickFeatureBase extends FeatureBase implements NickFeature {
 
@@ -166,6 +172,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
                 if (nick != null) {
                   if (!nick.getName().isEmpty()) {
                     nickedPlayers.put(player.getUniqueId(), nick.getName());
+                    sendLoginNotification(player, nick.getName(), false);
                   } else {
                     // Auto apply a random name if none set
                     WebUtils.getRandomName()
@@ -181,6 +188,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
                                                   text(
                                                       "You had no nickname, so a random one has been assigned",
                                                       NamedTextColor.GREEN));
+                                          sendLoginNotification(player, nick.getName(), true);
                                         }
                                       });
                             });
@@ -191,6 +199,46 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
                 }
               });
     }
+
+    // Nickname notification
+    if (getOnlineNick(player.getUniqueId()) != null) {
+      sendLoginNotification(player, getOnlineNick(player.getUniqueId()), false);
+    }
+  }
+
+  private void sendLoginNotification(Player player, String name, boolean instant) {
+    Audience viewer = Audience.get(player);
+    Bukkit.getScheduler()
+        .runTaskLater(
+            Community.get(),
+            () -> {
+              viewer.sendMessage(
+                  TextFormatter.horizontalLine(NamedTextColor.GRAY, TextFormatter.MAX_CHAT_WIDTH));
+              viewer.sendMessage(
+                  text()
+                      .append(text("You " + (instant ? "are now" : "logged in") + " disguised as "))
+                      .append(text(name, NamedTextColor.AQUA, TextDecoration.BOLD))
+                      .color(NamedTextColor.GRAY));
+              viewer.sendMessage(
+                  text(
+                      "Only friends and staff can view your real identity",
+                      NamedTextColor.GRAY,
+                      TextDecoration.ITALIC));
+              viewer.sendMessage(empty());
+              viewer.sendMessage(
+                  text()
+                      .append(text("Use "))
+                      .append(text("/nick", NamedTextColor.YELLOW))
+                      .append(text(" to manage your disguise status"))
+                      .color(NamedTextColor.GREEN)
+                      .hoverEvent(
+                          HoverEvent.showText(
+                              text("Click to view nick status", NamedTextColor.GRAY)))
+                      .clickEvent(ClickEvent.runCommand("/nick")));
+              viewer.sendMessage(
+                  TextFormatter.horizontalLine(NamedTextColor.GRAY, TextFormatter.MAX_CHAT_WIDTH));
+            },
+            30L);
   }
 
   @EventHandler
