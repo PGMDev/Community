@@ -1,6 +1,5 @@
 package dev.pgm.community.nick.commands;
 
-import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -423,15 +422,13 @@ public class NickCommands extends CommunityCommand {
 
               // Only display toggle to users who can set a custom nickname
               Component toggle =
-                  viewer.getPlayer().hasPermission(CommunityPermissions.NICKNAME_SET)
-                      ? createTextButton(
-                          "Toggle",
-                          "/nick toggle",
-                          "&7Click to "
-                              + (nick.isEnabled() ? "&cdisable" : "&aenable")
-                              + "&7 your nickname",
-                          nick.isEnabled() ? NamedTextColor.RED : NamedTextColor.GREEN)
-                      : empty();
+                  createTextButton(
+                      "Toggle",
+                      "/nick toggle",
+                      "&7Click to "
+                          + (nick.isEnabled() ? "&cdisable" : "&aenable")
+                          + "&7 your nickname",
+                      nick.isEnabled() ? NamedTextColor.RED : NamedTextColor.GREEN);
 
               Component clear =
                   createTextButton(

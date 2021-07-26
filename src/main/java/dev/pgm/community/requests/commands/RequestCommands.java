@@ -29,6 +29,7 @@ import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -324,15 +325,22 @@ public class RequestCommands extends CommunityCommand {
                               NamedTextColor.GRAY,
                               map.getStyledName(MapNameStyle.COLOR))));
 
+          Component playerName =
+              VisibilityUtils.isDisguised(sponsor.getPlayerId())
+                  ? empty()
+                  : text()
+                      .append(BroadcastUtils.BROADCAST_DIV)
+                      .append(
+                          player(
+                              sponsor.getPlayerId(),
+                              users.getUsername(sponsor.getPlayerId()),
+                              NameStyle.FANCY))
+                      .build();
+
           return text()
               .append(text((index + 1) + ". "))
               .append(mapName)
-              .append(BroadcastUtils.BROADCAST_DIV)
-              .append(
-                  player(
-                      sponsor.getPlayerId(),
-                      users.getUsername(sponsor.getPlayerId()),
-                      NameStyle.FANCY))
+              .append(playerName)
               .color(NamedTextColor.GRAY)
               .build();
         }

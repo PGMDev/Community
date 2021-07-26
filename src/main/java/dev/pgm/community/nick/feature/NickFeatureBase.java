@@ -126,7 +126,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
     if (cached != null && !cached.canRefresh()) {
       return CompletableFuture.completedFuture(cached);
     }
-    return WebUtils.getRandomNameList(10)
+    return WebUtils.getRandomNameList(15)
         .thenApplyAsync(
             names -> {
               NickSelection selection = new NickSelection(names);
@@ -212,6 +212,10 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
         .runTaskLater(
             Community.get(),
             () -> {
+
+              // Check for forced vanish players
+              if (Community.get().getFeatures().getVanish().isVanished(player)) return;
+
               viewer.sendMessage(
                   TextFormatter.horizontalLine(NamedTextColor.GRAY, TextFormatter.MAX_CHAT_WIDTH));
               viewer.sendMessage(

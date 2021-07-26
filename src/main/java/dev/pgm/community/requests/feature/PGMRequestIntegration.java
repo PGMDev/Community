@@ -7,6 +7,7 @@ import static tc.oc.pgm.util.text.PlayerComponent.player;
 import com.google.common.collect.Lists;
 import dev.pgm.community.requests.SponsorRequest;
 import dev.pgm.community.users.feature.UsersFeature;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.util.List;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
@@ -31,13 +32,15 @@ public class PGMRequestIntegration implements RequestIntegration {
   public List<Component> getExtraMatchInfoLines(MapInfo map) {
     if (isSponsor(map)) {
       UUID playerId = requests.getCurrentSponsor().getPlayerId();
-      return Lists.newArrayList(
-          empty(),
-          text()
-              .append(text(" Sponsored by "))
-              .append(player(playerId, users.getUsername(playerId), NameStyle.FANCY))
-              .color(NamedTextColor.GRAY)
-              .build());
+      if (!VisibilityUtils.isDisguised(playerId)) {
+        return Lists.newArrayList(
+            empty(),
+            text()
+                .append(text(" Sponsored by "))
+                .append(player(playerId, users.getUsername(playerId), NameStyle.FANCY))
+                .color(NamedTextColor.GRAY)
+                .build());
+      }
     }
     return Lists.newArrayList();
   }

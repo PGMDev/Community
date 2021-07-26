@@ -4,9 +4,16 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.vanish.VanishFeature;
+import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class VisibilityUtils {
+
+  public static boolean isDisguised(UUID playerId) {
+    Player player = Bukkit.getPlayer(playerId);
+    return player != null && isDisguised(player);
+  }
 
   public static boolean isDisguised(Player player) {
     VanishFeature vanish = Community.get().getFeatures().getVanish();
