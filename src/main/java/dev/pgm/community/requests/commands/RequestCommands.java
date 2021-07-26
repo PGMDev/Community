@@ -103,7 +103,12 @@ public class RequestCommands extends CommunityCommand {
                         .append(RequestFeature.TOKEN)
                         .append(text("Token balance: "))
                         .append(text(profile.getSponsorTokens(), NamedTextColor.YELLOW))
-                        .append(renderRefreshTime(player, profile.getLastTokenRefreshTime()))
+                        .append(text(" / "))
+                        .append(
+                            text(
+                                ((RequestConfig) requests.getConfig()).getMaxTokens(),
+                                NamedTextColor.GOLD))
+                        .append(renderRefreshTime(player, profile))
                         .color(NamedTextColor.GRAY)
                         .clickEvent(ClickEvent.runCommand("/tokens"))
                         .hoverEvent(
@@ -352,20 +357,34 @@ public class RequestCommands extends CommunityCommand {
       }.display(audience.getAudience(), queue, page);
     }
 
-    private Component renderRefreshTime(Player player, Instant lastRefresh) {
-      TokenRefreshAmount info = getTimeLeft(player, lastRefresh);
+    private Component renderRefreshTime(Player player, RequestProfile profile) {
+      RequestConfig config = (RequestConfig) requests.getConfig();
+      TokenRefreshAmount info = getTimeLeft(player, profile.getLastTokenRefreshTime());
 
       if (info.getDuration() != null) {
-        return text()
-            .append(text(" | "))
-            .append(text("Next token ("))
-            .append(text("+" + info.getAmount(), NamedTextColor.GREEN, TextDecoration.BOLD))
-            .append(text("): "))
-            .append(
-                info.getDuration().isNegative()
-                    ? text("Now! Please rejoin")
-                    : duration(info.getDuration(), NamedTextColor.YELLOW))
-            .build();
+        boolean canClaim = profile.getSponsorTokens() < config.getMaxTokens();
+
+        if (canClaim) {
+          return text()
+              .append(text(" | "))
+              .append(text("Next token ("))
+              .append(text("+" + info.getAmount(), NamedTextColor.GREEN, TextDecoration.BOLD))
+              .append(text("): "))
+              .append(
+                  info.getDuration().isNegative()
+                      ? text("Now! Please rejoin")
+                      : duration(info.getDuration(), NamedTextColor.YELLOW))
+              .build();
+        } else {
+          return text()
+              .append(text(" | No tokens to claim"))
+              .hoverEvent(
+                  HoverEvent.showText(
+                      text(
+                          "You have the max amount of sponsor tokens! To claim more you need to spend some first.",
+                          NamedTextColor.RED)))
+              .build();
+        }
       }
 
       return empty();
@@ -536,6 +555,7 @@ public class RequestCommands extends CommunityCommand {
                   RequestProfile profile = requests.getRequestProfile(targetId.get()).join();
                   if (profile != null) {
                     int total = profile.award(amount);
+                    requests.update(profile);
                     audience.sendMessage(
                         text()
                             .append(MessageUtils.TOKEN)
@@ -571,8 +591,7 @@ public class RequestCommands extends CommunityCommand {
                         .append(text(" sponsor token" + (tokens != 1 ? "s" : "") + "."))
                         .color(NamedTextColor.GRAY)
                         .build());
-                sendRefreshDuration(
-                    audience.getAudience(), player, profile.getLastTokenRefreshTime());
+                sendRefreshDuration(audience.getAudience(), player, profile);
               });
     }
   }
@@ -609,17 +628,22 @@ public class RequestCommands extends CommunityCommand {
     return new TokenRefreshAmount(timeLeft, amount);
   }
 
-  private void sendRefreshDuration(Audience viewer, Player player, Instant lastRefresh) {
+  private void sendRefreshDuration(Audience viewer, Player player, RequestProfile profile) {
     if (!player.hasPermission(CommunityPermissions.REQUEST_SPONSOR)) return;
 
-    if (lastRefresh == null) {
+    if (profile.getLastTokenRefreshTime() == null) {
       viewer.sendWarning(
           text("Please rejoin the server to claim more tokens!", NamedTextColor.GOLD));
       return;
     }
 
-    TokenRefreshAmount info = getTimeLeft(player, lastRefresh);
+    TokenRefreshAmount info = getTimeLeft(player, profile.getLastTokenRefreshTime());
     if (info.getDuration() != null) {
+      if (profile.getSponsorTokens() >= ((RequestConfig) requests.getConfig()).getMaxTokens()) {
+        viewer.sendMessage(text("Spend some tokens in order to claim more", NamedTextColor.GRAY));
+        return;
+      }
+
       if (info.getDuration().isNegative()) {
         viewer.sendMessage(
             text("Token refresh ready! Please rejoin the server to claim", NamedTextColor.GRAY));
