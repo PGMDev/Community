@@ -126,7 +126,7 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
     if (cached != null && !cached.canRefresh()) {
       return CompletableFuture.completedFuture(cached);
     }
-    return WebUtils.getRandomNameList(15)
+    return WebUtils.getRandomNameList(16)
         .thenApplyAsync(
             names -> {
               NickSelection selection = new NickSelection(names);

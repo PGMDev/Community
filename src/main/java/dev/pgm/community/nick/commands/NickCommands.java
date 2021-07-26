@@ -3,6 +3,7 @@ package dev.pgm.community.nick.commands;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.text.PlayerComponent.player;
 
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.CommandAlias;
@@ -22,6 +23,7 @@ import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -51,7 +53,7 @@ public class NickCommands extends CommunityCommand {
             names -> {
               List<String> selection = names.getNames();
 
-              int resultsPerPage = 5;
+              int resultsPerPage = 8;
               int pages = (selection.size() + resultsPerPage - 1) / resultsPerPage;
 
               Component formattedTitle =
@@ -389,6 +391,34 @@ public class NickCommands extends CommunityCommand {
                       .color(NamedTextColor.GRAY)
                       .build());
             });
+  }
+
+  @CommandAlias("nicks")
+  @Subcommand("list")
+  @Description("View a list of online nicked players")
+  @CommandPermission(CommunityPermissions.STAFF)
+  public void viewNicks(CommandAudience viewer) {
+    List<Component> nickedNames =
+        Bukkit.getOnlinePlayers().stream()
+            .filter(player -> nicks.isNicked(player.getUniqueId()))
+            .map(player -> player(player, NameStyle.FANCY))
+            .collect(Collectors.toList());
+
+    if (nickedNames.isEmpty()) {
+      viewer.sendWarning(text("No online players are nicked!"));
+      return;
+    }
+
+    Component count =
+        text()
+            .append(text("Nicked", NamedTextColor.DARK_AQUA))
+            .append(text(": "))
+            .append(text(nickedNames.size()))
+            .build();
+    Component nameList = TextFormatter.list(nickedNames, NamedTextColor.GRAY);
+
+    viewer.sendMessage(count);
+    viewer.sendMessage(nameList);
   }
 
   private void sendNickStatus(
