@@ -86,16 +86,19 @@ public class RedisNetworkFeature extends NetworkFeatureBase {
 
   @Override
   public void sendUpdate(NetworkUpdate update) {
+    if (!isEnabled()) return;
     Community.get()
         .getServer()
         .getScheduler()
         .runTaskAsynchronously(
             Community.get(),
             () -> {
-              try (Jedis jedi = pool.getResource()) {
-                jedi.publish(
-                    update.getChannel(),
-                    String.format("%s;%s", getNetworkConfig().getNetworkId(), update.getData()));
+              if (pool != null) {
+                try (Jedis jedi = pool.getResource()) {
+                  jedi.publish(
+                      update.getChannel(),
+                      String.format("%s;%s", getNetworkConfig().getNetworkId(), update.getData()));
+                }
               }
             });
   }
