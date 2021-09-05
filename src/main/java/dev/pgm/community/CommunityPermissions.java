@@ -20,7 +20,8 @@ public interface CommunityPermissions {
   String BAN = ROOT + ".ban"; // Access to the /ban command
 
   // Punishment related commands
-  String LOOKUP = ROOT + ".lookup"; // Access to the /lookup command
+  String LOOKUP = ROOT + ".lookup"; // Access to view own record with /lookup
+  String LOOKUP_OTHERS = LOOKUP + ".others"; // Access to lookup other players
   String UNBAN = ROOT + ".pardon"; // Access to the /unban command
   String PUNISH = ROOT + ".punish"; // Access to punishment commands (/rp, /ph)
 

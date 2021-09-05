@@ -38,6 +38,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
@@ -150,11 +151,20 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
+  @CommandAlias("record|infractions|mypunishments")
+  @Description("View your punishment history")
+  @Syntax("[page]")
+  @CommandPermission(CommunityPermissions.LOOKUP)
+  public void viewOwnPunishmentHistory(
+      CommandAudience audience, Player player, @Default("1") int page) {
+    viewPunishmentHistory(audience, player.getName(), page);
+  }
+
   @CommandAlias("lookup|l")
   @Description("View infraction history of a player")
   @Syntax("[player] [page]")
   @CommandCompletion("@players *")
-  @CommandPermission(CommunityPermissions.LOOKUP)
+  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewPunishmentHistory(
       CommandAudience audience, String target, @Default("1") int page) {
     moderation

@@ -48,8 +48,8 @@ public class UserInfoCommands extends CommunityCommand {
   @Description("View the name history of a user")
   @Syntax("[player]")
   @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.LOOKUP)
-  public void usernameHistoryTest(CommandAudience audience, String target) {
+  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
+  public void usernameHistory(CommandAudience audience, String target) {
     WebUtils.getUsernameHistory(target)
         .thenAcceptAsync(
             history -> {
@@ -93,7 +93,7 @@ public class UserInfoCommands extends CommunityCommand {
   @Description("View when a player was last online")
   @Syntax("[player]")
   @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.LOOKUP)
+  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void seenPlayer(CommandAudience audience, String target) {
     users
         .getStoredProfile(target)
@@ -139,7 +139,7 @@ public class UserInfoCommands extends CommunityCommand {
   @Description("View a list of alternate accounts of a player")
   @CommandCompletion("@players")
   @Syntax("[target]")
-  @CommandPermission(CommunityPermissions.LOOKUP)
+  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewAlts(CommandAudience audience, @Optional String target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
@@ -214,7 +214,7 @@ public class UserInfoCommands extends CommunityCommand {
   @Description("View account info for a player")
   @Syntax("(name | uuid)")
   @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.LOOKUP)
+  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewUserProfile(CommandAudience audience, String target) {
     users
         .getStoredProfile(target)
