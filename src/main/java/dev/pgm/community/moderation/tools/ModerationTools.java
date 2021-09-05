@@ -1,5 +1,6 @@
 package dev.pgm.community.moderation.tools;
 
+import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.tools.types.LookupSign;
 import dev.pgm.community.moderation.tools.types.ModerationMenuTool;
 import dev.pgm.community.moderation.tools.types.TeleportHook;
@@ -12,10 +13,11 @@ public class ModerationTools {
   private TeleportHook tpHook;
   private LookupSign sign;
 
-  public ModerationTools() {
-    this.menu = new ModerationMenuTool();
-    this.tpHook = new TeleportHook();
-    this.sign = new LookupSign();
+  public ModerationTools(ModerationConfig config) {
+    // TODO: allow reloads to enable/disable tools
+    this.menu = new ModerationMenuTool(config.isModMenuEnabled());
+    this.tpHook = new TeleportHook(config.isPlayerHookEnabled());
+    this.sign = new LookupSign(config.isLookupSignEnabled());
   }
 
   public ModerationMenuTool getMenu() {

@@ -43,7 +43,12 @@ moderation:
   #Logins
   login-timeout: 30
   
-   
+  #Tools
+  tools:
+    mod-menu: true
+    player-hook: true
+    lookup-sign: true
+  
 # Reports - Settings related to /report and /reports
 reports:
   enabled:  true   # Whether reports are enabled

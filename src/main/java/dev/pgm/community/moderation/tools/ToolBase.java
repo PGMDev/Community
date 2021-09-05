@@ -13,9 +13,11 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 public abstract class ToolBase implements Tool {
 
   private int slot;
+  private boolean enabled;
 
-  public ToolBase(int slot) {
+  public ToolBase(int slot, boolean enabled) {
     this.slot = slot;
+    this.enabled = enabled;
   }
 
   public abstract void onLeftClick(ObserverInteractEvent event);
@@ -24,6 +26,7 @@ public abstract class ToolBase implements Tool {
 
   @Override
   public void onInteract(ObserverInteractEvent event) {
+    if (!enabled) return;
     if (event.getClickedItem() != null) {
       ItemStack clickedItem = event.getClickedItem();
       if (clickedItem.isSimilar(getItem())) {
@@ -39,6 +42,7 @@ public abstract class ToolBase implements Tool {
 
   @Override
   public void give(Player player) {
+    if (!enabled) return;
     player.getInventory().setItem(slot, getItem());
   }
 

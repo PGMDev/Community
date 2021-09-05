@@ -19,8 +19,8 @@ public class ModerationMenuTool extends ToolBase {
 
   private ModerationToolsMenu menu;
 
-  public ModerationMenuTool() {
-    super(SLOT);
+  public ModerationMenuTool(boolean enabled) {
+    super(SLOT, enabled);
     this.menu = new ModerationToolsMenu();
   }
 

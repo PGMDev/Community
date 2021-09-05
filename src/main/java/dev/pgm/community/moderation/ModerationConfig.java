@@ -36,6 +36,11 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   private static final String STAFF_SIGNOFF_KEY = KEY + ".staff-signoff";
 
+  private static final String TOOLS_KEY = KEY + ".tools";
+  private static final String MOD_MENU_KEY = TOOLS_KEY + ".mod-menu";
+  private static final String PLAYER_HOOK_KEY = TOOLS_KEY + ".player-hook";
+  private static final String LOOKUP_SIGN_KEY = TOOLS_KEY + ".lookup-sign";
+
   // General options
   private boolean persist;
   private boolean broadcast;
@@ -71,6 +76,11 @@ public class ModerationConfig extends FeatureConfigImpl {
   private boolean observingBans;
   private int maxOnlineBans;
   private int evasionMins;
+
+  // Tools
+  private boolean modMenuEnabled;
+  private boolean playerHookEnabled;
+  private boolean lookupSignEnabled;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -207,6 +217,18 @@ public class ModerationConfig extends FeatureConfigImpl {
     return includeStaffSignoff;
   }
 
+  public boolean isModMenuEnabled() {
+    return modMenuEnabled;
+  }
+
+  public boolean isPlayerHookEnabled() {
+    return playerHookEnabled;
+  }
+
+  public boolean isLookupSignEnabled() {
+    return lookupSignEnabled;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -245,5 +267,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     this.observingBans = config.getBoolean(getEnabledKey(OBS_BANS));
     this.maxOnlineBans = config.getInt(MAX_ONLINE);
     this.evasionMins = config.getInt(EVASION_MINS);
+
+    // Tools
+    this.modMenuEnabled = config.getBoolean(MOD_MENU_KEY);
+    this.playerHookEnabled = config.getBoolean(PLAYER_HOOK_KEY);
+    this.lookupSignEnabled = config.getBoolean(LOOKUP_SIGN_KEY);
   }
 }

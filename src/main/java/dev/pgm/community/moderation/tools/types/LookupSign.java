@@ -16,8 +16,8 @@ public class LookupSign extends ToolBase {
   private static final List<String> LORE =
       Lists.newArrayList("&7Click &bplayer &7to view punishment info");
 
-  public LookupSign() {
-    super(SLOT);
+  public LookupSign(boolean enabled) {
+    super(SLOT, enabled);
   }
 
   @Override

@@ -35,7 +35,7 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
 
   public PGMPunishmentIntegration(ModerationFeatureBase moderation) {
     this.moderation = moderation;
-    this.tools = new ModerationTools();
+    this.tools = new ModerationTools(moderation.getModerationConfig());
   }
 
   public void enable() {
