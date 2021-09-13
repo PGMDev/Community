@@ -9,10 +9,10 @@ import co.aikar.commands.annotation.Description;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
-import java.util.concurrent.ExecutionException;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.translation.Translation;
 
 public class TranslationCommand extends CommunityCommand {
 
@@ -22,24 +22,34 @@ public class TranslationCommand extends CommunityCommand {
   @Description("Translate the given chat message")
   @CommandPermission(CommunityPermissions.TRANSLATE)
   public void translate(CommandAudience audience, Player player, String text) {
-    Translation translation;
-    try {
-      translation = translate.translate(player, text).get();
-      audience.sendMessage(
-          text("Original: ", NamedTextColor.YELLOW).append(text(text, NamedTextColor.WHITE)));
-      translation
-          .getTranslated()
-          .forEach(
-              (locale, message) -> {
-                audience.sendMessage(
-                    text(locale + ": ", NamedTextColor.YELLOW)
-                        .append(text(message, NamedTextColor.WHITE)));
-              });
-
-    } catch (InterruptedException | ExecutionException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    // });
+    translate
+        .translate(player, text)
+        .thenAcceptAsync(
+            translation -> {
+              audience.sendMessage(
+                  text()
+                      .append(text("Original", NamedTextColor.GOLD))
+                      .append(text(": ", NamedTextColor.GRAY))
+                      .append(text(text, NamedTextColor.WHITE))
+                      .build());
+              translation
+                  .getTranslated()
+                  .forEach(
+                      (locale, message) -> {
+                        audience.sendMessage(
+                            text()
+                                .append(text(" - "))
+                                .append(text(locale, NamedTextColor.YELLOW))
+                                .append(text(": "))
+                                .append(text(message, NamedTextColor.WHITE))
+                                .hoverEvent(
+                                    HoverEvent.showText(
+                                        text(
+                                            "Click to paste message in chat", NamedTextColor.GRAY)))
+                                .clickEvent(ClickEvent.suggestCommand(message))
+                                .color(NamedTextColor.GRAY)
+                                .build());
+                      });
+            });
   }
 }
