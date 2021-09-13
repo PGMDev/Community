@@ -31,7 +31,7 @@ public class WebUtils {
   private static final String TRANSLATE_API = "https://api.gamertag.dev/translate";
 
   public static CompletableFuture<Translation> getTranslated(
-      Translation translation, List<String> languages, int timeout) {
+      Translation translation, List<String> languages, int connectTimeout, int readTimeout) {
     return CompletableFuture.supplyAsync(
         () -> {
           JsonObject obj = null;
@@ -45,8 +45,8 @@ public class WebUtils {
             url.setRequestProperty(
                 "Accept-Language", languages.stream().collect(Collectors.joining(",")));
             url.setInstanceFollowRedirects(true);
-            url.setConnectTimeout(timeout * 1000);
-            url.setReadTimeout(timeout * 1000);
+            url.setConnectTimeout(connectTimeout * 1000);
+            url.setReadTimeout(readTimeout * 1000);
             url.setDoOutput(true);
 
             OutputStream output = url.getOutputStream();

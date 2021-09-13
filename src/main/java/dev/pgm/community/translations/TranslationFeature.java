@@ -41,10 +41,12 @@ public class TranslationFeature extends FeatureBase {
   }
 
   public CompletableFuture<Translation> translate(Player sender, String message) {
-    // TODO: other stuff
     Translation translation = new Translation(sender, message);
     return WebUtils.getTranslated(
-        translation, getTranslationConfig().getLanguages(), getTranslationConfig().getTimeout());
+        translation,
+        getTranslationConfig().getLanguages(),
+        getTranslationConfig().getConnectTimeout(),
+        getTranslationConfig().getReadTimeout());
   }
 
   private void integrate() {
