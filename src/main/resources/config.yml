@@ -192,8 +192,10 @@ requests:
 # Translations - A PGM exclusive feature. Allows for team, global, and private messages to be auto translated per-viewer
 translations:
   enabled: true
-  timeout: 1 # How long to wait for a translation in seconds
-  languages: # A list of acceptabled languages
+  api-key: ""         # API Key used to authenticate translations
+  connect-timeout: 1  # How long to wait for a connection in seconds
+  read-timeout: 2     # How long to wait while reading in seconds
+  languages:          # A list of accepted language codes
     - "en"
     - "es"
     - "fr"

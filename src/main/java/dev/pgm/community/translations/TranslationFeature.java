@@ -1,7 +1,5 @@
 package dev.pgm.community.translations;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
@@ -51,19 +49,20 @@ public class TranslationFeature extends FeatureBase {
         .collect(Collectors.toSet());
   }
 
+  public Set<String> getAcceptedLanguages() {
+    return getTranslationConfig().getLanguages();
+  }
+
   public List<Player> getOnline(String language) {
     return Bukkit.getOnlinePlayers().stream()
         .filter(p -> Translation.getPlayerLanguageCode(p).equalsIgnoreCase(language))
         .collect(Collectors.toList());
   }
 
-  public CompletableFuture<Translation> translate(Player sender, String message) {
+  public CompletableFuture<Translation> translate(
+      Player sender, String message, Set<String> languages) {
     Translation translation = new Translation(sender, message);
-    return WebUtils.getTranslated(
-        translation,
-        getTranslationConfig().getLanguages(),
-        getTranslationConfig().getConnectTimeout(),
-        getTranslationConfig().getReadTimeout());
+    return WebUtils.getTranslated(translation, languages, getTranslationConfig());
   }
 
   private void integrate() {

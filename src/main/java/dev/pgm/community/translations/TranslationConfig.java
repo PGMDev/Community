@@ -1,7 +1,8 @@
 package dev.pgm.community.translations;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.bukkit.configuration.Configuration;
 
 public class TranslationConfig extends FeatureConfigImpl {
@@ -10,10 +11,12 @@ public class TranslationConfig extends FeatureConfigImpl {
   private static final String CONNECT_TIMEOUT = KEY + ".connect-timeout";
   private static final String READ_TIMEOUT = KEY + ".read-timeout";
   private static final String LANGUAGES = KEY + ".languages";
+  private static final String API_KEY = KEY + ".api-key";
 
   private int connectTimeoutSeconds;
   private int readTimeoutSeconds;
-  private List<String> languages;
+  private Set<String> languages;
+  private String apiKey;
 
   public TranslationConfig(Configuration config) {
     super(KEY, config);
@@ -27,8 +30,12 @@ public class TranslationConfig extends FeatureConfigImpl {
     return readTimeoutSeconds;
   }
 
-  public List<String> getLanguages() {
+  public Set<String> getLanguages() {
     return languages;
+  }
+
+  public String getAPIKey() {
+    return apiKey;
   }
 
   @Override
@@ -36,6 +43,7 @@ public class TranslationConfig extends FeatureConfigImpl {
     super.reload(config);
     this.connectTimeoutSeconds = config.getInt(CONNECT_TIMEOUT);
     this.readTimeoutSeconds = config.getInt(READ_TIMEOUT);
-    this.languages = config.getStringList(LANGUAGES);
+    this.languages = config.getStringList(LANGUAGES).stream().collect(Collectors.toSet());
+    this.apiKey = config.getString(API_KEY);
   }
 }

@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.pgm.community.Community;
+import dev.pgm.community.translations.TranslationConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -31,7 +33,7 @@ public class WebUtils {
   private static final String TRANSLATE_API = "https://api.gamertag.dev/translate";
 
   public static CompletableFuture<Translation> getTranslated(
-      Translation translation, List<String> languages, int connectTimeout, int readTimeout) {
+      Translation translation, Set<String> languages, TranslationConfig config) {
     return CompletableFuture.supplyAsync(
         () -> {
           JsonObject obj = null;
@@ -44,9 +46,15 @@ public class WebUtils {
             url.setRequestProperty("Content-Type", "text/plain");
             url.setRequestProperty(
                 "Accept-Language", languages.stream().collect(Collectors.joining(",")));
+
+            // Add authorization when API key is provided
+            if (config.getAPIKey() != null && !config.getAPIKey().isEmpty()) {
+              url.setRequestProperty("Authorization", "Bearer " + config.getAPIKey());
+            }
+
             url.setInstanceFollowRedirects(true);
-            url.setConnectTimeout(connectTimeout * 1000);
-            url.setReadTimeout(readTimeout * 1000);
+            url.setConnectTimeout(config.getConnectTimeout() * 1000);
+            url.setReadTimeout(config.getReadTimeout() * 1000);
             url.setDoOutput(true);
 
             OutputStream output = url.getOutputStream();

@@ -31,7 +31,7 @@ public class TranslationCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.TRANSLATE)
   public void translate(CommandAudience audience, Player player, String text) {
     translate
-        .translate(player, text)
+        .translate(player, text, translate.getAcceptedLanguages())
         .thenAcceptAsync(
             translation -> {
               audience.sendMessage(

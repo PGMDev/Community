@@ -15,6 +15,6 @@ public class PGMTranslationIntegration implements TranslationIntegration {
 
   @Override
   public CompletableFuture<Translation> translate(Player sender, String message) {
-    return translation.translate(sender, message);
+    return translation.translate(sender, message, translation.getOnlineLanguages());
   }
 }
