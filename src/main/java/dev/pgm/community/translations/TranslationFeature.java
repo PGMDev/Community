@@ -1,5 +1,7 @@
 package dev.pgm.community.translations;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
@@ -20,8 +22,11 @@ public class TranslationFeature extends FeatureBase {
 
   private PGMTranslationIntegration integration;
 
+  private Cache<String, Translation> cache;
+
   public TranslationFeature(Configuration config, Logger logger) {
     super(new TranslationConfig(config), logger, "Translations (PGM)");
+    this.cache = CacheBuilder.newBuilder().maximumSize(100).build();
 
     if (getConfig().isEnabled()) {
       enable();
@@ -61,8 +66,29 @@ public class TranslationFeature extends FeatureBase {
 
   public CompletableFuture<Translation> translate(
       Player sender, String message, Set<String> languages) {
-    Translation translation = new Translation(sender, message);
-    return WebUtils.getTranslated(translation, languages, getTranslationConfig());
+    if (languages.size() < 2) {
+      // If there under 2 languages, no need to translate the message
+      return CompletableFuture.completedFuture(new Translation(message));
+    }
+
+    // Check if message has been recently translated
+    Translation cachedTranslation = cache.getIfPresent(message);
+    if (cachedTranslation != null) {
+      if (languages.stream().anyMatch(s -> !cachedTranslation.isTranslated(s))) {
+        // Remove already translated
+        languages.removeIf(lang -> cachedTranslation.isTranslated(lang));
+        return WebUtils.getTranslated(cachedTranslation, languages, getTranslationConfig());
+      }
+      return CompletableFuture.completedFuture(cachedTranslation);
+    }
+
+    // Translation call will cache result
+    return WebUtils.getTranslated(new Translation(message), languages, getTranslationConfig())
+        .thenApplyAsync(
+            translation -> {
+              cache.put(message, translation);
+              return translation;
+            });
   }
 
   private void integrate() {
