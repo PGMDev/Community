@@ -1,41 +1,28 @@
 package dev.pgm.community.users;
 
 import dev.pgm.community.Community;
+import dev.pgm.community.sessions.Session;
+import dev.pgm.community.sessions.feature.SessionFeature;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class UserProfileImpl implements UserProfile {
 
   private UUID playerId;
   private String username;
   private Instant firstLogin;
-  private Instant lastLogin;
   private int joinCount;
-  private String serverName;
 
   public UserProfileImpl(UUID playerId, String username) {
-    this(
-        playerId,
-        username,
-        Instant.now(),
-        Instant.now(),
-        1,
-        Community.get().getServerConfig().getServerId());
+    this(playerId, username, Instant.now(), 1);
   }
 
-  public UserProfileImpl(
-      UUID playerId,
-      String username,
-      Instant firstLogin,
-      Instant lastLogin,
-      int joinCount,
-      String server) {
+  public UserProfileImpl(UUID playerId, String username, Instant firstLogin, int joinCount) {
     this.playerId = playerId;
     this.username = username;
     this.firstLogin = firstLogin;
-    this.lastLogin = lastLogin;
     this.joinCount = joinCount;
-    this.serverName = server;
   }
 
   @Override
@@ -54,18 +41,16 @@ public class UserProfileImpl implements UserProfile {
   }
 
   @Override
-  public Instant getLastLogin() {
-    return lastLogin;
+  public CompletableFuture<Session> getLatestSession(boolean ignoreDisguisedSessions) {
+    SessionFeature sessions = Community.get().getFeatures().getSessions();
+    if (!sessions.isEnabled()) return CompletableFuture.completedFuture(null);
+
+    return sessions.getLatestSession(getId(), ignoreDisguisedSessions);
   }
 
   @Override
   public int getJoinCount() {
     return joinCount;
-  }
-
-  @Override
-  public String getServerName() {
-    return serverName;
   }
 
   @Override
@@ -76,11 +61,6 @@ public class UserProfileImpl implements UserProfile {
   @Override
   public void setFirstLogin(Instant now) {
     this.firstLogin = now;
-  }
-
-  @Override
-  public void setLastLogin(Instant now) {
-    this.lastLogin = now;
   }
 
   @Override

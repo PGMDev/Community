@@ -17,6 +17,7 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.friends.Friendship;
 import dev.pgm.community.friends.feature.FriendshipFeature;
+import dev.pgm.community.sessions.Session;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
@@ -372,6 +373,10 @@ public class FriendshipCommand extends CommunityCommand {
             UserProfile friend1 = users.getStoredProfile(f1).join();
             UserProfile friend2 = users.getStoredProfile(f2).join();
 
+            boolean isStaff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
+            Session session1 = friend1.getLatestSession(!isStaff).join();
+            Session session2 = friend2.getLatestSession(!isStaff).join();
+
             Player online1 = Bukkit.getPlayer(f1);
             Player online2 = Bukkit.getPlayer(f2);
 
@@ -385,7 +390,7 @@ public class FriendshipCommand extends CommunityCommand {
               return 1;
             }
 
-            return -friend1.getLastLogin().compareTo(friend2.getLastLogin());
+            return -session1.getLatestUpdateDate().compareTo(session2.getLatestUpdateDate());
           }
         });
 
@@ -455,26 +460,34 @@ public class FriendshipCommand extends CommunityCommand {
   }
 
   private CompletableFuture<Component> renderOnlineStatus(UUID playerId, CommandAudience viewer) {
-    return users
-        .getStoredProfile(playerId)
-        .thenApplyAsync(
-            profile -> {
-              Player player = Bukkit.getPlayer(playerId);
-              boolean online = player != null;
-              boolean disguised = online && VisibilityUtils.isDisguised(player);
-              boolean visible = online && (!disguised || canSee(player, viewer));
+    boolean staff = viewer.getSender().hasPermission(CommunityPermissions.STAFF);
+    CompletableFuture<Component> future = new CompletableFuture<Component>();
+    users.findUserWithSession(
+        playerId,
+        !staff,
+        (profile, session) -> {
+          boolean online = !session.hasEnded();
+          boolean vanished = session.isDisguised();
+          boolean visible = online && (!vanished || staff);
 
-              Component status =
-                  (visible
-                          ? TemporalComponent.duration(
-                                  Duration.between(profile.getLastLogin(), Instant.now()))
-                              .build()
-                          : TemporalComponent.relativePastApproximate(profile.getLastLogin()))
-                      .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
-              return text(visible ? " Online for " : " Last seen ")
+          Component status =
+              (visible
+                      ? TemporalComponent.duration(
+                              Duration.between(session.getLatestUpdateDate(), Instant.now()))
+                          .build()
+                      : TemporalComponent.relativePastApproximate(session.getLatestUpdateDate()))
+                  .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
+          future.complete(
+              text(visible ? " Online for " : " Last seen ")
                   .append(status)
-                  .color(NamedTextColor.GRAY);
-            });
+                  .append(text(session.isOnThisServer() ? "" : " on server "))
+                  .append(
+                      text(session.isOnThisServer() ? "" : session.getServerName())
+                          .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+                  .color(NamedTextColor.GRAY));
+        });
+
+    return future;
   }
 
   private boolean canSee(Player player, CommandAudience viewer) {

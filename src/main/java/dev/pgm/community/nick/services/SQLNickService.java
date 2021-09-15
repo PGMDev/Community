@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLNickService extends SQLFeatureBase<Nick> {
+public class SQLNickService extends SQLFeatureBase<Nick, String> {
 
   private static final String TABLE_NAME = "nicknames";
   private static final String TABLE_FIELDS =

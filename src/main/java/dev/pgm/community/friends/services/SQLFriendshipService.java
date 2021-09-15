@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLFriendshipService extends SQLFeatureBase<Friendship> {
+public class SQLFriendshipService extends SQLFeatureBase<Friendship, String> {
 
   private static final String TABLE_NAME = "friendships";
   private static final String TABLE_FIELDS =

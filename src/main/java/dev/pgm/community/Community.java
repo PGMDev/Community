@@ -61,6 +61,7 @@ public class Community extends JavaPlugin {
 
   @Override
   public void onDisable() {
+    features.disable();
     if (database != null) {
       database.close();
     }
