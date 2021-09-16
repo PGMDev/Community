@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLRequestService extends SQLFeatureBase<RequestProfile> {
+public class SQLRequestService extends SQLFeatureBase<RequestProfile, String> {
 
   private static final String TABLE_FIELDS =
       "(id VARCHAR(36) PRIMARY KEY, last_request_time LONG, last_request_map VARCHAR(255), last_sponsor_time LONG, last_sponsor_map VARCHAR(255), tokens INT, last_token_refresh LONG)";

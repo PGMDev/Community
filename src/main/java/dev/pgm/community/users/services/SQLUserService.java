@@ -3,7 +3,6 @@ package dev.pgm.community.users.services;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.users.UserProfile;
@@ -19,10 +18,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLUserService extends SQLFeatureBase<UserProfile> {
+public class SQLUserService extends SQLFeatureBase<UserProfile, String> {
 
   private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, name VARCHAR(16), first_join LONG, last_join LONG, join_count INT, server VARCHAR(255))";
+      "(id VARCHAR(36) PRIMARY KEY, name VARCHAR(16), first_join LONG, join_count INT)";
   private static final String TABLE_NAME = "users";
 
   private LoadingCache<UUID, SelectProfileQuery> profileCache;
@@ -94,19 +93,17 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
     return query(id.toString())
         .thenApplyAsync(
             profile -> {
-              UserProfile loggedIn = new UserProfileImpl(id, username);
               if (profile == null) {
                 // No profile? Save a new one
-                save(loggedIn);
+                profile = new UserProfileImpl(id, username);
+                save(profile);
               } else {
                 // Existing profile - Update name, login, joins
                 profile.setUsername(username);
-                profile.setLastLogin(Instant.now());
                 profile.incJoinCount();
                 getDatabase().submitQuery(new UpdateProfileQuery(profile));
-                loggedIn = profile;
               }
-              return loggedIn;
+              return profile;
             });
   }
 
@@ -115,7 +112,6 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
         .thenAcceptAsync(
             profile -> {
               // Set last login time when quitting
-              profile.setLastLogin(Instant.now());
               getDatabase().submitQuery(new UpdateProfileQuery(profile));
             });
   }
@@ -123,7 +119,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
   private class InsertQuery implements Query {
 
     private static final String INSERT_USERNAME_QUERY =
-        "INSERT INTO " + TABLE_NAME + " VALUES (?,?,?,?,?,?)";
+        "INSERT INTO " + TABLE_NAME + "(id, username, first_login, join_count) VALUES (?,?,?,?)";
 
     private UserProfile profile;
 
@@ -141,9 +137,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
       statement.setString(1, profile.getId().toString());
       statement.setString(2, profile.getUsername());
       statement.setLong(3, profile.getFirstLogin().toEpochMilli());
-      statement.setLong(4, profile.getLastLogin().toEpochMilli());
-      statement.setInt(5, profile.getJoinCount());
-      statement.setString(6, Community.get().getServerConfig().getServerId());
+      statement.setInt(4, profile.getJoinCount());
       statement.execute();
     }
   }
@@ -186,26 +180,16 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
         final UUID id = UUID.fromString(result.getString("id"));
         final String username = result.getString("name");
         final long firstJoin = result.getLong("first_join");
-        final long lastJoin = result.getLong("last_join");
         final int joinCount = result.getInt("join_count");
-        final String server = result.getString("server");
         this.profile =
-            new UserProfileImpl(
-                id,
-                username,
-                Instant.ofEpochMilli(firstJoin),
-                Instant.ofEpochMilli(lastJoin),
-                joinCount,
-                server);
+            new UserProfileImpl(id, username, Instant.ofEpochMilli(firstJoin), joinCount);
       }
     }
   }
 
   private class UpdateProfileQuery implements Query {
     private static final String FORMAT =
-        "UPDATE "
-            + TABLE_NAME
-            + " SET name = ?, last_join = ?, join_count = ?, server = ? WHERE id = ? ";
+        "UPDATE " + TABLE_NAME + " SET name = ?, join_count = ? WHERE id = ? ";
 
     private UserProfile profile;
 
@@ -221,10 +205,8 @@ public class SQLUserService extends SQLFeatureBase<UserProfile> {
     @Override
     public void query(PreparedStatement statement) throws SQLException {
       statement.setString(1, profile.getUsername());
-      statement.setLong(2, profile.getLastLogin().toEpochMilli());
-      statement.setInt(3, profile.getJoinCount());
-      statement.setString(4, Community.get().getServerConfig().getServerId());
-      statement.setString(5, profile.getId().toString());
+      statement.setInt(2, profile.getJoinCount());
+      statement.setString(3, profile.getId().toString());
       statement.executeUpdate();
     }
   }

@@ -1,7 +1,9 @@
 package dev.pgm.community.users;
 
+import dev.pgm.community.sessions.Session;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * UserProfile
@@ -33,11 +35,11 @@ public interface UserProfile {
   Instant getFirstLogin();
 
   /**
-   * Get the player's last login date Note: last login is updated at server login & logout
+   * Get the player's session
    *
-   * @return Date of last login
+   * @return The player's session
    */
-  Instant getLastLogin();
+  CompletableFuture<Session> getLatestSession(boolean ignoreDisguisedSessions);
 
   /**
    * Get the player's number of server joins
@@ -45,13 +47,6 @@ public interface UserProfile {
    * @return Player join count
    */
   int getJoinCount();
-
-  /**
-   * Get the name of the last known server
-   *
-   * @return Name of the last known server
-   */
-  String getServerName();
 
   /**
    * Set the player's username
@@ -67,13 +62,6 @@ public interface UserProfile {
    * @param now The time of login
    */
   void setFirstLogin(Instant now);
-
-  /**
-   * Sets the player's last login date
-   *
-   * @param now The time of login
-   */
-  void setLastLogin(Instant now);
 
   /** Increases the join count by 1 */
   void incJoinCount();

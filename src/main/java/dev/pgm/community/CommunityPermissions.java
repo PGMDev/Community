@@ -32,6 +32,9 @@ public interface CommunityPermissions {
   String RELOAD = ROOT + ".reload";
   String RESTRICTED = ROOT + ".restricted"; // Access to restricted info (e.g IP addresses)
 
+  // Sessions
+  String FIND = ROOT + ".find"; // Access to the /find command
+
   // Teleports
   String TELEPORT = ROOT + ".teleport"; // Access to teleport to another player
   String TELEPORT_OTHERS = TELEPORT + ".others"; // Access to teleport other players

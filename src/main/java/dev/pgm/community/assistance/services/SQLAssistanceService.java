@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLAssistanceService extends SQLFeatureBase<Report> {
+public class SQLAssistanceService extends SQLFeatureBase<Report, String> {
 
   private static final String TABLE_NAME = "reports";
   private static final String TABLE_FIELDS =
