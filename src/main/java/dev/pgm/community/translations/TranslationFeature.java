@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.translation.Translation;
 
 public class TranslationFeature extends FeatureBase {
@@ -28,19 +27,14 @@ public class TranslationFeature extends FeatureBase {
     super(new TranslationConfig(config), logger, "Translations (PGM)");
     this.cache = CacheBuilder.newBuilder().maximumSize(100).build();
 
-    if (getConfig().isEnabled()) {
+    if (getConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
+      this.integration = new PGMTranslationIntegration(this);
     }
   }
 
   private TranslationConfig getTranslationConfig() {
     return (TranslationConfig) getConfig();
-  }
-
-  @Override
-  public void enable() {
-    super.enable();
-    integrate();
   }
 
   @Override
@@ -89,12 +83,5 @@ public class TranslationFeature extends FeatureBase {
               cache.put(message, translation);
               return translation;
             });
-  }
-
-  private void integrate() {
-    if (PGMUtils.isPGMEnabled()) {
-      this.integration = new PGMTranslationIntegration(this);
-      Integration.setTranslationIntegration(integration);
-    }
   }
 }
