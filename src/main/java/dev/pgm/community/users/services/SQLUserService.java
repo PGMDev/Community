@@ -119,7 +119,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> {
   private class InsertQuery implements Query {
 
     private static final String INSERT_USERNAME_QUERY =
-        "INSERT INTO " + TABLE_NAME + "(id, name, first_login, join_count) VALUES (?,?,?,?)";
+        "INSERT INTO " + TABLE_NAME + "(id, name, first_join, join_count) VALUES (?,?,?,?)";
 
     private UserProfile profile;
 
