@@ -480,7 +480,7 @@ public class FriendshipCommand extends CommunityCommand {
           future.complete(
               text(visible ? " Online for " : " Last seen ")
                   .append(status)
-                  .append(text(session.isOnThisServer() ? "" : " on server "))
+                  .append(text(session.isOnThisServer() ? "" : " on "))
                   .append(
                       text(session.isOnThisServer() ? "" : session.getServerName())
                           .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
