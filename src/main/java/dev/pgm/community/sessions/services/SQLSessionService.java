@@ -3,6 +3,7 @@ package dev.pgm.community.sessions.services;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.sessions.Session;
@@ -52,6 +53,10 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery> {
 
   public void updateSessionEndTime(Session session) {
     getDatabase().submitQuery(new UpdateSessionEndTimeQuery(session));
+  }
+
+  public void endOngoingSessions() {
+    getDatabase().submitQuery(new EndOngoingSessionsQuery());
   }
 
   @Override
@@ -200,6 +205,24 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery> {
       statement.setObject(
           1, session.getEndDate() == null ? null : session.getEndDate().toEpochMilli());
       statement.setString(2, session.getSessionId().toString());
+      statement.executeUpdate();
+    }
+  }
+
+  private class EndOngoingSessionsQuery implements Query {
+
+    private static final String UPDATE_QUERY =
+        "UPDATE " + TABLE_NAME + " SET end_time = ? WHERE server = ? AND end_time IS NULL";
+
+    @Override
+    public String getFormat() {
+      return UPDATE_QUERY;
+    }
+
+    @Override
+    public void query(PreparedStatement statement) throws SQLException {
+      statement.setObject(1, Instant.now().toEpochMilli());
+      statement.setString(2, Community.get().getServerId());
       statement.executeUpdate();
     }
   }
