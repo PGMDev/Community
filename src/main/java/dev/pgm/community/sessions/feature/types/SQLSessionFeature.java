@@ -40,4 +40,9 @@ public class SQLSessionFeature extends SessionFeatureBase {
     session.setEndDate(Instant.now());
     service.updateSessionEndTime(session);
   }
+
+  @Override
+  public void endOngoingSessions() {
+    service.endOngoingSessions();
+  }
 }
