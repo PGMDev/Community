@@ -48,7 +48,6 @@ import tc.oc.pgm.util.text.TextTranslations;
 public class FreezeFeature extends FeatureBase {
 
   private static final Material TOOL_MATERIAL = Material.ICE;
-  private static final int TOOL_SLOT_NUM = 6;
 
   private final FreezeManager freeze;
 
@@ -130,7 +129,7 @@ public class FreezeFeature extends FeatureBase {
     if (!PGMUtils.isPGMEnabled() || !getFreezeConfig().isIntegrationEnabled()) return;
     Player player = event.getPlayer().getBukkit();
     if (player.hasPermission(CommunityPermissions.FREEZE)) {
-      player.getInventory().setItem(TOOL_SLOT_NUM, getFreezeTool(player));
+      player.getInventory().setItem(getFreezeConfig().getItemSlot(), getFreezeTool(player));
     }
   }
 

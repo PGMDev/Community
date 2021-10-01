@@ -27,7 +27,6 @@ import tc.oc.pgm.util.named.NameStyle;
 public class TeleportHook extends ToolBase {
 
   private static final Material MATERIAL = Material.TRIPWIRE_HOOK;
-  private static final int SLOT = 3;
 
   private static final String NAME = "&c&lPlayer Hook";
   private static final List<String> LORE =
@@ -40,8 +39,8 @@ public class TeleportHook extends ToolBase {
   private final Map<UUID, UUID> hooks;
   private final TeleportTargetMenu menu;
 
-  public TeleportHook(boolean enabled) {
-    super(SLOT, enabled);
+  public TeleportHook(int slot, boolean enabled) {
+    super(slot, enabled);
     this.hooks = Maps.newHashMap();
     this.clickCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.SECONDS).build();
     this.menu = new TeleportTargetMenu(this);

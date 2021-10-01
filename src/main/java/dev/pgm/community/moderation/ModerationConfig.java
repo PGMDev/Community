@@ -81,6 +81,9 @@ public class ModerationConfig extends FeatureConfigImpl {
   private boolean modMenuEnabled;
   private boolean playerHookEnabled;
   private boolean lookupSignEnabled;
+  private int modMenuSlot;
+  private int playerHookSlot;
+  private int lookupSignSlot;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -229,6 +232,22 @@ public class ModerationConfig extends FeatureConfigImpl {
     return lookupSignEnabled;
   }
 
+  public String getItemSlotKey(String key) {
+    return key + ".item-slot";
+  }
+
+  public int getModMenuSlot() {
+    return modMenuSlot;
+  }
+
+  public int getPlayerHookSlot() {
+    return playerHookSlot;
+  }
+
+  public int getLookupSignSlot() {
+    return lookupSignSlot;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -269,8 +288,11 @@ public class ModerationConfig extends FeatureConfigImpl {
     this.evasionMins = config.getInt(EVASION_MINS);
 
     // Tools
-    this.modMenuEnabled = config.getBoolean(MOD_MENU_KEY);
-    this.playerHookEnabled = config.getBoolean(PLAYER_HOOK_KEY);
-    this.lookupSignEnabled = config.getBoolean(LOOKUP_SIGN_KEY);
+    this.modMenuEnabled = config.getBoolean(getEnabledKey(MOD_MENU_KEY));
+    this.playerHookEnabled = config.getBoolean(getEnabledKey(PLAYER_HOOK_KEY));
+    this.lookupSignEnabled = config.getBoolean(getEnabledKey(LOOKUP_SIGN_KEY));
+    this.modMenuSlot = config.getInt(getItemSlotKey(MOD_MENU_KEY));
+    this.playerHookSlot = config.getInt(getItemSlotKey(PLAYER_HOOK_KEY));
+    this.lookupSignSlot = config.getInt(getItemSlotKey(LOOKUP_SIGN_KEY));
   }
 }
