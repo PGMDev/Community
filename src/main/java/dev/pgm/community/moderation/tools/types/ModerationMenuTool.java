@@ -11,7 +11,6 @@ import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 public class ModerationMenuTool extends ToolBase {
 
   private static final Material MATERIAL = Material.EMERALD;
-  private static final int SLOT = 8;
 
   private static final String NAME = "&a&lModerator Tools";
   private static final List<String> LORE =
@@ -19,8 +18,8 @@ public class ModerationMenuTool extends ToolBase {
 
   private ModerationToolsMenu menu;
 
-  public ModerationMenuTool(boolean enabled) {
-    super(SLOT, enabled);
+  public ModerationMenuTool(int slot, boolean enabled) {
+    super(slot, enabled);
     this.menu = new ModerationToolsMenu();
   }
 

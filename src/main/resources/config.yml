@@ -43,11 +43,17 @@ moderation:
   #Logins
   login-timeout: 30
   
-  #Tools
+  # Interactive Tools
   tools:
-    mod-menu: true
-    player-hook: true
-    lookup-sign: true
+    mod-menu: 
+      enabled: true  # Whether mod menu is enabled
+      item-slot: 8   # Slot where mod menu tool is located
+    player-hook: 
+      enabled: true  # Whether player hook is enabled
+      item-slot: 3   # Slot where player hook is located
+    lookup-sign: 
+      enabled: true  # Whether lookup sign is enabled
+      item-slot: 30  # Slot where lookup sign is located
   
 # Reports - Settings related to /report and /reports
 reports:
@@ -158,6 +164,7 @@ broadcast:
 freeze:
   enabled: true  
   pgm-integration: true # Whether Community will attempt to hook into PGM
+  item-slot: 6          # Item slot where freeze item will be located
   
 # Vanish - Hide youself from non-staff players  
 vanish:

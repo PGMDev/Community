@@ -15,9 +15,9 @@ public class ModerationTools {
 
   public ModerationTools(ModerationConfig config) {
     // TODO: allow reloads to enable/disable tools
-    this.menu = new ModerationMenuTool(config.isModMenuEnabled());
-    this.tpHook = new TeleportHook(config.isPlayerHookEnabled());
-    this.sign = new LookupSign(config.isLookupSignEnabled());
+    this.menu = new ModerationMenuTool(config.getModMenuSlot(), config.isModMenuEnabled());
+    this.tpHook = new TeleportHook(config.getPlayerHookSlot(), config.isPlayerHookEnabled());
+    this.sign = new LookupSign(config.getLookupSignSlot(), config.isLookupSignEnabled());
   }
 
   public ModerationMenuTool getMenu() {

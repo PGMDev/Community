@@ -10,14 +10,13 @@ import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 public class LookupSign extends ToolBase {
 
   private static final Material MATERIAL = Material.SIGN;
-  private static final int SLOT = 30;
 
   private static final String NAME = "&c&lLookup Sign";
   private static final List<String> LORE =
       Lists.newArrayList("&7Click &bplayer &7to view punishment info");
 
-  public LookupSign(boolean enabled) {
-    super(SLOT, enabled);
+  public LookupSign(int slot, boolean enabled) {
+    super(slot, enabled);
   }
 
   @Override
