@@ -2,11 +2,16 @@ package dev.pgm.community.utils;
 
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.collect.Lists;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.md_5.bungee.api.ChatColor;
@@ -50,18 +55,34 @@ public class MessageUtils {
   }
 
   public static Component formatTokenTransaction(int amount, Component message) {
+    return formatTokenTransaction(amount, message, null);
+  }
+
+  public static Component formatTokenTransaction(int amount, Component message, Component hover) {
     boolean add = amount > 0;
-    return text()
-        .append(
-            text(
-                add ? "+" : "-",
-                add ? NamedTextColor.GREEN : NamedTextColor.RED,
-                TextDecoration.BOLD))
-        .append(text(Math.abs(amount) + " ", NamedTextColor.YELLOW, TextDecoration.BOLD))
-        .append(TOKEN)
-        .append(space())
-        .append(message)
-        .build();
+    TextComponent.Builder builder =
+        text()
+            .append(
+                text(
+                    add ? "+" : "-",
+                    add ? NamedTextColor.GREEN : NamedTextColor.RED,
+                    TextDecoration.BOLD))
+            .append(text(Math.abs(amount) + " ", NamedTextColor.YELLOW, TextDecoration.BOLD))
+            .append(TOKEN)
+            .append(space())
+            .append(message);
+
+    if (hover != null) {
+      builder.hoverEvent(HoverEvent.showText(hover));
+    }
+
+    return builder.build();
+  }
+
+  public static Component formatTimeLeft(
+      Duration totalTime, Instant lastTime, NamedTextColor color) {
+    Duration timeLeft = totalTime.minus(Duration.between(lastTime, Instant.now()));
+    return text().append(duration(timeLeft, color)).build();
   }
 
   public static List<String> colorizeList(List<String> list) {

@@ -56,6 +56,7 @@ import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
+import tc.oc.pgm.events.MapVoteWinnerEvent;
 import tc.oc.pgm.rotation.MapPoolManager;
 import tc.oc.pgm.rotation.VotingPool;
 import tc.oc.pgm.util.Audience;
@@ -193,10 +194,52 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
                     text(
                         "Your sponsored map has been added to the vote!",
                         NamedTextColor.GREEN,
-                        TextDecoration.BOLD)));
+                        TextDecoration.BOLD),
+                    canRefund(requester)
+                        ? text(
+                            "If your map wins the vote, you'll get your token back",
+                            NamedTextColor.GRAY)
+                        : null));
             player.playSound(Sounds.SPEND_TOKENS);
           }
         }
+      }
+    }
+  }
+
+  private boolean canRefund(Player player) {
+    return getRequestConfig().isRefunded()
+        && player.hasPermission(CommunityPermissions.REQUEST_REFUND);
+  }
+
+  @EventHandler
+  public void onVoteEnd(MapVoteWinnerEvent event) {
+    if (currentSponsor != null) {
+      Player player = Bukkit.getPlayer(currentSponsor.getPlayerId());
+
+      // Must be online and an actual sponsor
+      if (player == null || !canRefund(player)) return;
+
+      // Same map = winner, refund the token
+      if (currentSponsor.getMap().equals(event.getMap())) {
+        getRequestProfile(currentSponsor.getPlayerId())
+            .thenAcceptAsync(
+                profile -> {
+                  profile.award(1);
+                  update(profile);
+
+                  if (player != null) {
+                    Audience viewer = Audience.get(player);
+                    viewer.sendMessage(
+                        formatTokenTransaction(
+                            1,
+                            text(
+                                "Your sponsored map won the vote!",
+                                NamedTextColor.GREEN,
+                                TextDecoration.BOLD)));
+                    viewer.playSound(Sounds.GET_TOKENS);
+                  }
+                });
       }
     }
   }

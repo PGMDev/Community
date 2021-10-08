@@ -71,6 +71,7 @@ public interface CommunityPermissions {
   String REQUEST = ROOT + ".request"; // Access to /request
   String REQUEST_SPONSOR = REQUEST + ".sponsor"; // Access to /sponsor
   String REQUEST_STAFF = REQUEST + ".staff"; // Access to /requests
+  String REQUEST_REFUND = REQUEST + ".refund"; // Receive token refunds when applicable
 
   String TOKEN = ROOT + ".token"; // Access to view /token
   String TOKEN_DAILY = TOKEN + ".daily"; // Receives token refresh daily

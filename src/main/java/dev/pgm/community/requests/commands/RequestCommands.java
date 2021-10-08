@@ -142,6 +142,7 @@ public class RequestCommands extends CommunityCommand {
                 // TOKEN BALANCE
                 audience.sendMessage(tokenBalance);
 
+                // Existing request status
                 requests
                     .getPendingSponsor(player.getUniqueId())
                     .ifPresent(
@@ -189,6 +190,27 @@ public class RequestCommands extends CommunityCommand {
                         });
 
                 audience.sendMessage(empty());
+
+                // Cooldown message
+                if (!requests.canSponsor(player.getUniqueId())) {
+                  audience.sendMessage(
+                      text()
+                          .append(text("Cooldown", NamedTextColor.GOLD, TextDecoration.BOLD))
+                          .append(text(": ", NamedTextColor.GRAY))
+                          .append(
+                              MessageUtils.formatTimeLeft(
+                                  ((RequestConfig) requests.getConfig()).getSponsorCooldown(),
+                                  profile.getLastSponsorTime(),
+                                  NamedTextColor.RED))
+                          .color(NamedTextColor.GRAY)
+                          .hoverEvent(
+                              HoverEvent.showText(
+                                  text(
+                                      "Time until you can sponsor another map",
+                                      NamedTextColor.GRAY)))
+                          .build());
+                  audience.sendMessage(empty());
+                }
 
                 // [Maps] [Queue]
                 audience.sendMessage(buttons);
