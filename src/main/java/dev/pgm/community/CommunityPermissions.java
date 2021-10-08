@@ -77,6 +77,9 @@ public interface CommunityPermissions {
   String TOKEN_DAILY = TOKEN + ".daily"; // Receives token refresh daily
   String TOKEN_WEEKLY = TOKEN + ".weekly"; // Receives token refresh weekly
 
+  // Translations
+  String TRANSLATE = ROOT + ".translate"; // Access to /translate
+
   // General Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";

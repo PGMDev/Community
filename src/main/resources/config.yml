@@ -188,7 +188,20 @@ requests:
     weekly-tokens: 1   # Amount of tokens given on a weekly basis (community.token.weekly perm)
     max-tokens: 7      # Maximum amount of tokens an account can collect
     refund: true       # Tokens are refunded when map vote is successful
-  
+
+# Translations - A PGM exclusive feature. Allows for team, global, and private messages to be auto translated per-viewer
+translations:
+  enabled: true
+  api-key: ""         # API Key used to authenticate translations
+  connect-timeout: 1  # How long to wait for a connection in seconds
+  read-timeout: 2     # How long to wait while reading in seconds
+  languages:          # A list of accepted language codes
+    - "en"
+    - "es"
+    - "fr"
+    - "sv"
+    - "ja"
+      
 # Network - Features which assist in running Community on multiple servers  
 network:
   enabled: false  

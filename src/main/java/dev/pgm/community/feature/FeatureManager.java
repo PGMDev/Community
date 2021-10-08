@@ -33,6 +33,7 @@ import dev.pgm.community.sessions.feature.SessionFeature;
 import dev.pgm.community.sessions.feature.types.SQLSessionFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
+import dev.pgm.community.translations.TranslationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import dev.pgm.community.utils.PGMUtils;
@@ -65,6 +66,7 @@ public class FeatureManager {
   private final MutationFeature mutation;
   private final BroadcastFeature broadcast;
   private final VanishFeature vanish;
+  private final TranslationFeature translation;
 
   public FeatureManager(
       Configuration config,
@@ -99,6 +101,7 @@ public class FeatureManager {
     this.broadcast = new BroadcastFeature(config, logger);
     this.vanish = new VanishFeature(config, logger, nick);
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
+    this.translation = new TranslationFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -167,6 +170,10 @@ public class FeatureManager {
     return requests;
   }
 
+  public TranslationFeature getTranslations() {
+    return translation;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -183,6 +190,7 @@ public class FeatureManager {
     commands.registerDependency(NickFeature.class, getNick());
     commands.registerDependency(VanishFeature.class, getVanish());
     commands.registerDependency(RequestFeature.class, getRequests());
+    commands.registerDependency(TranslationFeature.class, getTranslations());
 
     // Custom command completions
     commands
@@ -232,6 +240,7 @@ public class FeatureManager {
     registerFeatureCommands(getNick(), commands);
     registerFeatureCommands(getVanish(), commands);
     registerFeatureCommands(getRequests(), commands);
+    registerFeatureCommands(getTranslations(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -266,6 +275,7 @@ public class FeatureManager {
     getVanish().getConfig().reload(config);
     getNetworkChat().getConfig().reload(config);
     getRequests().getConfig().reload(config);
+    getTranslations().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
