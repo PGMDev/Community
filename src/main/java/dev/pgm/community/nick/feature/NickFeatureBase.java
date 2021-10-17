@@ -161,6 +161,13 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
   public void onJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
 
+    if (!player.hasPermission(CommunityPermissions.NICKNAME)) {
+      if (nickedPlayers.containsKey(player.getUniqueId())) {
+        nickedPlayers.remove(player.getUniqueId());
+      }
+      return;
+    }
+
     String domain = loginSubdomains.getIfPresent(player.getUniqueId());
     if (domain != null) {
       loginSubdomains.invalidate(player.getUniqueId());
