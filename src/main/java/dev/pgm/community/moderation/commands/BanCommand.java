@@ -49,7 +49,7 @@ public class BanCommand extends CommunityCommand {
                               profile.getUsername(),
                               null,
                               true,
-                              isDisguised(audience));
+                              true);
                         });
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
