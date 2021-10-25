@@ -86,6 +86,7 @@ public interface CommunityPermissions {
   String GAMEMODE = ROOT + ".gamemode";
   String BROADCAST = ROOT + ".broadcast";
   String CONTAINER = ROOT + ".container";
+  String MOB_SPAWN = ROOT + ".mob-spawn";
 
   // Player Selectors
   String SELECTOR = ROOT + ".selector"; // Allow access to targeting more than 1 player

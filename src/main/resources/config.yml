@@ -201,6 +201,10 @@ translations:
     - "fr"
     - "sv"
     - "ja"
+
+# Mobs - Spawn creatures that will attack players ;)
+mobs:
+  enabled: true
       
 # Network - Features which assist in running Community on multiple servers  
 network:

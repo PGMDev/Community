@@ -18,6 +18,7 @@ import dev.pgm.community.freeze.FreezeFeature;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
 import dev.pgm.community.info.InfoCommandsFeature;
+import dev.pgm.community.mobs.MobFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.motd.MotdFeature;
@@ -39,10 +40,12 @@ import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.vanish.VanishFeature;
 import fr.minuskube.inv.InventoryManager;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 /** Manages all {@link Feature}s of the plugin */
@@ -67,6 +70,7 @@ public class FeatureManager {
   private final BroadcastFeature broadcast;
   private final VanishFeature vanish;
   private final TranslationFeature translation;
+  private final MobFeature mob;
 
   public FeatureManager(
       Configuration config,
@@ -102,6 +106,7 @@ public class FeatureManager {
     this.vanish = new VanishFeature(config, logger, nick);
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
     this.translation = new TranslationFeature(config, logger);
+    this.mob = new MobFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -174,6 +179,10 @@ public class FeatureManager {
     return translation;
   }
 
+  public MobFeature getMobs() {
+    return mob;
+  }
+
   // Register Feature commands and any dependency
   private void registerCommands(BukkitCommandManager commands) {
     // Dependency injection for features
@@ -191,6 +200,7 @@ public class FeatureManager {
     commands.registerDependency(VanishFeature.class, getVanish());
     commands.registerDependency(RequestFeature.class, getRequests());
     commands.registerDependency(TranslationFeature.class, getTranslations());
+    commands.registerDependency(MobFeature.class, getMobs());
 
     // Custom command completions
     commands
@@ -226,6 +236,18 @@ public class FeatureManager {
         .getCommandCompletions()
         .registerCompletion("allowedMaps", x -> PGMUtils.getAllowedMapNames());
 
+    commands
+        .getCommandCompletions()
+        .registerCompletion(
+            "mobs",
+            c ->
+                Arrays.asList(EntityType.values()).stream()
+                    .filter(EntityType::isAlive)
+                    .filter(EntityType::isSpawnable)
+                    .map(EntityType::toString)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toList()));
+
     // Feature commands
     registerFeatureCommands(getUsers(), commands);
     registerFeatureCommands(getReports(), commands);
@@ -241,6 +263,7 @@ public class FeatureManager {
     registerFeatureCommands(getVanish(), commands);
     registerFeatureCommands(getRequests(), commands);
     registerFeatureCommands(getTranslations(), commands);
+    registerFeatureCommands(getMobs(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -276,6 +299,7 @@ public class FeatureManager {
     getNetworkChat().getConfig().reload(config);
     getRequests().getConfig().reload(config);
     getTranslations().getConfig().reload(config);
+    getMobs().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
@@ -293,5 +317,11 @@ public class FeatureManager {
     if (getFreeze().isEnabled()) getFreeze().disable();
     if (getMutations().isEnabled()) getMutations().disable();
     if (getBroadcast().isEnabled()) getBroadcast().disable();
+    if (getNick().isEnabled()) getNick().disable();
+    if (getVanish().isEnabled()) getVanish().disable();
+    if (getNetworkChat().isEnabled()) getNetworkChat().disable();
+    if (getRequests().isEnabled()) getRequests().disable();
+    if (getTranslations().getConfig().isEnabled()) getTranslations().disable();
+    if (getMobs().isEnabled()) getMobs().disable();
   }
 }
