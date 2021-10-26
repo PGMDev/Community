@@ -471,7 +471,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
           text()
               .append(space())
               .append(SPONSOR)
-              .clickEvent(ClickEvent.runCommand("/sponsor " + map.getName()))
+              .clickEvent(ClickEvent.runCommand("/sponsor request" + map.getName()))
               .hoverEvent(
                   HoverEvent.showText(
                       text()
