@@ -217,11 +217,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     if (currentSponsor != null) {
       Player player = Bukkit.getPlayer(currentSponsor.getPlayerId());
 
-      // Must be online and an actual sponsor
-      if (player == null || !canRefund(player)) return;
-
-      // Same map = winner, refund the token
-      if (currentSponsor.getMap().equals(event.getMap())) {
+      // Same map = winner, refund the token even if offline
+      if (currentSponsor.getMap().equals(event.getMap()) && currentSponsor.canRefund()) {
         getRequestProfile(currentSponsor.getPlayerId())
             .thenAcceptAsync(
                 profile -> {
@@ -546,10 +543,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   private void queueRequest(Player player, MapInfo map) {
-    this.sponsors.add(new SponsorRequest(player.getUniqueId(), map));
+    this.sponsors.add(new SponsorRequest(player.getUniqueId(), map, canRefund(player)));
     Community.log(
-        "%s has queued a map (%s) - Total Queued == %d",
-        player.getName(), map.getName(), sponsors.size());
+        "%s has queued a map (%s) (refund: %s) - Total Queued == %d",
+        player.getName(), map.getName(), canRefund(player), sponsors.size());
     alertStaff(player, map, true);
   }
 

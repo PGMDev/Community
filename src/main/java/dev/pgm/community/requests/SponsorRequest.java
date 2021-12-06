@@ -7,10 +7,12 @@ public class SponsorRequest {
 
   private UUID playerId;
   private MapInfo map;
+  private boolean canRefund;
 
-  public SponsorRequest(UUID playerId, MapInfo map) {
+  public SponsorRequest(UUID playerId, MapInfo map, boolean canRefund) {
     this.playerId = playerId;
     this.map = map;
+    this.canRefund = canRefund;
   }
 
   public UUID getPlayerId() {
@@ -19,5 +21,9 @@ public class SponsorRequest {
 
   public MapInfo getMap() {
     return map;
+  }
+
+  public boolean canRefund() {
+    return canRefund;
   }
 }
