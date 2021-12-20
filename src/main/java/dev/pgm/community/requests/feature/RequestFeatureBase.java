@@ -2,6 +2,7 @@ package dev.pgm.community.requests.feature;
 
 import static dev.pgm.community.utils.MessageUtils.formatTokenTransaction;
 import static dev.pgm.community.utils.PGMUtils.compareMatchLength;
+import static dev.pgm.community.utils.PGMUtils.getCurrentMap;
 import static dev.pgm.community.utils.PGMUtils.isMapSizeAllowed;
 import static dev.pgm.community.utils.PGMUtils.isMatchRunning;
 import static net.kyori.adventure.text.Component.newline;
@@ -56,7 +57,6 @@ import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
-import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.events.MapVoteWinnerEvent;
 import tc.oc.pgm.rotation.MapPoolManager;
 import tc.oc.pgm.rotation.VotingPool;
@@ -166,6 +166,9 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       currentSponsor = null;
     }
 
+    // Track map after match ends
+    this.mapCooldown.put(event.getMatch().getMap(), Instant.now());
+
     VotingPool pool = getVotingPool();
 
     if (pool != null) {
@@ -210,12 +213,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         }
       }
     }
-  }
-
-  @EventHandler
-  public void onMatchLoad(MatchLoadEvent event) {
-    // Track loaded maps to prevent sponsoring recent maps
-    this.mapCooldown.put(event.getMatch().getMap(), Instant.now());
   }
 
   private boolean canRefund(Player player) {
@@ -299,6 +296,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     if (!isMatchRunning()) {
       viewer.sendWarning(text("Please wait until the next match has begun"));
+      return;
+    }
+
+    if (getCurrentMap() != null && getCurrentMap().equals(map)) {
+      viewer.sendWarning(text("Please select a different map"));
       return;
     }
 

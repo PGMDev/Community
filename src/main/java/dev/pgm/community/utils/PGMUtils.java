@@ -65,6 +65,11 @@ public class PGMUtils {
     return isPGMEnabled() && getMatch().isRunning();
   }
 
+  @Nullable
+  public static MapInfo getCurrentMap() {
+    return isPGMEnabled() && getMatch() != null ? getMatch().getMap() : null;
+  }
+
   public static boolean isMapSizeAllowed(MapInfo map) {
     if (isPGMEnabled()) {
       Match match = getMatch();
