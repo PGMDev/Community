@@ -238,6 +238,7 @@ public class RequestCommands extends CommunityCommand {
           Sets.newHashSet(PGM.get().getMapLibrary().getMaps()).stream()
               .filter(PGMUtils::isMapSizeAllowed)
               .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
+              .filter(m -> !requests.hasMapCooldown(m))
               .collect(Collectors.toSet());
 
       int resultsPerPage = 8;

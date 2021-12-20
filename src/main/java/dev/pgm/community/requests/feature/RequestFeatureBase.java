@@ -56,18 +56,22 @@ import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
+import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.events.MapVoteWinnerEvent;
 import tc.oc.pgm.rotation.MapPoolManager;
 import tc.oc.pgm.rotation.VotingPool;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.TemporalComponent;
 
 public abstract class RequestFeatureBase extends FeatureBase implements RequestFeature {
 
   private Cache<UUID, MapInfo> requests;
 
   private Cache<UUID, Instant> cooldown;
+
+  private Cache<MapInfo, Instant> mapCooldown;
 
   private LinkedList<SponsorRequest> sponsors;
 
@@ -83,6 +87,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         CacheBuilder.newBuilder()
             .expireAfterWrite(config.getCooldown().getSeconds(), TimeUnit.SECONDS)
             .build();
+    this.mapCooldown = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
     this.sponsors = Lists.newLinkedList();
     this.currentSponsor = null;
 
@@ -207,6 +212,12 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     }
   }
 
+  @EventHandler
+  public void onMatchLoad(MatchLoadEvent event) {
+    // Track loaded maps to prevent sponsoring recent maps
+    this.mapCooldown.put(event.getMatch().getMap(), Instant.now());
+  }
+
   private boolean canRefund(Player player) {
     return getRequestConfig().isRefunded()
         && player.hasPermission(CommunityPermissions.REQUEST_REFUND);
@@ -310,6 +321,18 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
           text()
               .append(map.getStyledName(MapNameStyle.COLOR))
               .append(text(" may not be selected"))
+              .build());
+      return;
+    }
+
+    // Check if map has a cooldown
+    if (hasMapCooldown(map)) {
+      Duration timeSince = Duration.between(mapCooldown.getIfPresent(map), Instant.now());
+      Duration timeLeft = Duration.ofHours(1).minus(timeSince);
+      viewer.sendWarning(
+          text()
+              .append(text("This map can be sponsored in ", NamedTextColor.RED))
+              .append(TemporalComponent.duration(timeLeft, NamedTextColor.YELLOW))
               .build());
       return;
     }
@@ -433,6 +456,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   @Override
   public int queueIndex(SponsorRequest request) {
     return sponsors.indexOf(request);
+  }
+
+  @Override
+  public boolean hasMapCooldown(MapInfo map) {
+    return mapCooldown.getIfPresent(map) != null;
   }
 
   private Component getCooldownMessage(Instant lastRequest, Duration cooldownTime) {

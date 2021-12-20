@@ -134,4 +134,6 @@ public interface RequestFeature extends Feature {
   Optional<SponsorRequest> getPendingSponsor(UUID playerId);
 
   int queueIndex(SponsorRequest request);
+
+  boolean hasMapCooldown(MapInfo map);
 }
