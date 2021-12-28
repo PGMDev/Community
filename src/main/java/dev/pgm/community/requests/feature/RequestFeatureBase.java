@@ -3,6 +3,7 @@ package dev.pgm.community.requests.feature;
 import static dev.pgm.community.utils.MessageUtils.formatTokenTransaction;
 import static dev.pgm.community.utils.PGMUtils.compareMatchLength;
 import static dev.pgm.community.utils.PGMUtils.getCurrentMap;
+import static dev.pgm.community.utils.PGMUtils.isBlitz;
 import static dev.pgm.community.utils.PGMUtils.isMapSizeAllowed;
 import static dev.pgm.community.utils.PGMUtils.isMatchRunning;
 import static net.kyori.adventure.text.Component.newline;
@@ -215,11 +216,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     }
   }
 
-  private boolean canRefund(Player player) {
-    return getRequestConfig().isRefunded()
-        && player.hasPermission(CommunityPermissions.REQUEST_REFUND);
-  }
-
   @EventHandler
   public void onVoteEnd(MapVoteWinnerEvent event) {
     if (currentSponsor != null) {
@@ -301,6 +297,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     if (getCurrentMap() != null && getCurrentMap().equals(map)) {
       viewer.sendWarning(text("Please select a different map"));
+      return;
+    }
+
+    if (isBlitz()) {
+      viewer.sendWarning(text("Sorry, sponsoring is disabled during blitz"));
       return;
     }
 
@@ -498,6 +499,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       }
     }
     return !canRequest;
+  }
+
+  private boolean canRefund(Player player) {
+    return getRequestConfig().isRefunded()
+        && player.hasPermission(CommunityPermissions.REQUEST_REFUND);
   }
 
   private Component getRequestMessage(Player player, MapInfo map) {

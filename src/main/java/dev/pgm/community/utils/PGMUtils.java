@@ -12,6 +12,7 @@ import org.bukkit.plugin.Plugin;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.blitz.BlitzMatchModule;
 
 public class PGMUtils {
 
@@ -99,5 +100,14 @@ public class PGMUtils {
     }
 
     return map;
+  }
+
+  public static boolean isBlitz() {
+    Match match = getMatch();
+    if (match != null) {
+      BlitzMatchModule bmm = match.getModule(BlitzMatchModule.class);
+      return bmm != null;
+    }
+    return false;
   }
 }
