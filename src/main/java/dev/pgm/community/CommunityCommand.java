@@ -146,16 +146,26 @@ public abstract class CommunityCommand extends BaseCommand {
         if (teamName == null || teamName.isEmpty()) {
           throw new InvalidCommandArgument("Please provide a team name");
         }
-        Team team = teams.bestFuzzyMatch(teamName);
-        if (team == null) {
-          throw new InvalidCommandArgument(teamName + " is not a valid team name");
+
+        // Allow Observers to be selected
+        if (teamName.toLowerCase().startsWith("obs")) {
+          text = text("Observers", NamedTextColor.AQUA);
+          targets.addAll(
+              match.getObservers().stream()
+                  .map(MatchPlayer::getBukkit)
+                  .collect(Collectors.toList()));
+        } else {
+          Team team = teams.bestFuzzyMatch(teamName);
+          if (team == null) {
+            throw new InvalidCommandArgument(teamName + " is not a valid team name");
+          }
+          targets.addAll(
+              team.getPlayers().stream().map(MatchPlayer::getBukkit).collect(Collectors.toList()));
+          text =
+              text()
+                  .append(text(team.getNameLegacy(), TextFormatter.convert(team.getColor())))
+                  .build();
         }
-        targets.addAll(
-            team.getPlayers().stream().map(MatchPlayer::getBukkit).collect(Collectors.toList()));
-        text =
-            text()
-                .append(text(team.getNameLegacy(), TextFormatter.convert(team.getColor())))
-                .build();
       } else {
         throw new InvalidCommandArgument("There are no teams in this match to select");
       }
