@@ -21,6 +21,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
+import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
@@ -71,7 +72,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   private Cache<UUID, Instant> cooldown;
 
-  private Cache<MapInfo, Instant> mapCooldown;
+  private Map<MapInfo, MapCooldown> mapCooldown;
 
   private LinkedList<SponsorRequest> sponsors;
 
@@ -87,7 +88,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         CacheBuilder.newBuilder()
             .expireAfterWrite(config.getCooldown().getSeconds(), TimeUnit.SECONDS)
             .build();
-    this.mapCooldown = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
+    this.mapCooldown = Maps.newHashMap();
     this.sponsors = Lists.newLinkedList();
     this.currentSponsor = null;
 
@@ -166,8 +167,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       currentSponsor = null;
     }
 
-    // Track map after match ends
-    this.mapCooldown.put(event.getMatch().getMap(), Instant.now());
+    startNewMapCooldown(event.getMatch().getMap(), event.getMatch().getDuration());
 
     VotingPool pool = getVotingPool();
 
@@ -329,12 +329,12 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     // Check if map has a cooldown
     if (hasMapCooldown(map)) {
-      Duration timeSince = Duration.between(mapCooldown.getIfPresent(map), Instant.now());
-      Duration timeLeft = Duration.ofHours(1).minus(timeSince);
+      MapCooldown cooldown = mapCooldown.get(map);
       viewer.sendWarning(
           text()
               .append(text("This map can be sponsored in ", NamedTextColor.RED))
-              .append(TemporalComponent.duration(timeLeft, NamedTextColor.YELLOW))
+              .append(
+                  TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
               .build());
       return;
     }
@@ -462,7 +462,20 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   @Override
   public boolean hasMapCooldown(MapInfo map) {
-    return mapCooldown.getIfPresent(map) != null;
+    MapCooldown cooldown = mapCooldown.get(map);
+    if (cooldown == null) return false;
+
+    if (cooldown.hasExpired()) {
+      mapCooldown.remove(map);
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public Map<MapInfo, MapCooldown> getMapCooldowns() {
+    return mapCooldown;
   }
 
   private Component getCooldownMessage(Instant lastRequest, Duration cooldownTime) {
@@ -601,5 +614,12 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       }
     }
     return null;
+  }
+
+  private void startNewMapCooldown(MapInfo map, Duration matchLength) {
+    this.mapCooldown.putIfAbsent(
+        map,
+        new MapCooldown(
+            Instant.now(), matchLength.multipliedBy(getRequestConfig().getMapCooldownMultiply())));
   }
 }

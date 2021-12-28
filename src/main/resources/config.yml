@@ -183,6 +183,7 @@ requests:
   sponsors: 
     enabled: true      # Whether /sponsor is enabled
     cooldown: "30m"    # Duration of cooldown between /sponsor requests
+    map-cooldown: 10   # How much to multiply match duration by for map cooldown
     limit: 10          # Maximum number of sponsor requests allowed at one time
     daily-tokens: 1    # Amount of tokens given on a daily basis (community.token.daily perm)
     weekly-tokens: 1   # Amount of tokens given on a weekly basis (community.token.weekly perm)

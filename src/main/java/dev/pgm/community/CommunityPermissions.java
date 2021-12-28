@@ -77,6 +77,8 @@ public interface CommunityPermissions {
   String TOKEN_DAILY = TOKEN + ".daily"; // Receives token refresh daily
   String TOKEN_WEEKLY = TOKEN + ".weekly"; // Receives token refresh weekly
 
+  String VIEW_MAP_COOLDOWNS = ROOT + ".view-map-cooldown";
+
   // Translations
   String TRANSLATE = ROOT + ".translate"; // Access to /translate
 
@@ -96,4 +98,5 @@ public interface CommunityPermissions {
 
   String OVERRIDE = "pgm.admin"; // Access to override
   // TODO Setup different groups like moderation
+
 }

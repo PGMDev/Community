@@ -3,6 +3,7 @@ package dev.pgm.community.requests.feature;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.feature.Feature;
+import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import java.util.Map;
@@ -136,4 +137,6 @@ public interface RequestFeature extends Feature {
   int queueIndex(SponsorRequest request);
 
   boolean hasMapCooldown(MapInfo map);
+
+  Map<MapInfo, MapCooldown> getMapCooldowns();
 }

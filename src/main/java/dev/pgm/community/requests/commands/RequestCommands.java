@@ -20,6 +20,7 @@ import co.aikar.commands.annotation.Syntax;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
@@ -32,6 +33,8 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -51,6 +54,7 @@ import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
@@ -66,6 +70,77 @@ public class RequestCommands extends CommunityCommand {
   @CommandPermission(CommunityPermissions.REQUEST)
   public void request(CommandAudience audience, Player player, String mapName) {
     requests.request(player, parseMapText(mapName));
+  }
+
+  @CommandAlias("mapcooldowns|mapcd|mapcooldown")
+  @Description("View a list of current map cooldowns")
+  @CommandPermission(CommunityPermissions.VIEW_MAP_COOLDOWNS)
+  public void viewCooldowns(CommandAudience audience, Player player, @Default("1") int page) {
+    Map<MapInfo, MapCooldown> cooldowns = requests.getMapCooldowns();
+
+    List<MapInfo> maps =
+        cooldowns.entrySet().stream()
+            .filter(e -> !e.getValue().hasExpired())
+            .map(e -> e.getKey())
+            .collect(Collectors.toList());
+
+    Comparator<MapInfo> compare =
+        (m1, m2) -> {
+          MapCooldown m1C = cooldowns.get(m1);
+          MapCooldown m2C = cooldowns.get(m2);
+          Instant m1D = m1C.getEndTime();
+          Instant m2D = m2C.getEndTime();
+
+          return m2D.compareTo(m1D);
+        };
+
+    maps.sort(compare);
+
+    int resultsPerPage = 10;
+    int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
+
+    Component paginated =
+        TextFormatter.paginate(
+            text("Active Cooldowns"),
+            page,
+            pages,
+            NamedTextColor.DARK_AQUA,
+            NamedTextColor.AQUA,
+            true);
+
+    Component formattedTitle =
+        TextFormatter.horizontalLineHeading(
+            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+
+    new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
+      @Override
+      public Component format(MapInfo map, int index) {
+        MapCooldown cooldown = cooldowns.get(map);
+
+        Component mapName =
+            map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
+                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+                .hoverEvent(
+                    HoverEvent.showText(
+                        translatable(
+                            "command.maps.hover",
+                            NamedTextColor.GRAY,
+                            map.getStyledName(MapNameStyle.COLOR))));
+
+        return text()
+            .append(mapName)
+            .append(BroadcastUtils.BROADCAST_DIV.color(NamedTextColor.GOLD))
+            .append(TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
+            .append(text(" remaining"))
+            .color(NamedTextColor.GRAY)
+            .build();
+      }
+
+      @Override
+      public Component formatEmpty() {
+        return text("There are no maps with active cooldowns!", NamedTextColor.RED);
+      }
+    }.display(audience.getAudience(), maps, page);
   }
 
   @CommandAlias("sponsor")

@@ -20,6 +20,7 @@ public class RequestConfig extends FeatureConfigImpl {
   private static final String WEEKLY_TOKENS = SPONSORS + ".weekly-tokens";
   private static final String MAX_TOKENS = SPONSORS + ".max-tokens";
   private static final String REFUND = SPONSORS + ".refund";
+  private static final String MAP_COOLDOWN_MULTIPLY = SPONSORS + ".map-cooldown";
 
   private Duration cooldown; // Cooldown for using /request
   private Duration sponsorCooldown; // Cooldown for sponsor requests
@@ -34,6 +35,8 @@ public class RequestConfig extends FeatureConfigImpl {
   private int maxQueue; // Max number of requests allowed in sponsor queue
 
   private boolean refund; // If token should be refunded when vote is successful
+
+  private int mapCooldownMultiply; // # to multiply match length by to determine cooldown
 
   public RequestConfig(Configuration config) {
     super(KEY, config);
@@ -71,6 +74,10 @@ public class RequestConfig extends FeatureConfigImpl {
     return refund;
   }
 
+  public int getMapCooldownMultiply() {
+    return mapCooldownMultiply;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -82,5 +89,6 @@ public class RequestConfig extends FeatureConfigImpl {
     this.maxTokens = config.getInt(MAX_TOKENS);
     this.maxQueue = config.getInt(SPONSORS_LIMIT);
     this.refund = config.getBoolean(REFUND);
+    this.mapCooldownMultiply = config.getInt(MAP_COOLDOWN_MULTIPLY);
   }
 }
