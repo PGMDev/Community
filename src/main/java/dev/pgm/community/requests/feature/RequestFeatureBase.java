@@ -33,6 +33,7 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -169,6 +170,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     }
 
     startNewMapCooldown(event.getMatch().getMap(), event.getMatch().getDuration());
+
+    checkQueuedMaps(); // Check if any sponsor requests should be removed
 
     VotingPool pool = getVotingPool();
 
@@ -627,5 +630,22 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         map,
         new MapCooldown(
             Instant.now(), matchLength.multipliedBy(getRequestConfig().getMapCooldownMultiply())));
+  }
+
+  private void checkQueuedMaps() {
+    Iterator<SponsorRequest> queue = this.sponsors.iterator();
+    while (queue.hasNext()) {
+      SponsorRequest request = queue.next();
+      if (!isMapSizeAllowed(request.getMap())) {
+        Player player = Bukkit.getPlayer(request.getPlayerId());
+        Audience viewer = Audience.get(player);
+        viewer.sendWarning(
+            text()
+                .append(request.getMap().getStyledName(MapNameStyle.COLOR))
+                .append(text(" no longer fits the online player count.", NamedTextColor.RED))
+                .build());
+        queue.remove();
+      }
+    }
   }
 }
