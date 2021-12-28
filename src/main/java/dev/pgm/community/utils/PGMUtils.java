@@ -75,7 +75,7 @@ public class PGMUtils {
       Match match = getMatch();
       int participants = match.getParticipants().size();
       int observers = match.getObservers().size();
-      int total = participants + (observers / 2);
+      int total = participants + (observers / 4);
 
       int max = map.getMaxPlayers().stream().reduce(0, Integer::sum);
       int lowerBound = participants;
