@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -292,12 +293,20 @@ public class PunishmentCommand extends CommunityCommand {
 
       @Override
       public Component formatEmpty() {
-        return target != null
-            ? translatable(
-                "moderation.records.lookupNone",
-                NamedTextColor.RED,
-                text(target, NamedTextColor.AQUA))
-            : text("There have been no recent punishments", NamedTextColor.RED);
+        if (target != null) {
+          TranslatableComponent noneFound =
+              translatable("moderation.records.lookupNone", NamedTextColor.RED);
+          try {
+            UUID uuid = UUID.fromString(target);
+            Component targetName =
+                usernames.renderUsername(uuid, NameStyle.PLAIN).join().color(NamedTextColor.AQUA);
+            return noneFound.args(targetName);
+          } catch (IllegalArgumentException e) {
+            // No-op
+          }
+          return noneFound.args(text(target, NamedTextColor.AQUA));
+        }
+        return text("There have been no recent punishments", NamedTextColor.RED);
       }
     }.display(
         audience.getAudience(),
