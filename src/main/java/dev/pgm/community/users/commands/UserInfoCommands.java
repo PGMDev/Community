@@ -15,6 +15,7 @@ import co.aikar.commands.annotation.Syntax;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -25,7 +26,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -43,6 +46,7 @@ import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 public class UserInfoCommands extends CommunityCommand {
 
   @Dependency private UsersFeature users;
+  @Dependency private ModerationFeature moderation;
 
   @CommandAlias("usernamehistory|uh")
   @Description("View the name history of a user")
@@ -145,6 +149,7 @@ public class UserInfoCommands extends CommunityCommand {
   public void viewAlts(CommandAudience audience, @Optional String target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
+      showBannedAlts(audience, 1);
       return;
     }
 
@@ -195,19 +200,55 @@ public class UserInfoCommands extends CommunityCommand {
                                     })
                                 .collect(Collectors.toSet());
 
+                        Component numberOfAlts =
+                            text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
+
                         Component altNameList =
                             text()
                                 .append(targetPlayer)
                                 .append(text(" has "))
-                                .append(
-                                    text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD))
+                                .append(numberOfAlts)
                                 .append(text(" known alternate account"))
                                 .append(text(alts.size() != 1 ? "s" : ""))
                                 .append(text(": "))
                                 .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
                                 .color(NamedTextColor.GRAY)
                                 .build();
+
+                        List<Component> altsWithBans =
+                            alts.stream()
+                                .filter(altId -> moderation.isBanned(altId.toString()).join())
+                                .map(
+                                    altId -> {
+                                      Component name =
+                                          PlayerComponent.player(
+                                              altId,
+                                              users.getStoredUsername(altId).join(),
+                                              NameStyle.FANCY);
+
+                                      return text()
+                                          .append(name)
+                                          .clickEvent(ClickEvent.runCommand("/l " + altId))
+                                          .hoverEvent(
+                                              HoverEvent.showText(
+                                                  text(
+                                                          "Click to view punishment history of ",
+                                                          NamedTextColor.GRAY)
+                                                      .append(name)))
+                                          .build();
+                                    })
+                                .collect(Collectors.toList());
+
+                        Component altBans =
+                            text()
+                                .append(numberOfAlts)
+                                .append(text(" of these accounts are currently banned: "))
+                                .append(TextFormatter.list(altsWithBans, NamedTextColor.GRAY))
+                                .color(NamedTextColor.GRAY)
+                                .build();
+
                         audience.sendMessage(altNameList);
+                        audience.sendMessage(altBans);
                       });
             });
   }
@@ -302,20 +343,45 @@ public class UserInfoCommands extends CommunityCommand {
 
   private void showOnlineAlts(CommandAudience audience, int page) {
     Set<Component> altAccounts = Sets.newHashSet();
-    Set<Player> accountedFor = Sets.newHashSet();
+    Set<UUID> accountedFor = Sets.newHashSet();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      Set<Player> alts = getAltAccounts(player);
+      Set<UUID> alts = getOnlineAltAccounts(player);
 
-      if (alts.isEmpty() || accountedFor.contains(player)) {
+      if (alts.isEmpty() || accountedFor.contains(player.getUniqueId())) {
         continue;
       } else {
         altAccounts.add(formatAltAccountList(player, alts));
-        accountedFor.add(player);
+        accountedFor.add(player.getUniqueId());
         accountedFor.addAll(alts);
       }
     }
 
+    sendAltList(audience, page, altAccounts, false);
+  }
+
+  private void showBannedAlts(CommandAudience audience, int page) {
+    Set<Component> altAccounts = Sets.newHashSet();
+    Set<UUID> accountedFor = Sets.newHashSet();
+
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      Set<UUID> bannedAlts =
+          users.getAlternateAccounts(player.getUniqueId()).join().stream()
+              .filter(altId -> moderation.isBanned(altId.toString()).join())
+              .collect(Collectors.toSet());
+
+      if (!bannedAlts.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
+        altAccounts.add(formatAltAccountList(player, bannedAlts));
+        accountedFor.add(player.getUniqueId());
+        accountedFor.addAll(bannedAlts);
+      }
+    }
+
+    sendAltList(audience, page, altAccounts, true);
+  }
+
+  private void sendAltList(
+      CommandAudience audience, int page, Set<Component> altAccounts, boolean banned) {
     int perPage = Math.max(15, altAccounts.size());
     int pages = (altAccounts.size() + perPage - 1) / perPage;
 
@@ -326,7 +392,9 @@ public class UserInfoCommands extends CommunityCommand {
             text(Integer.toString(page), NamedTextColor.DARK_AQUA),
             text(Integer.toString(pages), NamedTextColor.DARK_AQUA));
 
-    Component headerText = translatable("moderation.alts.header", NamedTextColor.DARK_AQUA);
+    Component headerText =
+        translatable(
+            banned ? "Banned Alt-Accounts" : "moderation.alts.header", NamedTextColor.DARK_AQUA);
 
     Component header =
         text()
@@ -355,12 +423,12 @@ public class UserInfoCommands extends CommunityCommand {
     }.display(audience.getAudience(), altAccounts, page);
   }
 
-  private Component formatAltAccountList(Player target, Set<Player> alts) {
+  private Component formatAltAccountList(Player target, Set<UUID> alts) {
     Component names =
         Component.join(
             text(", ", NamedTextColor.GRAY),
             alts.stream()
-                .map(pl -> PlayerComponent.player(pl, NameStyle.FANCY))
+                .map(pl -> users.renderUsername(pl, NameStyle.FANCY).join())
                 .collect(Collectors.toSet()));
     Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
 
@@ -373,14 +441,14 @@ public class UserInfoCommands extends CommunityCommand {
         .append(names);
   }
 
-  private Set<Player> getAltAccounts(Player target) {
-    Set<Player> sameIPs = Sets.newHashSet();
+  private Set<UUID> getOnlineAltAccounts(Player target) {
+    Set<UUID> sameIPs = Sets.newHashSet();
     String address = target.getAddress().getAddress().getHostAddress();
 
     for (Player other : Bukkit.getOnlinePlayers()) {
       if (other.getAddress().getAddress().getHostAddress().equals(address)
           && !other.equals(target)) {
-        sameIPs.add(other);
+        sameIPs.add(other.getUniqueId());
       }
     }
 
