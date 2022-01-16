@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -239,16 +240,20 @@ public class UserInfoCommands extends CommunityCommand {
                                     })
                                 .collect(Collectors.toList());
 
+                        Component numberOfBannedAlts =
+                            text(altsWithBans.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
+
                         Component altBans =
                             text()
-                                .append(numberOfAlts)
+                                .append(numberOfBannedAlts)
                                 .append(text(" of these accounts are currently banned: "))
                                 .append(TextFormatter.list(altsWithBans, NamedTextColor.GRAY))
                                 .color(NamedTextColor.GRAY)
                                 .build();
-
                         audience.sendMessage(altNameList);
-                        audience.sendMessage(altBans);
+                        if (altsWithBans.size() > 0) {
+                          audience.sendMessage(altBans);
+                        }
                       });
             });
   }
@@ -361,23 +366,26 @@ public class UserInfoCommands extends CommunityCommand {
   }
 
   private void showBannedAlts(CommandAudience audience, int page) {
-    Set<Component> altAccounts = Sets.newHashSet();
-    Set<UUID> accountedFor = Sets.newHashSet();
+    CompletableFuture.runAsync(
+        () -> {
+          Set<Component> altAccounts = Sets.newHashSet();
+          Set<UUID> accountedFor = Sets.newHashSet();
 
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      Set<UUID> bannedAlts =
-          users.getAlternateAccounts(player.getUniqueId()).join().stream()
-              .filter(altId -> moderation.isBanned(altId.toString()).join())
-              .collect(Collectors.toSet());
+          for (Player player : Bukkit.getOnlinePlayers()) {
+            Set<UUID> bannedAlts =
+                users.getAlternateAccounts(player.getUniqueId()).join().stream()
+                    .filter(altId -> moderation.isBanned(altId.toString()).join())
+                    .collect(Collectors.toSet());
 
-      if (!bannedAlts.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
-        altAccounts.add(formatAltAccountList(player, bannedAlts));
-        accountedFor.add(player.getUniqueId());
-        accountedFor.addAll(bannedAlts);
-      }
-    }
+            if (!bannedAlts.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
+              altAccounts.add(formatAltAccountList(player, bannedAlts));
+              accountedFor.add(player.getUniqueId());
+              accountedFor.addAll(bannedAlts);
+            }
+          }
 
-    sendAltList(audience, page, altAccounts, true);
+          sendAltList(audience, page, altAccounts, true);
+        });
   }
 
   private void sendAltList(
@@ -418,7 +426,8 @@ public class UserInfoCommands extends CommunityCommand {
       @Override
       public Component formatEmpty() {
         // TODO: Translate
-        return text("No alternate accounts found", NamedTextColor.RED);
+        return text(
+            "No" + (banned ? " banned" : "") + " alternate accounts found", NamedTextColor.RED);
       }
     }.display(audience.getAudience(), altAccounts, page);
   }
