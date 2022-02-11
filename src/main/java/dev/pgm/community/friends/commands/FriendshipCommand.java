@@ -12,11 +12,16 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.friends.Friendship;
 import dev.pgm.community.friends.feature.FriendshipFeature;
+import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.sessions.Session;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -29,8 +34,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -39,6 +46,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
@@ -50,6 +58,7 @@ public class FriendshipCommand extends CommunityCommand {
 
   @Dependency private FriendshipFeature friends;
   @Dependency private UsersFeature users;
+  @Dependency private NickFeature nicks;
 
   @Default
   @CommandAlias("friends")
@@ -78,12 +87,45 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
+  private LoadingCache<UUID, FakeRequests> fakeRequests =
+      CacheBuilder.newBuilder()
+          .expireAfterAccess(3, TimeUnit.HOURS)
+          .build(
+              new CacheLoader<UUID, FakeRequests>() {
+                @Override
+                public FakeRequests load(UUID key) throws Exception {
+                  return new FakeRequests();
+                }
+              });
+
   @Subcommand("add|request|a")
   @Syntax("[username | uuid] - Name or uuid of friend to add")
   @Description("Sends a friend request to another player")
-  @CommandCompletion("@players")
+  @CommandCompletion("@visible")
   public void add(CommandAudience sender, String target) {
     if (sender.isPlayer()) {
+
+      // Handle disguised players with fake requests
+      Player nicked = nicks.getPlayerFromNick(target);
+      if (nicked != null) {
+        FakeRequests fake = fakeRequests.getUnchecked(sender.getId().get());
+        String fullName = nicks.getOnlineNick(nicked.getUniqueId());
+        Component fancyName = PlayerComponent.player(nicked, NameStyle.FANCY);
+
+        if (fake.hasRequest(fullName)) {
+          sender.sendWarning(
+              text("You have already sent a friend request to ")
+                  .append(fancyName)
+                  .color(NamedTextColor.GRAY));
+          return;
+        } else {
+          fake.addRequest(fullName);
+          sender.sendMessage(
+              text("Friend request sent to ").append(fancyName).color(NamedTextColor.GRAY));
+          return;
+        }
+      }
+
       getTarget(target, users)
           .thenAcceptAsync(
               storedId -> {
@@ -501,5 +543,18 @@ public class FriendshipCommand extends CommunityCommand {
       return viewer.hasPermission(CommunityPermissions.STAFF);
     }
     return true;
+  }
+
+  private class FakeRequests {
+
+    private Set<String> nicknames = Sets.newHashSet();
+
+    public boolean hasRequest(String nickname) {
+      return nicknames.contains(nickname);
+    }
+
+    public void addRequest(String nickname) {
+      nicknames.add(nickname);
+    }
   }
 }
