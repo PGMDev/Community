@@ -294,7 +294,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     Audience viewer = Audience.get(player);
 
     if (!isMatchRunning()) {
-      viewer.sendWarning(text("Please wait until the next match has begun"));
+      viewer.sendWarning(text("Please wait until 30 seconds after the next match starts"));
       return;
     }
 
@@ -309,13 +309,13 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     }
 
     // Ensure match is RUNNING and OVER one minute
-    if (!compareMatchLength(Duration.ofMinutes(1))) {
+    if (!compareMatchLength(Duration.ofSeconds(30))) {
       viewer.sendWarning(
           text()
               .append(text("The match just started!"))
               .append(newline())
               .append(text("Please try again after "))
-              .append(text("1 minute", NamedTextColor.AQUA))
+              .append(text("30 seconds", NamedTextColor.AQUA))
               .append(text(" of the match has passed"))
               .build());
       return;
