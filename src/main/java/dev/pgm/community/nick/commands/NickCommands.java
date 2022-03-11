@@ -304,8 +304,8 @@ public class NickCommands extends CommunityCommand {
   @Subcommand("clear|reset")
   @Description("Remove nickname from yourself or another player")
   public void clearNick(CommandAudience viewer, Player player, @Optional String target) {
-    // Clear other user name
-    if (player.hasPermission(CommunityPermissions.NICKNAME_OTHER) && target != null) {
+    // Clear other user names
+    if (player.hasPermission(CommunityPermissions.NICKNAME_CLEAR) && target != null) {
       getTarget(target, users)
           .thenAcceptAsync(
               uuid -> {

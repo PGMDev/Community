@@ -53,6 +53,7 @@ public interface CommunityPermissions {
   String NICKNAME = ROOT + ".nick"; // Access to /nick (random)
   String NICKNAME_SET = NICKNAME + ".set"; // Access to /nick set
   String NICKNAME_OTHER = NICKNAME_SET + ".other"; // Access to /nick setother
+  String NICKNAME_CLEAR = NICKNAME_SET + ".clear"; // Access to /nick clear <username>
 
   // General Staff
   String STAFF =
