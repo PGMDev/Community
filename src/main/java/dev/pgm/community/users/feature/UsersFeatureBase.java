@@ -10,9 +10,13 @@ import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UsersConfig;
 import dev.pgm.community.users.commands.UserInfoCommands;
 import dev.pgm.community.users.listeners.UserProfileLoginListener;
+
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -20,11 +24,15 @@ public abstract class UsersFeatureBase extends FeatureBase implements UsersFeatu
 
   protected final Cache<UUID, String> names;
   protected final Cache<UUID, UserProfile> profiles;
+  protected final Cache<UUID, Set<UUID>> alternateAccounts;
+  protected final Cache<UUID, CompletableFuture<Set<UUID>>> currentlyFetchingAlts;
 
   public UsersFeatureBase(UsersConfig config, Logger logger, String featureName) {
     super(config, logger, featureName);
     this.profiles = CacheBuilder.newBuilder().build();
     this.names = CacheBuilder.newBuilder().build();
+    this.alternateAccounts = CacheBuilder.newBuilder().build();
+    this.currentlyFetchingAlts = CacheBuilder.newBuilder().build();
 
     // Auto register username change listener
     Community.get().registerListener(new UserProfileLoginListener(this));

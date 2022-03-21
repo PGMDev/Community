@@ -1,6 +1,7 @@
 package dev.pgm.community.users.feature.types;
 
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.UsersConfig;
@@ -57,7 +58,20 @@ public class NoDBUsersFeature extends UsersFeatureBase {
 
   @Override
   public CompletableFuture<Set<UUID>> getAlternateAccounts(UUID playerId) {
-    return CompletableFuture.completedFuture(Sets.newHashSet()); // TODO
+    Set<UUID> alts = this.alternateAccounts.getIfPresent(playerId);
+    if(alts != null) {
+      return CompletableFuture.completedFuture(alts);
+    } else {
+      CompletableFuture<Set<UUID>> alreadyActiveAltsFuture = this.currentlyFetchingAlts.getIfPresent(playerId);
+      if(alreadyActiveAltsFuture != null) {
+        return alreadyActiveAltsFuture;
+      }
+
+      Community.log("WARN: Alternate accounts not found in cache, fetching manually");
+      CompletableFuture<Set<UUID>> fetchedAlts = CompletableFuture.completedFuture(Sets.newHashSet()); //TODO
+      fetchedAlts.thenAcceptAsync(s -> this.alternateAccounts.put(playerId, s));
+      return fetchedAlts;
+    }
   }
 
   @Override
@@ -67,6 +81,8 @@ public class NoDBUsersFeature extends UsersFeatureBase {
     this.profiles.put(
         player.getUniqueId(), new UserProfileImpl(player.getUniqueId(), player.getName()));
     this.setName(player.getUniqueId(), player.getName());
+
+    this.alternateAccounts.put(player.getUniqueId(), Sets.newHashSet()); //TODO
   }
 
   @Override

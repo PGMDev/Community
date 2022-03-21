@@ -99,7 +99,20 @@ public class SQLUsersFeature extends UsersFeatureBase {
 
   @Override
   public CompletableFuture<Set<UUID>> getAlternateAccounts(UUID playerId) {
-    return addresses.getAlternateAccounts(playerId);
+    Set<UUID> alts = this.alternateAccounts.getIfPresent(playerId);
+    if(alts != null) {
+      return CompletableFuture.completedFuture(alts);
+    } else {
+      CompletableFuture<Set<UUID>> alreadyActiveAltsFuture = this.currentlyFetchingAlts.getIfPresent(playerId);
+      if(alreadyActiveAltsFuture != null) {
+        return alreadyActiveAltsFuture;
+      }
+
+      Community.log("WARN: Alternate accounts not found in cache, fetching from database");
+      CompletableFuture<Set<UUID>> altsFuture = addresses.getAlternateAccounts(playerId);
+      altsFuture.thenAcceptAsync(s -> this.alternateAccounts.put(playerId, s));
+      return altsFuture;
+    }
   }
 
   @Override
@@ -108,6 +121,17 @@ public class SQLUsersFeature extends UsersFeatureBase {
     final UUID id = player.getUniqueId();
     final String name = player.getName();
     final String address = player.getAddress().getHostString();
+
+    if (this.alternateAccounts.getIfPresent(id) == null) { //Pre-fetch any alternate accounts
+      CompletableFuture<Set<UUID>> altsFuture = this.addresses.getAlternateAccounts(id);
+
+      this.currentlyFetchingAlts.put(id, altsFuture);
+      altsFuture.thenAcceptAsync(alts -> {
+        this.alternateAccounts.put(id, alts);
+        this.currentlyFetchingAlts.invalidate(id);
+      });
+    }
+
     setName(id, name); // Check for username update
 
     profiles.invalidate(
