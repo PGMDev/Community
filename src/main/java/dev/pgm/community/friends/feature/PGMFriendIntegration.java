@@ -30,7 +30,11 @@ public class PGMFriendIntegration implements FriendIntegration {
 
   @Override
   public boolean isFriend(Player a, Player b) {
-    return friends.getOrDefault(a.getUniqueId(), Sets.newHashSet()).contains(b.getUniqueId());
+    return isFriend(a.getUniqueId(), b.getUniqueId());
+  }
+
+  public boolean isFriend(UUID playerId, UUID friendId) {
+    return friends.getOrDefault(playerId, Sets.newHashSet()).contains(friendId);
   }
 
   public void callUpdateEvents(UUID playerId, Set<UUID> friendIds) {

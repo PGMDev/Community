@@ -54,6 +54,13 @@ public class MessageUtils {
     // TODO: translate
   }
 
+  public static Component formatNotFriend(String target) {
+    return text()
+        .append(text("You are not friends with ", NamedTextColor.RED))
+        .append(text(target, NamedTextColor.DARK_AQUA))
+        .build();
+  }
+
   public static Component formatTokenTransaction(int amount, Component message) {
     return formatTokenTransaction(amount, message, null);
   }

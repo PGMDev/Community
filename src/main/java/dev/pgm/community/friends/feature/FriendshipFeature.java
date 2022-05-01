@@ -33,6 +33,8 @@ public interface FriendshipFeature extends Feature {
 
   void rejectFriendship(Friendship friendship);
 
+  boolean isFriend(UUID sender, UUID target);
+
   CompletableFuture<Boolean> areFriends(UUID sender, UUID target);
 
   CompletableFuture<Optional<Friendship>> hasRequested(UUID sender, UUID target);

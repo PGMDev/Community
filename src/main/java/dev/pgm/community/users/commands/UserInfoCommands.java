@@ -15,6 +15,7 @@ import co.aikar.commands.annotation.Syntax;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
@@ -48,6 +49,7 @@ public class UserInfoCommands extends CommunityCommand {
 
   @Dependency private UsersFeature users;
   @Dependency private ModerationFeature moderation;
+  @Dependency private FriendshipFeature friends;
 
   @CommandAlias("usernamehistory|uh")
   @Description("View the name history of a user")
@@ -97,17 +99,29 @@ public class UserInfoCommands extends CommunityCommand {
   @CommandAlias("seen|lastseen|find")
   @Description("View when a player was last online")
   @Syntax("[player]")
-  @CommandCompletion("@players")
+  @CommandCompletion("@visible")
   @CommandPermission(CommunityPermissions.FIND)
   public void seenPlayer(CommandAudience audience, String target) {
-    boolean staff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
+    boolean staff = audience.hasPermission(CommunityPermissions.STAFF);
+    boolean findAnyone = audience.hasPermission(CommunityPermissions.FIND_ANYONE);
 
     users.findUserWithSession(
         target,
         !staff,
         (profile, session) -> {
           if (profile == null || session == null) {
-            audience.sendWarning(MessageUtils.formatUnseen(target));
+            audience.sendWarning(
+                findAnyone
+                    ? MessageUtils.formatUnseen(target)
+                    : MessageUtils.formatNotFriend(target));
+            return;
+          }
+
+          if (audience.isPlayer()
+              && !friends.isFriend(audience.getPlayer().getUniqueId(), profile.getId())
+              && !findAnyone) {
+            audience.sendWarning(
+                text("You are not friends with ").append(text(target, NamedTextColor.DARK_AQUA)));
             return;
           }
 

@@ -170,6 +170,10 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
     update(friendship);
   }
 
+  public boolean isFriend(UUID sender, UUID target) {
+    return integration.isFriend(sender, target);
+  }
+
   public void update(Friendship friendship) {
     updateFriendships(friendship.getRequestedId());
     updateFriendships(friendship.getRequesterId());
