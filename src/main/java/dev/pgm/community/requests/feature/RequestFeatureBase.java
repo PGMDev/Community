@@ -54,6 +54,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
@@ -246,6 +247,31 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
                 });
       }
     }
+  }
+
+  private Cache<UUID, String> voteConfirm =
+      CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
+
+  @EventHandler
+  public void onVoteAddCommand(PlayerCommandPreprocessEvent event) {
+    if (!event.getMessage().startsWith("/vote add")
+        && !event.getMessage().startsWith("/pgm:vote add")) return;
+    if (sponsors.isEmpty()) return;
+    if (voteConfirm.getIfPresent(event.getPlayer().getUniqueId()) != null) return;
+    event.setCancelled(true);
+    voteConfirm.put(event.getPlayer().getUniqueId(), "");
+    Audience viewer = Audience.get(event.getPlayer());
+    viewer.sendWarning(text("A sponsor map has already been added to the vote!"));
+    viewer.sendWarning(
+        text("If you still want to adjust the vote, click ", NamedTextColor.GRAY)
+            .append(
+                text()
+                    .append(text("[", NamedTextColor.GRAY))
+                    .append(text("here", NamedTextColor.YELLOW))
+                    .append(text("]", NamedTextColor.GRAY)))
+            .clickEvent(ClickEvent.runCommand(event.getMessage()))
+            .hoverEvent(
+                HoverEvent.showText(text("Click to run command again", NamedTextColor.GRAY))));
   }
 
   @Override
