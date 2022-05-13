@@ -28,6 +28,7 @@ import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.types.RedisNetworkFeature;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.nick.feature.types.SQLNickFeature;
+import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.requests.feature.types.SQLRequestFeature;
 import dev.pgm.community.sessions.feature.SessionFeature;
@@ -71,6 +72,7 @@ public class FeatureManager {
   private final VanishFeature vanish;
   private final TranslationFeature translation;
   private final MobFeature mob;
+  private final MapPartyFeature party;
 
   public FeatureManager(
       Configuration config,
@@ -107,6 +109,7 @@ public class FeatureManager {
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
     this.translation = new TranslationFeature(config, logger);
     this.mob = new MobFeature(config, logger);
+    this.party = new MapPartyFeature(config, logger);
 
     this.registerCommands(commands);
   }
@@ -179,6 +182,10 @@ public class FeatureManager {
     return translation;
   }
 
+  public MapPartyFeature getParty() {
+    return party;
+  }
+
   public MobFeature getMobs() {
     return mob;
   }
@@ -201,6 +208,7 @@ public class FeatureManager {
     commands.registerDependency(RequestFeature.class, getRequests());
     commands.registerDependency(TranslationFeature.class, getTranslations());
     commands.registerDependency(MobFeature.class, getMobs());
+    commands.registerDependency(MapPartyFeature.class, getParty());
 
     // Custom command completions
     commands
@@ -264,6 +272,7 @@ public class FeatureManager {
     registerFeatureCommands(getRequests(), commands);
     registerFeatureCommands(getTranslations(), commands);
     registerFeatureCommands(getMobs(), commands);
+    registerFeatureCommands(getParty(), commands);
     // TODO: Group calls together and perform upon reload
     // will allow commands to be enabled/disabled with features
 
@@ -300,6 +309,7 @@ public class FeatureManager {
     getRequests().getConfig().reload(config);
     getTranslations().getConfig().reload(config);
     getMobs().getConfig().reload(config);
+    getParty().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled

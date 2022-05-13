@@ -7,6 +7,7 @@ import static net.kyori.adventure.title.Title.title;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
+import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.kyori.adventure.sound.Sound;
@@ -78,6 +79,10 @@ public class BroadcastUtils {
               }
             });
     Audience.get(Bukkit.getConsoleSender()).sendMessage(formatted);
+  }
+
+  public static void sendMultiLineGlobal(List<Component> lines) {
+    lines.forEach(BroadcastUtils::sendGlobalMessage);
   }
 
   public static void sendGlobalMessage(Component message) {
