@@ -126,6 +126,12 @@ public class MapPartyMessages {
         party,
         NamedTextColor.GREEN,
         text(colorize(party.getDescription()), NamedTextColor.BLUE),
+        text()
+            .append(text("The event will last for another "))
+            .append(text(formatTime(party)))
+            .append(text("!"))
+            .color(NamedTextColor.GRAY)
+            .build(),
         getWelcomeComponent(
             config.getWelcomeLine(), config.getWelcomeHover(), config.getWelcomeCommand()));
   }
@@ -140,18 +146,18 @@ public class MapPartyMessages {
 
   public static List<Component> getGoodbye(MapParty party, MapPartyConfig mapPartyConfig) {
     return getMultiLinePartyMessage(
-        party, NamedTextColor.GOLD, text(colorize(mapPartyConfig.getGoodbyeMessage())), null);
+        party, NamedTextColor.GOLD, text(colorize(mapPartyConfig.getGoodbyeMessage())));
   }
 
   private static List<Component> getMultiLinePartyMessage(
-      MapParty party, NamedTextColor color, Component firstLine, Component secondLine) {
+      MapParty party, NamedTextColor color, Component... messages) {
     List<Component> lines = Lists.newArrayList();
     lines.add(TextFormatter.horizontalLineHeading(null, party.getStyledName(), color));
-    lines.add(firstLine);
-    lines.add(text(" "));
-
-    if (secondLine != null) {
-      lines.add(secondLine);
+    for (int i = 0; i < messages.length; i++) {
+      lines.add(messages[i]);
+      if (i + 1 < messages.length) {
+        lines.add(text(" "));
+      }
     }
     lines.add(TextFormatter.horizontalLine(color, TextFormatter.MAX_CHAT_WIDTH));
     return lines;
