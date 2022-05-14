@@ -252,12 +252,12 @@ party:
     enabled: true
     interval: 2m
     prefix: "&7[&2&lEvent&7] "
-    # <message>;<command>;<specific interval>
+    # <message>;<command>;<hover message>;<specific interval>
     lines:
-      - "&7Currently partying on $name$&7! &aHave fun;/party"
-      - "&7Want to play a normal match? Click &7[&bhere&7];/normal"
+      - "&7Currently partying on $name$&7! &aHave fun;/party;&7Click to view party into"
+      - "&7Want to play a normal match? Click &7[&bhere&7];/normal;&7Click to join normal match"
       - "&cWarning&8: &7match may contain modified gameplay;/party"
-      - "&a$time$ &7left of $name$;/party;15m"
+      - "&a$time$ &7left of $name$;/party;&7To view more party info, click here;15m"
   
   # Preset party types that will show up in the GUI for instant use
   presets:

@@ -14,6 +14,7 @@ import dev.pgm.community.utils.BroadcastUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -81,13 +82,15 @@ public class MapPartyBroadcastManager {
 
     for (String line : lines) {
       String[] parts = line.split(";");
-      if (parts.length == 1) {
+      if (parts.length == 1) { // Message only
         randomTimes.add(new EventBroadcastLine(parts[0]));
-      } else if (parts.length == 2) {
+      } else if (parts.length == 2) { // Message & command
         randomTimes.add(new EventBroadcastLine(parts[0], parts[1]));
-      } else if (parts.length == 3) {
-        Duration interval = parseDuration(parts[2], Range.greaterThan(Duration.ofSeconds(1)));
-        specficTimes.add(new EventBroadcastLine(parts[0], parts[1], interval));
+      } else if (parts.length == 3) { // Message, command, and hover
+        randomTimes.add(new EventBroadcastLine(parts[0], parts[1], parts[2]));
+      } else if (parts.length == 4) { // Message, command, hover, and specfic time interval
+        Duration interval = parseDuration(parts[3], Range.greaterThan(Duration.ofSeconds(1)));
+        specficTimes.add(new EventBroadcastLine(parts[0], parts[1], parts[2], interval));
       }
     }
   }
@@ -141,8 +144,11 @@ public class MapPartyBroadcastManager {
 
     private String message;
     private String command;
+    private String hover;
     private Duration interval;
     private Instant lastBroadcast;
+
+    private final Component DEFAULT_HOVER = text("Click to view more info", NamedTextColor.GRAY);
 
     public EventBroadcastLine(String message) {
       this(message, "/event");
@@ -152,9 +158,14 @@ public class MapPartyBroadcastManager {
       this(message, command, null);
     }
 
-    public EventBroadcastLine(String message, String command, Duration interval) {
+    public EventBroadcastLine(String message, String command, String hover) {
+      this(message, command, hover, null);
+    }
+
+    public EventBroadcastLine(String message, String command, String hover, Duration interval) {
       this.message = message;
       this.command = command;
+      this.hover = hover;
       this.interval = interval;
       this.lastBroadcast = null;
     }
@@ -175,6 +186,10 @@ public class MapPartyBroadcastManager {
       return command;
     }
 
+    public String getHover() {
+      return hover;
+    }
+
     public Duration getInterval() {
       return interval;
     }
@@ -187,9 +202,11 @@ public class MapPartyBroadcastManager {
 
       if (getCommand() != null) {
         broadcast.clickEvent(ClickEvent.runCommand(getCommand()));
-        broadcast.hoverEvent(
-            HoverEvent.showText(text("Click to view more info", NamedTextColor.GRAY)));
       }
+      broadcast.hoverEvent(
+          getHover() != null
+              ? HoverEvent.showText(text(feature.formatLine(getHover(), getParty())))
+              : DEFAULT_HOVER);
 
       BroadcastUtils.sendGlobalMessage(broadcast.build());
 
