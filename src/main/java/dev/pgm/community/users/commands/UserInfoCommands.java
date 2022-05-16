@@ -358,12 +358,12 @@ public class UserInfoCommands extends CommunityCommand {
                 .getKnownIPs(profile.getId())
                 .thenAcceptAsync(
                     ips -> {
-                      if (ips.size() > 2) {
+                      if (ips.size() > 1) {
                         final int MAX_VIEWABLE = 6;
-                        int maxIndex = ips.size() - 1;
-                        List<String> viewableIps =
-                            Lists.newArrayList(ips)
-                                .subList(0, viewAll ? maxIndex : Math.min(maxIndex, MAX_VIEWABLE));
+                        List<String> viewableIps = Lists.newArrayList(ips);
+                        if (!viewAll) {
+                          viewableIps = viewableIps.subList(0, Math.min(ips.size(), MAX_VIEWABLE));
+                        }
                         audience.sendMessage(
                             knownIPs.append(text("(" + ips.size() + ")", NamedTextColor.GRAY)));
                         audience.sendMessage(
