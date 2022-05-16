@@ -6,6 +6,7 @@ import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.UsersConfig;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.UsersFeatureBase;
+import dev.pgm.community.users.services.AddressHistoryService.LatestAddressInfo;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -58,6 +59,11 @@ public class NoDBUsersFeature extends UsersFeatureBase {
   @Override
   public CompletableFuture<Set<UUID>> getAlternateAccounts(UUID playerId) {
     return CompletableFuture.completedFuture(Sets.newHashSet()); // TODO
+  }
+
+  @Override
+  public CompletableFuture<LatestAddressInfo> getLatestAddress(UUID playerId) {
+    return CompletableFuture.completedFuture(null);
   }
 
   @Override

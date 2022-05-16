@@ -3,6 +3,7 @@ package dev.pgm.community.users.feature;
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileWithSessionCallback;
+import dev.pgm.community.users.services.AddressHistoryService.LatestAddressInfo;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -117,6 +118,14 @@ public interface UsersFeature extends Feature {
    * @return A set of IP strings
    */
   CompletableFuture<Set<String>> getKnownIPs(UUID playerId);
+
+  /**
+   * Gets the latest known address associated with the player id
+   *
+   * @param playerId Player UUID
+   * @return {@link LatestAddressInfo} with the most recent address info
+   */
+  CompletableFuture<LatestAddressInfo> getLatestAddress(UUID playerId);
 
   /**
    * Gets a set of alternate account ids related to the target

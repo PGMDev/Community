@@ -4,14 +4,17 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
+import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Syntax;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -277,7 +280,8 @@ public class UserInfoCommands extends CommunityCommand {
   @Syntax("(name | uuid)")
   @CommandCompletion("@players")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
-  public void viewUserProfile(CommandAudience audience, String target) {
+  public void viewUserProfile(
+      CommandAudience audience, String target, @Default("false") boolean viewAll) {
     users.findUserWithSession(
         target,
         false,
@@ -301,7 +305,8 @@ public class UserInfoCommands extends CommunityCommand {
           Component lastLogin =
               formatInfoField("Last Login", formatDateWithHover(session.getLatestUpdateDate()));
           Component joinCount =
-              formatInfoField("Join Count", text(profile.getJoinCount(), NamedTextColor.YELLOW));
+              formatInfoField(
+                  "Join Count", text(profile.getJoinCount(), NamedTextColor.LIGHT_PURPLE));
 
           Component lastServer =
               formatInfoField("Last Server", text(session.getServerName(), NamedTextColor.AQUA));
@@ -320,20 +325,76 @@ public class UserInfoCommands extends CommunityCommand {
 
           if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
             users
+                .getLatestAddress(profile.getId())
+                .thenAcceptAsync(
+                    latest -> {
+                      final String lastIpFieldName = "Latest IP";
+
+                      if (latest == null) {
+                        audience.sendMessage(
+                            formatInfoField(
+                                lastIpFieldName,
+                                text("Unavailable", NamedTextColor.RED)
+                                    .hoverEvent(
+                                        HoverEvent.showText(
+                                            text(
+                                                "No IP info found (user has not logged in recently)",
+                                                NamedTextColor.RED)))));
+                      } else {
+                        audience.sendMessage(
+                            formatInfoField(
+                                lastIpFieldName,
+                                text()
+                                    .append(text(latest.getAddress(), NamedTextColor.AQUA))
+                                    .append(text(" ("))
+                                    .append(relativePastApproximate(latest.getDate()))
+                                    .append(text(")"))
+                                    .color(NamedTextColor.GRAY)
+                                    .build()));
+                      }
+                    });
+
+            users
                 .getKnownIPs(profile.getId())
-                .thenAccept(
+                .thenAcceptAsync(
                     ips -> {
-                      audience.sendMessage(knownIPs);
-                      audience.sendMessage(
-                          formatListItems(
-                              ips.stream()
-                                  .map(
-                                      ip ->
-                                          text()
-                                              .append(text("      - ", NamedTextColor.YELLOW))
-                                              .append(text(ip, NamedTextColor.DARK_AQUA))
-                                              .build())
-                                  .collect(Collectors.toList())));
+                      if (ips.size() > 2) {
+                        final int MAX_VIEWABLE = 6;
+                        int maxIndex = ips.size() - 1;
+                        List<String> viewableIps =
+                            Lists.newArrayList(ips)
+                                .subList(0, viewAll ? maxIndex : Math.min(maxIndex, MAX_VIEWABLE));
+                        audience.sendMessage(
+                            knownIPs.append(text("(" + ips.size() + ")", NamedTextColor.GRAY)));
+                        audience.sendMessage(
+                            formatListItems(
+                                viewableIps.stream()
+                                    .map(
+                                        ip ->
+                                            text()
+                                                .append(text("     - ", NamedTextColor.YELLOW))
+                                                .append(text(ip, NamedTextColor.DARK_AQUA))
+                                                .build())
+                                    .collect(Collectors.toList())));
+                        if (ips.size() > MAX_VIEWABLE && !viewAll) {
+                          audience.sendMessage(
+                              text()
+                                  .append(
+                                      text(
+                                          ips.size() - MAX_VIEWABLE,
+                                          NamedTextColor.YELLOW,
+                                          TextDecoration.BOLD))
+                                  .append(text(" Additional IPs found! ", NamedTextColor.DARK_AQUA))
+                                  .append(text("[", NamedTextColor.GRAY))
+                                  .append(text("View All", NamedTextColor.BLUE))
+                                  .append(text("]", NamedTextColor.GRAY))
+                                  .clickEvent(ClickEvent.runCommand("/profile " + target + " true"))
+                                  .hoverEvent(
+                                      HoverEvent.showText(
+                                          text("Click to view all ips", NamedTextColor.GRAY)))
+                                  .build());
+                        }
+                      }
                     });
           }
         });
@@ -342,7 +403,8 @@ public class UserInfoCommands extends CommunityCommand {
   private Component formatDateWithHover(Instant pastDate) {
     DateTimeFormatter timeFormat = DateTimeFormatter.ISO_INSTANT;
     return text()
-        .append(TemporalComponent.relativePastApproximate(pastDate))
+        .append(
+            TemporalComponent.relativePastApproximate(pastDate).color(NamedTextColor.DARK_GREEN))
         .hoverEvent(HoverEvent.showText(text(timeFormat.format(pastDate), NamedTextColor.AQUA)))
         .build();
   }

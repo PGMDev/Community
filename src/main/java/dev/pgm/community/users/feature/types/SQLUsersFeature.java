@@ -8,6 +8,7 @@ import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.UsersConfig;
 import dev.pgm.community.users.feature.UsersFeatureBase;
 import dev.pgm.community.users.services.AddressHistoryService;
+import dev.pgm.community.users.services.AddressHistoryService.LatestAddressInfo;
 import dev.pgm.community.users.services.SQLUserService;
 import java.util.Optional;
 import java.util.Set;
@@ -100,6 +101,11 @@ public class SQLUsersFeature extends UsersFeatureBase {
   @Override
   public CompletableFuture<Set<UUID>> getAlternateAccounts(UUID playerId) {
     return addresses.getAlternateAccounts(playerId);
+  }
+
+  @Override
+  public CompletableFuture<LatestAddressInfo> getLatestAddress(UUID playerId) {
+    return addresses.getLatestAddressInfo(playerId);
   }
 
   @Override
