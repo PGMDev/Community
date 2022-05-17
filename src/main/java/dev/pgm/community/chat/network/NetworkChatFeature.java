@@ -45,7 +45,7 @@ public class NetworkChatFeature extends FeatureBase {
   public void recieveUpdate(NetworkChatMessage message) {
     if (message.getChannel() == Channel.ADMIN) {
       Component formatted = formatMessage(message.getSender(), message.getMessage());
-      BroadcastUtils.sendAdminChatMessage(formatted, message.getServer(), Sounds.ADMIN_CHAT);
+      BroadcastUtils.sendAdminChatMessage(formatted, message.getServer(), Sounds.ADMIN_CHAT, null);
     }
   }
 

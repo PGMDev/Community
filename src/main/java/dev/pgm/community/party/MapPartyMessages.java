@@ -7,6 +7,7 @@ import static tc.oc.pgm.util.text.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.collect.Lists;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.MessageUtils;
 import java.time.Duration;
@@ -19,7 +20,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -48,6 +48,9 @@ public class MapPartyMessages {
   public static final Component CUSTOM_PARTY_ONLY_ERROR =
       text("This feature can only be used during a custom map party!", NamedTextColor.RED);
 
+  public static final Component REQUIRE_ONE_MAP_ERROR =
+      text("At least one map is required for the map party to function", NamedTextColor.RED);
+
   public static final Component SET_DESCRIPTION_REMINDER =
       text()
           .append(text("Don't forget to set a map party description. Click "))
@@ -58,6 +61,15 @@ public class MapPartyMessages {
           .clickEvent(ClickEvent.suggestCommand("/event setdesc"))
           .hoverEvent(
               HoverEvent.showText(text("Click to set event description", NamedTextColor.GRAY)))
+          .build();
+
+  public static final Component CREATE_PARTY_BROADCAST =
+      text()
+          .append(text("created a new map party"))
+          .hoverEvent(
+              HoverEvent.showText(text("Click to view map party info", NamedTextColor.GRAY)))
+          .clickEvent(ClickEvent.runCommand("/event"))
+          .color(NamedTextColor.GRAY)
           .build();
 
   public static Component getAddHostError(Player player) {
@@ -82,11 +94,8 @@ public class MapPartyMessages {
         .build();
   }
 
-  public static Component getEventStatusAlert(
-      CommandSender sender, MapParty party, MapPartyStatusType type) {
+  public static Component getEventStatusAlert(MapParty party, MapPartyStatusType type) {
     return text()
-        .append(player(sender, NameStyle.FANCY))
-        .append(space())
         .append(type.getNameComponent())
         .append(space())
         .append(party.getStyledName())
@@ -105,11 +114,11 @@ public class MapPartyMessages {
         + TextTranslations.translateLegacy(duration(timeRemaining).build(), null);
   }
 
-  public static void broadcastAdminAction(Component sender, Component action) {
-    broadcastAdminAction(sender, action, null);
+  public static void broadcastHostAction(Component sender, Component action) {
+    broadcastHostAction(sender, action, null);
   }
 
-  public static void broadcastAdminAction(
+  public static void broadcastHostAction(
       Component sender, Component action, @Nullable Component value) {
     Builder broadcast = text().append(sender).append(space()).append(action);
 
@@ -118,7 +127,7 @@ public class MapPartyMessages {
     }
     broadcast.color(NamedTextColor.GRAY);
 
-    BroadcastUtils.sendAdminChatMessage(broadcast.build());
+    BroadcastUtils.sendExclusiveChatMessage(broadcast.build(), CommunityPermissions.PARTY);
   }
 
   public static List<Component> getWelcome(MapParty party, MapPartyConfig config) {

@@ -250,7 +250,7 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
             ? formatReportBroadcast(sender, target, reason)
             : formatHelpBroadcast(sender, reason);
     Sound sound = report ? Sounds.PLAYER_REPORT : Sounds.HELP_REQUEST;
-    BroadcastUtils.sendAdminChatMessage(component, server, sound);
+    BroadcastUtils.sendAdminChatMessage(component, server, sound, null);
   }
 
   private Component formatReportBroadcast(Component sender, Component target, String reason) {

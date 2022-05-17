@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -231,7 +229,7 @@ public class MapPartyFeature extends FeatureBase {
     Optional<MapPool> mapPool = PGMUtils.getMapPool(pool);
     if (mapPool.isPresent()) {
       regularPoolParty.setMapPool(mapPool.get());
-      MapPartyMessages.broadcastAdminAction(
+      MapPartyMessages.broadcastHostAction(
           viewer.getStyledName(),
           text("set the party map pool to"),
           text(mapPool.get().getName(), NamedTextColor.AQUA));
@@ -242,7 +240,7 @@ public class MapPartyFeature extends FeatureBase {
     if (isPartyMissing(viewer)) return;
 
     party.setName(name);
-    MapPartyMessages.broadcastAdminAction(
+    MapPartyMessages.broadcastHostAction(
         viewer.getStyledName(), text("renamed the event to"), party.getStyledName());
     viewer.sendMessage(MapPartyMessages.SET_DESCRIPTION_REMINDER);
   }
@@ -251,7 +249,7 @@ public class MapPartyFeature extends FeatureBase {
     if (isPartyMissing(viewer)) return;
 
     party.setDescription(description);
-    MapPartyMessages.broadcastAdminAction(
+    MapPartyMessages.broadcastHostAction(
         viewer.getStyledName(),
         text("updated the event description.")
             .hoverEvent(HoverEvent.showText(text(description, NamedTextColor.GRAY))));
@@ -261,7 +259,7 @@ public class MapPartyFeature extends FeatureBase {
     if (isPartyMissing(viewer)) return;
 
     party.setLength(timeLimit);
-    MapPartyMessages.broadcastAdminAction(
+    MapPartyMessages.broadcastHostAction(
         viewer.getStyledName(),
         text("set the event timelimit to"),
         duration(party.getLength(), NamedTextColor.GREEN).build());
@@ -274,7 +272,7 @@ public class MapPartyFeature extends FeatureBase {
     CustomPoolParty customParty = (CustomPoolParty) party;
     try {
       customParty.setVoted(!customParty.isVoted());
-      MapPartyMessages.broadcastAdminAction(
+      MapPartyMessages.broadcastHostAction(
           viewer.getStyledName(),
           text("toggled the pool mode to"),
           text(customParty.isVoted() ? "Voted" : "Rotation", NamedTextColor.LIGHT_PURPLE));
@@ -316,8 +314,13 @@ public class MapPartyFeature extends FeatureBase {
       viewer.sendWarning(
           text()
               .append(map.getStyledName(MapNameStyle.COLOR))
-              .append(text(" is not a selected event map!"))
+              .append(text(" has not been selected for this map party!"))
               .build());
+      return;
+    }
+
+    if ((party.getCustomMaps().size() - 1) < 1) {
+      viewer.sendWarning(MapPartyMessages.REQUIRE_ONE_MAP_ERROR);
       return;
     }
 
@@ -382,16 +385,8 @@ public class MapPartyFeature extends FeatureBase {
   @EventHandler
   public void onPartyCreate(MapPartyCreateEvent event) {
     // Broadcast to staff
-    Component successMessage =
-        text()
-            .append(player(event.getSender(), NameStyle.FANCY))
-            .append(text(" created a new map party"))
-            .hoverEvent(
-                HoverEvent.showText(text("Click to view map party info", NamedTextColor.GRAY)))
-            .clickEvent(ClickEvent.runCommand("/event"))
-            .color(NamedTextColor.GRAY)
-            .build();
-    BroadcastUtils.sendAdminChatMessage(successMessage);
+    MapPartyMessages.broadcastHostAction(
+        player(event.getSender(), NameStyle.FANCY), MapPartyMessages.CREATE_PARTY_BROADCAST);
 
     // Open party menu for creator
     if (event.getSender() instanceof Player) {
@@ -405,8 +400,9 @@ public class MapPartyFeature extends FeatureBase {
       Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getEventConfig().getOpenExtraCommand());
     }
 
-    BroadcastUtils.sendAdminChatMessage(
-        MapPartyMessages.getEventStatusAlert(event.getSender(), party, MapPartyStatusType.START));
+    MapPartyMessages.broadcastHostAction(
+        player(event.getSender(), NameStyle.FANCY),
+        MapPartyMessages.getEventStatusAlert(party, MapPartyStatusType.START));
 
     if (getEventConfig().showPartyNotifications()) {
       BroadcastUtils.sendMultiLineGlobal(
@@ -427,8 +423,9 @@ public class MapPartyFeature extends FeatureBase {
           MapPartyMessages.getGoodbye(event.getParty(), getEventConfig()));
     }
 
-    BroadcastUtils.sendAdminChatMessage(
-        MapPartyMessages.getEventStatusAlert(event.getSender(), party, MapPartyStatusType.END));
+    MapPartyMessages.broadcastHostAction(
+        player(event.getSender(), NameStyle.FANCY),
+        MapPartyMessages.getEventStatusAlert(party, MapPartyStatusType.END));
     broadcasts.disable();
     this.party = null;
     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "setpool -r");
@@ -436,8 +433,9 @@ public class MapPartyFeature extends FeatureBase {
 
   @EventHandler
   public void onPartyRestart(MapPartyRestartEvent event) {
-    BroadcastUtils.sendAdminChatMessage(
-        MapPartyMessages.getEventStatusAlert(event.getSender(), party, MapPartyStatusType.RESTART));
+    MapPartyMessages.broadcastHostAction(
+        player(event.getSender(), NameStyle.FANCY),
+        MapPartyMessages.getEventStatusAlert(party, MapPartyStatusType.RESTART));
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

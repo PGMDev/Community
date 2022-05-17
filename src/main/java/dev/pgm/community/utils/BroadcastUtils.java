@@ -57,19 +57,34 @@ public class BroadcastUtils {
     return builder.append(space()).append(message).build();
   }
 
+  public static void sendExclusiveChatMessage(Component message, String permission) {
+    sendAdminChatMessage(message, null, null, permission);
+  }
+
   public static void sendAdminChatMessage(Component message) {
     sendAdminChatMessage(message, null);
   }
 
   public static void sendAdminChatMessage(Component message, @Nullable Sound sound) {
-    sendAdminChatMessage(message, null, sound);
+    sendAdminChatMessage(message, null, sound, null);
   }
 
   public static void sendAdminChatMessage(
-      Component message, @Nullable String server, @Nullable Sound sound) {
+      Component message,
+      @Nullable String server,
+      @Nullable Sound sound,
+      @Nullable String permission) {
     Component formatted = formatPrefix(server, message);
     Bukkit.getOnlinePlayers().stream()
-        .filter(player -> player.hasPermission(CommunityPermissions.STAFF))
+        .filter(
+            player -> {
+              boolean isStaff = player.hasPermission(CommunityPermissions.STAFF);
+              if (permission != null) {
+                return isStaff || player.hasPermission(permission);
+              }
+
+              return isStaff;
+            })
         .map(Audience::get)
         .forEach(
             viewer -> {
