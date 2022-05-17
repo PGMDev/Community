@@ -45,6 +45,7 @@ public class CustomPoolParty extends MapPartyBase {
       List<MapInfo> maps) {
     super(name, description, length, hosts, settings);
     this.maps = maps;
+    this.voted = true;
   }
 
   public List<MapInfo> getMaps() {
@@ -95,7 +96,6 @@ public class CustomPoolParty extends MapPartyBase {
   @Override
   public void setup(CommandSender sender) throws MapPartySetupException {
     setMapPool(sender);
-    // TODO: more?
   }
 
   private void setMapPool(CommandSender sender) throws MapPartySetupException {
