@@ -132,7 +132,8 @@ public class MapPartyMainMenu extends MapPartyMenu {
           getParty()
               .ifPresent(
                   party -> {
-                    Bukkit.dispatchCommand(getViewer(), "event start");
+                    Bukkit.dispatchCommand(
+                        getViewer(), "event start " + (c.isLeftClick() ? "false" : "true"));
                   });
         });
   }
@@ -260,7 +261,11 @@ public class MapPartyMainMenu extends MapPartyMenu {
       "http://textures.minecraft.net/texture/e9cdb9af38cf41daa53bc8cda7665c509632d14e678f0f19f263f46e541d8a30";
 
   private static final ItemStack START_ITEM =
-      SkullUtils.customSkull(START_PARTY_SKIN, "&a&lStart Event", "&7Click to start the event");
+      SkullUtils.customSkull(
+          START_PARTY_SKIN,
+          "&a&lStart Event",
+          "&2Left-Click&7 to start the event now",
+          "&2Right-Click&7 to start event after current match ends");
 
   private static final ItemStack RESTART_ITEM =
       SkullUtils.customSkull(

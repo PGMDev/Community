@@ -158,6 +158,11 @@ public class MapPartyMessages {
         party, NamedTextColor.GOLD, text(colorize(mapPartyConfig.getGoodbyeMessage())));
   }
 
+  public static void sendStartTitle(MapParty party) {
+    BroadcastUtils.sendGlobalTitle(
+        party.getStyledName(), text("has begun", NamedTextColor.GREEN), 7);
+  }
+
   private static List<Component> getMultiLinePartyMessage(
       MapParty party, NamedTextColor color, Component... messages) {
     List<Component> lines = Lists.newArrayList();

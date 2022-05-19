@@ -69,10 +69,10 @@ public class MapPartyCommands extends CommunityCommand {
 
   @Subcommand("start|begin")
   @CommandPermission(CommunityPermissions.PARTY)
-  public void start(CommandAudience viewer, Player player) {
+  public void start(CommandAudience viewer, Player player, @Default("false") boolean delayed) {
     if (isPartyMissing(viewer)) return;
 
-    if (!party.start(player)) {
+    if (!party.start(player, delayed)) {
       viewer.sendWarning(MapPartyMessages.STARTED_ERROR);
     }
   }

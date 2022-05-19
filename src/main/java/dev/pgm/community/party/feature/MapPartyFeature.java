@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -52,6 +53,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.api.match.event.MatchFinishEvent;
 import tc.oc.pgm.rotation.MapPool;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
@@ -167,8 +169,28 @@ public class MapPartyFeature extends FeatureBase {
     return true;
   }
 
-  public boolean start(Player sender) {
+  private boolean isStartQueued;
+
+  public boolean start(Player sender, boolean delayed) {
+    Audience viewer = Audience.get(sender);
     if (canModify(sender) && !party.isRunning()) {
+
+      // Delayed event start
+      if (delayed) {
+        if (isStartQueued) {
+          viewer.sendWarning(text("The map party is already queued to start soon"));
+          return true;
+        }
+
+        this.isStartQueued = true;
+        viewer.sendWarning(
+            text(
+                "Your map party is queued to start after the next match ends!",
+                NamedTextColor.GRAY));
+        return true;
+      }
+
+      this.isStartQueued = false;
       try {
         party.setup(sender);
         party.setSetup(true);
@@ -407,6 +429,7 @@ public class MapPartyFeature extends FeatureBase {
     if (getEventConfig().showPartyNotifications()) {
       BroadcastUtils.sendMultiLineGlobal(
           MapPartyMessages.getWelcome(event.getParty(), getEventConfig()));
+      MapPartyMessages.sendStartTitle(party);
     }
 
     broadcasts.enable();
@@ -481,5 +504,22 @@ public class MapPartyFeature extends FeatureBase {
     if (format == null || format.isEmpty()) return;
     if (getParty() == null || !getParty().isRunning()) return;
     event.setMotd(formatLine(format, getParty()));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onMatchEnd(MatchFinishEvent event) {
+    if (this.isStartQueued && party != null) {
+      UUID mainHost = party.getHosts().getMainHostId();
+      Player mainPlayerHost = Bukkit.getPlayer(mainHost);
+      if (mainPlayerHost != null) {
+        start(mainPlayerHost, false);
+      } else {
+        MapPartyMessages.broadcastHostAction(
+            player(mainHost, party.getHosts().getCachedName(mainHost), NameStyle.FANCY),
+            text("is no longer online, delayed map party has been removed", NamedTextColor.GRAY));
+
+        stop(Bukkit.getConsoleSender());
+      }
+    }
   }
 }
