@@ -84,6 +84,11 @@ public interface CommunityPermissions {
   // Translations
   String TRANSLATE = ROOT + ".translate"; // Access to /translate
 
+  // Events
+  String PARTY = ROOT + ".event"; // Access to /event creation
+  String PARTY_HOST = PARTY + ".host"; // Given to those who are currently hosting an event
+  String PARTY_ADMIN = PARTY + ".admin"; // Administrative event permission
+
   // General Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";

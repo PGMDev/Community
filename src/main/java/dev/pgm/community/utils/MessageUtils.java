@@ -14,6 +14,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import tc.oc.pgm.util.LegacyFormatUtils;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -90,6 +91,10 @@ public class MessageUtils {
       Duration totalTime, Instant lastTime, NamedTextColor color) {
     Duration timeLeft = totalTime.minus(Duration.between(lastTime, Instant.now()));
     return text().append(duration(timeLeft, color)).build();
+  }
+
+  public static Component color(String message, Object... args) {
+    return LegacyComponentSerializer.legacyAmpersand().deserialize(String.format(message, args));
   }
 
   public static List<String> colorizeList(List<String> list) {

@@ -206,7 +206,74 @@ translations:
 # Mobs - Spawn creatures that will attack players ;)
 mobs:
   enabled: true
-      
+              
+# Map Party - A PGM exclusive feature. Allows for hosting events (map parties)
+party:
+  enabled: true  # Whether events are enabled or not
+  duration: "1h" # Default duration of a map party
+
+  # General event settings
+  settings:
+    login-message: true # If a login message should be sent to notify new players of party
+    party-notifications: true # If title & chat message should be sent when party starts/stops
+    raindrop-command: "/rdm enable" # Command used to toggle raindrop multiplier
+
+  # Extra server management - When enabled will auto-execute the given commands to the console
+  extra:
+    enabled: false # Whether the open/close commands are sent on party start/stop
+    open-command: "" # Command sent when the party begins (useful for opening an extra server)
+    close-command: "" # Command sent when the party concludes (useful for closing server)
+
+  # Start of party settings
+  welcome:
+    # Message sent under party info
+    line: "&7Not interested? Click [&bhere&7] &7to play a normal match"
+    # Message shown when hovering over the welcome line
+    hover: "Click here to join a non-modified match" 
+    # Command run when clicking welcome line
+    command: "/normal" 
+  
+  # End of party settings
+  goodbye:
+    # Message sent as party concludes
+    line: "&aThe party is now over, we hope you had fun!"
+  
+  # Custom formatting for server list MOTD during events
+  # $name$ - Party name
+  # $time$ - Time left
+  motd-format: "&c&lCommunity\n&6» &a$name$ &6«"
+  
+  # Host Permissions - A list of extra permissions given to event hosts
+  host-permissions:
+    - ""
+    
+  # Event broadcasts - Automated broadcasts sent during map party  
+  broadcasts:
+    enabled: true
+    interval: 2m
+    prefix: "&7[&2&lEvent&7] "
+    # <message>;<command>;<hover message>;<specific interval>
+    lines:
+      - "&7Currently partying on $name$&7! &aHave fun;/party;&7Click to view party into"
+      - "&7Want to play a normal match? Click &7[&bhere&7];/normal;&7Click to join normal match"
+      - "&cWarning&8: &7match may contain modified gameplay;/party"
+      - "&a$time$ &7left of $name$;/party;&7To view more party info, click here;15m"
+  
+  # Preset party types that will show up in the GUI for instant use
+  presets:
+    # An example party preset
+    staff_party:
+      # Display name of the party, used in various places
+      name: "&d&lStaff Party"
+      # Description of party used to inform joining players
+      description: "&3A fun selection of party maps"
+      # Duration of time party will be active for (-1 for no limit)                  
+      duration: "30m"
+      # Map pool used if mode is REGULAR
+      pool: "fun"
+      # List of map names if mode is CUSTOM
+      maps: [] 
+
 # Network - Features which assist in running Community on multiple servers  
 network:
   enabled: false  

@@ -22,6 +22,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
+import dev.pgm.community.party.MapParty;
 import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
@@ -331,6 +332,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     if (isBlitz()) {
       viewer.sendWarning(text("Sorry, sponsoring is disabled during blitz"));
+      return;
+    }
+
+    if (isPartyActive()) {
+      viewer.sendWarning(text("Sorry, sponsoring is disabled during the party"));
       return;
     }
 
@@ -673,5 +679,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         queue.remove();
       }
     }
+  }
+
+  private boolean isPartyActive() {
+    if (!Community.get().getFeatures().getParty().isEnabled()) return false;
+    MapParty party = Community.get().getFeatures().getParty().getParty();
+    return party != null && party.isSetup() && party.isRunning();
   }
 }

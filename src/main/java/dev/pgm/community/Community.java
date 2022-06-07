@@ -3,6 +3,7 @@ package dev.pgm.community;
 import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.InvalidCommandArgument;
 import dev.pgm.community.database.DatabaseConnection;
+import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
@@ -196,6 +197,14 @@ public class Community extends JavaPlugin {
 
   public Random getRandom() {
     return random;
+  }
+
+  public BukkitCommandManager getCommandManager() {
+    return commands;
+  }
+
+  public void callEvent(CommunityEvent event) {
+    getServer().getPluginManager().callEvent(event);
   }
 
   // REMOVE WHEN NOT IN DEV

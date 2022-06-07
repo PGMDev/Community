@@ -4,15 +4,19 @@ import co.aikar.commands.InvalidCommandArgument;
 import com.google.common.collect.Lists;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.blitz.BlitzMatchModule;
+import tc.oc.pgm.rotation.MapPool;
+import tc.oc.pgm.rotation.MapPoolManager;
 
 public class PGMUtils {
 
@@ -29,11 +33,11 @@ public class PGMUtils {
         : null;
   }
 
-  public static List<String> getMapNames() {
+  public static List<String> convertMapNames(List<MapInfo> maps) {
     List<String> names = Lists.newArrayList();
     if (isPGMEnabled()) {
       names =
-          Lists.newArrayList(PGM.get().getMapLibrary().getMaps()).stream()
+          maps.stream()
               .map(MapInfo::getName)
               .map(name -> name.replace(" ", SPACE))
               .collect(Collectors.toList());
@@ -41,17 +45,18 @@ public class PGMUtils {
     return names;
   }
 
+  public static List<String> getMapNames() {
+    return convertMapNames(Lists.newArrayList(PGM.get().getMapLibrary().getMaps()));
+  }
+
   public static List<String> getAllowedMapNames() {
-    List<String> names = Lists.newArrayList();
     if (isPGMEnabled()) {
-      names =
+      return convertMapNames(
           Lists.newArrayList(PGM.get().getMapLibrary().getMaps()).stream()
               .filter(PGMUtils::isMapSizeAllowed)
-              .map(MapInfo::getName)
-              .map(name -> name.replace(" ", SPACE))
-              .collect(Collectors.toList());
+              .collect(Collectors.toList()));
     }
-    return names;
+    return Lists.newArrayList();
   }
 
   public static boolean compareMatchLength(Duration time) {
@@ -109,5 +114,34 @@ public class PGMUtils {
       return bmm != null;
     }
     return false;
+  }
+
+  public static void setMapPool(CommandSender sender, MapPool pool) {
+    if (isPGMEnabled()) {
+      if (PGM.get().getMapOrder() instanceof MapPoolManager) {
+        MapPoolManager manager = (MapPoolManager) PGM.get().getMapOrder();
+        manager.updateActiveMapPool(pool, getMatch(), true, sender, null, 0, true);
+      }
+    }
+  }
+
+  @Nullable
+  public static MapPoolManager getMapPoolManager() {
+    if (isPGMEnabled()) {
+      if (PGM.get().getMapOrder() instanceof MapPoolManager) {
+        return (MapPoolManager) PGM.get().getMapOrder();
+      }
+    }
+    return null;
+  }
+
+  public static Optional<MapPool> getMapPool(String name) {
+    if (isPGMEnabled()) {
+      if (PGM.get().getMapOrder() instanceof MapPoolManager) {
+        MapPoolManager manager = (MapPoolManager) PGM.get().getMapOrder();
+        return Optional.ofNullable(manager.getMapPoolByName(name));
+      }
+    }
+    return Optional.empty();
   }
 }
