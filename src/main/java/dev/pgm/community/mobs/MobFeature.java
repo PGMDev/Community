@@ -218,6 +218,6 @@ public class MobFeature extends FeatureBase {
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet(new MobCommand());
+    return getMobConfig().isEnabled() ? Sets.newHashSet(new MobCommand()) : Sets.newHashSet();
   }
 }

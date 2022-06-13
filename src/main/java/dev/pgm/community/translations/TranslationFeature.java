@@ -39,7 +39,9 @@ public class TranslationFeature extends FeatureBase {
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet(new TranslationCommand());
+    return getTranslationConfig().isEnabled()
+        ? Sets.newHashSet(new TranslationCommand())
+        : Sets.newHashSet();
   }
 
   public Set<String> getOnlineLanguages() {

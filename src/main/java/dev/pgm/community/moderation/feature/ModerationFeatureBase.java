@@ -182,7 +182,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
     commands.add(new PunishmentCommand());
 
-    return commands;
+    return getConfig().isEnabled() ? commands : Sets.newHashSet();
   }
 
   @Override

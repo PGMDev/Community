@@ -221,7 +221,7 @@ public class MapPartyFeature extends FeatureBase {
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet(new MapPartyCommands());
+    return getConfig().isEnabled() ? Sets.newHashSet(new MapPartyCommands()) : Sets.newHashSet();
   }
 
   private boolean canModify(CommandSender sender) {
