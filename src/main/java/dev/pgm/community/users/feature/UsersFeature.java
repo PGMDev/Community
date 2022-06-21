@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.PlayerComponentProvider;
@@ -146,8 +145,6 @@ public interface UsersFeature extends Feature {
   /* Events to be handled by FeatureImpls */
 
   void onLogin(PlayerJoinEvent login);
-
-  void onLogout(PlayerQuitEvent event);
 
   void saveImportedUser(UUID id, String name);
 

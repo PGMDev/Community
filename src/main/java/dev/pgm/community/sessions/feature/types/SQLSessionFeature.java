@@ -1,6 +1,5 @@
 package dev.pgm.community.sessions.feature.types;
 
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
 import dev.pgm.community.sessions.feature.SessionFeatureBase;
@@ -17,9 +16,9 @@ public class SQLSessionFeature extends SessionFeatureBase {
 
   private final SQLSessionService service;
 
-  public SQLSessionFeature(UsersFeature users, Logger logger, DatabaseConnection connection) {
+  public SQLSessionFeature(UsersFeature users, Logger logger) {
     super(users, logger, "Sessions (SQL)");
-    this.service = new SQLSessionService(connection);
+    this.service = new SQLSessionService();
   }
 
   @Override

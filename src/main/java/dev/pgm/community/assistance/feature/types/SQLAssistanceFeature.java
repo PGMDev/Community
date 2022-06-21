@@ -5,7 +5,6 @@ import dev.pgm.community.assistance.Report;
 import dev.pgm.community.assistance.ReportConfig;
 import dev.pgm.community.assistance.feature.AssistanceFeatureBase;
 import dev.pgm.community.assistance.services.SQLAssistanceService;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import fr.minuskube.inv.InventoryManager;
@@ -23,12 +22,11 @@ public class SQLAssistanceFeature extends AssistanceFeatureBase {
   public SQLAssistanceFeature(
       Configuration config,
       Logger logger,
-      DatabaseConnection database,
       UsersFeature usernames,
       NetworkFeature network,
       InventoryManager inventory) {
     super(new ReportConfig(config), logger, "Assistance (SQL)", network, usernames, inventory);
-    this.service = new SQLAssistanceService(database);
+    this.service = new SQLAssistanceService();
   }
 
   @Override

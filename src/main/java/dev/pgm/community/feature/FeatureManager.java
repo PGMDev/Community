@@ -13,7 +13,6 @@ import dev.pgm.community.commands.GamemodeCommand;
 import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
 import dev.pgm.community.commands.SudoCommand;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.freeze.FreezeFeature;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
@@ -77,20 +76,19 @@ public class FeatureManager {
   public FeatureManager(
       Configuration config,
       Logger logger,
-      DatabaseConnection database,
       BukkitCommandManager commands,
       InventoryManager inventory) {
     // Networking
     this.network = new RedisNetworkFeature(config, logger);
 
     // DB Features
-    this.users = new SQLUsersFeature(config, logger, database);
-    this.sessions = new SQLSessionFeature(users, logger, database);
-    this.reports = new SQLAssistanceFeature(config, logger, database, users, network, inventory);
-    this.moderation = new SQLModerationFeature(config, logger, database, users, network);
-    this.friends = new SQLFriendshipFeature(config, logger, database, users);
-    this.nick = new SQLNickFeature(config, logger, database, users);
-    this.requests = new SQLRequestFeature(config, logger, database, users);
+    this.users = new SQLUsersFeature(config, logger);
+    this.sessions = new SQLSessionFeature(users, logger);
+    this.reports = new SQLAssistanceFeature(config, logger, users, network, inventory);
+    this.moderation = new SQLModerationFeature(config, logger, users, network);
+    this.friends = new SQLFriendshipFeature(config, logger, users);
+    this.nick = new SQLNickFeature(config, logger, users);
+    this.requests = new SQLRequestFeature(config, logger, users);
 
     // TODO: 1. Add support for non-persist database (e.g NoDBUsersFeature)
     // TODO: 2. Support non-sql databases?

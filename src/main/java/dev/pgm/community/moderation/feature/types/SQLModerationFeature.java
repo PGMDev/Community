@@ -2,7 +2,6 @@ package dev.pgm.community.moderation.feature.types;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeatureBase;
 import dev.pgm.community.moderation.punishments.Punishment;
@@ -33,13 +32,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   private SQLModerationService service;
 
   public SQLModerationFeature(
-      Configuration config,
-      Logger logger,
-      DatabaseConnection connection,
-      UsersFeature usernames,
-      NetworkFeature network) {
+      Configuration config, Logger logger, UsersFeature usernames, NetworkFeature network) {
     super(new ModerationConfig(config), logger, "Punishments (SQL)", usernames, network);
-    this.service = new SQLModerationService(connection, getModerationConfig());
+    this.service = new SQLModerationService(getModerationConfig());
   }
 
   @Override

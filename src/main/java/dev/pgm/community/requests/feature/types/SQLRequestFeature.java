@@ -1,6 +1,5 @@
 package dev.pgm.community.requests.feature.types;
 
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.feature.RequestFeatureBase;
@@ -16,10 +15,9 @@ public class SQLRequestFeature extends RequestFeatureBase {
 
   private SQLRequestService service;
 
-  public SQLRequestFeature(
-      Configuration config, Logger logger, DatabaseConnection database, UsersFeature users) {
+  public SQLRequestFeature(Configuration config, Logger logger, UsersFeature users) {
     super(new RequestConfig(config), logger, "Requests (SQL)", users);
-    this.service = new SQLRequestService(database);
+    this.service = new SQLRequestService();
   }
 
   @Override

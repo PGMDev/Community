@@ -1,58 +1,85 @@
 package dev.pgm.community.assistance.services;
 
+import co.aikar.idb.DB;
+import co.aikar.idb.DbRow;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
 import dev.pgm.community.assistance.Report;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLAssistanceService extends SQLFeatureBase<Report, String> {
+public class SQLAssistanceService extends SQLFeatureBase<Report, String>
+    implements AssistanceQuery {
 
-  private static final String TABLE_NAME = "reports";
-  private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, sender VARCHAR(36), reported VARCHAR(36), reason VARCHAR(255), time LONG, server VARCHAR(255))";
+  private LoadingCache<UUID, PlayerReports> cachedReports;
 
-  private LoadingCache<UUID, SelectQuery> cachedReports;
-
-  public SQLAssistanceService(DatabaseConnection database) {
-    super(database, TABLE_NAME, TABLE_FIELDS);
+  public SQLAssistanceService() {
+    super(TABLE_NAME, TABLE_FIELDS);
     this.cachedReports =
         CacheBuilder.newBuilder()
             .maximumSize(1000)
             .build(
-                new CacheLoader<UUID, SelectQuery>() {
+                new CacheLoader<UUID, PlayerReports>() {
                   @Override
-                  public SelectQuery load(UUID key) throws Exception {
-                    return new SelectQuery(key);
+                  public PlayerReports load(UUID key) throws Exception {
+                    return new PlayerReports(key);
                   }
                 });
   }
 
   @Override
   public void save(Report report) {
-    getDatabase().submitQuery(new InsertQuery(report));
+    PlayerReports playerReports = cachedReports.getUnchecked(report.getTargetId());
+    playerReports.getReports().add(report);
+
+    DB.executeUpdateAsync(
+        INSERT_REPORT_QUERY,
+        report.getId().toString(),
+        report.getSenderId().toString(),
+        report.getTargetId().toString(),
+        report.getReason(),
+        report.getTime().toEpochMilli(),
+        Community.get().getServerConfig().getServerId());
   }
 
   @Override
   public CompletableFuture<List<Report>> queryList(String target) {
-    SelectQuery query = cachedReports.getUnchecked(UUID.fromString(target));
-    if (query.hasFetched()) {
-      return CompletableFuture.completedFuture(query.getReports());
+    UUID targetId = UUID.fromString(target);
+    PlayerReports reports = cachedReports.getUnchecked(targetId);
+
+    if (reports.isLoaded()) {
+      return CompletableFuture.completedFuture(reports.getReports());
     } else {
-      return getDatabase()
-          .submitQueryComplete(query)
-          .thenApplyAsync(q -> SelectQuery.class.cast(q).getReports());
+      return DB.getResultsAsync(SELECT_REPORT_QUERY, target)
+          .thenApplyAsync(
+              results -> {
+                if (results != null) {
+                  for (DbRow row : results) {
+                    String id = row.getString("id");
+                    String sender = row.getString("sender");
+                    String reason = row.getString("reason");
+                    long time = Long.parseLong(row.getString("time"));
+                    reports
+                        .getReports()
+                        .add(
+                            new Report(
+                                UUID.fromString(id),
+                                targetId,
+                                UUID.fromString(sender),
+                                reason,
+                                Instant.ofEpochMilli(time),
+                                Community.get().getServerConfig().getServerId()));
+                  }
+                }
+                reports.setLoaded(true);
+                return reports.getReports();
+              });
     }
   }
 
@@ -61,93 +88,31 @@ public class SQLAssistanceService extends SQLFeatureBase<Report, String> {
     return CompletableFuture.completedFuture(null); // Noop atm
   }
 
-  private class InsertQuery implements Query {
+  private class PlayerReports {
+    private final UUID playerId;
+    private final List<Report> reports;
+    private boolean loaded;
 
-    private static final String INSERT_REPORT_QUERY =
-        "INSERT INTO "
-            + TABLE_NAME
-            + "(id, sender, reported, reason, time, server) VALUES (?, ?, ?, ?, ?, ?)";
-
-    private final Report report;
-
-    public InsertQuery(Report report) {
-      this.report = report;
-
-      // Cache newly saved reports to prevent further lookups while server is online
-      SelectQuery cached = cachedReports.getIfPresent(report.getTargetId());
-      if (cached != null) {
-        cached.getReports().add(report);
-      }
-    }
-
-    @Override
-    public String getFormat() {
-      return INSERT_REPORT_QUERY;
-    }
-
-    @Override
-    public void query(PreparedStatement statement) throws SQLException {
-      statement.setString(1, report.getId().toString());
-      statement.setString(2, report.getSenderId().toString());
-      statement.setString(3, report.getTargetId().toString());
-      statement.setString(4, report.getReason());
-      statement.setLong(5, report.getTime().toEpochMilli());
-      statement.setString(6, Community.get().getServerConfig().getServerId());
-      statement.executeUpdate();
-    }
-  }
-
-  private class SelectQuery implements Query {
-    private static final String SELECT_REPORT_QUERY =
-        "SELECT id, sender, reason, time FROM " + TABLE_NAME + " WHERE reported = ?";
-
-    private UUID targetId;
-    private List<Report> reports;
-    private boolean fetched;
-
-    public SelectQuery(UUID targetId) {
-      this.targetId = targetId;
+    public PlayerReports(UUID playerId) {
+      this.playerId = playerId;
       this.reports = Lists.newArrayList();
-      this.fetched = false;
+      this.loaded = false;
     }
 
-    @Override
-    public String getFormat() {
-      return SELECT_REPORT_QUERY;
+    public UUID getPlayerId() {
+      return playerId;
     }
 
     public List<Report> getReports() {
       return reports;
     }
 
-    public boolean hasFetched() {
-      return fetched;
+    public boolean isLoaded() {
+      return loaded;
     }
 
-    @Override
-    public void query(PreparedStatement statement) throws SQLException {
-      if (fetched) return;
-      statement.setString(1, targetId.toString());
-
-      try (final ResultSet result = statement.executeQuery()) {
-        while (result.next()) {
-          String id = result.getString("id");
-          String sender = result.getString("sender");
-          String reason = result.getString("reason");
-          long time = result.getLong("time");
-
-          getReports()
-              .add(
-                  new Report(
-                      UUID.fromString(id),
-                      targetId,
-                      UUID.fromString(sender),
-                      reason,
-                      Instant.ofEpochMilli(time),
-                      Community.get().getServerConfig().getServerId()));
-        }
-        fetched = true;
-      }
+    public void setLoaded(boolean loaded) {
+      this.loaded = loaded;
     }
   }
 

@@ -3,7 +3,6 @@ package dev.pgm.community.friends.feature.types;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.friends.FriendRequestStatus;
 import dev.pgm.community.friends.Friendship;
 import dev.pgm.community.friends.Friendship.FriendshipStatus;
@@ -33,10 +32,9 @@ public class SQLFriendshipFeature extends FriendshipFeatureBase {
   private final SQLFriendshipService service;
   private final UsersFeature users;
 
-  public SQLFriendshipFeature(
-      Configuration config, Logger logger, DatabaseConnection connection, UsersFeature users) {
+  public SQLFriendshipFeature(Configuration config, Logger logger, UsersFeature users) {
     super(config, logger, "Friends (SQL)");
-    this.service = new SQLFriendshipService(connection);
+    this.service = new SQLFriendshipService();
     this.users = users;
   }
 

@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 public class NoDBUsersFeature extends UsersFeatureBase {
 
@@ -73,11 +72,6 @@ public class NoDBUsersFeature extends UsersFeatureBase {
     this.profiles.put(
         player.getUniqueId(), new UserProfileImpl(player.getUniqueId(), player.getName()));
     this.setName(player.getUniqueId(), player.getName());
-  }
-
-  @Override
-  public void onLogout(PlayerQuitEvent event) {
-    // Noop
   }
 
   @Override
