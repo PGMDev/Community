@@ -22,8 +22,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.rotation.MapPool;
 import tc.oc.pgm.rotation.MapPoolManager;
+import tc.oc.pgm.rotation.pools.MapPool;
 import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class MapMenu extends MapPartyMenu {

@@ -54,7 +54,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
-import tc.oc.pgm.rotation.MapPool;
+import tc.oc.pgm.rotation.pools.MapPool;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;

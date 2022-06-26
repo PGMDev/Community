@@ -14,10 +14,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.rotation.MapPool;
 import tc.oc.pgm.rotation.MapPoolManager;
-import tc.oc.pgm.rotation.Rotation;
-import tc.oc.pgm.rotation.VotingPool;
+import tc.oc.pgm.rotation.pools.MapPool;
+import tc.oc.pgm.rotation.pools.Rotation;
+import tc.oc.pgm.rotation.pools.VotingPool;
 
 /* A custom map party where host provides a list of maps,*/
 public class CustomPoolParty extends MapPartyBase {

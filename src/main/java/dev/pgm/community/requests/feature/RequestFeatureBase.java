@@ -65,7 +65,7 @@ import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
 import tc.oc.pgm.events.MapVoteWinnerEvent;
 import tc.oc.pgm.rotation.MapPoolManager;
-import tc.oc.pgm.rotation.VotingPool;
+import tc.oc.pgm.rotation.vote.VotePoolOptions;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
@@ -182,47 +182,46 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     checkQueuedMaps(); // Check if any sponsor requests should be removed
 
-    VotingPool pool = getVotingPool();
+    MapPoolManager poolManager = getPoolManager();
+    if (poolManager == null) return; // Cancel if pool manager not found
 
-    if (pool != null) {
-      if (!sponsors.isEmpty() && pool.getOptions().canAddVote()) {
-        SponsorRequest nextRequest = sponsors.poll();
-        if (nextRequest != null) {
-          // Notify PGM of sponsored map
-          getVotingPool()
-              .getOptions()
-              .addVote(nextRequest.getMap(), nextRequest.getPlayerId(), true);
+    VotePoolOptions options = poolManager.getVoteOptions();
 
-          // Track the current sponsor
-          this.currentSponsor = nextRequest;
+    if (!sponsors.isEmpty() && options.canAddVote()) {
+      SponsorRequest nextRequest = sponsors.poll();
+      if (nextRequest != null) {
+        // Notify PGM of sponsored map
+        options.addVote(nextRequest.getMap(), nextRequest.getPlayerId(), true);
 
-          // Update profile
-          getRequestProfile(nextRequest.getPlayerId())
-              .thenAcceptAsync(
-                  profile -> {
-                    // Update RequestProfile with sponsor map info
-                    profile.sponsor(nextRequest.getMap());
-                    update(profile);
-                  });
+        // Track the current sponsor
+        this.currentSponsor = nextRequest;
 
-          // Alert online player if their sponsor request has been processed
-          Player requester = Bukkit.getPlayer(nextRequest.getPlayerId());
-          if (requester != null) {
-            Audience player = Audience.get(requester);
-            player.sendMessage(
-                formatTokenTransaction(
-                    -1,
-                    text(
-                        "Your sponsored map has been added to the vote!",
-                        NamedTextColor.GREEN,
-                        TextDecoration.BOLD),
-                    canRefund(requester)
-                        ? text(
-                            "If your map wins the vote, you'll get your token back",
-                            NamedTextColor.GRAY)
-                        : null));
-            player.playSound(Sounds.SPEND_TOKENS);
-          }
+        // Update profile
+        getRequestProfile(nextRequest.getPlayerId())
+            .thenAcceptAsync(
+                profile -> {
+                  // Update RequestProfile with sponsor map info
+                  profile.sponsor(nextRequest.getMap());
+                  update(profile);
+                });
+
+        // Alert online player if their sponsor request has been processed
+        Player requester = Bukkit.getPlayer(nextRequest.getPlayerId());
+        if (requester != null) {
+          Audience player = Audience.get(requester);
+          player.sendMessage(
+              formatTokenTransaction(
+                  -1,
+                  text(
+                      "Your sponsored map has been added to the vote!",
+                      NamedTextColor.GREEN,
+                      TextDecoration.BOLD),
+                  canRefund(requester)
+                      ? text(
+                          "If your map wins the vote, you'll get your token back",
+                          NamedTextColor.GRAY)
+                      : null));
+          player.playSound(Sounds.SPEND_TOKENS);
         }
       }
     }
@@ -650,16 +649,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   @Nullable
-  private VotingPool getVotingPool() {
+  private MapPoolManager getPoolManager() {
     MapOrder order = PGM.get().getMapOrder();
     if (order instanceof MapPoolManager) {
-      MapPoolManager manager = (MapPoolManager) order;
-      if (manager.getActiveMapPool() instanceof VotingPool) {
-        VotingPool votePool = (VotingPool) manager.getActiveMapPool();
-        if (votePool.getCurrentPoll() == null) {
-          return votePool;
-        }
-      }
+      return (MapPoolManager) order;
     }
     return null;
   }

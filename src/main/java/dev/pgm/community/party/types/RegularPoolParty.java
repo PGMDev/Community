@@ -13,7 +13,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.rotation.MapPool;
+import tc.oc.pgm.rotation.pools.MapPool;
 
 /** A regular party where a "party" pool is set and announcements are made */
 public class RegularPoolParty extends MapPartyBase {
