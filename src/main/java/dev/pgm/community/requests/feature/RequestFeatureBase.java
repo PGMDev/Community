@@ -28,6 +28,7 @@ import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import dev.pgm.community.requests.commands.RequestCommands;
+import dev.pgm.community.requests.commands.SponsorCommands;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
@@ -108,7 +109,13 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() ? Sets.newHashSet(new RequestCommands()) : Sets.newHashSet();
+    if (!getConfig().isEnabled()) return Sets.newHashSet();
+
+    Set<CommunityCommand> commands = Sets.newHashSet(new RequestCommands());
+
+    if (getRequestConfig().isSponsorEnabled()) commands.add(new SponsorCommands());
+
+    return commands;
   }
 
   @Override
