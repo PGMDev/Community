@@ -3,6 +3,8 @@ package dev.pgm.community.chat.management;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -12,6 +14,7 @@ import dev.pgm.community.utils.BroadcastUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -33,8 +36,11 @@ public class ChatManagementFeature extends FeatureBase {
   private boolean lockdown;
   private boolean slowmode;
 
+  private Cache<UUID, String> lastMessageCache;
+
   public ChatManagementFeature(Configuration config, Logger logger) {
     super(new ChatManagementConfig(config), logger, "Chat Management");
+    this.lastMessageCache = CacheBuilder.newBuilder().build();
     if (getConfig().isEnabled()) {
       enable();
     }
@@ -127,6 +133,17 @@ public class ChatManagementFeature extends FeatureBase {
 
     Player sender = event.getPlayer();
     Audience viewer = Audience.get(sender);
+
+    // Block repeated messages
+    if (getChatConfig().isBlockRepeatedMessagesEnabled()) {
+      String lastMsg = lastMessageCache.getIfPresent(sender.getUniqueId());
+      if (lastMsg != null && lastMsg.equalsIgnoreCase(event.getMessage())) {
+        viewer.sendWarning(text("This message is too similar to your last"));
+        event.setCancelled(true);
+        return;
+      }
+      lastMessageCache.put(sender.getUniqueId(), event.getMessage());
+    }
 
     // Lockdown - Cancel ALL player chat, except staff
     if (isLockdown()) {

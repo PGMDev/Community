@@ -15,6 +15,7 @@ public class ChatManagementConfig extends FeatureConfigImpl {
 
   private int slowmodeSpeed;
   private boolean loginAlerts;
+  private boolean blockRepeatedMessages;
 
   private Cache<UUID, Instant> lastSentMessage;
 
@@ -34,6 +35,10 @@ public class ChatManagementConfig extends FeatureConfigImpl {
     return loginAlerts;
   }
 
+  public boolean isBlockRepeatedMessagesEnabled() {
+    return blockRepeatedMessages;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -41,5 +46,6 @@ public class ChatManagementConfig extends FeatureConfigImpl {
     this.loginAlerts = config.getBoolean(KEY + ".login-alert");
     this.lastSentMessage =
         CacheBuilder.newBuilder().expireAfterWrite(slowmodeSpeed, TimeUnit.SECONDS).build();
+    this.blockRepeatedMessages = config.getBoolean(KEY + ".block-repeated-messages");
   }
 }
