@@ -121,6 +121,7 @@ chat:
   slowmode-speed: 30  # Cooldown time (in seconds) between messages during slowmode 
   login-alert: true   # Whether to alert joining players if slowmode or lockdown are enabled
   block-repeated-messages: true # If repeated chat messages sent consecutively should be blocked
+  expire-repeated-messages: "1s" # Duration after which repeated messages expire
     
 # Custom Info Commands    
 commands:

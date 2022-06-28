@@ -1,8 +1,11 @@
 package dev.pgm.community.chat.management;
 
+import static tc.oc.pgm.util.text.TextParser.parseDuration;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import dev.pgm.community.feature.config.FeatureConfigImpl;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +19,7 @@ public class ChatManagementConfig extends FeatureConfigImpl {
   private int slowmodeSpeed;
   private boolean loginAlerts;
   private boolean blockRepeatedMessages;
+  private Duration expireRepeatedMessages;
 
   private Cache<UUID, Instant> lastSentMessage;
 
@@ -39,6 +43,10 @@ public class ChatManagementConfig extends FeatureConfigImpl {
     return blockRepeatedMessages;
   }
 
+  public Duration getRepeatedMessagesExpireDuration() {
+    return expireRepeatedMessages;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -47,5 +55,7 @@ public class ChatManagementConfig extends FeatureConfigImpl {
     this.lastSentMessage =
         CacheBuilder.newBuilder().expireAfterWrite(slowmodeSpeed, TimeUnit.SECONDS).build();
     this.blockRepeatedMessages = config.getBoolean(KEY + ".block-repeated-messages");
+    this.expireRepeatedMessages =
+        parseDuration(config.getString(KEY + ".expire-repeated-messages"));
   }
 }

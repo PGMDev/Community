@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -40,7 +41,12 @@ public class ChatManagementFeature extends FeatureBase {
 
   public ChatManagementFeature(Configuration config, Logger logger) {
     super(new ChatManagementConfig(config), logger, "Chat Management");
-    this.lastMessageCache = CacheBuilder.newBuilder().build();
+    this.lastMessageCache =
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(
+                getChatConfig().getRepeatedMessagesExpireDuration().toMillis(),
+                TimeUnit.MILLISECONDS)
+            .build();
     if (getConfig().isEnabled()) {
       enable();
     }
