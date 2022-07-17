@@ -18,6 +18,7 @@ public class ReportConfig extends FeatureConfigImpl {
   private static final String ALLOW_KEY = KEY + ".allow-input";
 
   private static final String CATEGORIES_KEY = KEY + ".categories";
+  private static final String NOTIFY_SENDER_KEY = KEY + ".notify-sender";
 
   private static final Material DEFAULT_CATEGORY_ICON = Material.BEACON;
   private static final Material DEFAULT_REASON_ICON = Material.BOOK;
@@ -26,6 +27,7 @@ public class ReportConfig extends FeatureConfigImpl {
   private boolean menu;
   private boolean allowInput;
   private int cooldown;
+  private boolean notifySenders;
 
   private List<ReportCategory> categories;
 
@@ -87,6 +89,15 @@ public class ReportConfig extends FeatureConfigImpl {
     return categories;
   }
 
+  /**
+   * Get whether report senders will be notified upon reported player punishment.
+   *
+   * @return True if senders are notified
+   */
+  public boolean isSenderNotified() {
+    return notifySenders;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -94,6 +105,7 @@ public class ReportConfig extends FeatureConfigImpl {
     this.cooldown = config.getInt(COOLDOWN_KEY, 15);
     this.menu = config.getBoolean(MENU_KEY, true);
     this.allowInput = config.getBoolean(ALLOW_KEY, true);
+    this.notifySenders = config.getBoolean(NOTIFY_SENDER_KEY, true);
 
     this.categories = Lists.newArrayList();
     ConfigurationSection categories = config.getConfigurationSection(CATEGORIES_KEY);

@@ -64,6 +64,8 @@ reports:
   menu: true        # Whether /report will utilize a menu, false for custom input only
   allow-input: true # If we should always accept custom reports when provided a reason
   
+  notify-sender: true # If report senders should be notified of successful reports
+  
   # Interactive menu layout (enabled when menu -> true)
   # Color codes are allowed in name & description fields
   categories:

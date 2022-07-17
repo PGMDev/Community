@@ -17,6 +17,7 @@ import dev.pgm.community.assistance.commands.PlayerHelpCommand;
 import dev.pgm.community.assistance.commands.ReportCommands;
 import dev.pgm.community.assistance.menu.ReportCategoryMenu;
 import dev.pgm.community.events.PlayerHelpRequestEvent;
+import dev.pgm.community.events.PlayerPunishmentEvent;
 import dev.pgm.community.events.PlayerReportEvent;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.network.feature.NetworkFeature;
@@ -30,11 +31,13 @@ import fr.minuskube.inv.InventoryManager;
 import fr.minuskube.inv.SmartInventory;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -310,5 +313,34 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
             new ReportCategoryMenu(inventory, target, this, getReportConfig().getCategories()))
         .build()
         .open(player);
+  }
+
+  @EventHandler
+  public void onPunishment(PlayerPunishmentEvent event) {
+    if (!getReportConfig().isSenderNotified()) return;
+
+    List<Report> relatedReports =
+        recentReports.asMap().keySet().stream()
+            .filter(r -> r.getTargetId().equals(event.getPunishment().getTargetId()))
+            .filter(r -> !r.hasNotified())
+            .collect(Collectors.toList());
+    Set<UUID> reporters =
+        relatedReports.stream().map(r -> r.getSenderId()).collect(Collectors.toSet());
+    for (UUID reporterId : reporters) {
+      Player onlineReporter = Bukkit.getPlayer(reporterId);
+      if (onlineReporter != null) {
+        Audience.get(onlineReporter)
+            .sendMessage(
+                text()
+                    .append(
+                        text(
+                            "A player you recently reported has been punished. ",
+                            NamedTextColor.GOLD))
+                    .append(text("Thanks for the help!", NamedTextColor.GREEN)));
+      }
+    }
+    for (Report report : relatedReports) {
+      report.setNotified(true);
+    }
   }
 }

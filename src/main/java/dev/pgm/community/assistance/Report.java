@@ -6,6 +6,7 @@ import java.util.UUID;
 public class Report extends AssistanceRequest implements Comparable<Report> {
 
   private final UUID reportId;
+  private boolean notifiedSender;
 
   /**
    * Report Holds information related to a report
@@ -24,6 +25,7 @@ public class Report extends AssistanceRequest implements Comparable<Report> {
       UUID reportId, UUID reportedId, UUID reporterId, String reason, Instant time, String server) {
     super(reporterId, reportedId, time, reason, server, RequestType.REPORT);
     this.reportId = reportId;
+    this.notifiedSender = false;
   }
 
   /**
@@ -33,6 +35,14 @@ public class Report extends AssistanceRequest implements Comparable<Report> {
    */
   public UUID getId() {
     return reportId;
+  }
+
+  public void setNotified(boolean notified) {
+    this.notifiedSender = notified;
+  }
+
+  public boolean hasNotified() {
+    return notifiedSender;
   }
 
   @Override
