@@ -1,9 +1,12 @@
 package dev.pgm.community.assistance;
 
+import static tc.oc.pgm.util.text.TextParser.parseDuration;
+
 import com.google.common.collect.Lists;
 import dev.pgm.community.assistance.menu.ReportCategory;
 import dev.pgm.community.assistance.menu.ReportReason;
 import dev.pgm.community.feature.config.FeatureConfigImpl;
+import java.time.Duration;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
@@ -16,9 +19,11 @@ public class ReportConfig extends FeatureConfigImpl {
   private static final String COOLDOWN_KEY = KEY + ".cooldown";
   private static final String MENU_KEY = KEY + ".menu";
   private static final String ALLOW_KEY = KEY + ".allow-input";
+  private static final String NOTIFY_SENDER_KEY = KEY + ".notify-sender";
+  private static final String REPORT_EXPIRE_KEY = KEY + ".report-expire";
+  private static final String NOTIFY_EXPIRE_KEY = KEY + ".notify-expire";
 
   private static final String CATEGORIES_KEY = KEY + ".categories";
-  private static final String NOTIFY_SENDER_KEY = KEY + ".notify-sender";
 
   private static final Material DEFAULT_CATEGORY_ICON = Material.BEACON;
   private static final Material DEFAULT_REASON_ICON = Material.BOOK;
@@ -28,6 +33,9 @@ public class ReportConfig extends FeatureConfigImpl {
   private boolean allowInput;
   private int cooldown;
   private boolean notifySenders;
+
+  private Duration reportExpireTime;
+  private Duration reportNotifyTime;
 
   private List<ReportCategory> categories;
 
@@ -98,6 +106,24 @@ public class ReportConfig extends FeatureConfigImpl {
     return notifySenders;
   }
 
+  /**
+   * Get how long to cache Reports for.
+   *
+   * @return A duration of time
+   */
+  public Duration getReportExpireTime() {
+    return reportExpireTime;
+  }
+
+  /**
+   * Get cutoff period for how long report notifications will be available.
+   *
+   * @return A duration of time
+   */
+  public Duration getReporyNotifyTime() {
+    return reportNotifyTime;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -106,6 +132,8 @@ public class ReportConfig extends FeatureConfigImpl {
     this.menu = config.getBoolean(MENU_KEY, true);
     this.allowInput = config.getBoolean(ALLOW_KEY, true);
     this.notifySenders = config.getBoolean(NOTIFY_SENDER_KEY, true);
+    this.reportExpireTime = parseDuration(config.getString(REPORT_EXPIRE_KEY));
+    this.reportNotifyTime = parseDuration(config.getString(NOTIFY_EXPIRE_KEY));
 
     this.categories = Lists.newArrayList();
     ConfigurationSection categories = config.getConfigurationSection(CATEGORIES_KEY);

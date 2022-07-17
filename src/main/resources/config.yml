@@ -64,8 +64,10 @@ reports:
   menu: true        # Whether /report will utilize a menu, false for custom input only
   allow-input: true # If we should always accept custom reports when provided a reason
   
-  notify-sender: true # If report senders should be notified of successful reports
-  
+  notify-sender: true  # If report senders should be notified of successful reports
+  notify-expire: "30m" # How long until reports no longer notify sender of punishment
+  report-expire: "1h"  # How long reports are cached locally
+    
   # Interactive menu layout (enabled when menu -> true)
   # Color codes are allowed in name & description fields
   categories:

@@ -52,9 +52,6 @@ import tc.oc.pgm.util.named.NameStyle;
 
 public abstract class AssistanceFeatureBase extends FeatureBase implements AssistanceFeature {
 
-  private static final int EXPIRES_AFTER = 1;
-  private static final TimeUnit RECENT_TIME_UNIT = TimeUnit.HOURS;
-
   private final NetworkFeature network;
   protected final UsersFeature users;
   private final InventoryManager inventory;
@@ -74,9 +71,13 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
     cooldown =
         CacheBuilder.newBuilder().expireAfterWrite(config.getCooldown(), TimeUnit.SECONDS).build();
     this.recentReports =
-        CacheBuilder.newBuilder().expireAfterWrite(EXPIRES_AFTER, RECENT_TIME_UNIT).build();
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(config.getReportExpireTime().getSeconds(), TimeUnit.SECONDS)
+            .build();
     this.recentHelp =
-        CacheBuilder.newBuilder().expireAfterWrite(EXPIRES_AFTER, RECENT_TIME_UNIT).build();
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(config.getReportExpireTime().getSeconds(), TimeUnit.SECONDS)
+            .build();
     this.network = network;
     this.users = users;
     this.inventory = inventory;
@@ -323,6 +324,12 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
         recentReports.asMap().keySet().stream()
             .filter(r -> r.getTargetId().equals(event.getPunishment().getTargetId()))
             .filter(r -> !r.hasNotified())
+            .filter(
+                r ->
+                    !getReportConfig()
+                        .getReporyNotifyTime()
+                        .minus(Duration.between(r.getTime(), Instant.now()))
+                        .isNegative())
             .collect(Collectors.toList());
     Set<UUID> reporters =
         relatedReports.stream().map(r -> r.getSenderId()).collect(Collectors.toSet());
