@@ -299,6 +299,11 @@ public class RequestCommands extends CommunityCommand {
                 uuid -> {
                   if (uuid.isPresent()) {
                     RequestProfile profile = requests.getRequestProfile(uuid.get()).join();
+                    if (profile == null) {
+                      audience.sendWarning(formatNotFoundComponent(target));
+                      return;
+                    }
+
                     Component name = users.renderUsername(uuid, NameStyle.FANCY).join();
                     sendTokenBalanceMessage(
                         audience.getAudience(), name, profile.getSponsorTokens());
