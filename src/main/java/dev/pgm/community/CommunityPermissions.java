@@ -78,6 +78,7 @@ public interface CommunityPermissions {
   String TOKEN = ROOT + ".token"; // Access to view /token
   String TOKEN_DAILY = TOKEN + ".daily"; // Receives token refresh daily
   String TOKEN_WEEKLY = TOKEN + ".weekly"; // Receives token refresh weekly
+  String TOKEN_BALANCE = TOKEN + ".view-others"; // Access to view other token balances
 
   String VIEW_MAP_COOLDOWNS = ROOT + ".view-map-cooldown";
 

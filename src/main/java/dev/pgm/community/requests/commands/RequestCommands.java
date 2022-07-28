@@ -292,23 +292,47 @@ public class RequestCommands extends CommunityCommand {
     @Default
     @Subcommand("balance")
     @Description("Check your token balance")
-    public void tokens(CommandAudience audience, Player player) {
-      requests
-          .getRequestProfile(player.getUniqueId())
-          .thenAcceptAsync(
-              profile -> {
-                int tokens = profile.getSponsorTokens();
-                audience.sendMessage(
-                    text()
-                        .append(MessageUtils.TOKEN)
-                        .append(text(" You have "))
-                        .append(text(tokens, NamedTextColor.YELLOW, TextDecoration.BOLD))
-                        .append(text(" sponsor token" + (tokens != 1 ? "s" : "") + "."))
-                        .color(NamedTextColor.GRAY)
-                        .build());
-                sendRefreshDuration(audience.getAudience(), player, profile);
-              });
+    public void tokens(CommandAudience audience, @Optional String target) {
+      if (target != null && audience.hasPermission(CommunityPermissions.TOKEN_BALANCE)) {
+        getTarget(target, users)
+            .thenAcceptAsync(
+                uuid -> {
+                  if (uuid.isPresent()) {
+                    RequestProfile profile = requests.getRequestProfile(uuid.get()).join();
+                    Component name = users.renderUsername(uuid, NameStyle.FANCY).join();
+                    sendTokenBalanceMessage(
+                        audience.getAudience(), name, profile.getSponsorTokens());
+                  } else {
+                    audience.sendWarning(formatNotFoundComponent(target));
+                  }
+                });
+      } else if (audience.isPlayer()) {
+        Player player = audience.getPlayer();
+        requests
+            .getRequestProfile(player.getUniqueId())
+            .thenAcceptAsync(
+                profile -> {
+                  int tokens = profile.getSponsorTokens();
+                  sendTokenBalanceMessage(audience.getAudience(), null, tokens);
+                  sendRefreshDuration(audience.getAudience(), player, profile);
+                });
+      } else {
+        audience.sendWarning(text("Please provide a username to check the token balance of"));
+      }
     }
+  }
+
+  private void sendTokenBalanceMessage(Audience viewer, Component name, int tokens) {
+    viewer.sendMessage(
+        text()
+            .append(MessageUtils.TOKEN)
+            .append(text(" "))
+            .append(
+                name == null ? text("You have ") : name.append(text(" has ", NamedTextColor.GRAY)))
+            .append(text(tokens, NamedTextColor.YELLOW, TextDecoration.BOLD))
+            .append(text(" sponsor token" + (tokens != 1 ? "s" : "") + "."))
+            .color(NamedTextColor.GRAY)
+            .build());
   }
 
   public static class TokenRefreshAmount {
