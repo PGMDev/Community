@@ -369,6 +369,16 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       return;
     }
 
+    // Check if map is already queued
+    if (isMapQueued(map)) {
+      viewer.sendWarning(
+          text()
+              .append(map.getStyledName(MapNameStyle.COLOR))
+              .append(text(" is already in the queue!"))
+              .build());
+      return;
+    }
+
     // Check if map has a cooldown
     if (hasMapCooldown(map)) {
       MapCooldown cooldown = mapCooldown.get(map);
@@ -642,6 +652,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   private boolean isQueued(UUID playerId) {
     return sponsors.stream().anyMatch(sr -> sr.getPlayerId().equals(playerId));
+  }
+
+  private boolean isMapQueued(MapInfo map) {
+    return sponsors.stream().anyMatch(sr -> sr.getMap().equals(map));
   }
 
   private boolean isQueueOpen() {
