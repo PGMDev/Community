@@ -195,9 +195,9 @@ public class PunishmentCommand extends CommunityCommand {
       if (targetID != null) {
         targetName =
             PlayerComponent.player(
-                targetID, usernames.getStoredUsername(targetID).join(), NameStyle.FANCY);
+                targetID, usernames.getStoredUsername(targetID).join(), NameStyle.CONCISE);
       } else {
-        targetName = PlayerComponent.player(targetID, target, NameStyle.FANCY);
+        targetName = PlayerComponent.player(targetID, target, NameStyle.CONCISE);
       }
     }
 
@@ -234,8 +234,10 @@ public class PunishmentCommand extends CommunityCommand {
 
         builder.append(
             data.formatBroadcast(
-                usernames.renderUsername(data.getIssuerId(), NameStyle.FANCY).join(),
-                usernames.renderUsername(Optional.of(data.getTargetId()), NameStyle.FANCY).join()));
+                usernames.renderUsername(data.getIssuerId(), NameStyle.CONCISE).join(),
+                usernames
+                    .renderUsername(Optional.of(data.getTargetId()), NameStyle.CONCISE)
+                    .join()));
 
         TextComponent.Builder hover = text();
         hover
@@ -269,7 +271,7 @@ public class PunishmentCommand extends CommunityCommand {
           hover
               .append(newline())
               .append(text("Infraction lifted by ", NamedTextColor.GRAY)) // TODO: translate
-              .append(usernames.renderUsername(data.getLastUpdatedBy(), NameStyle.FANCY).join())
+              .append(usernames.renderUsername(data.getLastUpdatedBy(), NameStyle.CONCISE).join())
               .append(space())
               .append(
                   TemporalComponent.relativePastApproximate(data.getLastUpdated())
