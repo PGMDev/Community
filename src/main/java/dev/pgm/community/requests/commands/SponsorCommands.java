@@ -65,6 +65,11 @@ public class SponsorCommands extends CommunityCommand {
     }
   }
 
+  @Subcommand("menu")
+  public void menu(CommandAudience audience, Player player) {
+    requests.openMenu(player);
+  }
+
   @Default
   @Subcommand("info")
   public void info(CommandAudience audience, Player player) {
@@ -101,14 +106,21 @@ public class SponsorCommands extends CommunityCommand {
 
               Component buttons =
                   text()
-                      .append(text("              "))
+                      .append(text("     "))
                       .append(
                           button(
-                              "Maps",
+                              "Map List",
                               NamedTextColor.DARK_AQUA,
                               "/sponsor maps 1",
-                              "Click to view available maps"))
-                      .append(text("                  "))
+                              "Click to view available maps as a chat list"))
+                      .append(text("       "))
+                      .append(
+                          button(
+                              "Map Menu",
+                              NamedTextColor.GREEN,
+                              "/sponsor menu",
+                              "Click to view available maps as a GUI menu"))
+                      .append(text("       "))
                       .append(
                           button(
                               "Queue",
