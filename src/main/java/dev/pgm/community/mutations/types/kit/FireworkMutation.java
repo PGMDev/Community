@@ -1,4 +1,4 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.kit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -6,7 +6,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.types.KitMutationBase;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -38,6 +40,7 @@ import tc.oc.pgm.api.match.MatchScope;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
+import tc.oc.pgm.kits.tag.ItemTags;
 import tc.oc.pgm.util.inventory.tag.ItemTag;
 
 /** FireworkMutation - Provides extra firework effects in-game */
@@ -169,6 +172,7 @@ public class FireworkMutation extends KitMutationBase {
     meta.setPower(power);
     firework.setItemMeta(meta);
     FIREWORK_TAG.set(firework, FIREWORK_METADATA);
+    ItemTags.PREVENT_SHARING.set(firework, true);
     return firework;
   }
 
@@ -184,7 +188,7 @@ public class FireworkMutation extends KitMutationBase {
   }
 
   @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return true;
   }
 }

@@ -2,6 +2,7 @@ package dev.pgm.community.mutations;
 
 import static net.kyori.adventure.text.Component.text;
 
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -34,9 +35,10 @@ public interface Mutation {
    * Gets whether it is safe to enable current mutation Ex. If map is rage, don't allow rage
    * mutation to be enabled
    *
-   * @return true if safe to enable, false if not
+   * @param existingMutations - A set of existing mutations to check
+   * @return
    */
-  boolean canEnable();
+  boolean canEnable(Set<Mutation> existingMutations);
 
   default Component getName() {
     return text(

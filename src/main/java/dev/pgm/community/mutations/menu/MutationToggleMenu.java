@@ -8,7 +8,11 @@ import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.InventoryProvider;
 import java.util.Optional;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
+import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class MutationToggleMenu implements InventoryProvider {
 
@@ -36,6 +40,21 @@ public class MutationToggleMenu implements InventoryProvider {
                 e.setCurrentItem(type.getIcon(mutations.getMutation(type).isPresent()));
               }));
     }
+
+    contents.set(2, 4, getOptionIcon(player));
+  }
+
+  private ClickableItem getOptionIcon(Player player) {
+    return ClickableItem.of(
+        new ItemBuilder()
+            .material(Material.WORKBENCH)
+            .name(ChatColor.GOLD + "Options")
+            .lore(ChatColor.GRAY + "Click to view active mutation options")
+            .flags(ItemFlag.values())
+            .build(),
+        c -> {
+          mutations.getOptionMenu().open(player);
+        });
   }
 
   @Override

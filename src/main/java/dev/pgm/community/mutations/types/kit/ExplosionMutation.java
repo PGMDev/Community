@@ -1,14 +1,17 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.kit;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import dev.pgm.community.Community;
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationBooleanOption;
+import dev.pgm.community.mutations.options.MutationRangeOption;
+import dev.pgm.community.mutations.types.KitMutationBase;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -27,11 +30,40 @@ import org.bukkit.inventory.meta.ItemMeta;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
+import tc.oc.pgm.kits.tag.ItemTags;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.inventory.tag.ItemTag;
 
 /** ExplosionMutation - TNT, Fireballs, and random explosions when mining blocks * */
 public class ExplosionMutation extends KitMutationBase {
+
+  public static MutationRangeOption FIREBALL_POWER =
+      new MutationRangeOption(
+          "Fireball Power",
+          "Power of fireball explosion",
+          MutationType.EXPLOSION.getMaterial(),
+          false,
+          0,
+          0,
+          10);
+
+  public static MutationBooleanOption FIREBALL_FIRE =
+      new MutationBooleanOption(
+          "Fireball Fire",
+          "Whether fireballs are incendiary",
+          MutationType.EXPLOSION.getMaterial(),
+          true,
+          false);
+
+  public static MutationRangeOption FIREBALL_COOLDOWN =
+      new MutationRangeOption(
+          "Fireball Cooldown",
+          "Delay between fireball shots",
+          MutationType.EXPLOSION.getMaterial(),
+          false,
+          4,
+          0,
+          60);
 
   private static final double EXPLODE_CHANCE = 0.05;
   private static final int FIREBALL_COUNT = 5;
@@ -39,8 +71,7 @@ public class ExplosionMutation extends KitMutationBase {
   private static final String EXPLOSION_METADATA = "mutation_explosion";
   private static final ItemTag<String> EXPLOSION_KIT = ItemTag.newString(EXPLOSION_METADATA);
 
-  private Cache<UUID, String> lastFireball =
-      CacheBuilder.newBuilder().expireAfterWrite(4, TimeUnit.SECONDS).build();
+  private Map<UUID, Long> lastFireball = Maps.newHashMap();
 
   public ExplosionMutation(Match match) {
     super(match, MutationType.EXPLOSION);
@@ -99,6 +130,21 @@ public class ExplosionMutation extends KitMutationBase {
   }
 
   private static Kit getTNTKit() {
+    return new ItemKit(Maps.newHashMap(), getTNTItems());
+  }
+
+  private static Kit getFireballKit() {
+    return new ItemKit(Maps.newHashMap(), Lists.newArrayList(getFireballItem()));
+  }
+
+  @Override
+  public ItemStack[] getAllItems() {
+    List<ItemStack> items = getTNTItems();
+    items.add(getFireballItem());
+    return items.toArray(new ItemStack[items.size()]);
+  }
+
+  private static List<ItemStack> getTNTItems() {
     List<ItemStack> items =
         Lists.newArrayList(
             new ItemStack(Material.TNT, 64),
@@ -106,11 +152,7 @@ public class ExplosionMutation extends KitMutationBase {
             new ItemStack(Material.REDSTONE, 16),
             new ItemStack(Material.BUCKET));
     items = items.stream().map(ExplosionMutation::applyLore).collect(Collectors.toList());
-    return new ItemKit(Maps.newHashMap(), items);
-  }
-
-  private static Kit getFireballKit() {
-    return new ItemKit(Maps.newHashMap(), Lists.newArrayList(getFireballItem()));
+    return items;
   }
 
   private static ItemStack getFireballItem() {
@@ -130,23 +172,30 @@ public class ExplosionMutation extends KitMutationBase {
     meta.addItemFlags(ItemFlag.values());
     stack.setItemMeta(meta);
     EXPLOSION_KIT.set(stack, EXPLOSION_METADATA);
+    ItemTags.PREVENT_SHARING.set(stack, true);
     return stack;
   }
 
   private boolean launchFireball(Player player) {
-    if (lastFireball.getIfPresent(player.getUniqueId()) == null) {
-      Fireball fireball = player.launchProjectile(Fireball.class);
-      fireball.setYield(Community.get().getRandom().nextInt(4) + 1);
-      fireball.setIsIncendiary(true);
-      lastFireball.put(player.getUniqueId(), "");
-      return true;
+    Long last = lastFireball.get(player.getUniqueId());
+    if (last != null) {
+      long time = last / 1000;
+      long now = System.currentTimeMillis() / 1000;
+      if ((now - time) < FIREBALL_COOLDOWN.getValue()) {
+        return false;
+      }
     }
 
-    return false;
+    int power = FIREBALL_POWER.getValue();
+    Fireball fireball = player.launchProjectile(Fireball.class);
+    fireball.setYield(power == 0 ? match.getRandom().nextInt(5) + 1 : power);
+    fireball.setIsIncendiary(FIREBALL_FIRE.getValue());
+    lastFireball.put(player.getUniqueId(), System.currentTimeMillis());
+    return true;
   }
 
   @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return true;
   }
 }

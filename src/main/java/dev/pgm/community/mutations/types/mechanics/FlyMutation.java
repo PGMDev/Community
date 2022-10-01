@@ -1,52 +1,83 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.mechanics;
 
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.title.Title.title;
 
 import dev.pgm.community.Community;
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationRangeOption;
+import dev.pgm.community.mutations.types.KitMutationBase;
 import dev.pgm.community.utils.BroadcastUtils;
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.api.match.event.MatchFinishEvent;
 import tc.oc.pgm.kits.FlyKit;
 
 /** FlyMutation - Enables the {@link FlyKit} for all players */
 public class FlyMutation extends KitMutationBase {
 
-  private static final FlyKit KIT_ON = new FlyKit(true, true, 1);
-  private static final FlyKit KIT_OFF = new FlyKit(false, false, 1);
+  public static MutationRangeOption FLY_DISABLE_DELAY =
+      new MutationRangeOption(
+          "Flight Disable countdown",
+          "Delay before flight is disabled",
+          MutationType.FLY.getMaterial(),
+          false,
+          5,
+          0,
+          20);
 
-  private static final int FLY_DISABLE_SECONDS = 5;
+  public static MutationRangeOption FLY_SPEED =
+      new MutationRangeOption(
+          "Flight Speed", "Speed of flight", MutationType.FLY.getMaterial(), true, 1, 1, 5);
 
   private int disableTaskID;
+  private boolean disableTaskEnabled;
 
   public FlyMutation(Match match) {
-    super(match, MutationType.FLY, KIT_ON);
+    super(match, MutationType.FLY, getFlightKit());
   }
 
   @Override
   public void disable() {
-    super.disable();
-
     if (!match.isFinished()) {
       this.disableTaskID =
           Community.get()
               .getServer()
               .getScheduler()
               .scheduleSyncRepeatingTask(
-                  Community.get(), new DisableFlightTask(FLY_DISABLE_SECONDS), 0L, 20L);
+                  Community.get(), new DisableFlightTask(FLY_DISABLE_DELAY.getValue()), 0L, 20L);
+      this.disableTaskEnabled = true;
     }
-    // TODO: add remove task to ask players to land
   }
 
   @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return true;
+  }
+
+  private static FlyKit getFlightKit() {
+    return new FlyKit(true, true, FLY_SPEED.getValue());
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onMatchEnd(MatchFinishEvent event) {
+    if (disableTaskEnabled) { // Special removal case due to new disable logic
+      remove();
+    }
+  }
+
+  private void remove() {
+    Community.get().getServer().getScheduler().cancelTask(disableTaskID);
+    super.disable();
   }
 
   private class DisableFlightTask implements Runnable {
@@ -60,8 +91,7 @@ public class FlyMutation extends KitMutationBase {
     @Override
     public void run() {
       if (seconds < 1) {
-        giveAllKit(KIT_OFF);
-        Community.get().getServer().getScheduler().cancelTask(disableTaskID);
+        remove();
       } else {
         Component time = text(seconds, NamedTextColor.RED, TextDecoration.BOLD);
         Component left =

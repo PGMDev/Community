@@ -1,11 +1,14 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.kit;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import dev.pgm.community.Community;
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.types.KitMutationBase;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bukkit.Location;
@@ -23,6 +26,7 @@ import org.bukkit.potion.PotionType;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
+import tc.oc.pgm.kits.tag.ItemTags;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 
 /** PotionMutation - Random potions given on spawn and when mining blocks * */
@@ -71,6 +75,7 @@ public class PotionMutation extends KitMutationBase {
     meta.setDisplayName(BukkitUtils.colorize("&d&lMystery Potion"));
     meta.addItemFlags(ItemFlag.values());
     item.setItemMeta(meta);
+    ItemTags.PREVENT_SHARING.set(item, true);
     return item;
   }
 
@@ -85,7 +90,7 @@ public class PotionMutation extends KitMutationBase {
   }
 
   @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return true;
   }
 }

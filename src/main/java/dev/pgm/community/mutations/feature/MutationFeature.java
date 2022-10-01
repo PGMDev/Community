@@ -4,7 +4,6 @@ import static dev.pgm.community.utils.PGMUtils.isPGMEnabled;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
-import co.aikar.commands.InvalidCommandArgument;
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
@@ -12,16 +11,26 @@ import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationConfig;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.commands.MutationCommands;
+import dev.pgm.community.mutations.menu.MutationOptionsMenu;
 import dev.pgm.community.mutations.menu.MutationToggleMenu;
-import dev.pgm.community.mutations.types.BlindMutation;
-import dev.pgm.community.mutations.types.BlitzMutation;
-import dev.pgm.community.mutations.types.DoubleJumpMutation;
-import dev.pgm.community.mutations.types.ExplosionMutation;
-import dev.pgm.community.mutations.types.FireworkMutation;
-import dev.pgm.community.mutations.types.FlyMutation;
-import dev.pgm.community.mutations.types.HealthMutation;
-import dev.pgm.community.mutations.types.PotionMutation;
-import dev.pgm.community.mutations.types.RageMutation;
+import dev.pgm.community.mutations.types.arrows.ArrowTrailMutation;
+import dev.pgm.community.mutations.types.arrows.EnderpearlMutation;
+import dev.pgm.community.mutations.types.arrows.WebSlingersMutation;
+import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
+import dev.pgm.community.mutations.types.gameplay.GhostMutation;
+import dev.pgm.community.mutations.types.gameplay.RageMutation;
+import dev.pgm.community.mutations.types.kit.ExplosionMutation;
+import dev.pgm.community.mutations.types.kit.FireworkMutation;
+import dev.pgm.community.mutations.types.kit.PotionMutation;
+import dev.pgm.community.mutations.types.mechanics.BlindMutation;
+import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
+import dev.pgm.community.mutations.types.mechanics.FlyMutation;
+import dev.pgm.community.mutations.types.mechanics.FriendlyFireMutation;
+import dev.pgm.community.mutations.types.mechanics.HealthMutation;
+import dev.pgm.community.mutations.types.mechanics.KnockbackMutation;
+import dev.pgm.community.mutations.types.mechanics.MobMutation;
+import dev.pgm.community.mutations.types.world.BlockDecayMutation;
+import dev.pgm.community.mutations.types.world.StormMutation;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.Sounds;
@@ -73,7 +82,7 @@ public class MutationFeature extends FeatureBase {
     if (!hasMutation(type)) {
       Mutation newMutation = getNewMutation(type);
 
-      if (newMutation.canEnable()) {
+      if (newMutation.canEnable(mutations)) {
         mutations.add(newMutation);
 
         if (getMatch().isRunning()) enableMutation(newMutation, broadcast);
@@ -86,13 +95,11 @@ public class MutationFeature extends FeatureBase {
                 .append(text(" mutation"))
                 .color(NamedTextColor.GRAY)
                 .build());
-
+        return true;
       } else {
-        throw new InvalidCommandArgument(
-            type.getDisplayName() + " can not be enabled for this match", false);
+        sender.sendWarning(
+            text(type.getDisplayName()).append(text(" can not be enabled for this match")));
       }
-
-      return true;
     }
     return false;
   }
@@ -169,6 +176,26 @@ public class MutationFeature extends FeatureBase {
         return new BlindMutation(getMatch());
       case HEALTH:
         return new HealthMutation(getMatch());
+      case GHOST:
+        return new GhostMutation(getMatch());
+      case STORM:
+        return new StormMutation(getMatch());
+      case FRIENDLY:
+        return new FriendlyFireMutation(getMatch());
+      case ARROW_TRAIL:
+        return new ArrowTrailMutation(getMatch());
+      case ENDERPEARL:
+        return new EnderpearlMutation(getMatch());
+      case BLOCK_DECAY:
+        return new BlockDecayMutation(getMatch());
+      case KNOCKBACK:
+        return new KnockbackMutation(getMatch());
+      case WEB_SLINGERS:
+        return new WebSlingersMutation(getMatch());
+      case MOBS:
+        return new MobMutation(getMatch());
+      default:
+        logger.warning(type.getDisplayName() + " has not been implemented yet");
     }
 
     return null;
@@ -220,7 +247,16 @@ public class MutationFeature extends FeatureBase {
         .title(ChatColor.GREEN + "Toggle Mutations")
         .manager(inventory)
         .provider(new MutationToggleMenu(this))
-        .size(1, 9)
+        .size(3, 9)
+        .build();
+  }
+
+  public SmartInventory getOptionMenu() {
+    return SmartInventory.builder()
+        .title(ChatColor.GOLD + "Mutation Options")
+        .manager(inventory)
+        .provider(new MutationOptionsMenu())
+        .size(4, 9)
         .build();
   }
 }
