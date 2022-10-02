@@ -5,6 +5,7 @@ import dev.pgm.community.mutations.MutationBase;
 import dev.pgm.community.mutations.MutationType;
 import java.util.Set;
 import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.scoreboard.ScoreboardMatchModule;
 
 public class FriendlyFireMutation extends MutationBase {
 
@@ -21,11 +22,19 @@ public class FriendlyFireMutation extends MutationBase {
   public void enable() {
     super.enable();
     match.setFriendlyFire(true);
+    forceTeamUpdate();
   }
 
   @Override
   public void disable() {
     match.setFriendlyFire(false);
+    forceTeamUpdate();
     super.disable();
+  }
+
+  private void forceTeamUpdate() {
+    ScoreboardMatchModule smm = match.getModule(ScoreboardMatchModule.class);
+    if (smm == null) return;
+    smm.updateAll();
   }
 }
