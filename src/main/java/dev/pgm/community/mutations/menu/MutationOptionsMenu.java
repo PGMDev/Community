@@ -4,7 +4,7 @@ import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
-import dev.pgm.community.mutations.types.kit.ExplosionMutation;
+import dev.pgm.community.mutations.types.items.ExplosionMutation;
 import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
 import dev.pgm.community.mutations.types.mechanics.FlyMutation;
 import fr.minuskube.inv.ClickableItem;
@@ -95,7 +95,7 @@ public class MutationOptionsMenu implements InventoryProvider {
                     ? ChatColor.GRAY
                         + "("
                         + ChatColor.DARK_PURPLE
-                        + "Applys when mutation is enabled"
+                        + "Applies when mutation is enabled"
                         + ChatColor.GRAY
                         + ")"
                     : "")

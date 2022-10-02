@@ -78,15 +78,17 @@ public class StormMutation extends ScheduledMutationBase {
   }
 
   private Set<MatchPlayer> selectRandomPlayers(int amount) {
-    List<MatchPlayer> everyone = match.getParticipants().stream().collect(Collectors.toList());
     Set<MatchPlayer> chosen = Sets.newHashSet();
-    int retrys = 0;
-    while (chosen.size() < amount && retrys < 5) {
-      MatchPlayer player = everyone.get(match.getRandom().nextInt(everyone.size()));
-      if (player != null && !chosen.contains(player)) {
-        chosen.add(player);
-      } else {
-        retrys++;
+    List<MatchPlayer> everyone = match.getParticipants().stream().collect(Collectors.toList());
+    if (!everyone.isEmpty()) {
+      int retrys = 0;
+      while (chosen.size() < amount && retrys < 5) {
+        MatchPlayer player = everyone.get(random.nextInt(everyone.size()));
+        if (player != null && !chosen.contains(player)) {
+          chosen.add(player);
+        } else {
+          retrys++;
+        }
       }
     }
     return chosen;

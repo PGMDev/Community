@@ -1,4 +1,4 @@
-package dev.pgm.community.mutations.types.kit;
+package dev.pgm.community.mutations.types.items;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

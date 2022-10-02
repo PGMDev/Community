@@ -6,6 +6,7 @@ import dev.pgm.community.mutations.MutationType;
 import java.util.Set;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerAttackEntityEvent;
 import org.bukkit.util.Vector;
 import tc.oc.pgm.api.match.Match;
@@ -22,11 +23,11 @@ public class KnockbackMutation extends MutationBase {
     return true;
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerDamage(PlayerAttackEntityEvent event) {
     Entity target = event.getLeftClicked();
     MatchPlayer player = match.getParticipant(event.getPlayer());
-    if (target == null || player == null || target.isDead()) return;
+    if (target == null || player == null || target.isDead() || player.isDead()) return;
     Vector playerLocation = player.getLocation().getDirection();
     target.setVelocity(playerLocation.setY(1).multiply(2 + match.getRandom().nextInt(4)));
   }

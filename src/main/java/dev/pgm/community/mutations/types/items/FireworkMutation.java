@@ -1,4 +1,4 @@
-package dev.pgm.community.mutations.types.kit;
+package dev.pgm.community.mutations.types.items;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

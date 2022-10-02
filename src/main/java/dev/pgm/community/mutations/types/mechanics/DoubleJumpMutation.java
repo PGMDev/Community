@@ -19,14 +19,17 @@ public class DoubleJumpMutation extends KitMutationBase {
       new MutationRangeOption(
           "Jump Power", "Power of double jump", MutationType.JUMP.getMaterial(), true, 2, 1, 10);
 
+  private DoubleJumpKit disabledKit = getJumpKit(false);
+
   public DoubleJumpMutation(Match match) {
     super(match, MutationType.JUMP, getJumpKit(true));
+    disabledKit = getJumpKit(false);
   }
 
   @Override
   public void disable() {
     super.disable();
-    giveAllKit(getJumpKit(false));
+    giveAllKit(disabledKit);
   }
 
   @Override

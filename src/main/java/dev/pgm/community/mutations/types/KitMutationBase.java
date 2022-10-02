@@ -9,7 +9,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.inventory.ItemStack;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
 import tc.oc.pgm.spawns.events.ParticipantKitApplyEvent;
 
@@ -60,8 +59,9 @@ public abstract class KitMutationBase extends MutationBase {
   }
 
   protected void removeAllKit(Kit kit) {
-    if (kit instanceof ItemKit) return;
-    match.getParticipants().forEach(player -> kit.remove(player));
+    if (kit.isRemovable()) {
+      match.getParticipants().forEach(player -> kit.remove(player));
+    }
   }
 
   protected void giveAllKit(List<Kit> kits) {
