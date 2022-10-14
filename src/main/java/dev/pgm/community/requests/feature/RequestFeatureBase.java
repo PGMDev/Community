@@ -29,6 +29,7 @@ import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import dev.pgm.community.requests.commands.RequestCommands;
 import dev.pgm.community.requests.commands.SponsorCommands;
+import dev.pgm.community.requests.menu.SponsorMenu;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
@@ -37,6 +38,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -105,6 +107,21 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   public RequestConfig getRequestConfig() {
     return (RequestConfig) getConfig();
+  }
+
+  @Override
+  public void openMenu(Player viewer) {
+    SponsorMenu menu = new SponsorMenu(getAvailableSponsorMaps(), viewer);
+    menu.getInventory().open(viewer);
+  }
+
+  @Override
+  public List<MapInfo> getAvailableSponsorMaps() {
+    return Lists.newArrayList(PGM.get().getMapLibrary().getMaps()).stream()
+        .filter(PGMUtils::isMapSizeAllowed)
+        .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
+        .filter(m -> !hasMapCooldown(m))
+        .collect(Collectors.toList());
   }
 
   @Override

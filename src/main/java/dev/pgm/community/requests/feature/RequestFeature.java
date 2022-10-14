@@ -6,6 +6,7 @@ import dev.pgm.community.feature.Feature;
 import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -139,4 +140,8 @@ public interface RequestFeature extends Feature {
   boolean hasMapCooldown(MapInfo map);
 
   Map<MapInfo, MapCooldown> getMapCooldowns();
+
+  void openMenu(Player player);
+
+  List<MapInfo> getAvailableSponsorMaps();
 }
