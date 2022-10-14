@@ -24,7 +24,11 @@ public class BlitzMutation extends MutationBase {
     this.blitz =
         new BlitzMatchModule(
             match,
-            new BlitzConfig(1, true, StaticFilter.ALLOW)); // TODO: allow command for more lives
+            new BlitzConfig(
+                1,
+                true,
+                StaticFilter.ALLOW,
+                StaticFilter.DENY)); // TODO: allow command for more lives
 
     blitz.enable();
     match.addListener(blitz, MatchScope.RUNNING);
