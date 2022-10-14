@@ -1,12 +1,15 @@
 package dev.pgm.community.mutations.menu;
 
 import dev.pgm.community.mutations.options.MutationBooleanOption;
+import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
 import dev.pgm.community.mutations.types.items.ExplosionMutation;
 import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
 import dev.pgm.community.mutations.types.mechanics.FlyMutation;
+import dev.pgm.community.mutations.types.mechanics.MobMutation;
+import dev.pgm.community.mutations.types.world.BlockDecayMutation;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.InventoryProvider;
@@ -36,6 +39,8 @@ public class MutationOptionsMenu implements InventoryProvider {
     contents.add(getOptionIcon(ExplosionMutation.FIREBALL_COOLDOWN));
     contents.add(getOptionIcon(ExplosionMutation.FIREBALL_POWER));
     contents.add(getOptionIcon(ExplosionMutation.FIREBALL_FIRE));
+    contents.add(getOptionIcon(MobMutation.TOTAL_MOBS));
+    contents.add(getOptionIcon(BlockDecayMutation.DECAY_SECONDS));
   }
 
   private ClickableItem getOptionIcon(MutationOption option) {
@@ -45,6 +50,10 @@ public class MutationOptionsMenu implements InventoryProvider {
 
     if (option instanceof MutationRangeOption) {
       return getRangeIcon((MutationRangeOption) option);
+    }
+
+    if (option instanceof MutationListOption) {
+      return getListIcon((MutationListOption) option);
     }
 
     return null; // Option type not implemented yet
@@ -59,15 +68,12 @@ public class MutationOptionsMenu implements InventoryProvider {
                     + "Default"
                     + ChatColor.WHITE
                     + ": "
-                    + ChatColor.GOLD
-                    + option.getDefaultValue(),
+                    + getBooleanValue(option.getDefaultValue()),
                 ChatColor.GRAY
                     + "Value"
                     + ChatColor.WHITE
                     + ": "
-                    + (option.getValue()
-                        ? ChatColor.GREEN + "Enabled"
-                        : ChatColor.RED + "Disabled"))
+                    + getBooleanValue(option.getValue()))
             .build(),
         c -> {
           option.setValue(!option.getValue());
@@ -115,10 +121,43 @@ public class MutationOptionsMenu implements InventoryProvider {
         });
   }
 
+  private ClickableItem getListIcon(MutationListOption option) {
+    return ClickableItem.of(
+        getItem(option)
+            .lore(
+                ChatColor.DARK_AQUA + option.getDescription(),
+                ChatColor.GRAY
+                    + "Default"
+                    + ChatColor.WHITE
+                    + ": "
+                    + ChatColor.GOLD
+                    + option.getDefaultValue(),
+                ChatColor.GRAY
+                    + "Current"
+                    + ChatColor.WHITE
+                    + ": "
+                    + ChatColor.YELLOW
+                    + option.getValue(),
+                option.isPrerequisite()
+                    ? ChatColor.GRAY
+                        + "("
+                        + ChatColor.DARK_PURPLE
+                        + "Applies when mutation is enabled"
+                        + ChatColor.GRAY
+                        + ")"
+                    : "")
+            .build(),
+        c -> option.toggle(c.isLeftClick()));
+  }
+
   private ItemBuilder getItem(MutationOption option) {
     return new ItemBuilder()
         .material(option.getIconMaterial())
         .name(ChatColor.GREEN + option.getName())
         .flags(ItemFlag.values());
+  }
+
+  private String getBooleanValue(boolean value) {
+    return value ? ChatColor.GREEN + "Enabled" : ChatColor.RED + "Disabled";
   }
 }

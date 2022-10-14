@@ -1,8 +1,10 @@
 package dev.pgm.community.mutations.types.mechanics;
 
+import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +34,15 @@ public class MobMutation extends ScheduledMutationBase {
 
   private static final int UPDATE_DELAY = 60;
   private static final int RANDOM_DISTANCE = 45;
-  private static final int TOTAL_MOBS = 255;
   private static final String MOB_METADATA = "mob-mutation";
+
+  public static MutationListOption<Integer> TOTAL_MOBS =
+      new MutationListOption(
+          "Total Mobs",
+          "Total number of mobs spawned",
+          MutationType.MOBS.getMaterial(),
+          false,
+          Lists.newArrayList(25, 50, 100, 125, 200, 250, 300));
 
   public MobMutation(Match match) {
     super(match, MutationType.MOBS, UPDATE_DELAY);
@@ -132,7 +141,7 @@ public class MobMutation extends ScheduledMutationBase {
   public void run() {
     RandomPointProvider provider = getPointProvider();
     if (provider == null) return;
-    for (int total = getTotalSpawned(); total < TOTAL_MOBS; total++) {
+    for (int total = getTotalSpawned(); total < TOTAL_MOBS.getValue(); total++) {
       Location loc = provider.getPoint(match, null);
       if (loc != null) {
         loc.getWorld().spigot().playEffect(loc, Effect.FLAME, 0, 0, 0, 0, 0, 0, 5, 100);

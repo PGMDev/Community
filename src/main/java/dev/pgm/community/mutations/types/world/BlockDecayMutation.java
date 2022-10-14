@@ -3,6 +3,7 @@ package dev.pgm.community.mutations.types.world;
 import com.google.common.collect.Maps;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,7 +20,15 @@ import tc.oc.pgm.api.player.MatchPlayer;
 
 public class BlockDecayMutation extends ScheduledMutationBase {
 
-  private static final int DELAY = 5;
+  public static MutationRangeOption DECAY_SECONDS =
+      new MutationRangeOption(
+          "Decay Delay",
+          "Delay of time before blocks decay",
+          MutationType.BLOCK_DECAY.getMaterial(),
+          false,
+          5,
+          1,
+          60);
 
   private Map<Location, Long> placedBlocks = Maps.newHashMap();
 
@@ -46,7 +55,7 @@ public class BlockDecayMutation extends ScheduledMutationBase {
     MatchPlayer player = match.getParticipant(event.getPlayer());
     if (block == null || block.getType() == Material.AIR) return;
     if (player == null) return;
-    this.placedBlocks.put(block.getLocation(), getDelayedTime(DELAY));
+    this.placedBlocks.put(block.getLocation(), getDelayedTime(DECAY_SECONDS.getValue()));
   }
 
   private long getDelayedTime(int delay) {
