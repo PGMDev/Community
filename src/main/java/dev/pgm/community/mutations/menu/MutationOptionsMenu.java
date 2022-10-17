@@ -4,6 +4,7 @@ import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
+import dev.pgm.community.mutations.types.arrows.WebSlingersMutation;
 import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
 import dev.pgm.community.mutations.types.items.ExplosionMutation;
 import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
@@ -41,6 +42,7 @@ public class MutationOptionsMenu implements InventoryProvider {
     contents.add(getOptionIcon(ExplosionMutation.FIREBALL_FIRE));
     contents.add(getOptionIcon(MobMutation.TOTAL_MOBS));
     contents.add(getOptionIcon(BlockDecayMutation.DECAY_SECONDS));
+    contents.add(getOptionIcon(WebSlingersMutation.WEB_LIFE));
   }
 
   private ClickableItem getOptionIcon(MutationOption option) {

@@ -2,12 +2,18 @@ package dev.pgm.community.mutations.types.arrows;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.BowMutation;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.FallingBlock;
@@ -24,8 +30,42 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class WebSlingersMutation extends KitMutationBase implements BowMutation {
 
+  public static MutationRangeOption WEB_LIFE =
+      new MutationRangeOption(
+          "Web Life",
+          "Length of time before webs are removed",
+          MutationType.WEB_SLINGERS.getMaterial(),
+          false,
+          10,
+          1,
+          60);
+
+  private int cleanupTask;
+
+  private Map<Location, Long> webLocations = Maps.newHashMap();
+
   public WebSlingersMutation(Match match) {
     super(match, MutationType.WEB_SLINGERS, getWebBowKit());
+    this.webLocations = Maps.newHashMap();
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    this.cleanupTask =
+        Community.get()
+            .getServer()
+            .getScheduler()
+            .scheduleSyncRepeatingTask(Community.get(), this::cleanup, 0L, 20L);
+  }
+
+  @Override
+  public void disable() {
+    super.disable();
+    this.webLocations.keySet().forEach(this::revertBlock);
+    this.webLocations.clear();
+
+    Community.get().getServer().getScheduler().cancelTask(cleanupTask);
   }
 
   @Override
@@ -62,7 +102,26 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
     FallingBlock block = (FallingBlock) event.getEntity();
     if (block.getMaterial() != Material.WEB) return;
 
-    event.getEntity().getLocation().getBlock().setType(Material.WEB);
+    Location location = block.getLocation();
+    location.getBlock().setType(Material.WEB);
+    webLocations.put(location, getDelayedTime(WEB_LIFE.getValue()));
+  }
+
+  private void cleanup() {
+    Iterator<Entry<Location, Long>> e = webLocations.entrySet().iterator();
+    while (e.hasNext()) {
+      Entry<Location, Long> block = e.next();
+      if (block.getValue() <= getDelayedTime(0)) {
+        revertBlock(block.getKey());
+        e.remove();
+      }
+    }
+  }
+
+  private void revertBlock(Location location) {
+    if (location.getBlock().getType() == Material.WEB) {
+      location.getBlock().setType(Material.AIR);
+    }
   }
 
   private static ItemKit getWebBowKit() {
@@ -84,5 +143,9 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
     ItemTags.PREVENT_SHARING.set(bow, true);
 
     return bow;
+  }
+
+  private long getDelayedTime(int delay) {
+    return (System.currentTimeMillis() / 1000) + delay;
   }
 }
