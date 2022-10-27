@@ -6,6 +6,7 @@ import dev.pgm.community.mutations.MutationType;
 import java.util.List;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.inventory.ItemStack;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.Kit;
@@ -27,8 +28,21 @@ public abstract class KitMutationBase extends MutationBase {
     giveAllKit(getKits());
   }
 
+  @Override
+  public void disable() {
+    super.disable();
+    kits.forEach(this::removeAllKit);
+    if (getAllItems().length > 0) {
+      removeItems(getAllItems());
+    }
+  }
+
   public List<Kit> getKits() {
     return kits;
+  }
+
+  public ItemStack[] getAllItems() {
+    return new ItemStack[0];
   }
 
   public void spawn(MatchPlayer player) {
@@ -44,11 +58,26 @@ public abstract class KitMutationBase extends MutationBase {
     giveAllKit(Lists.newArrayList(kit));
   }
 
+  protected void removeAllKit(Kit kit) {
+    if (kit.isRemovable()) {
+      match.getParticipants().forEach(player -> kit.remove(player));
+    }
+  }
+
   protected void giveAllKit(List<Kit> kits) {
     match.getParticipants().forEach(player -> givePlayerKit(player, kits));
   }
 
   protected void givePlayerKit(MatchPlayer player, List<Kit> kits) {
     kits.forEach(kit -> player.applyKit(kit, true));
+  }
+
+  protected void removeItems(ItemStack... items) {
+    match
+        .getParticipants()
+        .forEach(
+            player -> {
+              player.getInventory().removeItem(items);
+            });
   }
 }

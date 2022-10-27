@@ -1,7 +1,9 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.gameplay;
 
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationBase;
 import dev.pgm.community.mutations.MutationType;
+import java.util.Set;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -33,7 +35,7 @@ public class RageMutation extends MutationBase {
   }
 
   @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return match.getModule(RageMatchModule.class) == null;
   }
 }

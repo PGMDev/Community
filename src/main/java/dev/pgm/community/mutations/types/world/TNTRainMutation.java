@@ -1,9 +1,12 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.world;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
+import dev.pgm.community.mutations.Mutation;
+import dev.pgm.community.mutations.types.ScheduledMutationBase;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
@@ -46,7 +49,7 @@ public class TNTRainMutation extends ScheduledMutationBase {
   }
 
   @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return true;
   }
 

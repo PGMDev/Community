@@ -1,6 +1,9 @@
-package dev.pgm.community.mutations.types;
+package dev.pgm.community.mutations.types.mechanics;
 
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.types.KitMutationBase;
+import java.util.Set;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.MaxHealthKit;
@@ -12,13 +15,7 @@ public class HealthMutation extends KitMutationBase {
   }
 
   @Override
-  public void disable() {
-    super.disable();
-    removeMatchMaxHealth();
-  }
-
-  @Override
-  public boolean canEnable() {
+  public boolean canEnable(Set<Mutation> existing) {
     return true;
   }
 
@@ -32,13 +29,5 @@ public class HealthMutation extends KitMutationBase {
 
   private static MaxHealthKit getHealthKit() {
     return new MaxHealthKit(40);
-  }
-
-  private void removeMatchMaxHealth() {
-    match.getParticipants().stream().forEach(this::removeMaxHealthKit);
-  }
-
-  private void removeMaxHealthKit(MatchPlayer player) {
-    getHealthKit().remove(player);
   }
 }

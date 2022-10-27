@@ -27,7 +27,7 @@ public abstract class MutationBase implements Mutation, Listener {
 
   @Override
   public void enable() {
-    if (!isEnabled() && canEnable()) {
+    if (!isEnabled()) {
       this.enabled = true;
       Community.get().getServer().getPluginManager().registerEvents(this, Community.get());
     }
