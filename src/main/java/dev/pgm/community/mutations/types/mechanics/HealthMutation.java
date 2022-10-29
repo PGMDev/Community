@@ -4,6 +4,8 @@ import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.KitMutationBase;
 import java.util.Set;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.kits.MaxHealthKit;
@@ -22,9 +24,7 @@ public class HealthMutation extends KitMutationBase {
   @Override
   public void spawn(MatchPlayer player) {
     super.spawn(player);
-    player
-        .getBukkit()
-        .setHealth(player.getBukkit().getMaxHealth()); // Reset health to max upon respawn
+    player.getBukkit().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 3, 9));
   }
 
   private static MaxHealthKit getHealthKit() {

@@ -38,6 +38,7 @@ public class StormMutation extends ScheduledMutationBase {
   }
 
   private void toggleStorm(boolean enabled) {
+    if (match == null) return;
     World world = match.getWorld();
     int duration = enabled ? Integer.MAX_VALUE : 0;
     world.setStorm(enabled);
