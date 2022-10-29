@@ -15,7 +15,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import tc.oc.pgm.util.LegacyFormatUtils;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.text.TextTranslations;
