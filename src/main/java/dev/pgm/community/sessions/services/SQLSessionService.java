@@ -89,7 +89,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
 
                   String server = result.getString("server");
 
-                  long startTime = Long.parseLong(result.getString("start_time"));
+                  Object startTime = result.get("start_time");
                   Object endTime = result.get("end_time");
 
                   data.setSession(
@@ -98,7 +98,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
                           UUID.fromString(player),
                           disguised,
                           server,
-                          Instant.ofEpochMilli(startTime),
+                          Instant.ofEpochMilli((Long) startTime),
                           endTime == null ? null : Instant.ofEpochMilli((Long) endTime)));
                 }
                 return data.getSession();
