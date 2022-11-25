@@ -80,6 +80,8 @@ public interface CommunityPermissions {
   String TOKEN_WEEKLY = TOKEN + ".weekly"; // Receives token refresh weekly
   String TOKEN_BALANCE = TOKEN + ".view-others"; // Access to view other token balances
 
+  String SPONSOR_COOLDOWN_CUSTOM = "sponsor.cooldown.";
+
   String VIEW_MAP_COOLDOWNS = ROOT + ".view-map-cooldown";
 
   // Translations

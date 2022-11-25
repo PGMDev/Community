@@ -435,10 +435,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     getRequestProfile(player.getUniqueId())
         .thenAcceptAsync(
             profile -> {
-              if (!canSponsor(player.getUniqueId())) {
+              if (!canSponsor(player)) {
                 viewer.sendWarning(
                     getCooldownMessage(
-                        profile.getLastSponsorTime(), getRequestConfig().getSponsorCooldown()));
+                        profile.getLastSponsorTime(),
+                        getRequestConfig().getSponsorCooldown(player)));
                 return;
               }
 
@@ -484,12 +485,12 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   @Override
-  public boolean canSponsor(UUID playerId) {
-    RequestProfile profile = getCached(playerId);
+  public boolean canSponsor(Player player) {
+    RequestProfile profile = getCached(player.getUniqueId());
     if (profile != null) {
       if (profile.getLastSponsorTime() == null) return true;
       Duration timeSince = Duration.between(profile.getLastSponsorTime(), Instant.now());
-      return getRequestConfig().getSponsorCooldown().minus(timeSince).isNegative();
+      return getRequestConfig().getSponsorCooldown(player).minus(timeSince).isNegative();
     }
     return false;
   }
@@ -579,7 +580,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         text().append(text("Requested ")).append(map.getStyledName(MapNameStyle.COLOR));
 
     if (player.hasPermission(CommunityPermissions.REQUEST_SPONSOR)
-        && canSponsor(player.getUniqueId())
+        && canSponsor(player)
         && isMapSizeAllowed(map)) {
       message.append(
           text()

@@ -2,9 +2,11 @@ package dev.pgm.community.requests;
 
 import static tc.oc.pgm.util.text.TextParser.parseDuration;
 
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import java.time.Duration;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 
 public class RequestConfig extends FeatureConfigImpl {
 
@@ -23,7 +25,7 @@ public class RequestConfig extends FeatureConfigImpl {
   private static final String MAP_COOLDOWN_MULTIPLY = SPONSORS + ".map-cooldown";
 
   private Duration cooldown; // Cooldown for using /request
-  private Duration sponsorCooldown; // Cooldown for sponsor requests
+  private Duration sponsorCooldown; // Default cooldown for sponsor requests
 
   private boolean sponsors; // If sponsor is enabled
 
@@ -50,8 +52,20 @@ public class RequestConfig extends FeatureConfigImpl {
     return sponsors;
   }
 
-  public Duration getSponsorCooldown() {
-    return sponsorCooldown;
+  public Duration getSponsorCooldown(Player player) {
+    // Check permissions for custom cooldown
+    int customHours = -1;
+    for (int i = 10; i > 0; i--) {
+      if (player.hasPermission(CommunityPermissions.SPONSOR_COOLDOWN_CUSTOM + i)) {
+        customHours = i;
+      }
+    }
+
+    if (customHours == -1) {
+      return sponsorCooldown; // Default cooldown
+    }
+
+    return Duration.ofHours(customHours); // Custom cooldown
   }
 
   public int getDailyTokenAmount() {

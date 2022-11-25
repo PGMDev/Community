@@ -83,6 +83,8 @@ public class SponsorCommands extends CommunityCommand {
     Component footer =
         TextFormatter.horizontalLine(NamedTextColor.GOLD, TextFormatter.MAX_CHAT_WIDTH);
 
+    RequestConfig config = ((RequestConfig) requests.getConfig());
+
     requests
         .getRequestProfile(player.getUniqueId())
         .thenAcceptAsync(
@@ -90,14 +92,11 @@ public class SponsorCommands extends CommunityCommand {
               Component tokenBalance =
                   text()
                       .append(RequestFeature.TOKEN)
-                      .append(text("Token balance: "))
+                      .append(text(" Token balance: "))
                       .append(text(profile.getSponsorTokens(), NamedTextColor.YELLOW))
                       .append(text(" / "))
-                      .append(
-                          text(
-                              ((RequestConfig) requests.getConfig()).getMaxTokens(),
-                              NamedTextColor.GOLD))
-                      .append(renderRefreshTime(player, profile))
+                      .append(text(config.getMaxTokens(), NamedTextColor.GOLD))
+                      .append(renderExtraInfo(player, profile))
                       .color(NamedTextColor.GRAY)
                       .clickEvent(ClickEvent.runCommand("/tokens"))
                       .hoverEvent(
@@ -186,14 +185,14 @@ public class SponsorCommands extends CommunityCommand {
               audience.sendMessage(empty());
 
               // Cooldown message
-              if (!requests.canSponsor(player.getUniqueId())) {
+              if (!requests.canSponsor(player)) {
                 audience.sendMessage(
                     text()
                         .append(text("Cooldown", NamedTextColor.GOLD, TextDecoration.BOLD))
                         .append(text(": ", NamedTextColor.GRAY))
                         .append(
                             MessageUtils.formatTimeLeft(
-                                ((RequestConfig) requests.getConfig()).getSponsorCooldown(),
+                                ((RequestConfig) requests.getConfig()).getSponsorCooldown(player),
                                 profile.getLastSponsorTime(),
                                 NamedTextColor.RED))
                         .color(NamedTextColor.GRAY)
@@ -373,9 +372,22 @@ public class SponsorCommands extends CommunityCommand {
     }.display(audience.getAudience(), queue, page);
   }
 
-  private Component renderRefreshTime(Player player, RequestProfile profile) {
+  private Component renderExtraInfo(Player player, RequestProfile profile) {
     RequestConfig config = (RequestConfig) requests.getConfig();
     TokenRefreshAmount info = getTimeLeft(player, profile.getLastTokenRefreshTime(), requests);
+
+    // If token refresh is disabled, display cooldown
+    if (config.getDailyTokenAmount() == 0) {
+      return text()
+          .append(text(" | "))
+          .append(text("Cooldown: "))
+          .append(duration(config.getSponsorCooldown(player), NamedTextColor.GOLD))
+          .hoverEvent(
+              HoverEvent.showText(
+                  text("This is your cooldown time between sponsor requests", NamedTextColor.GRAY)))
+          .color(NamedTextColor.GRAY)
+          .build();
+    }
 
     if (info.getDuration() != null) {
       boolean canClaim = profile.getSponsorTokens() < config.getMaxTokens();

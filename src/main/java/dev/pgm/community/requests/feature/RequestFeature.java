@@ -52,12 +52,12 @@ public interface RequestFeature extends Feature {
   boolean canRequest(UUID playerId); // If player has cooldown
 
   /**
-   * Get whether the provided playerId can submit a sponsor request
+   * Get whether the provided player can submit a sponsor request
    *
-   * @param playerId {@link UUID} of the sponsor
+   * @param player
    * @return true if player can submit a sponsor request, false if not
    */
-  boolean canSponsor(UUID playerId); // If player can sponsor
+  boolean canSponsor(Player player); // If player can sponsor
 
   /**
    * Submit a database update to the provided {@link RequestProfile}
