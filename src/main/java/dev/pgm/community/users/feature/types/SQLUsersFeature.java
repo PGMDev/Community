@@ -1,7 +1,6 @@
 package dev.pgm.community.users.feature.types;
 
 import dev.pgm.community.Community;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.events.UserProfileLoadEvent;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
@@ -19,17 +18,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 public class SQLUsersFeature extends UsersFeatureBase {
 
   private SQLUserService service;
   private AddressHistoryService addresses;
 
-  public SQLUsersFeature(Configuration config, Logger logger, DatabaseConnection database) {
+  public SQLUsersFeature(Configuration config, Logger logger) {
     super(new UsersConfig(config), logger, "Users (SQL)");
-    this.service = new SQLUserService(database);
-    this.addresses = new AddressHistoryService(database);
+    this.service = new SQLUserService();
+    this.addresses = new AddressHistoryService();
   }
 
   @Override
@@ -133,11 +131,6 @@ public class SQLUsersFeature extends UsersFeatureBase {
                       () -> Bukkit.getPluginManager().callEvent(new UserProfileLoadEvent(profile)));
             }); // Login save
     addresses.trackIp(id, address); // Track IP
-  }
-
-  @Override
-  public void onLogout(PlayerQuitEvent event) {
-    service.logout(event.getPlayer().getUniqueId());
   }
 
   @Override

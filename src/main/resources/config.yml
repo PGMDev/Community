@@ -303,7 +303,12 @@ network:
 #      message: false
   
   
-# Database
+# Database connection info 
 database:
-  enabled: true # Whether to use a database (If false persistent features will not work)
-  uri: ""
+  enabled: true # True for mysql, false for sqlite
+  username: "username"
+  password: "password"
+  databaseName: "minecraft"
+  host: "localhost:3306"
+  timezone: "America/Los_Angeles"  
+  max-connections: 2

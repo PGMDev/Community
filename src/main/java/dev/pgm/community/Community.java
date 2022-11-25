@@ -9,7 +9,6 @@ import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
 import fr.minuskube.inv.InventoryManager;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
@@ -54,20 +53,13 @@ public class Community extends JavaPlugin {
     }
 
     this.setupConfig();
-
     this.setupDatabase();
-
     this.setupFeatures();
   }
 
   @Override
   public void onDisable() {
     features.disable();
-    if (database != null) {
-      database.close();
-    }
-
-    // TODO: Shutdown other things?
   }
 
   public void reload() {
@@ -80,6 +72,10 @@ public class Community extends JavaPlugin {
     this.saveDefaultConfig();
     this.reloadConfig();
     this.config = new CommunityConfig(getConfig());
+  }
+
+  private void setupDatabase() {
+    this.database = new DatabaseConnection(this);
   }
 
   private void setupCommands() {
@@ -152,19 +148,10 @@ public class Community extends JavaPlugin {
     getServer().getPluginManager().registerEvents(listener, this);
   }
 
-  private void setupDatabase() {
-    try {
-      this.database =
-          new DatabaseConnection(config.getDatabaseUri(), config.getMaxDatabaseConnections());
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-  }
-
   private void setupFeatures() {
     this.setupInventory();
     this.setupCommands();
-    this.features = new FeatureManager(getConfig(), getLogger(), database, commands, inventory);
+    this.features = new FeatureManager(getConfig(), getLogger(), commands, inventory);
   }
 
   public String getServerName() {

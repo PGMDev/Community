@@ -1,48 +1,45 @@
 package dev.pgm.community.users.services;
 
+import co.aikar.idb.DB;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.feature.UsersFeature;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import tc.oc.pgm.util.concurrent.ThreadSafeConnection.Query;
 
-public class SQLUserService extends SQLFeatureBase<UserProfile, String> {
+public class SQLUserService extends SQLFeatureBase<UserProfile, String> implements UserQuery {
 
-  private static final String TABLE_FIELDS =
-      "(id VARCHAR(36) PRIMARY KEY, name VARCHAR(16), first_join LONG, join_count INT)";
-  private static final String TABLE_NAME = "users";
+  private LoadingCache<UUID, UserData> profileCache;
 
-  private LoadingCache<UUID, SelectProfileQuery> profileCache;
-
-  public SQLUserService(DatabaseConnection database) {
-    super(database, TABLE_NAME, TABLE_FIELDS);
+  public SQLUserService() {
+    super(TABLE_NAME, TABLE_FIELDS);
 
     this.profileCache =
         CacheBuilder.newBuilder()
             .build(
-                new CacheLoader<UUID, SelectProfileQuery>() {
+                new CacheLoader<UUID, UserData>() {
                   @Override
-                  public SelectProfileQuery load(UUID key) throws Exception {
-                    return new SelectProfileQuery(key.toString());
+                  public UserData load(UUID key) throws Exception {
+                    return new UserData(key);
                   }
                 });
   }
 
   @Override
   public void save(UserProfile profile) {
-    getDatabase().submitQuery(new InsertQuery(profile));
+    DB.executeUpdateAsync(
+        INSERT_USER_QUERY,
+        profile.getId().toString(),
+        profile.getUsername(),
+        profile.getFirstLogin().toEpochMilli(),
+        profile.getJoinCount());
     profileCache.invalidate(profile.getId());
   }
 
@@ -53,39 +50,52 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> {
 
   @Override
   public CompletableFuture<UserProfile> query(String target) {
-    SelectProfileQuery query = null;
+    UserData data = null;
 
     // If Username, search through looking for existing usernames in profiles
     if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
-      Optional<SelectProfileQuery> uQuery =
+      Optional<UserData> uQuery =
           profileCache.asMap().values().stream()
-              .filter(q -> q.getQuery().equalsIgnoreCase(target))
+              .filter(u -> u.getUsername() != null)
+              .filter(u -> u.getUsername().equalsIgnoreCase(target))
               .findAny();
-
+      // If profile is cached with matching username
       if (uQuery.isPresent()) {
-        query = uQuery.get();
-      } else {
-        query = new SelectProfileQuery(target);
+        data = uQuery.get();
       }
-
     } else {
-      // Lookup via uuid
-      query = profileCache.getUnchecked(UUID.fromString(target));
+      data = profileCache.getUnchecked(UUID.fromString(target));
     }
 
-    if (query.getProfile() != null) {
-      return CompletableFuture.completedFuture(query.getProfile());
-    } else {
-      return getDatabase()
-          .submitQueryComplete(query)
-          .thenApplyAsync(
-              q -> {
-                if (q instanceof SelectProfileQuery) {
-                  return SelectProfileQuery.class.cast(q).getProfile();
-                }
-                return null;
-              });
+    if (data != null && data.isLoaded()) {
+      return CompletableFuture.completedFuture(data.getProfile());
     }
+
+    return DB.getFirstRowAsync(data == null ? USERNAME_QUERY : PLAYERID_QUERY, target)
+        .thenApplyAsync(
+            result -> {
+              if (result != null) {
+                final UUID id = UUID.fromString(result.getString("id"));
+                final String username = result.getString("name");
+                final long firstJoin = Long.parseLong(result.getString("first_join"));
+                final int joinCount = result.getInt("join_count");
+
+                UserData loadedData = new UserData(id);
+                loadedData.setProfile(
+                    new UserProfileImpl(id, username, Instant.ofEpochMilli(firstJoin), joinCount));
+                profileCache.put(id, loadedData);
+                return loadedData.getProfile();
+              }
+              return null;
+            });
+  }
+
+  private void update(UserProfile profile) {
+    DB.executeUpdateAsync(
+        UPDATE_USER_QUERY,
+        profile.getUsername(),
+        profile.getJoinCount(),
+        profile.getId().toString());
   }
 
   // Increase join count, set last login, check for username change
@@ -101,113 +111,43 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> {
                 // Existing profile - Update name, login, joins
                 profile.setUsername(username);
                 profile.incJoinCount();
-                getDatabase().submitQuery(new UpdateProfileQuery(profile));
+                update(profile);
               }
               return profile;
             });
   }
 
-  public void logout(UUID id) {
-    query(id.toString())
-        .thenAcceptAsync(
-            profile -> {
-              // Set last login time when quitting
-              getDatabase().submitQuery(new UpdateProfileQuery(profile));
-            });
-  }
+  private class UserData {
 
-  private class InsertQuery implements Query {
-
-    private static final String INSERT_USERNAME_QUERY =
-        "INSERT INTO " + TABLE_NAME + "(id, name, first_join, join_count) VALUES (?,?,?,?)";
-
+    private UUID playerId;
     private UserProfile profile;
+    private boolean loaded;
 
-    public InsertQuery(UserProfile profile) {
-      this.profile = profile;
+    public UserData(UUID playerId) {
+      this.playerId = playerId;
+      this.profile = null;
+      this.loaded = false;
     }
 
-    @Override
-    public String getFormat() {
-      return INSERT_USERNAME_QUERY;
+    public UUID getPlayerId() {
+      return playerId;
     }
 
-    @Override
-    public void query(PreparedStatement statement) throws SQLException {
-      statement.setString(1, profile.getId().toString());
-      statement.setString(2, profile.getUsername());
-      statement.setLong(3, profile.getFirstLogin().toEpochMilli());
-      statement.setInt(4, profile.getJoinCount());
-      statement.execute();
-    }
-  }
-
-  private class SelectProfileQuery implements Query {
-    private static final String FORMAT = "SELECT * from " + TABLE_NAME + " WHERE ";
-
-    private String query;
-    private UserProfile profile;
-
-    public SelectProfileQuery(String query) {
-      this.query = query;
-    }
-
-    @Override
-    public String getFormat() {
-      return FORMAT + (isUsernameQuery() ? "LOWER(name) = LOWER(?)" : "id = ?") + " LIMIT 1";
-    }
-
-    public String getQuery() {
-      return query;
-    }
-
-    private boolean isUsernameQuery() {
-      return UsersFeature.USERNAME_REGEX.matcher(query).matches();
+    public String getUsername() {
+      return profile != null ? profile.getUsername() : null;
     }
 
     public UserProfile getProfile() {
       return profile;
     }
 
-    @Override
-    public void query(PreparedStatement statement) throws SQLException {
-      statement.setString(1, query);
-      try (final ResultSet result = statement.executeQuery()) {
-        if (!result.next()) {
-          return;
-        }
-
-        final UUID id = UUID.fromString(result.getString("id"));
-        final String username = result.getString("name");
-        final long firstJoin = result.getLong("first_join");
-        final int joinCount = result.getInt("join_count");
-        this.profile =
-            new UserProfileImpl(id, username, Instant.ofEpochMilli(firstJoin), joinCount);
-      }
-    }
-  }
-
-  private class UpdateProfileQuery implements Query {
-    private static final String FORMAT =
-        "UPDATE " + TABLE_NAME + " SET name = ?, join_count = ? WHERE id = ? ";
-
-    private UserProfile profile;
-
-    public UpdateProfileQuery(UserProfile profile) {
+    public void setProfile(UserProfile profile) {
       this.profile = profile;
+      this.loaded = true;
     }
 
-    @Override
-    public String getFormat() {
-      return FORMAT;
-    }
-
-    @Override
-    public void query(PreparedStatement statement) throws SQLException {
-      statement.setString(1, profile.getUsername());
-      statement.setInt(2, profile.getJoinCount());
-      statement.setString(3, profile.getId().toString());
-      statement.executeUpdate();
+    public boolean isLoaded() {
+      return loaded;
     }
   }
 }

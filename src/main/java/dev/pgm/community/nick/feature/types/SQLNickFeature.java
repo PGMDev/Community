@@ -1,7 +1,6 @@
 package dev.pgm.community.nick.feature.types;
 
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.feature.NickFeatureBase;
 import dev.pgm.community.nick.services.SQLNickService;
@@ -17,11 +16,10 @@ public class SQLNickFeature extends NickFeatureBase {
   private final SQLNickService service;
   private final UsersFeature users;
 
-  public SQLNickFeature(
-      Configuration config, Logger logger, DatabaseConnection database, UsersFeature users) {
+  public SQLNickFeature(Configuration config, Logger logger, UsersFeature users) {
     super(config, logger, "Nicknames (SQL)");
     this.users = users;
-    this.service = new SQLNickService(database, getNickConfig());
+    this.service = new SQLNickService(getNickConfig());
   }
 
   @Override
