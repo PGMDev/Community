@@ -19,8 +19,8 @@
 
 	<repositories>
 		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
+			<id>pgm.fyi</id>
+			<url>https://repo.pgm.fyi/snapshots</url>
 		</repository>
 		<repository>
 			<id>spigot-repo</id>

@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.rotation.MapPoolManager;
 import tc.oc.pgm.rotation.pools.MapPool;
+import tc.oc.pgm.rotation.pools.MapPoolType;
 import tc.oc.pgm.rotation.pools.Rotation;
 import tc.oc.pgm.rotation.pools.VotingPool;
 
@@ -112,11 +113,27 @@ public class CustomPoolParty extends MapPartyBase {
     if (isVoted()) {
       customPool =
           new VotingPool(
-              manager, "party-maps", this.getName(), true, 1, false, Duration.ofSeconds(30), maps);
+              MapPoolType.VOTED,
+              manager,
+              "party-maps",
+              this.getName(),
+              true,
+              1,
+              false,
+              Duration.ofSeconds(30),
+              maps);
     } else {
       customPool =
           new Rotation(
-              manager, "party-maps", this.getName(), true, 1, false, Duration.ofSeconds(30), maps);
+              MapPoolType.ORDERED,
+              manager,
+              "party-maps",
+              this.getName(),
+              true,
+              1,
+              false,
+              Duration.ofSeconds(30),
+              maps);
     }
 
     PGMUtils.setMapPool(sender, customPool);

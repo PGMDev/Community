@@ -79,7 +79,7 @@ public class GamemodeCommand extends CommunityCommand {
     } else {
       Map<String, GameMode> names = Maps.newHashMap();
       Stream.of(GameMode.values()).forEach(gm -> names.put(gm.name().toLowerCase(), gm));
-      GameMode gmMatch = StringUtils.bestFuzzyMatch(input.toLowerCase(), names, 0.5);
+      GameMode gmMatch = StringUtils.bestFuzzyMatch(input.toLowerCase(), names);
       gamemode = gmMatch != null ? gmMatch : def;
     }
     return gamemode;

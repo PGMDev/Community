@@ -60,8 +60,7 @@ public class TranslationFeature extends FeatureBase {
         .collect(Collectors.toList());
   }
 
-  public CompletableFuture<Translation> translate(
-      Player sender, String message, Set<String> languages) {
+  public CompletableFuture<Translation> translate(String message, Set<String> languages) {
     if (languages.size() < 2) {
       // If there under 2 languages, no need to translate the message
       return CompletableFuture.completedFuture(new Translation(message));

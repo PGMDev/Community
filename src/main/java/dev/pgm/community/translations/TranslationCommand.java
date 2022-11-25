@@ -29,9 +29,9 @@ public class TranslationCommand extends CommunityCommand {
   @CommandAlias("translate")
   @Description("Translate the given chat message")
   @CommandPermission(CommunityPermissions.TRANSLATE)
-  public void translate(CommandAudience audience, Player player, String text) {
+  public void translate(CommandAudience audience, String text) {
     translate
-        .translate(player, text, translate.getAcceptedLanguages())
+        .translate(text, translate.getAcceptedLanguages())
         .thenAcceptAsync(
             translation -> {
               audience.sendMessage(
