@@ -88,8 +88,7 @@ public class MutePunishment extends ExpirablePunishment {
   }
 
   private Component getExpireTimeComponent() {
-    return duration(Duration.between(Instant.now(), getExpireTime()), NamedTextColor.YELLOW)
-        .build();
+    return duration(Duration.between(Instant.now(), getExpireTime()), NamedTextColor.YELLOW);
   }
 
   @Override

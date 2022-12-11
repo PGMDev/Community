@@ -43,8 +43,7 @@ public class MessageUtils {
     lines.forEach(message::add); // Add messages
     message.add(footer); // Footer Line - LAST
 
-    return TextTranslations.translateLegacy(
-        Component.join(text("\n" + ChatColor.RESET), message), null);
+    return TextTranslations.translateLegacy(Component.join(text("\n" + ChatColor.RESET), message));
   }
 
   public static Component formatUnseen(String target) {

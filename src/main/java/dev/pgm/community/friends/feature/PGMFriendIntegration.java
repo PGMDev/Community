@@ -6,10 +6,11 @@ import dev.pgm.community.Community;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.event.FriendStatusChangeEvent;
 import tc.oc.pgm.api.integration.FriendIntegration;
 import tc.oc.pgm.api.integration.Integration;
+import tc.oc.pgm.util.event.RefreshPlayerTabEntryEvent;
 
 public class PGMFriendIntegration implements FriendIntegration {
 
@@ -43,6 +44,12 @@ public class PGMFriendIntegration implements FriendIntegration {
   }
 
   private void callUpdateEvent(UUID playerId) {
-    Community.get().getServer().getPluginManager().callEvent(new FriendStatusChangeEvent(playerId));
+    Player online = Bukkit.getPlayer(playerId);
+    if (online != null) {
+      Community.get()
+          .getServer()
+          .getPluginManager()
+          .callEvent(new RefreshPlayerTabEntryEvent(online));
+    }
   }
 }

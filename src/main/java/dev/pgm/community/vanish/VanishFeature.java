@@ -66,8 +66,12 @@ public class VanishFeature extends FeatureBase {
     return Bukkit.getOnlinePlayers().stream().filter(this::isVanished).collect(Collectors.toList());
   }
 
+  public boolean isVanished(UUID playerId) {
+    return vanishedPlayers.contains(playerId);
+  }
+
   public boolean isVanished(Player player) {
-    return vanishedPlayers.contains(player.getUniqueId());
+    return isVanished(player.getUniqueId());
   }
 
   public Set<UUID> getVanishedPlayers() {

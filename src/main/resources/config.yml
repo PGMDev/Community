@@ -32,10 +32,6 @@ moderation:
     evasion-expires: 30 # Minutes
     enabled: true
     public: true
-    # Observe Bans - Allows banned players to join obs, but not interact any further
-    observe:
-      enabled: true   # Whether to enable or not (false for traditional bans)
-      max-online: 20  # The max amount of online banned players
   mute:
     enabled: true
     public: true
@@ -195,19 +191,6 @@ requests:
     weekly-tokens: 1   # Amount of tokens given on a weekly basis (community.token.weekly perm)
     max-tokens: 7      # Maximum amount of tokens an account can collect
     refund: true       # Tokens are refunded when map vote is successful
-
-# Translations - A PGM exclusive feature. Allows for team, global, and private messages to be auto translated per-viewer
-translations:
-  enabled: true
-  api-key: ""         # API Key used to authenticate translations
-  connect-timeout: 1  # How long to wait for a connection in seconds
-  read-timeout: 2     # How long to wait while reading in seconds
-  languages:          # A list of accepted language codes
-    - "en"
-    - "es"
-    - "fr"
-    - "sv"
-    - "ja"
 
 # Mobs - Spawn creatures that will attack players ;)
 mobs:

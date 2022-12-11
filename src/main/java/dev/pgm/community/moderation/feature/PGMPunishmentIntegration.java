@@ -13,12 +13,10 @@ import java.time.Instant;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.PunishmentIntegration;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -28,7 +26,6 @@ import tc.oc.pgm.spawns.events.ObserverKitApplyEvent;
 
 public class PGMPunishmentIntegration implements PunishmentIntegration, Listener {
 
-  private static final String BANNED_GROUP = "pgm.group.banned";
   private ModerationFeatureBase moderation;
 
   private ModerationTools tools;
@@ -47,15 +44,9 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     return tools;
   }
 
-  public void updateBanPrefix(Player player, boolean apply) {
-    player.addAttachment(Community.get(), BANNED_GROUP, apply);
-    Bukkit.getPluginManager().callEvent(new NameDecorationChangeEvent(player.getUniqueId()));
-  }
-
   @Override
   public boolean isMuted(Player player) {
-    return moderation.getCachedMute(player.getUniqueId()).isPresent()
-        || moderation.getOnlineBan(player.getUniqueId()).isPresent();
+    return moderation.getCachedMute(player.getUniqueId()).isPresent();
   }
 
   @Override
@@ -63,13 +54,7 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
     return moderation
         .getCachedMute(player.getUniqueId())
         .map(MutePunishment::getReason)
-        .orElse(
-            moderation.getOnlineBan(player.getUniqueId()).map(Punishment::getReason).orElse(null));
-  }
-
-  @Override
-  public boolean isHidden(Player player) {
-    return moderation.getOnlineBan(player.getUniqueId()).isPresent();
+        .orElse(null);
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -108,21 +93,5 @@ public class PGMPunishmentIntegration implements PunishmentIntegration, Listener
         event.cancel(reason);
       }
     }
-
-    moderation
-        .getOnlineBan(player.getId())
-        .ifPresent(
-            ban -> {
-              Component reason =
-                  text()
-                      .append(text("You have been banned and are unable to play"))
-                      .hoverEvent(
-                          HoverEvent.showText(
-                              text()
-                                  .append(text("Reason: ", NamedTextColor.AQUA))
-                                  .append(text(ban.getReason(), NamedTextColor.GRAY))))
-                      .build();
-              event.cancel(reason);
-            });
   }
 }

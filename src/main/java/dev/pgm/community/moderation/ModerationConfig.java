@@ -3,8 +3,8 @@ package dev.pgm.community.moderation;
 import static tc.oc.pgm.util.text.TextParser.parseDuration;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
+import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.Punishment;
-import dev.pgm.community.utils.PGMUtils;
 import java.time.Duration;
 import org.bukkit.configuration.Configuration;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -30,8 +30,6 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   private static final String MATCH_BAN_KEY = KICK_KEY + ".match-ban";
 
-  private static final String OBS_BANS = BAN_KEY + ".observe";
-  private static final String MAX_ONLINE = OBS_BANS + ".max-online";
   private static final String EVASION_MINS = BAN_KEY + ".evasion-expires";
 
   private static final String STAFF_SIGNOFF_KEY = KEY + ".staff-signoff";
@@ -73,8 +71,6 @@ public class ModerationConfig extends FeatureConfigImpl {
   private Duration matchBanDuration;
 
   // 2. Bans
-  private boolean observingBans;
-  private int maxOnlineBans;
   private int evasionMins;
 
   // Tools
@@ -204,14 +200,6 @@ public class ModerationConfig extends FeatureConfigImpl {
     return type + ".public";
   }
 
-  public boolean isObservingBan() {
-    return observingBans && PGMUtils.isPGMEnabled();
-  }
-
-  public int getMaxOnlineBans() {
-    return maxOnlineBans;
-  }
-
   public int getEvasionExpireMins() {
     return evasionMins;
   }
@@ -282,9 +270,7 @@ public class ModerationConfig extends FeatureConfigImpl {
       matchBanDuration = null;
     }
 
-    // Bans - observe ban
-    this.observingBans = config.getBoolean(getEnabledKey(OBS_BANS));
-    this.maxOnlineBans = config.getInt(MAX_ONLINE);
+    // Bans
     this.evasionMins = config.getInt(EVASION_MINS);
 
     // Tools

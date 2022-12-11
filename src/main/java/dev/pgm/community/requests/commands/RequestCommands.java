@@ -25,6 +25,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -43,7 +44,6 @@ import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 public class RequestCommands extends CommunityCommand {
 

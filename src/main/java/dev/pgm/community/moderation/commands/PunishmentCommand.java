@@ -27,6 +27,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
@@ -41,10 +42,9 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 public class PunishmentCommand extends CommunityCommand {
 
@@ -193,11 +193,9 @@ public class PunishmentCommand extends CommunityCommand {
       UUID targetID =
           (!UsersFeature.USERNAME_REGEX.matcher(target).matches() ? UUID.fromString(target) : null);
       if (targetID != null) {
-        targetName =
-            PlayerComponent.player(
-                targetID, usernames.getStoredUsername(targetID).join(), NameStyle.CONCISE);
+        targetName = PlayerComponent.player(targetID, NameStyle.FANCY);
       } else {
-        targetName = PlayerComponent.player(targetID, target, NameStyle.CONCISE);
+        targetName = PlayerComponent.player(null, target, NameStyle.FANCY);
       }
     }
 
@@ -234,10 +232,8 @@ public class PunishmentCommand extends CommunityCommand {
 
         builder.append(
             data.formatBroadcast(
-                usernames.renderUsername(data.getIssuerId(), NameStyle.CONCISE).join(),
-                usernames
-                    .renderUsername(Optional.of(data.getTargetId()), NameStyle.CONCISE)
-                    .join()));
+                usernames.renderUsername(data.getIssuerId(), NameStyle.FANCY).join(),
+                usernames.renderUsername(Optional.of(data.getTargetId()), NameStyle.FANCY).join()));
 
         TextComponent.Builder hover = text();
         hover
@@ -271,7 +267,7 @@ public class PunishmentCommand extends CommunityCommand {
           hover
               .append(newline())
               .append(text("Infraction lifted by ", NamedTextColor.GRAY)) // TODO: translate
-              .append(usernames.renderUsername(data.getLastUpdatedBy(), NameStyle.CONCISE).join())
+              .append(usernames.renderUsername(data.getLastUpdatedBy(), NameStyle.FANCY).join())
               .append(space())
               .append(
                   TemporalComponent.relativePastApproximate(data.getLastUpdated())

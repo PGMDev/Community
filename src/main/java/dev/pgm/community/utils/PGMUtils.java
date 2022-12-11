@@ -120,7 +120,7 @@ public class PGMUtils {
     if (isPGMEnabled()) {
       if (PGM.get().getMapOrder() instanceof MapPoolManager) {
         MapPoolManager manager = (MapPoolManager) PGM.get().getMapOrder();
-        manager.updateActiveMapPool(pool, getMatch(), true, sender, null, 0, true);
+        manager.updateActiveMapPool(pool, getMatch(), true, sender, null, 0);
       }
     }
   }

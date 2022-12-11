@@ -3,7 +3,7 @@ package dev.pgm.community.party.feature;
 import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import co.aikar.commands.InvalidCommandArgument;
@@ -284,7 +284,7 @@ public class MapPartyFeature extends FeatureBase {
     MapPartyMessages.broadcastHostAction(
         viewer.getStyledName(),
         text("set the event timelimit to"),
-        duration(party.getLength(), NamedTextColor.GREEN).build());
+        duration(party.getLength(), NamedTextColor.GREEN));
   }
 
   public void toggleMode(CommandAudience viewer) {
@@ -515,7 +515,7 @@ public class MapPartyFeature extends FeatureBase {
         start(mainPlayerHost, false);
       } else {
         MapPartyMessages.broadcastHostAction(
-            player(mainHost, party.getHosts().getCachedName(mainHost), NameStyle.FANCY),
+            player(mainHost, NameStyle.FANCY),
             text("is no longer online, delayed map party has been removed", NamedTextColor.GRAY));
 
         stop(Bukkit.getConsoleSender());

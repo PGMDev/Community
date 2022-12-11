@@ -18,8 +18,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
-import tc.oc.pgm.api.player.event.MatchPlayerChatEvent;
-import tc.oc.pgm.listeners.ChatDispatcher.Channel;
+import tc.oc.pgm.util.channels.Channel;
+import tc.oc.pgm.util.event.ChannelMessageEvent;
 
 public class NetworkChatFeature extends FeatureBase {
 
@@ -36,7 +36,7 @@ public class NetworkChatFeature extends FeatureBase {
   }
 
   @EventHandler
-  public void onMatchPlayerChat(MatchPlayerChatEvent event) {
+  public void onMatchPlayerChat(ChannelMessageEvent event) {
     if (event.getChannel() == Channel.ADMIN) {
       network.sendUpdate(new ChatUpdate(new NetworkChatMessage(event, getServer())));
     } // TODO: maybe more cross server message types?

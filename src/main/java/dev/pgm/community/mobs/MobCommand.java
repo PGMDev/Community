@@ -26,7 +26,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("mobs")

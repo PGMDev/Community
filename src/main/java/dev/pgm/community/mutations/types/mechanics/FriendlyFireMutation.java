@@ -15,19 +15,19 @@ public class FriendlyFireMutation extends MutationBase {
 
   @Override
   public boolean canEnable(Set<Mutation> existing) {
-    return !match.isFriendlyFire();
+    return !match.getFriendlyFire();
   }
 
   @Override
   public void enable() {
     super.enable();
-    match.setFriendlyFire(true);
+    match.setFriendlyFireOverride(true);
     forceTeamUpdate();
   }
 
   @Override
   public void disable() {
-    match.setFriendlyFire(false);
+    match.setFriendlyFireOverride(false);
     forceTeamUpdate();
     super.disable();
   }
@@ -35,6 +35,10 @@ public class FriendlyFireMutation extends MutationBase {
   private void forceTeamUpdate() {
     ScoreboardMatchModule smm = match.getModule(ScoreboardMatchModule.class);
     if (smm == null) return;
-    smm.updateAll();
+    smm.getScoreboards()
+        .forEach(
+            board -> {
+              board.getTeams().forEach(team -> team.setAllowFriendlyFire(match.getFriendlyFire()));
+            });
   }
 }

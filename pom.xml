@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>dev.pgm</groupId>
 	<artifactId>Community</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
 	<name>Community</name>
 	<description>A plugin for managing a Minecraft community</description>
 	<url>https://pgm.dev</url>
@@ -33,13 +33,13 @@
 	</repositories>
 
 	<dependencies>
-		<!-- Spigot/Bukkit 1.8 -->
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.8.8-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>
+		<!-- SportBukkit 1.8 -->
+        <dependency>
+            <groupId>app.ashcon</groupId>
+            <artifactId>sportpaper</artifactId>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
 
 		<!-- PGM Utils -->
 		<dependency>

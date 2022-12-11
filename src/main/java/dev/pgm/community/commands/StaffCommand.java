@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 @CommandAlias("staff|mods|admins")
@@ -35,8 +35,7 @@ public class StaffCommand extends CommunityCommand {
                 player ->
                     (player.hasPermission(CommunityPermissions.STAFF)
                         && (!isDisguised(player)
-                            || (viewer.hasPermission(CommunityPermissions.STAFF)
-                                && !hasOverride(player, viewer)))))
+                            || viewer.hasPermission(CommunityPermissions.STAFF))))
             .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
 

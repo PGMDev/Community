@@ -77,7 +77,7 @@ public class MapPartySettingsMenu extends MapPartyMenu {
     Component limitRender =
         !hasLimit
             ? text("No limit", NamedTextColor.YELLOW)
-            : duration(party.getLength(), NamedTextColor.YELLOW).build();
+            : duration(party.getLength(), NamedTextColor.YELLOW);
 
     ItemStack item =
         new ItemBuilder()

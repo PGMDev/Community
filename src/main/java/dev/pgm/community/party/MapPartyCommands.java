@@ -2,7 +2,7 @@ package dev.pgm.community.party;
 
 import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;

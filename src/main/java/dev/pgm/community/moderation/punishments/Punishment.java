@@ -4,6 +4,8 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.title.Title.title;
+import static tc.oc.pgm.util.text.TemporalComponent.briefNaturalApproximate;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
@@ -32,10 +34,9 @@ import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.UsernameFormatUtils;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
-import tc.oc.pgm.util.text.PlayerComponentProvider;
-import tc.oc.pgm.util.text.TemporalComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextTranslations;
 
 public class Punishment implements Comparable<Punishment> {
@@ -162,9 +163,8 @@ public class Punishment implements Comparable<Punishment> {
                   getConfig(),
                   getIssuerId().isPresent()
                       ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
-                      : PlayerComponentProvider.CONSOLE,
-                  silent,
-                  Community.get().getFeatures().getModeration().isServerSpaceAvaiable()));
+                      : UsernameFormatUtils.CONSOLE_NAME,
+                  silent));
       return true;
     }
     return false;
@@ -190,8 +190,7 @@ public class Punishment implements Comparable<Punishment> {
     Component prefix = getType().getPunishmentPrefix();
     if (this.getDuration() != null) {
       Duration length = this.getDuration();
-      String time =
-          TextTranslations.translateLegacy(TemporalComponent.duration(length).build(), null);
+      String time = TextTranslations.translateLegacy(duration(length));
 
       // TODO: Clean up (There's most likely an easier way to do this)
       String[] timeParts = time.split(" ");
@@ -218,13 +217,13 @@ public class Punishment implements Comparable<Punishment> {
     Duration banLength = ((ExpirablePunishment) this).getDuration();
     Duration timeSince = Duration.between(getTimeIssued(), Instant.now());
     Duration remaining = banLength.minus(timeSince);
-    Component timeLeft = TemporalComponent.briefNaturalApproximate(remaining);
+    Component timeLeft = briefNaturalApproximate(remaining);
     return translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft);
   }
 
   /** Formats a string for multi-line kick message */
   public String formatPunishmentScreen(
-      ModerationConfig config, Component issuerName, boolean disguised, boolean space) {
+      ModerationConfig config, Component issuerName, boolean disguised) {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(empty());
@@ -247,8 +246,7 @@ public class Punishment implements Comparable<Punishment> {
       lines.add(empty());
       lines.add(
           text("You may rejoin, but will be unable to participate for ")
-              .append(
-                  TemporalComponent.duration(config.getMatchBanDuration(), NamedTextColor.YELLOW))
+              .append(duration(config.getMatchBanDuration(), NamedTextColor.YELLOW))
               .color(NamedTextColor.GRAY));
     }
 
@@ -257,17 +255,6 @@ public class Punishment implements Comparable<Punishment> {
       lines.add(empty());
       lines.add(text("Please change your username", NamedTextColor.GRAY));
       lines.add(text("Once complete, ban will automatically be removed", NamedTextColor.GRAY));
-    }
-
-    if (isBan() && config.isObservingBan() && space) {
-      lines.add(empty());
-      lines.add(
-          text()
-              .append(text("You may rejoin, but will "))
-              .append(text("not", NamedTextColor.RED, TextDecoration.UNDERLINED))
-              .append(text(" be allowed to participate"))
-              .color(NamedTextColor.GRAY)
-              .build());
     }
 
     // Link to rules for review by player

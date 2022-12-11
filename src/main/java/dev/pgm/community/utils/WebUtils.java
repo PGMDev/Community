@@ -7,86 +7,24 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.pgm.community.Community;
-import dev.pgm.community.translations.TranslationConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.bukkit.Skin;
-import tc.oc.pgm.util.translation.Translation;
 
 public class WebUtils {
 
   // A big thanks to @Electroid for all these awesome APIs :)
   private static final String RANDOM_NAME_API = "https://api.gamertag.dev/random";
   private static final String USERNAME_API = "https://api.ashcon.app/mojang/v2/user/";
-  private static final String TRANSLATE_API = "https://api.gamertag.dev/translate";
-
-  public static CompletableFuture<Translation> getTranslated(
-      Translation translation, Set<String> languages, TranslationConfig config) {
-    return CompletableFuture.supplyAsync(
-        () -> {
-          JsonObject obj = null;
-          HttpURLConnection url;
-          try {
-            url = (HttpURLConnection) new URL(TRANSLATE_API).openConnection();
-
-            url.setRequestMethod("POST");
-            url.setRequestProperty("User-Agent", "Community");
-            url.setRequestProperty("Content-Type", "text/plain");
-            url.setRequestProperty(
-                "Accept-Language", languages.stream().collect(Collectors.joining(",")));
-
-            // Add authorization when API key is provided
-            if (config.getAPIKey() != null && !config.getAPIKey().isEmpty()) {
-              url.setRequestProperty("Authorization", "Bearer " + config.getAPIKey());
-            }
-
-            url.setInstanceFollowRedirects(true);
-            url.setConnectTimeout(config.getConnectTimeout() * 1000);
-            url.setReadTimeout(config.getReadTimeout() * 1000);
-            url.setDoOutput(true);
-
-            OutputStream output = url.getOutputStream();
-            output.write(translation.getMessage().getBytes("UTF-8"));
-
-            StringBuilder data = new StringBuilder();
-            try (final BufferedReader br =
-                new BufferedReader(
-                    new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
-              String line;
-              while ((line = br.readLine()) != null) {
-                data.append(line.trim());
-              }
-              obj = new Gson().fromJson(data.toString(), JsonObject.class);
-            }
-          } catch (IOException e) {
-            Community.log("%s", e.getMessage());
-          }
-
-          if (obj != null && !obj.entrySet().isEmpty()) {
-            JsonObject results = obj.get("text").getAsJsonObject();
-            results
-                .entrySet()
-                .forEach(
-                    e -> {
-                      translation.addTranslated(e.getKey(), e.getValue().getAsString());
-                    });
-          }
-
-          return translation;
-        });
-  }
 
   /** Fetch a list of random minecraft usernames */
   public static CompletableFuture<List<String>> getRandomNameList(int size) {
