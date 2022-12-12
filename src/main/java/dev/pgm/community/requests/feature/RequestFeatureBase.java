@@ -68,11 +68,11 @@ import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
-import tc.oc.pgm.api.match.event.MatchJoinMessageEvent;
 import tc.oc.pgm.api.match.event.MatchVoteFinishEvent;
+import tc.oc.pgm.events.PlayerJoinMatchEvent;
 import tc.oc.pgm.rotation.MapPoolManager;
+import tc.oc.pgm.rotation.vote.MapPoll;
 import tc.oc.pgm.rotation.vote.VotePoolOptions;
-import tc.oc.pgm.rotation.vote.events.MapPollCreateEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
@@ -106,6 +106,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     if (getConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
+      MapPoll.setVotingBookCreator(bookCreator);
     }
   }
 
@@ -278,7 +279,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   @EventHandler(priority = EventPriority.LOW)
-  public void onMatchJoinMessage(MatchJoinMessageEvent event) {
+  public void onMatchJoinMessage(PlayerJoinMatchEvent event) {
     MapInfo map = event.getMatch().getMap();
 
     if (getCurrentSponsor() == null) return;
@@ -294,12 +295,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
                 .append(player(getCurrentSponsor().getPlayerId(), NameStyle.FANCY))
                 .color(NamedTextColor.GRAY)
                 .build());
-  }
-
-  @EventHandler
-  public void onSetVotingBookCreator(MapPollCreateEvent event) {
-    // Set a custom voting book creator
-    event.getPoll().setVotingBookCreator(bookCreator);
   }
 
   private Cache<UUID, String> voteConfirm =

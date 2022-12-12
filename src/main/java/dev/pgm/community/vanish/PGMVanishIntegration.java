@@ -32,8 +32,6 @@ import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.party.Competitor;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.api.player.event.PlayerVanishEvent;
-import tc.oc.pgm.listeners.JoinLeaveAnnouncer;
-import tc.oc.pgm.listeners.JoinLeaveAnnouncer.JoinVisibility;
 
 public class PGMVanishIntegration implements VanishIntegration, Listener {
 
@@ -78,10 +76,12 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
 
   @Override
   public boolean setVanished(MatchPlayer player, boolean vanish, boolean quiet) {
-    // Broadcast join/quit message before adjusting vanish status
-    // so name renders normally
-    if (!quiet && vanish) {
-      JoinLeaveAnnouncer.leave(player, JoinVisibility.NONSTAFF);
+    // Call event first for vanish so name renders normally
+    if (vanish) {
+      Community.get()
+          .getServer()
+          .getPluginManager()
+          .callEvent(new PlayerVanishEvent(player, vanish, quiet));
     }
 
     // Keep track of the UUID and apply/remove META data, so we can detect vanish status from other
@@ -105,15 +105,13 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
     // Reset visibility to hide/show player
     player.resetVisibility();
 
-    if (!quiet && !vanish) {
-      JoinLeaveAnnouncer.join(player, JoinVisibility.NONSTAFF);
+    // Call vanish event for unvanish after so name renders normally
+    if (!vanish) {
+      Community.get()
+          .getServer()
+          .getPluginManager()
+          .callEvent(new PlayerVanishEvent(player, vanish, quiet));
     }
-
-    // Call vanish event to inform everywhere else
-    Community.get()
-        .getServer()
-        .getPluginManager()
-        .callEvent(new PlayerVanishEvent(player, vanish, quiet));
 
     return isVanished(player.getId());
   }
@@ -170,12 +168,6 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
     // If player is vanished & joined via "vanish" subdomain. Remove vanish status on quit
     if (player != null && isVanished(player.getId()) && tempVanish.contains(player.getId())) {
       removeVanished(player);
-      // Temporary vanish status is removed before quit,
-      // so prevent regular quit msg and forces a staff only broadcast
-      event.setQuitMessage(null);
-
-      // Broadcast to staff a real leave message
-      JoinLeaveAnnouncer.leave(player, JoinVisibility.STAFF);
     }
   }
 

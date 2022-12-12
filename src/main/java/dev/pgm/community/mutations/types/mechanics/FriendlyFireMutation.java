@@ -21,13 +21,13 @@ public class FriendlyFireMutation extends MutationBase {
   @Override
   public void enable() {
     super.enable();
-    match.setFriendlyFireOverride(true);
+    match.setFriendlyFire(true);
     forceTeamUpdate();
   }
 
   @Override
   public void disable() {
-    match.setFriendlyFireOverride(false);
+    match.setFriendlyFire(false);
     forceTeamUpdate();
     super.disable();
   }

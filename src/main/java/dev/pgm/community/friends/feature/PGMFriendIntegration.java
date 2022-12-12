@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.FriendIntegration;
 import tc.oc.pgm.api.integration.Integration;
-import tc.oc.pgm.util.event.RefreshPlayerTabEntryEvent;
 
 public class PGMFriendIntegration implements FriendIntegration {
 
@@ -49,7 +49,7 @@ public class PGMFriendIntegration implements FriendIntegration {
       Community.get()
           .getServer()
           .getPluginManager()
-          .callEvent(new RefreshPlayerTabEntryEvent(online));
+          .callEvent(new NameDecorationChangeEvent(playerId));
     }
   }
 }

@@ -21,9 +21,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.Permissions;
+import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.util.event.RefreshPlayerTabEntryEvent;
 
 public class SkinCache implements Listener {
 
@@ -145,6 +145,6 @@ public class SkinCache implements Listener {
     Community.get()
         .getServer()
         .getPluginManager()
-        .callEvent(new RefreshPlayerTabEntryEvent(player));
+        .callEvent(new NameDecorationChangeEvent(player.getUniqueId()));
   }
 }
