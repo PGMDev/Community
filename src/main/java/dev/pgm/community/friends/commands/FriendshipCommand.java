@@ -52,7 +52,7 @@ import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandAlias("friend|friendship|fs")
+@CommandAlias("friend|friendship|fs|frs")
 @Description("Manage your friend relationships")
 @CommandPermission(CommunityPermissions.FRIENDSHIP)
 public class FriendshipCommand extends CommunityCommand {
