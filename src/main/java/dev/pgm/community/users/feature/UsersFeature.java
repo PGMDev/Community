@@ -1,5 +1,7 @@
 package dev.pgm.community.users.feature;
 
+import static tc.oc.pgm.util.player.PlayerComponent.player;
+
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileWithSessionCallback;
@@ -15,8 +17,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
-import tc.oc.pgm.util.text.PlayerComponentProvider;
+import tc.oc.pgm.util.player.PlayerComponent;
 
 /**
  * UsersFeature
@@ -39,11 +40,9 @@ public interface UsersFeature extends Feature {
    * @return The rendered name component of provided UUID
    */
   default CompletableFuture<Component> renderUsername(Optional<UUID> userId, NameStyle style) {
-    if (!userId.isPresent())
-      return CompletableFuture.completedFuture(PlayerComponentProvider.CONSOLE);
+    if (!userId.isPresent()) return CompletableFuture.completedFuture(PlayerComponent.CONSOLE);
     return getStoredUsername(userId.get())
-        .thenApplyAsync(
-            name -> PlayerComponent.player(Bukkit.getPlayer(userId.get()), name, style));
+        .thenApplyAsync(name -> player(Bukkit.getPlayer(userId.get()), name, style));
   }
 
   /**

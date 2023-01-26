@@ -3,6 +3,8 @@ package dev.pgm.community.friends.commands;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
+import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
@@ -27,6 +29,7 @@ import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
@@ -46,12 +49,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
-import tc.oc.pgm.util.text.TemporalComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
-@CommandAlias("friend|friendship|fs")
+@CommandAlias("friend|friendship|fs|frs")
 @Description("Manage your friend relationships")
 @CommandPermission(CommunityPermissions.FRIENDSHIP)
 public class FriendshipCommand extends CommunityCommand {
@@ -140,7 +141,7 @@ public class FriendshipCommand extends CommunityCommand {
                       .thenAcceptAsync(
                           status -> {
                             users
-                                .renderUsername(Optional.of(storedId.get()), NameStyle.CONCISE)
+                                .renderUsername(Optional.of(storedId.get()), NameStyle.FANCY)
                                 .thenAcceptAsync(
                                     name -> {
                                       switch (status) {
@@ -208,7 +209,7 @@ public class FriendshipCommand extends CommunityCommand {
                             Optional<Friendship> existing =
                                 friendList.stream().filter(fr -> fr.isInvolved(targetId)).findAny();
                             users
-                                .renderUsername(storedId, NameStyle.CONCISE)
+                                .renderUsername(storedId, NameStyle.FANCY)
                                 .thenAcceptAsync(
                                     name -> {
                                       if (existing.isPresent()) {
@@ -253,7 +254,7 @@ public class FriendshipCommand extends CommunityCommand {
                           .findAny();
 
                   users
-                      .renderUsername(storedId, NameStyle.CONCISE)
+                      .renderUsername(storedId, NameStyle.FANCY)
                       .thenAcceptAsync(
                           name -> {
                             if (pending.isPresent()) {
@@ -313,7 +314,7 @@ public class FriendshipCommand extends CommunityCommand {
                           .filter(fr -> fr.getRequesterId().equals(storedId.get()))
                           .findAny();
                   users
-                      .renderUsername(storedId, NameStyle.CONCISE)
+                      .renderUsername(storedId, NameStyle.FANCY)
                       .thenAcceptAsync(
                           name -> {
                             if (pending.isPresent()) {
@@ -376,7 +377,7 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             users
                 .renderUsername(
-                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.CONCISE)
+                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.FANCY)
                 .join();
 
         return text()
@@ -384,9 +385,7 @@ public class FriendshipCommand extends CommunityCommand {
             .append(space())
             .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
             .append(text(" Sent "))
-            .append(
-                TemporalComponent.relativePastApproximate(data.getRequestDate())
-                    .color(NamedTextColor.DARK_AQUA))
+            .append(relativePastApproximate(data.getRequestDate()).color(NamedTextColor.DARK_AQUA))
             .append(space())
             .append(FriendshipFeature.createAcceptButton(data.getRequesterId().toString()))
             .append(space())
@@ -467,7 +466,7 @@ public class FriendshipCommand extends CommunityCommand {
         Component name =
             users
                 .renderUsername(
-                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.CONCISE)
+                    data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.FANCY)
                 .join();
 
         TextComponent.Builder builder =
@@ -484,8 +483,7 @@ public class FriendshipCommand extends CommunityCommand {
           Component hover =
               text("Friends for ", NamedTextColor.GRAY)
                   .append(
-                      TemporalComponent.duration(
-                              Duration.between(data.getLastUpdated(), Instant.now()))
+                      duration(Duration.between(data.getLastUpdated(), Instant.now()))
                           .color(NamedTextColor.AQUA));
           builder.hoverEvent(HoverEvent.showText(hover));
         }
@@ -514,10 +512,8 @@ public class FriendshipCommand extends CommunityCommand {
 
           Component status =
               (visible
-                      ? TemporalComponent.duration(
-                              Duration.between(session.getLatestUpdateDate(), Instant.now()))
-                          .build()
-                      : TemporalComponent.relativePastApproximate(session.getLatestUpdateDate()))
+                      ? duration(Duration.between(session.getLatestUpdateDate(), Instant.now()))
+                      : relativePastApproximate(session.getLatestUpdateDate()))
                   .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
           future.complete(
               text(visible ? " Online for " : " Last seen ")

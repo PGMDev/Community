@@ -34,7 +34,6 @@ import dev.pgm.community.sessions.feature.SessionFeature;
 import dev.pgm.community.sessions.feature.types.SQLSessionFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
-import dev.pgm.community.translations.TranslationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import dev.pgm.community.utils.PGMUtils;
@@ -69,7 +68,6 @@ public class FeatureManager {
   private final MutationFeature mutation;
   private final BroadcastFeature broadcast;
   private final VanishFeature vanish;
-  private final TranslationFeature translation;
   private final MobFeature mob;
   private final MapPartyFeature party;
 
@@ -105,7 +103,6 @@ public class FeatureManager {
     this.broadcast = new BroadcastFeature(config, logger);
     this.vanish = new VanishFeature(config, logger, nick);
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
-    this.translation = new TranslationFeature(config, logger);
     this.mob = new MobFeature(config, logger);
     this.party = new MapPartyFeature(config, logger);
 
@@ -176,10 +173,6 @@ public class FeatureManager {
     return requests;
   }
 
-  public TranslationFeature getTranslations() {
-    return translation;
-  }
-
   public MapPartyFeature getParty() {
     return party;
   }
@@ -204,7 +197,6 @@ public class FeatureManager {
     commands.registerDependency(NickFeature.class, getNick());
     commands.registerDependency(VanishFeature.class, getVanish());
     commands.registerDependency(RequestFeature.class, getRequests());
-    commands.registerDependency(TranslationFeature.class, getTranslations());
     commands.registerDependency(MobFeature.class, getMobs());
     commands.registerDependency(MapPartyFeature.class, getParty());
 
@@ -268,7 +260,6 @@ public class FeatureManager {
     registerFeatureCommands(getNick(), commands);
     registerFeatureCommands(getVanish(), commands);
     registerFeatureCommands(getRequests(), commands);
-    registerFeatureCommands(getTranslations(), commands);
     registerFeatureCommands(getMobs(), commands);
     registerFeatureCommands(getParty(), commands);
     // TODO: Group calls together and perform upon reload
@@ -305,7 +296,6 @@ public class FeatureManager {
     getVanish().getConfig().reload(config);
     getNetworkChat().getConfig().reload(config);
     getRequests().getConfig().reload(config);
-    getTranslations().getConfig().reload(config);
     getMobs().getConfig().reload(config);
     getParty().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
@@ -329,7 +319,6 @@ public class FeatureManager {
     if (getVanish().isEnabled()) getVanish().disable();
     if (getNetworkChat().isEnabled()) getNetworkChat().disable();
     if (getRequests().isEnabled()) getRequests().disable();
-    if (getTranslations().getConfig().isEnabled()) getTranslations().disable();
     if (getMobs().isEnabled()) getMobs().disable();
   }
 }

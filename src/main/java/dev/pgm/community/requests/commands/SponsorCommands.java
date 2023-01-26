@@ -5,7 +5,7 @@ import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import co.aikar.commands.annotation.CommandAlias;
@@ -28,6 +28,7 @@ import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.util.Queue;
 import java.util.Set;
@@ -47,7 +48,6 @@ import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 @CommandAlias("sponsor")
 @Description("View the sponsor request menu")
@@ -350,11 +350,7 @@ public class SponsorCommands extends CommunityCommand {
                 ? empty()
                 : text()
                     .append(BroadcastUtils.BROADCAST_DIV)
-                    .append(
-                        player(
-                            sponsor.getPlayerId(),
-                            users.getUsername(sponsor.getPlayerId()),
-                            NameStyle.FANCY))
+                    .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
                     .build();
 
         return text()

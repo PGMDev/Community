@@ -3,7 +3,6 @@ package dev.pgm.community.nick.commands;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
 
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.CommandAlias;
@@ -20,6 +19,7 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.UUID;
@@ -34,8 +34,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 @CommandAlias("nick")
 @CommandPermission(CommunityPermissions.NICKNAME)
@@ -146,7 +146,7 @@ public class NickCommands extends CommunityCommand {
   @CommandPermission(CommunityPermissions.NICKNAME_SET)
   public void setOwnSkin(CommandAudience viewer, Player player, String target) {
     if (target.equalsIgnoreCase("reset") || target.equalsIgnoreCase("clear")) {
-      nicks.getSkinManager().removeSkin(player);
+      nicks.getSkinManager().setSkin(player, null);
       viewer.sendWarning(text("You have reset your skin"));
       return;
     }
@@ -401,7 +401,7 @@ public class NickCommands extends CommunityCommand {
     List<Component> nickedNames =
         Bukkit.getOnlinePlayers().stream()
             .filter(player -> nicks.isNicked(player.getUniqueId()))
-            .map(player -> player(player, NameStyle.FANCY))
+            .map(player -> PlayerComponent.player(player, NameStyle.FANCY))
             .collect(Collectors.toList());
 
     if (nickedNames.isEmpty()) {

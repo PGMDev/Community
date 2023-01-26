@@ -24,6 +24,7 @@ import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -37,10 +38,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 public class ReportCommands extends CommunityCommand {
 
@@ -177,7 +177,6 @@ public class ReportCommands extends CommunityCommand {
 
         @Override
         public Component formatEmpty() {
-          // TODO: Translate
           return text("No reports found", NamedTextColor.RED);
         }
       }.display(

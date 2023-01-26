@@ -18,7 +18,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.TextTranslations;
 
@@ -56,7 +56,7 @@ public class PunishmentFormats {
                 "/ban "
                     + player.getName()
                     + " Ban Evasion - ("
-                    + ChatColor.stripColor(TextTranslations.translateLegacy(banned, null) + ")")))
+                    + ChatColor.stripColor(TextTranslations.translateLegacy(banned) + ")")))
         .build();
   }
 

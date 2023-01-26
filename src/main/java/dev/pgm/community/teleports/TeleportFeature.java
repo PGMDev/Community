@@ -1,6 +1,7 @@
 package dev.pgm.community.teleports;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.utils.CommandAudience;
@@ -11,7 +12,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 /** TeleportFeature - Teleport players to other locations * */
 public interface TeleportFeature extends Feature {
@@ -23,7 +23,7 @@ public interface TeleportFeature extends Feature {
         text("Teleported ")
             .append(type != null ? type : text(targets.size()))
             .append(text(" to "))
-            .append(PlayerComponent.player(target, NameStyle.FANCY))
+            .append(player(target, NameStyle.FANCY))
             .color(NamedTextColor.GRAY));
   }
 
@@ -52,7 +52,7 @@ public interface TeleportFeature extends Feature {
 
   default Component formatTeleportPlayerMessage(Player target) {
     return text("Teleported to ")
-        .append(PlayerComponent.player(target, NameStyle.FANCY))
+        .append(player(target, NameStyle.FANCY))
         .color(NamedTextColor.GRAY);
   }
 

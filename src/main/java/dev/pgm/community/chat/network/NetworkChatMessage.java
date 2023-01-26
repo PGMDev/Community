@@ -1,9 +1,13 @@
 package dev.pgm.community.chat.network;
 
+import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import tc.oc.pgm.api.player.event.MatchPlayerChatEvent;
-import tc.oc.pgm.listeners.ChatDispatcher.Channel;
+import tc.oc.pgm.util.channels.Channel;
+import tc.oc.pgm.util.event.ChannelMessageEvent;
+import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextTranslations;
 
 public class NetworkChatMessage {
@@ -13,9 +17,10 @@ public class NetworkChatMessage {
   private String server;
   private Channel channel;
 
-  public NetworkChatMessage(MatchPlayerChatEvent event, String server) {
-    this.message = TextTranslations.toMinecraftGson(event.getMessage(), null);
-    this.sender = TextTranslations.toMinecraftGson(event.getSender(), null);
+  public NetworkChatMessage(ChannelMessageEvent event, String server) {
+    this.message = TextTranslations.toMinecraftGson(text(event.getMessage()), null);
+    this.sender =
+        TextTranslations.toMinecraftGson(player(event.getSender(), NameStyle.FANCY), null);
     this.channel = event.getChannel();
     this.server = server;
   }

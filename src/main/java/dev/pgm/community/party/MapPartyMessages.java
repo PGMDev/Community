@@ -3,7 +3,7 @@ package dev.pgm.community.party;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.collect.Lists;
@@ -105,13 +105,12 @@ public class MapPartyMessages {
 
   public static String formatTime(MapParty party) {
     if (party.getLength() == null) return ChatColor.YELLOW + "No timelimit";
-    String duration = TextTranslations.translateLegacy(duration(party.getLength()).build(), null);
+    String duration = TextTranslations.translateLegacy(duration(party.getLength()));
 
     if (party.getStartTime() == null) return ChatColor.GOLD + duration;
     Duration timeElapsed = Duration.between(party.getStartTime(), Instant.now());
     Duration timeRemaining = party.getLength().minus(timeElapsed);
-    return ChatColor.GREEN
-        + TextTranslations.translateLegacy(duration(timeRemaining).build(), null);
+    return ChatColor.GREEN + TextTranslations.translateLegacy(duration(timeRemaining));
   }
 
   public static void broadcastHostAction(Component sender, Component action) {

@@ -1,6 +1,7 @@
 package dev.pgm.community.teleports;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import com.google.common.collect.Sets;
 import dev.pgm.community.CommunityCommand;
@@ -16,7 +17,6 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 public class TeleportFeatureBase extends FeatureBase implements TeleportFeature {
 
@@ -50,7 +50,7 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
     if (!involved) {
       sender.sendMessage(
           text("Teleported ")
-              .append(PlayerComponent.player(teleporter, NameStyle.FANCY))
+              .append(player(teleporter, NameStyle.FANCY))
               .append(text(" to "))
               .append(formatLocation(target))
               .color(NamedTextColor.GRAY));
@@ -82,9 +82,9 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
     if (senderFeedback && !involved) {
       sender.sendMessage(
           text("Teleported ")
-              .append(PlayerComponent.player(teleporter, NameStyle.FANCY))
+              .append(player(teleporter, NameStyle.FANCY))
               .append(text(" to "))
-              .append(PlayerComponent.player(target, NameStyle.FANCY))
+              .append(player(target, NameStyle.FANCY))
               .color(NamedTextColor.GRAY));
     }
   }

@@ -17,11 +17,11 @@ import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 @CommandAlias("mutate|mutation|mt")
 @Description("Manage match mutations")

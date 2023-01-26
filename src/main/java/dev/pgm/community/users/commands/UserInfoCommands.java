@@ -4,6 +4,8 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
 import co.aikar.commands.annotation.CommandAlias;
@@ -24,6 +26,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.WebUtils;
 import dev.pgm.community.utils.WebUtils.NameEntry;
 import java.time.Duration;
@@ -43,10 +46,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
-import tc.oc.pgm.util.text.formatting.PaginatedComponentResults;
 
 public class UserInfoCommands extends CommunityCommand {
 
@@ -134,18 +135,14 @@ public class UserInfoCommands extends CommunityCommand {
 
           Component lastSeenMsg =
               text()
-                  .append(
-                      PlayerComponent.player(
-                          profile.getId(), profile.getUsername(), NameStyle.FANCY))
+                  .append(player(profile.getId(), NameStyle.FANCY))
                   .append(
                       text(
                           visible ? " has been online for " : " was last seen ")) // TODO: translate
                   .append(
                       (visible
-                              ? TemporalComponent.duration(
-                                      Duration.between(
-                                          session.getLatestUpdateDate(), Instant.now()))
-                                  .build()
+                              ? duration(
+                                  Duration.between(session.getLatestUpdateDate(), Instant.now()))
                               : TemporalComponent.relativePastApproximate(
                                   session.getLatestUpdateDate()))
                           .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
@@ -184,9 +181,7 @@ public class UserInfoCommands extends CommunityCommand {
                   .getAlternateAccounts(profile.getId())
                   .thenAcceptAsync(
                       alts -> {
-                        Component targetPlayer =
-                            PlayerComponent.player(
-                                profile.getId(), profile.getUsername(), NameStyle.FANCY);
+                        Component targetPlayer = player(profile.getId(), NameStyle.FANCY);
                         if (alts.isEmpty()) {
                           audience.sendWarning(
                               translatable(
@@ -198,11 +193,7 @@ public class UserInfoCommands extends CommunityCommand {
                             alts.stream()
                                 .map(
                                     altId -> {
-                                      Component name =
-                                          PlayerComponent.player(
-                                              altId,
-                                              users.getStoredUsername(altId).join(),
-                                              NameStyle.FANCY);
+                                      Component name = player(altId, NameStyle.FANCY);
 
                                       return text()
                                           .append(name)
@@ -238,11 +229,7 @@ public class UserInfoCommands extends CommunityCommand {
                                 .filter(altId -> moderation.isBanned(altId.toString()).join())
                                 .map(
                                     altId -> {
-                                      Component name =
-                                          PlayerComponent.player(
-                                              altId,
-                                              users.getStoredUsername(altId).join(),
-                                              NameStyle.FANCY);
+                                      Component name = player(altId, NameStyle.FANCY);
 
                                       return text()
                                           .append(name)
@@ -294,9 +281,7 @@ public class UserInfoCommands extends CommunityCommand {
           Component header =
               text("Account Info", NamedTextColor.RED)
                   .append(text(" - ", NamedTextColor.GRAY))
-                  .append(
-                      PlayerComponent.player(
-                          profile.getId(), profile.getUsername(), NameStyle.CONCISE));
+                  .append(player(profile.getId(), NameStyle.FANCY));
 
           Component uuid =
               formatInfoField("UUID", text(profile.getId().toString(), NamedTextColor.YELLOW));
@@ -518,7 +503,7 @@ public class UserInfoCommands extends CommunityCommand {
     Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
 
     return text("[", NamedTextColor.GOLD)
-        .append(PlayerComponent.player(target, NameStyle.FANCY))
+        .append(player(target, NameStyle.FANCY))
         .append(text("] ", NamedTextColor.GOLD))
         .append(text("(", NamedTextColor.GRAY))
         .append(size)

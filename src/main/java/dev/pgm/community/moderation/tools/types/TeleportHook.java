@@ -1,7 +1,7 @@
 package dev.pgm.community.moderation.tools.types;
 
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

@@ -4,7 +4,7 @@ import dev.pgm.community.sessions.feature.SessionFeature;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import tc.oc.pgm.api.event.PlayerVanishEvent;
+import tc.oc.pgm.api.player.event.PlayerVanishEvent;
 
 public class VanishedSessionListener implements Listener {
 

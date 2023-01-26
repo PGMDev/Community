@@ -6,11 +6,12 @@ import static dev.pgm.community.utils.PGMUtils.getCurrentMap;
 import static dev.pgm.community.utils.PGMUtils.isBlitz;
 import static dev.pgm.community.utils.PGMUtils.isMapSizeAllowed;
 import static dev.pgm.community.utils.PGMUtils.isMatchRunning;
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.event.HoverEvent.showText;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.cache.Cache;
@@ -34,6 +35,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
+import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
@@ -58,6 +60,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.api.PGM;
@@ -65,8 +68,10 @@ import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
-import tc.oc.pgm.events.MapVoteWinnerEvent;
+import tc.oc.pgm.api.match.event.MatchVoteFinishEvent;
+import tc.oc.pgm.events.PlayerJoinMatchEvent;
 import tc.oc.pgm.rotation.MapPoolManager;
+import tc.oc.pgm.rotation.vote.MapPoll;
 import tc.oc.pgm.rotation.vote.VotePoolOptions;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
@@ -84,8 +89,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   private LinkedList<SponsorRequest> sponsors;
 
   private SponsorRequest currentSponsor;
-
-  private PGMRequestIntegration integration;
+  private SponsorVotingBookCreator bookCreator;
 
   public RequestFeatureBase(
       RequestConfig config, Logger logger, String featureName, UsersFeature users) {
@@ -98,10 +102,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     this.mapCooldown = Maps.newHashMap();
     this.sponsors = Lists.newLinkedList();
     this.currentSponsor = null;
+    this.bookCreator = new SponsorVotingBookCreator(this);
 
     if (getConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
-      this.integration = new PGMRequestIntegration(this, users);
+      MapPoll.setVotingBookCreator(bookCreator);
     }
   }
 
@@ -204,11 +209,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     VotePoolOptions options = poolManager.getVoteOptions();
 
-    if (!sponsors.isEmpty() && options.canAddVote()) {
+    if (!sponsors.isEmpty() && options.canAddMap()) {
       SponsorRequest nextRequest = sponsors.poll();
       if (nextRequest != null) {
         // Notify PGM of sponsored map
-        options.addVote(nextRequest.getMap(), nextRequest.getPlayerId(), true);
+        options.addMap(nextRequest.getMap(), nextRequest.getPlayerId());
 
         // Track the current sponsor
         this.currentSponsor = nextRequest;
@@ -245,12 +250,12 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   @EventHandler
-  public void onVoteEnd(MapVoteWinnerEvent event) {
+  public void onVoteEnd(MatchVoteFinishEvent event) {
     if (currentSponsor != null) {
       Player player = Bukkit.getPlayer(currentSponsor.getPlayerId());
 
       // Same map = winner, refund the token even if offline
-      if (currentSponsor.getMap().equals(event.getMap()) && currentSponsor.canRefund()) {
+      if (currentSponsor.getMap().equals(event.getPickedMap()) && currentSponsor.canRefund()) {
         getRequestProfile(currentSponsor.getPlayerId())
             .thenAcceptAsync(
                 profile -> {
@@ -271,6 +276,25 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
                 });
       }
     }
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onMatchJoinMessage(PlayerJoinMatchEvent event) {
+    MapInfo map = event.getMatch().getMap();
+
+    if (getCurrentSponsor() == null) return;
+    if (VisibilityUtils.isDisguised(getCurrentSponsor().getPlayerId())) return;
+    if (!getCurrentSponsor().getMap().equals(map)) return;
+
+    event.getExtraLines().add(empty());
+    event
+        .getExtraLines()
+        .add(
+            text()
+                .append(text(" Sponsored by "))
+                .append(player(getCurrentSponsor().getPlayerId(), NameStyle.FANCY))
+                .color(NamedTextColor.GRAY)
+                .build());
   }
 
   private Cache<UUID, String> voteConfirm =

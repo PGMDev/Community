@@ -115,7 +115,6 @@ public class CustomPoolParty extends MapPartyBase {
           new VotingPool(
               MapPoolType.VOTED,
               manager,
-              "party-maps",
               this.getName(),
               true,
               1,
@@ -127,7 +126,6 @@ public class CustomPoolParty extends MapPartyBase {
           new Rotation(
               MapPoolType.ORDERED,
               manager,
-              "party-maps",
               this.getName(),
               true,
               1,

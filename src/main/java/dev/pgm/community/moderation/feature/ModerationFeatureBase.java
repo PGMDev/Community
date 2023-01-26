@@ -1,7 +1,6 @@
 package dev.pgm.community.moderation.feature;
 
 import static net.kyori.adventure.text.Component.text;
-import static tc.oc.pgm.util.text.PlayerComponent.player;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -53,11 +52,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.player.PlayerComponent;
 
 public abstract class ModerationFeatureBase extends FeatureBase implements ModerationFeature {
 
@@ -236,7 +234,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             .getSender()
             .sendWarning(
                 text()
-                    .append(player(onlineTarget.get(), NameStyle.FANCY))
+                    .append(PlayerComponent.player(onlineTarget.get(), NameStyle.FANCY))
                     .append(text(" is exempt from punishment"))
                     .build());
         return;
@@ -254,11 +252,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             punishment, network.getNetworkId())); // Send out network punishment update
 
     switch (punishment.getType()) {
+        // Cache known IPS of a recently banned player, so if they rejoin on an alt we can find them
       case BAN:
-      case TEMP_BAN: // Cache known IPS of a recently banned player, so if they rejoin on an alt can
+      case TEMP_BAN:
       case NAME_BAN:
-        // find them
-        addBan(punishment.getId(), punishment);
         users
             .getKnownIPs(punishment.getTargetId())
             .thenAcceptAsync(ips -> banEvasionCache.put(punishment.getTargetId(), ips));
@@ -283,33 +280,6 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     this.onPreLogin(event);
   }
 
-  @EventHandler(priority = EventPriority.LOW)
-  public void onPlayerJoinBanned(PlayerJoinEvent event) {
-    getOnlineBan(event.getPlayer().getUniqueId())
-        .ifPresent(
-            ban -> {
-              event.setJoinMessage(null); // Hide join message
-              integration.updateBanPrefix(event.getPlayer(), true); // assign banned group
-              Bukkit.getScheduler()
-                  .runTaskLater(
-                      Community.get(),
-                      () ->
-                          PunishmentFormats.sendNoPlayBanWelcome(
-                              event.getPlayer(), ban, getModerationConfig().getAppealMessage()),
-                      15L);
-            });
-  }
-
-  @EventHandler(priority = EventPriority.LOW)
-  public void onPlayerQuitBanned(PlayerQuitEvent event) {
-    getOnlineBan(event.getPlayer().getUniqueId())
-        .ifPresent(
-            ban -> {
-              event.setQuitMessage(null); // Hide quit message
-              observerBanCache.invalidate(event.getPlayer().getUniqueId());
-            });
-  }
-
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoinEvasionCheck(PlayerJoinEvent event) {
     String host = event.getPlayer().getAddress().getAddress().getHostAddress();
@@ -331,30 +301,9 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     }
   }
 
-  // Cancel ALL commands for shadow banned
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onCommand(PlayerCommandPreprocessEvent event) {
-    getOnlineBan(event.getPlayer().getUniqueId())
-        .ifPresent(
-            ban -> {
-              event.setCancelled(true);
-              Audience.get(event.getPlayer())
-                  .sendWarning(PunishmentFormats.formatBanDenyError(ban, "use commands"));
-            });
-  }
-
   // Cancel chat for muted/banned players
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent event) {
-    // Observer Banned
-    getOnlineBan(event.getPlayer().getUniqueId())
-        .ifPresent(
-            ban -> {
-              event.setCancelled(true);
-              Audience.get(event.getPlayer())
-                  .sendWarning(PunishmentFormats.formatBanDenyError(ban, "chat"));
-            });
-
     // MUTES
     getCachedMute(event.getPlayer().getUniqueId())
         .ifPresent(
@@ -383,37 +332,9 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
     return matchBan;
   }
 
-  protected void addBan(UUID playerId, Punishment punishment) {
-    if (getModerationConfig().isObservingBan()) {
-      observerBanCache.put(playerId, punishment);
-      logger.info("Cached observing ban for " + playerId.toString());
-    }
-  }
-
   protected void removeCachedBan(UUID playerId) {
     banEvasionCache.invalidate(playerId);
-    observerBanCache.invalidate(playerId);
     pardonedPlayers.put(playerId, Instant.now());
-
-    if (Bukkit.getPlayer(playerId) != null && getModerationConfig().isObservingBan()) {
-      integration.updateBanPrefix(Bukkit.getPlayer(playerId), false);
-    }
-  }
-
-  public Optional<Punishment> getOnlineBan(UUID playerId) {
-    return Optional.ofNullable(observerBanCache.getIfPresent(playerId));
-  }
-
-  @Override
-  public boolean isServerSpaceAvaiable() {
-    return (getModerationConfig().getMaxOnlineBans() - getOnlineBanCount()) > 0;
-  }
-
-  public int getOnlineBanCount() {
-    return Math.toIntExact(
-        observerBanCache.asMap().keySet().stream()
-            .filter(id -> Bukkit.getPlayer(id) != null)
-            .count());
   }
 
   // MUTES

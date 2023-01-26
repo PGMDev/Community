@@ -21,8 +21,8 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.nms.NMSHacks;
+import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.skin.Skin;
-import tc.oc.pgm.util.text.PlayerComponent;
 
 public class MapPartyHosts {
 
@@ -179,8 +179,7 @@ public class MapPartyHosts {
   }
 
   private void broadcastHostTransfer(UUID oldHost, Player newHost) {
-    Component oldHostName =
-        PlayerComponent.player(mainHost, getCachedName(mainHost), NameStyle.FANCY);
+    Component oldHostName = PlayerComponent.player(mainHost, NameStyle.FANCY);
     Component newHostName = PlayerComponent.player(newHost, NameStyle.FANCY);
     BroadcastUtils.sendAdminChatMessage(
         text()

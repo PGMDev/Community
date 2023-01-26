@@ -26,13 +26,12 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.Permissions;
-import tc.oc.pgm.api.event.PlayerVanishEvent;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.VanishIntegration;
+import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.party.Competitor;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.listeners.JoinLeaveAnnouncer;
-import tc.oc.pgm.listeners.JoinLeaveAnnouncer.JoinVisibility;
+import tc.oc.pgm.api.player.event.PlayerVanishEvent;
 
 public class PGMVanishIntegration implements VanishIntegration, Listener {
 
@@ -71,12 +70,20 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
   }
 
   @Override
-  public boolean isVanished(Player player) {
-    return vanish.isVanished(player);
+  public boolean isVanished(UUID playerId) {
+    return vanish.isVanished(playerId);
   }
 
   @Override
   public boolean setVanished(MatchPlayer player, boolean vanish, boolean quiet) {
+    // Call event first for vanish so name renders normally
+    if (vanish) {
+      Community.get()
+          .getServer()
+          .getPluginManager()
+          .callEvent(new PlayerVanishEvent(player, vanish, quiet));
+    }
+
     // Keep track of the UUID and apply/remove META data, so we can detect vanish status from other
     // projects (i.e utils)
     if (vanish) {
@@ -85,17 +92,32 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
       removeVanished(player);
     }
 
-    // Call vanish event to inform everywhere else
-    Community.get()
-        .getServer()
-        .getPluginManager()
-        .callEvent(new PlayerVanishEvent(player, vanish, quiet));
+    final Match match = player.getMatch();
 
-    return isVanished(player.getBukkit());
+    // Ensure player is an observer
+    if (vanish && player.getParty() instanceof Competitor) {
+      match.setParty(player, match.getDefaultParty());
+    }
+
+    // Set vanish status in match player
+    player.setVanished(vanish);
+
+    // Reset visibility to hide/show player
+    player.resetVisibility();
+
+    // Call vanish event for unvanish after so name renders normally
+    if (!vanish) {
+      Community.get()
+          .getServer()
+          .getPluginManager()
+          .callEvent(new PlayerVanishEvent(player, vanish, quiet));
+    }
+
+    return isVanished(player.getId());
   }
 
   private void addVanished(MatchPlayer player) {
-    if (!isVanished(player.getBukkit())) {
+    if (!isVanished(player.getId())) {
       vanish.getVanishedPlayers().add(player.getId());
       player.getBukkit().setMetadata(VANISH_KEY, VANISH_VALUE);
     }
@@ -117,7 +139,7 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
     Player player = event.getPlayer();
     loginSubdomains.invalidate(player.getUniqueId());
     if (player.hasPermission(Permissions.VANISH)
-        && !isVanished(player)
+        && !isVanished(player.getUniqueId())
         && isVanishSubdomain(event.getHostname())) {
       loginSubdomains.put(player.getUniqueId(), event.getHostname());
     }
@@ -133,7 +155,7 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
 
     if (vanish.getNicks().isNicked(player.getId())
         || vanish.getNicks().isAutoNicked(player.getId())) {
-      if (isVanished(player.getBukkit())) {
+      if (isVanished(player.getId())) {
         removeVanished(player); // Unvanish nicked players
       }
     }
@@ -144,13 +166,8 @@ public class PGMVanishIntegration implements VanishIntegration, Listener {
     if (getMatch() == null) return;
     MatchPlayer player = getMatch().getPlayer(event.getPlayer());
     // If player is vanished & joined via "vanish" subdomain. Remove vanish status on quit
-    if (player != null && isVanished(player.getBukkit()) && tempVanish.contains(player.getId())) {
+    if (player != null && isVanished(player.getId()) && tempVanish.contains(player.getId())) {
       removeVanished(player);
-      // Temporary vanish status is removed before quit,
-      // so prevent regular quit msg and forces a staff only broadcast
-      event.setQuitMessage(null);
-      // ANNOUNCE TO STAFF, LEAVING
-      JoinLeaveAnnouncer.leave(player, JoinVisibility.STAFF);
     }
   }
 

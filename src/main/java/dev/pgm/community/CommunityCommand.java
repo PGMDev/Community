@@ -1,6 +1,7 @@
 package dev.pgm.community;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.InvalidCommandArgument;
@@ -32,7 +33,6 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public abstract class CommunityCommand extends BaseCommand {
@@ -76,7 +76,7 @@ public abstract class CommunityCommand extends BaseCommand {
     public Component getText() {
       List<Component> names =
           players.stream()
-              .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
+              .map(p -> player(p, NameStyle.FANCY))
               .limit(Math.min(players.size(), 10))
               .collect(Collectors.toList());
 
@@ -257,11 +257,6 @@ public abstract class CommunityCommand extends BaseCommand {
     }
 
     return id;
-  }
-
-  protected boolean hasOverride(Player player, CommandAudience viewer) {
-    return VisibilityUtils.hasOverride(player)
-        && !viewer.hasPermission(CommunityPermissions.OVERRIDE);
   }
 
   protected boolean isDisguised(CommandAudience audience) {

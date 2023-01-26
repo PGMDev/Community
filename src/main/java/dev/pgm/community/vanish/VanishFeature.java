@@ -6,6 +6,7 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.vanish.commands.VanishCommand;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -66,8 +67,12 @@ public class VanishFeature extends FeatureBase {
     return Bukkit.getOnlinePlayers().stream().filter(this::isVanished).collect(Collectors.toList());
   }
 
+  public boolean isVanished(UUID playerId) {
+    return vanishedPlayers.contains(playerId);
+  }
+
   public boolean isVanished(Player player) {
-    return vanishedPlayers.contains(player.getUniqueId());
+    return isVanished(player.getUniqueId());
   }
 
   public Set<UUID> getVanishedPlayers() {
@@ -76,7 +81,7 @@ public class VanishFeature extends FeatureBase {
 
   @Override
   public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet(); // Vanish command is in PGM
+    return Sets.newHashSet(new VanishCommand());
   }
 
   private boolean isPGMEnabled() {

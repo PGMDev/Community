@@ -221,7 +221,8 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
             () -> {
 
               // Check for forced vanish players
-              if (Community.get().getFeatures().getVanish().isVanished(player)) return;
+              if (Community.get().getFeatures().getVanish().isVanished(player.getUniqueId()))
+                return;
 
               viewer.sendMessage(
                   TextFormatter.horizontalLine(NamedTextColor.GRAY, TextFormatter.MAX_CHAT_WIDTH));
