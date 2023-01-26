@@ -209,11 +209,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     VotePoolOptions options = poolManager.getVoteOptions();
 
-    if (!sponsors.isEmpty() && options.canAddVote()) {
+    if (!sponsors.isEmpty() && options.canAddMap()) {
       SponsorRequest nextRequest = sponsors.poll();
       if (nextRequest != null) {
         // Notify PGM of sponsored map
-        options.addVote(nextRequest.getMap(), nextRequest.getPlayerId());
+        options.addMap(nextRequest.getMap(), nextRequest.getPlayerId());
 
         // Track the current sponsor
         this.currentSponsor = nextRequest;
