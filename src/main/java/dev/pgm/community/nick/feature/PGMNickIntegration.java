@@ -46,7 +46,7 @@ public class PGMNickIntegration implements NickIntegration {
     if (match != null) {
       List<MatchPlayer> nicked =
           match.getPlayers().stream()
-              .filter(p -> nick.isNicked(p.getId()))
+              .filter(p -> nick.isNicked(p.getId()) && !Integration.isVanished(p.getBukkit()))
               .collect(Collectors.toList());
       nicked.forEach(mp -> sendHotbarNicked(mp, hotbarColor));
     }
