@@ -167,12 +167,7 @@ freeze:
   enabled: true  
   pgm-integration: true # Whether Community will attempt to hook into PGM
   item-slot: 6          # Item slot where freeze item will be located
-  
-# Vanish - Hide youself from non-staff players  
-vanish:
-  enabled: true
-  pgm-integration: true # Whether Community will attempt to hook into PGM
-  
+    
 # Mutations - a PGM exclusive feature. Allows for a variety of fun gameplay altering mechanics
 mutations:
   enabled: true  

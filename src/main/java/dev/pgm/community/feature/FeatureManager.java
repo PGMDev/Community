@@ -37,7 +37,6 @@ import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
 import dev.pgm.community.utils.PGMUtils;
-import dev.pgm.community.vanish.VanishFeature;
 import fr.minuskube.inv.InventoryManager;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -67,7 +66,6 @@ public class FeatureManager {
   private final FreezeFeature freeze;
   private final MutationFeature mutation;
   private final BroadcastFeature broadcast;
-  private final VanishFeature vanish;
   private final MobFeature mob;
   private final MapPartyFeature party;
 
@@ -101,7 +99,6 @@ public class FeatureManager {
     this.freeze = new FreezeFeature(config, logger);
     this.mutation = new MutationFeature(config, logger, inventory);
     this.broadcast = new BroadcastFeature(config, logger);
-    this.vanish = new VanishFeature(config, logger, nick);
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
     this.mob = new MobFeature(config, logger);
     this.party = new MapPartyFeature(config, logger);
@@ -161,10 +158,6 @@ public class FeatureManager {
     return broadcast;
   }
 
-  public VanishFeature getVanish() {
-    return vanish;
-  }
-
   public NetworkChatFeature getNetworkChat() {
     return chatNetwork;
   }
@@ -195,7 +188,6 @@ public class FeatureManager {
     commands.registerDependency(MutationFeature.class, getMutations());
     commands.registerDependency(BroadcastFeature.class, getBroadcast());
     commands.registerDependency(NickFeature.class, getNick());
-    commands.registerDependency(VanishFeature.class, getVanish());
     commands.registerDependency(RequestFeature.class, getRequests());
     commands.registerDependency(MobFeature.class, getMobs());
     commands.registerDependency(MapPartyFeature.class, getParty());
@@ -258,7 +250,6 @@ public class FeatureManager {
     registerFeatureCommands(getMutations(), commands);
     registerFeatureCommands(getBroadcast(), commands);
     registerFeatureCommands(getNick(), commands);
-    registerFeatureCommands(getVanish(), commands);
     registerFeatureCommands(getRequests(), commands);
     registerFeatureCommands(getMobs(), commands);
     registerFeatureCommands(getParty(), commands);
@@ -293,7 +284,6 @@ public class FeatureManager {
     getMutations().getConfig().reload(config);
     getBroadcast().getConfig().reload(config);
     getNick().getConfig().reload(config);
-    getVanish().getConfig().reload(config);
     getNetworkChat().getConfig().reload(config);
     getRequests().getConfig().reload(config);
     getMobs().getConfig().reload(config);
@@ -316,7 +306,6 @@ public class FeatureManager {
     if (getMutations().isEnabled()) getMutations().disable();
     if (getBroadcast().isEnabled()) getBroadcast().disable();
     if (getNick().isEnabled()) getNick().disable();
-    if (getVanish().isEnabled()) getVanish().disable();
     if (getNetworkChat().isEnabled()) getNetworkChat().disable();
     if (getRequests().isEnabled()) getRequests().disable();
     if (getMobs().isEnabled()) getMobs().disable();
