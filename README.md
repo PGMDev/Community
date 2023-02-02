@@ -1,24 +1,20 @@
 # Community
-A plugin for managing a minecraft community
+A PGM companion plugin for effortless community management
 
-⚠️ **Project is in active development and *not* recommended for production environments (unless you know what you're doing)** ⚠️
+# Introduction
+Community offers an all-in-one solution for managing Minecraft PGM server communities. It is designed specifically to work with PGM, but can also be used independently. This project aims to provide a comprehensive yet user-friendly platform for server administrators to manage players, track accounts, and offer a wide range of useful features. The plugin will continuously evolve, with new features being added regularly. 
 
-## Overview
-The goal of this project is to provide a comprehensive yet simple way to manage players and provide useful features that just about every server could use. Community was designed to work with [PGM](https://github.com/PGMDev/PGM) in mind and is meant to be an official companion plugin. Though it will also operate perfectly fine on its own. This plugin will always be evolving and providing new features on a regular basis.
-
-## Features
-A number of useful features have been implemented:
-- Moderation
-- Player Reports
-- Account tracking
-- Friend System
-- Teleports
-- Nicknames
-- Cross-server functionality
-- Mutations (PGM exclusive)
-- Vanish (PGM exclusive)
-
-View our extensive feature guide and installation instructions [(Coming Soon)](#)
+# Key Features:
+- Robust Moderation Tools
+- Account Tracking
+- Teleportation
+- User Assistance/Reporting System
+- User-friendly Friendship System
+- Nickname System
+- Map Party System
+- Match Mutations
+- Cross-Server Chat & Report Functionality
+- Utility Commands
 
 ## Governance
 This project is maintained by [applenick](https://github.com/applenick), with assistance from [Electroid](https://github.com/Electroid) and other PGMDev developers. 
