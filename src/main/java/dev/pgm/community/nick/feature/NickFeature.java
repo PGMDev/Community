@@ -3,6 +3,7 @@ package dev.pgm.community.nick.feature;
 import dev.pgm.community.feature.Feature;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.data.NickSelection;
+import dev.pgm.community.nick.skin.SkinManager;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;

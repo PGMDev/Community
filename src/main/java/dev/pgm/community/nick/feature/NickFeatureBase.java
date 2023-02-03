@@ -16,6 +16,7 @@ import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.NickConfig;
 import dev.pgm.community.nick.commands.NickCommands;
 import dev.pgm.community.nick.data.NickSelection;
+import dev.pgm.community.nick.skin.SkinManager;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;

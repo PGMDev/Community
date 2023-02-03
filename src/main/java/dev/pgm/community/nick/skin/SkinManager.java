@@ -1,7 +1,6 @@
-package dev.pgm.community.nick.feature;
+package dev.pgm.community.nick.skin;
 
 import dev.pgm.community.Community;
-import dev.pgm.community.nick.skin.SkinCache;
 import org.bukkit.Skin;
 import org.bukkit.entity.Player;
 

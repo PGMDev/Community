@@ -27,8 +27,6 @@ import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PaginatedComponentResults;
-import dev.pgm.community.utils.WebUtils;
-import dev.pgm.community.utils.WebUtils.NameEntry;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -54,51 +52,6 @@ public class UserInfoCommands extends CommunityCommand {
   @Dependency private UsersFeature users;
   @Dependency private ModerationFeature moderation;
   @Dependency private FriendshipFeature friends;
-
-  @CommandAlias("usernamehistory|uh")
-  @Description("View the name history of a user")
-  @Syntax("[player]")
-  @CommandCompletion("@players")
-  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
-  public void usernameHistory(CommandAudience audience, String target) {
-    WebUtils.getUsernameHistory(target)
-        .thenAcceptAsync(
-            history -> {
-              Component username = text(history.getCurrentName(), NamedTextColor.AQUA);
-
-              if (history.getHistory().isEmpty()) {
-                audience.sendWarning(
-                    text()
-                        .append(username)
-                        .append(text(" has never changed their username.", NamedTextColor.GRAY))
-                        .build());
-                return;
-              }
-
-              Component headerText =
-                  text()
-                      .append(text("Username History", NamedTextColor.YELLOW))
-                      .append(text(" - ", NamedTextColor.GRAY))
-                      .append(username)
-                      .build();
-              audience.sendMessage(
-                  TextFormatter.horizontalLineHeading(
-                      audience.getSender(), headerText, NamedTextColor.GRAY));
-
-              int i = 1;
-              for (NameEntry name : history.getHistory()) {
-                audience.sendMessage(
-                    text()
-                        .append(text(i++ + ". ", NamedTextColor.WHITE))
-                        .append(text(name.getUsername(), NamedTextColor.YELLOW))
-                        .append(BroadcastUtils.BROADCAST_DIV)
-                        .append(
-                            TemporalComponent.relativePastApproximate(name.getDateChanged())
-                                .color(NamedTextColor.DARK_AQUA))
-                        .build());
-              }
-            });
-  }
 
   @CommandAlias("seen|lastseen|find")
   @Description("View when a player was last online")
@@ -170,95 +123,91 @@ public class UserInfoCommands extends CommunityCommand {
 
     users
         .getStoredProfile(target)
-        .thenAccept(
+        .thenAcceptAsync(
             profile -> {
               if (profile == null) {
                 audience.sendWarning(MessageUtils.formatUnseen(target));
                 return;
               }
 
-              users
-                  .getAlternateAccounts(profile.getId())
-                  .thenAcceptAsync(
-                      alts -> {
-                        Component targetPlayer = player(profile.getId(), NameStyle.FANCY);
-                        if (alts.isEmpty()) {
-                          audience.sendWarning(
-                              translatable(
-                                  "moderation.alts.noAlts", NamedTextColor.GRAY, targetPlayer));
-                          return;
-                        }
+              Set<UUID> alts = users.getAlternateAccounts(profile.getId()).join();
 
-                        Set<Component> altNames =
-                            alts.stream()
-                                .map(
-                                    altId -> {
-                                      Component name = player(altId, NameStyle.FANCY);
+              Component targetPlayer =
+                  users.renderUsername(profile.getId(), NameStyle.COLOR).join();
+              if (alts.isEmpty()) {
+                audience.sendWarning(
+                    translatable("moderation.alts.noAlts", NamedTextColor.GRAY, targetPlayer));
+                return;
+              }
 
-                                      return text()
-                                          .append(name)
-                                          .clickEvent(
-                                              ClickEvent.runCommand("/l " + altId.toString()))
-                                          .hoverEvent(
-                                              HoverEvent.showText(
-                                                  text(
-                                                          "Click to view punishment history of ",
-                                                          NamedTextColor.GRAY)
-                                                      .append(name)))
-                                          .build();
-                                    })
-                                .collect(Collectors.toSet());
+              Set<Component> altNames =
+                  alts.stream()
+                      .map(
+                          altId -> {
+                            Component name = users.renderUsername(altId, NameStyle.COLOR).join();
 
-                        Component numberOfAlts =
-                            text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
-
-                        Component altNameList =
-                            text()
-                                .append(targetPlayer)
-                                .append(text(" has "))
-                                .append(numberOfAlts)
-                                .append(text(" known alternate account"))
-                                .append(text(alts.size() != 1 ? "s" : ""))
-                                .append(text(": "))
-                                .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
-                                .color(NamedTextColor.GRAY)
+                            return text()
+                                .append(name)
+                                .clickEvent(ClickEvent.runCommand("/l " + altId.toString()))
+                                .hoverEvent(
+                                    HoverEvent.showText(
+                                        text(
+                                                "Click to view punishment history of ",
+                                                NamedTextColor.GRAY)
+                                            .append(name)))
                                 .build();
+                          })
+                      .collect(Collectors.toSet());
 
-                        List<Component> altsWithBans =
-                            alts.stream()
-                                .filter(altId -> moderation.isBanned(altId.toString()).join())
-                                .map(
-                                    altId -> {
-                                      Component name = player(altId, NameStyle.FANCY);
+              Component numberOfAlts =
+                  text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
 
-                                      return text()
-                                          .append(name)
-                                          .clickEvent(ClickEvent.runCommand("/l " + altId))
-                                          .hoverEvent(
-                                              HoverEvent.showText(
-                                                  text(
-                                                          "Click to view punishment history of ",
-                                                          NamedTextColor.GRAY)
-                                                      .append(name)))
-                                          .build();
-                                    })
-                                .collect(Collectors.toList());
+              Component altNameList =
+                  text()
+                      .append(targetPlayer)
+                      .append(text(" has "))
+                      .append(numberOfAlts)
+                      .append(text(" known alternate account"))
+                      .append(text(alts.size() != 1 ? "s" : ""))
+                      .append(text(": "))
+                      .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
+                      .color(NamedTextColor.GRAY)
+                      .build();
 
-                        Component numberOfBannedAlts =
-                            text(altsWithBans.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
+              List<Component> altsWithBans =
+                  alts.stream()
+                      .filter(altId -> moderation.isBanned(altId.toString()).join())
+                      .map(
+                          altId -> {
+                            Component name = users.renderUsername(altId, NameStyle.FANCY).join();
 
-                        Component altBans =
-                            text()
-                                .append(numberOfBannedAlts)
-                                .append(text(" of these accounts are currently banned: "))
-                                .append(TextFormatter.list(altsWithBans, NamedTextColor.GRAY))
-                                .color(NamedTextColor.GRAY)
+                            return text()
+                                .append(name)
+                                .clickEvent(ClickEvent.runCommand("/l " + altId))
+                                .hoverEvent(
+                                    HoverEvent.showText(
+                                        text(
+                                                "Click to view punishment history of ",
+                                                NamedTextColor.GRAY)
+                                            .append(name)))
                                 .build();
-                        audience.sendMessage(altNameList);
-                        if (altsWithBans.size() > 0) {
-                          audience.sendMessage(altBans);
-                        }
-                      });
+                          })
+                      .collect(Collectors.toList());
+
+              Component numberOfBannedAlts =
+                  text(altsWithBans.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
+
+              Component altBans =
+                  text()
+                      .append(numberOfBannedAlts)
+                      .append(text(" of these accounts are currently banned: "))
+                      .append(TextFormatter.list(altsWithBans, NamedTextColor.GRAY))
+                      .color(NamedTextColor.GRAY)
+                      .build();
+              audience.sendMessage(altNameList);
+              if (altsWithBans.size() > 0) {
+                audience.sendMessage(altBans);
+              }
             });
   }
 
