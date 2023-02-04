@@ -42,7 +42,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.text.TextFormatter;
 
@@ -221,10 +220,6 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
         .runTaskLater(
             Community.get(),
             () -> {
-
-              // Check for forced vanish players
-              if (Integration.isVanished(player)) return;
-
               viewer.sendMessage(
                   TextFormatter.horizontalLine(NamedTextColor.GRAY, TextFormatter.MAX_CHAT_WIDTH));
               viewer.sendMessage(
