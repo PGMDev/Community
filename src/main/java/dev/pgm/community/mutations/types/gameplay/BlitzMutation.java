@@ -32,7 +32,12 @@ public class BlitzMutation extends MutationBase {
     this.blitz =
         new BlitzMatchModule(
             match,
-            new BlitzConfig(BLITZ_LIVES.getValue(), true, StaticFilter.ALLOW, StaticFilter.DENY));
+            new BlitzConfig(
+                BLITZ_LIVES.getValue(),
+                true,
+                StaticFilter.ALLOW,
+                StaticFilter.ALLOW,
+                StaticFilter.DENY));
 
     blitz.enable();
     match.addListener(blitz, MatchScope.RUNNING);
