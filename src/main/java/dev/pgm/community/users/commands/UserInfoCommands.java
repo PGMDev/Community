@@ -8,16 +8,13 @@ import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Optional;
-import co.aikar.commands.annotation.Syntax;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.friends.feature.FriendshipFeature;
@@ -49,16 +46,24 @@ import tc.oc.pgm.util.text.TextFormatter;
 
 public class UserInfoCommands extends CommunityCommand {
 
-  @Dependency private UsersFeature users;
-  @Dependency private ModerationFeature moderation;
-  @Dependency private FriendshipFeature friends;
+  private static final String SEEN_CMD = "seen|lastseen|find";
+  private static final String ALTS_CMD = "alts|alternateaccounts";
+  private static final String PROFILE_CMD = "profile|user";
 
-  @CommandAlias("seen|lastseen|find")
-  @Description("View when a player was last online")
-  @Syntax("[player]")
-  @CommandCompletion("@visible")
+  private final UsersFeature users;
+  private final ModerationFeature moderation;
+  private final FriendshipFeature friends;
+
+  public UserInfoCommands() {
+    this.users = Community.get().getFeatures().getUsers();
+    this.moderation = Community.get().getFeatures().getModeration();
+    this.friends = Community.get().getFeatures().getFriendships();
+  }
+
+  @CommandMethod(SEEN_CMD + " <target>")
+  @CommandDescription("View when a player was last online")
   @CommandPermission(CommunityPermissions.FIND)
-  public void seenPlayer(CommandAudience audience, String target) {
+  public void seenPlayer(CommandAudience audience, @Argument("target") String target) {
     boolean staff = audience.hasPermission(CommunityPermissions.STAFF);
     boolean findAnyone = audience.hasPermission(CommunityPermissions.FIND_ANYONE);
 
@@ -109,12 +114,10 @@ public class UserInfoCommands extends CommunityCommand {
         });
   }
 
-  @CommandAlias("alts|alternateaccounts")
-  @Description("View a list of alternate accounts of a player")
-  @CommandCompletion("@players")
-  @Syntax("[target]")
+  @CommandMethod(ALTS_CMD + " [target]")
+  @CommandDescription("View a list of alternate accounts of a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
-  public void viewAlts(CommandAudience audience, @Optional String target) {
+  public void viewAlts(CommandAudience audience, @Argument("target") String target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
       showBannedAlts(audience, 1);
@@ -211,13 +214,13 @@ public class UserInfoCommands extends CommunityCommand {
             });
   }
 
-  @CommandAlias("profile|user")
-  @Description("View account info for a player")
-  @Syntax("(name | uuid)")
-  @CommandCompletion("@players")
+  @CommandMethod(PROFILE_CMD + " <target> [all]")
+  @CommandDescription("View account info for a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewUserProfile(
-      CommandAudience audience, String target, @Default("false") boolean viewAll) {
+      CommandAudience audience,
+      @Argument("target") String target,
+      @Argument(value = "all", defaultValue = "false") boolean viewAll) {
     users.findUserWithSession(
         target,
         false,

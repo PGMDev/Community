@@ -3,9 +3,6 @@ package dev.pgm.community;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.InvalidCommandArgument;
-import co.aikar.commands.annotation.Dependency;
 import com.google.common.collect.Sets;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
@@ -14,7 +11,6 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -33,11 +29,10 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.TextException;
 import tc.oc.pgm.util.text.TextFormatter;
 
-public abstract class CommunityCommand extends BaseCommand {
-
-  @Dependency private Random randoms;
+public abstract class CommunityCommand {
 
   public static final String SELECTION = "<*, ?=1, team=Name, name1,name2...>";
 
@@ -46,14 +41,13 @@ public abstract class CommunityCommand extends BaseCommand {
     return MessageUtils.format(format, args);
   }
 
-  protected CompletableFuture<Optional<UUID>> getTarget(String target, UsersFeature service)
-      throws InvalidCommandArgument {
+  protected CompletableFuture<Optional<UUID>> getTarget(String target, UsersFeature service) {
     boolean username = UsersFeature.USERNAME_REGEX.matcher(target).matches();
     if (!username) {
       try {
         return CompletableFuture.completedFuture(Optional.ofNullable(UUID.fromString(target)));
       } catch (IllegalArgumentException e) {
-        throw new InvalidCommandArgument(target + " is not a valid UUID.", false);
+        throw TextException.exception(target + " is not a valid UUID.");
       }
     }
     return service.getStoredId(target);
@@ -130,7 +124,7 @@ public abstract class CommunityCommand extends BaseCommand {
     } else if (isRandom) {
       int randomCount = parts.length == 2 ? parseInputInt(input, 1) : 1;
       for (int i = 0; i < randomCount; i++) {
-        targets.add(allOnline.get(randoms.nextInt(allOnline.size())));
+        targets.add(allOnline.get(Community.get().getRandom().nextInt(allOnline.size())));
       }
       String rdTxt = " randomly chosen player" + (targets.size() != 1 ? "s" : "");
       text =
@@ -144,7 +138,7 @@ public abstract class CommunityCommand extends BaseCommand {
         TeamMatchModule teams = match.getModule(TeamMatchModule.class);
         String teamName = parts[1];
         if (teamName == null || teamName.isEmpty()) {
-          throw new InvalidCommandArgument("Please provide a team name");
+          throw TextException.exception("Please provide a team name");
         }
 
         // Allow Observers to be selected
@@ -157,7 +151,7 @@ public abstract class CommunityCommand extends BaseCommand {
         } else {
           Team team = teams.bestFuzzyMatch(teamName);
           if (team == null) {
-            throw new InvalidCommandArgument(teamName + " is not a valid team name");
+            throw TextException.exception(teamName + " is not a valid team name");
           }
           targets.addAll(
               team.getPlayers().stream().map(MatchPlayer::getBukkit).collect(Collectors.toList()));
@@ -167,7 +161,7 @@ public abstract class CommunityCommand extends BaseCommand {
                   .build();
         }
       } else {
-        throw new InvalidCommandArgument("There are no teams in this match to select");
+        throw TextException.exception("There are no teams in this match to select");
       }
     } else {
       String[] names = input.split(",");
@@ -231,15 +225,14 @@ public abstract class CommunityCommand extends BaseCommand {
     return player;
   }
 
-  protected UUID getOnlineTarget(String target, UsersFeature service)
-      throws InvalidCommandArgument {
+  protected UUID getOnlineTarget(String target, UsersFeature service) {
     boolean username = UsersFeature.USERNAME_REGEX.matcher(target).matches();
     UUID id = null;
     if (!username) {
       try {
         id = UUID.fromString(target);
       } catch (IllegalArgumentException e) {
-        throw new InvalidCommandArgument(target + " is not a valid UUID.", false);
+        throw TextException.exception(target + " is not a valid UUID.");
       }
     }
 
@@ -250,7 +243,7 @@ public abstract class CommunityCommand extends BaseCommand {
           service.getId(
               target); // If user is online or was online recently, we will have their UUID.
       if (!cachedId.isPresent()) {
-        throw new InvalidCommandArgument(formatNotFoundMsg(target), false);
+        throw TextException.exception(formatNotFoundMsg(target));
       } else {
         id = cachedId.get();
       }

@@ -1,33 +1,22 @@
 package dev.pgm.community;
 
-import co.aikar.commands.BukkitCommandManager;
-import co.aikar.commands.InvalidCommandArgument;
+import dev.pgm.community.commands.graph.CommunityCommandGraph;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
-import dev.pgm.community.nick.feature.NickFeature;
-import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PGMUtils;
 import fr.minuskube.inv.InventoryManager;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Random;
-import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
-import tc.oc.pgm.util.text.TextException;
-import tc.oc.pgm.util.text.TextParser;
 
 public class Community extends JavaPlugin {
 
   // Config for general stuff (database)
   private CommunityConfig config;
-
-  // Command Manager
-  private BukkitCommandManager commands;
 
   // Database
   private DatabaseConnection database;
@@ -39,13 +28,10 @@ public class Community extends JavaPlugin {
 
   private Random random;
 
-  private Instant startTime;
-
   @Override
   public void onEnable() {
     plugin = this;
     random = new Random();
-    startTime = Instant.now();
 
     // If PGM is not enabled on running server, we need this to ensure things work :)
     if (!PGMUtils.isPGMEnabled()) {
@@ -79,64 +65,74 @@ public class Community extends JavaPlugin {
   }
 
   private void setupCommands() {
-    this.commands = new BukkitCommandManager(this);
-    commands.registerDependency(Random.class, new Random());
-    commands.registerDependency(Instant.class, "startTime", startTime);
-    commands.registerDependency(InventoryManager.class, inventory);
+    try {
+      new CommunityCommandGraph(this);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
-    // Contexts
-    commands
-        .getCommandContexts()
-        .registerIssuerOnlyContext(CommandAudience.class, c -> new CommandAudience(c.getSender()));
-
-    commands
-        .getCommandContexts()
-        .registerContext(
-            Duration.class,
-            c -> {
-              Duration value = Duration.ZERO;
-              String time = c.popFirstArg();
-              if (time != null) {
-                try {
-                  value = TextParser.parseDuration(time);
-                } catch (TextException e) {
-                  throw new InvalidCommandArgument(
-                      time + " is not a valid duration"); // TODO: Translate this
-                }
-              }
-              return value.abs();
-            });
-
-    // Command Completions
-
-    // Use for commands ALL players have access to, allows for vanished players to be hidden from
-    // tab-complete
-    // Note: use @players if you need ALL players
-    commands
-        .getCommandCompletions()
-        .registerCompletion(
-            "visible",
-            c -> {
-              // TODO: maybe add a config value to allow specific vanish perms to check (if server
-              // was not using PGM)
-              return Bukkit.getOnlinePlayers().stream()
-                  .filter(
-                      p ->
-                          !p.hasMetadata("isVanished")
-                              || c.getPlayer() != null && c.getPlayer().hasPermission("pgm.vanish"))
-                  .map(
-                      player -> {
-                        // Replace nicked user names
-                        if (features.getNick() != null) {
-                          NickFeature nicks = features.getNick();
-                          if (nicks.isNicked(player.getUniqueId())) {
-                            return nicks.getOnlineNick(player.getUniqueId());
-                          }
-                        }
-                        return player.getName();
-                      })
-                  .collect(Collectors.toSet());
-            });
+    //    this.commands = new BukkitCommandManager(this);
+    //    commands.registerDependency(Random.class, new Random());
+    //    commands.registerDependency(Instant.class, "startTime", startTime);
+    //    commands.registerDependency(InventoryManager.class, inventory);
+    //
+    //    // Contexts
+    //    commands
+    //        .getCommandContexts()
+    //        .registerIssuerOnlyContext(CommandAudience.class, c -> new
+    // CommandAudience(c.getSender()));
+    //
+    //    commands
+    //        .getCommandContexts()
+    //        .registerContext(
+    //            Duration.class,
+    //            c -> {
+    //              Duration value = Duration.ZERO;
+    //              String time = c.popFirstArg();
+    //              if (time != null) {
+    //                try {
+    //                  value = TextParser.parseDuration(time);
+    //                } catch (TextException e) {
+    //                  throw new InvalidCommandArgument(
+    //                      time + " is not a valid duration"); // TODO: Translate this
+    //                }
+    //              }
+    //              return value.abs();
+    //            });
+    //
+    //    // Command Completions
+    //
+    //    // Use for commands ALL players have access to, allows for vanished players to be hidden
+    // from
+    //    // tab-complete
+    //    // Note: use @players if you need ALL players
+    //    commands
+    //        .getCommandCompletions()
+    //        .registerCompletion(
+    //            "visible",
+    //            c -> {
+    //              // TODO: maybe add a config value to allow specific vanish perms to check (if
+    // server
+    //              // was not using PGM)
+    //              return Bukkit.getOnlinePlayers().stream()
+    //                  .filter(
+    //                      p ->
+    //                          !p.hasMetadata("isVanished")
+    //                              || c.getPlayer() != null &&
+    // c.getPlayer().hasPermission("pgm.vanish"))
+    //                  .map(
+    //                      player -> {
+    //                        // Replace nicked user names
+    //                        if (features.getNick() != null) {
+    //                          NickFeature nicks = features.getNick();
+    //                          if (nicks.isNicked(player.getUniqueId())) {
+    //                            return nicks.getOnlineNick(player.getUniqueId());
+    //                          }
+    //                        }
+    //                        return player.getName();
+    //                      })
+    //                  .collect(Collectors.toSet());
+    //            });
   }
 
   private void setupInventory() {
@@ -150,8 +146,8 @@ public class Community extends JavaPlugin {
 
   private void setupFeatures() {
     this.setupInventory();
+    this.features = new FeatureManager(getConfig(), getLogger(), database, inventory);
     this.setupCommands();
-    this.features = new FeatureManager(getConfig(), getLogger(), commands, inventory);
   }
 
   public String getServerName() {
@@ -184,10 +180,6 @@ public class Community extends JavaPlugin {
 
   public Random getRandom() {
     return random;
-  }
-
-  public BukkitCommandManager getCommandManager() {
-    return commands;
   }
 
   public void callEvent(CommunityEvent event) {

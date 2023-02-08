@@ -6,22 +6,16 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.events.PlayerPunishmentEvent;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.moderation.ModerationConfig;
-import dev.pgm.community.moderation.commands.BanCommand;
-import dev.pgm.community.moderation.commands.KickCommand;
-import dev.pgm.community.moderation.commands.MuteCommand;
-import dev.pgm.community.moderation.commands.PunishmentCommand;
-import dev.pgm.community.moderation.commands.ToolCommand;
-import dev.pgm.community.moderation.commands.WarnCommand;
 import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
+import dev.pgm.community.moderation.tools.ModerationTools;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.subs.types.PunishmentSubscriber;
 import dev.pgm.community.network.updates.types.PunishmentUpdate;
@@ -155,32 +149,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   @Override
-  public Set<CommunityCommand> getCommands() {
-    Set<CommunityCommand> commands = Sets.newHashSet();
-
-    if (getModerationConfig().isWarnEnabled()) {
-      commands.add(new WarnCommand());
-    }
-
-    if (getModerationConfig().isKickEnabled()) {
-      commands.add(new KickCommand());
-    }
-
-    if (getModerationConfig().isBanEnabled()) {
-      commands.add(new BanCommand());
-    }
-
-    if (getModerationConfig().isMuteEnabled()) {
-      commands.add(new MuteCommand());
-    }
-
-    if (PGMUtils.isPGMEnabled() && integration != null) {
-      commands.add(new ToolCommand(integration));
-    }
-
-    commands.add(new PunishmentCommand());
-
-    return getConfig().isEnabled() ? commands : Sets.newHashSet();
+  public ModerationTools getTools() {
+    return integration != null ? integration.getTools() : null;
   }
 
   @Override

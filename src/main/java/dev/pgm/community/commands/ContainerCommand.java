@@ -2,9 +2,9 @@ package dev.pgm.community.commands;
 
 import static net.kyori.adventure.text.Component.text;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Description;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -30,6 +30,8 @@ import tc.oc.pgm.util.Audience;
 
 public class ContainerCommand extends CommunityCommand implements Listener {
 
+  private static final String CMD_NAME = "chestedit|ce|cedit|containeredit";
+
   private Set<UUID> clickingPlayers = Sets.newHashSet();
   private Set<UUID> editingPlayers = Sets.newHashSet();
 
@@ -40,8 +42,8 @@ public class ContainerCommand extends CommunityCommand implements Listener {
     Community.get().getServer().getPluginManager().registerEvents(this, Community.get());
   }
 
-  @CommandAlias("chestedit|ce|cedit|containeredit")
-  @Description("Edit inventory contents of target block")
+  @CommandMethod(CMD_NAME)
+  @CommandDescription("Edit inventory contents of a target container block")
   @CommandPermission(CommunityPermissions.CONTAINER)
   public void containerEditCommand(CommandAudience audience, Player player) {
     if (isChoosing(player)) {

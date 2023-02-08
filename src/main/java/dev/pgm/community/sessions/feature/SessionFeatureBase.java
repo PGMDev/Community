@@ -1,15 +1,12 @@
 package dev.pgm.community.sessions.feature;
 
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.sessions.VanishedSessionListener;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.PGMUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -49,11 +46,6 @@ public abstract class SessionFeatureBase extends FeatureBase implements SessionF
 
     for (Player player : Bukkit.getOnlinePlayers())
       getLatestSession(player.getUniqueId(), false).thenAcceptAsync(this::endSession);
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet();
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

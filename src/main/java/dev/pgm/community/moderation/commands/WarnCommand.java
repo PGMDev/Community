@@ -1,31 +1,36 @@
 package dev.pgm.community.moderation.commands;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Syntax;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 
 public class WarnCommand extends CommunityCommand {
 
-  @Dependency private ModerationFeature moderation;
-  @Dependency private UsersFeature usernames;
-  @Dependency private NickFeature nicks;
+  private static final String WARN_CMD = "warn|w";
 
-  @CommandAlias("warn|w")
-  @Description("Warn a player for bad behavior")
-  @Syntax("[player] [reason]")
-  @CommandCompletion("@players *")
+  private final ModerationFeature moderation;
+  private final UsersFeature usernames;
+
+  public WarnCommand() {
+    this.moderation = Community.get().getFeatures().getModeration();
+    this.usernames = Community.get().getFeatures().getUsers();
+  }
+
+  @CommandMethod(WARN_CMD + " [target] [reason]")
+  @CommandDescription("Warn a player for bad behavior")
   @CommandPermission(CommunityPermissions.WARN)
-  public void warn(CommandAudience audience, String target, String reason) {
+  public void warn(
+      CommandAudience audience,
+      @Argument("target") String target,
+      @Argument("reason") String reason) {
     getTarget(target, usernames)
         .thenAccept(
             id -> {

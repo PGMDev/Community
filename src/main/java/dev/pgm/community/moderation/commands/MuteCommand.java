@@ -3,12 +3,13 @@ package dev.pgm.community.moderation.commands;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Syntax;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
+import cloud.commandframework.annotations.Flag;
+import cloud.commandframework.annotations.specifier.FlagYielding;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.ModerationFeature;
@@ -30,15 +31,27 @@ import tc.oc.pgm.util.player.PlayerComponent;
 
 public class MuteCommand extends CommunityCommand {
 
-  @Dependency private ModerationFeature moderation;
-  @Dependency private UsersFeature usernames;
+  private static final String MUTE_CMD = "mute|m";
+  private static final String UNMUTE_CMD = "unmute|um";
+  private static final String MUTE_LIST_CMD = "mutes";
 
-  @CommandAlias("mute|m")
-  @Description("Prevent player from speaking in the chat")
-  @Syntax("[player] [duration] [reason]")
-  @CommandCompletion("@players 30m|1h|6h *")
+  private final ModerationFeature moderation;
+  private final UsersFeature usernames;
+
+  public MuteCommand() {
+    this.moderation = Community.get().getFeatures().getModeration();
+    this.usernames = Community.get().getFeatures().getUsers();
+  }
+
+  @CommandMethod(MUTE_CMD + " <target> <duration> <reason>")
+  @CommandDescription("Prevent player from speaking in the chat")
   @CommandPermission(CommunityPermissions.MUTE)
-  public void mutePlayer(CommandAudience audience, String target, Duration length, String reason) {
+  public void mutePlayer(
+      CommandAudience audience,
+      @Argument("target") String target,
+      @Argument("duration") Duration length,
+      @Argument("reason") @FlagYielding String reason,
+      @Flag(value = "silent", aliases = "s") boolean silent) {
     getTarget(target, usernames)
         .thenAccept(
             id -> {
@@ -50,19 +63,17 @@ public class MuteCommand extends CommunityCommand {
                     reason,
                     length,
                     true,
-                    isDisguised(audience));
+                    isDisguised(audience) || silent);
               } else {
                 audience.sendWarning(formatNotFoundComponent(target));
               }
             });
   }
 
-  @CommandAlias("unmute|um")
-  @Description("Unmute a player")
-  @Syntax("[player]")
-  @CommandCompletion("@mutes")
+  @CommandMethod(UNMUTE_CMD + " <target>")
+  @CommandDescription("Unmute a player")
   @CommandPermission(CommunityPermissions.MUTE)
-  public void unMutePlayer(CommandAudience audience, String target) {
+  public void unMutePlayer(CommandAudience audience, @Argument("target") String target) {
     getTarget(target, usernames)
         .thenAccept(
             id -> {
@@ -127,8 +138,8 @@ public class MuteCommand extends CommunityCommand {
             });
   }
 
-  @CommandAlias("mutes")
-  @Description("List all online players who are muted")
+  @CommandMethod(MUTE_LIST_CMD)
+  @CommandDescription("List all online players who are muted")
   @CommandPermission(CommunityPermissions.MUTE)
   public void listOnlineMuted(CommandAudience audience) {
     Set<Player> mutedPlayers = moderation.getOnlineMutes();

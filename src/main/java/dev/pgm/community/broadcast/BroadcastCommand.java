@@ -1,31 +1,33 @@
 package dev.pgm.community.broadcast;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Subcommand;
-import co.aikar.commands.annotation.Syntax;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
+import cloud.commandframework.annotations.Flag;
+import cloud.commandframework.annotations.specifier.FlagYielding;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 
-@CommandAlias("broadcast|announce|bc")
-@Description("Broadcast an announcement to everyone")
-@CommandPermission(CommunityPermissions.BROADCAST)
 public class BroadcastCommand extends CommunityCommand {
 
-  @Dependency private BroadcastFeature broadcast;
+  private static final String CMD_NAME = "broadcast|announce|bc";
 
-  @Default
-  @Syntax("title [message] or [message]")
-  public void broadcastChat(CommandAudience audience, String message) {
-    broadcast.broadcast(message, false);
+  private final BroadcastFeature broadcast;
+
+  public BroadcastCommand() {
+    this.broadcast = Community.get().getFeatures().getBroadcast();
   }
 
-  @Subcommand("title")
-  public void broadcastTitle(CommandAudience audience, String message) {
-    broadcast.broadcast(message, true);
+  @CommandMethod(CMD_NAME + " <message>")
+  @CommandDescription("Broadcast an announcement to everyone")
+  @CommandPermission(CommunityPermissions.BROADCAST)
+  public void broadcastChat(
+      CommandAudience audience,
+      @Argument("message") @FlagYielding String message,
+      @Flag(value = "title", aliases = "t") boolean title) {
+    broadcast.broadcast(message, title);
   }
 }

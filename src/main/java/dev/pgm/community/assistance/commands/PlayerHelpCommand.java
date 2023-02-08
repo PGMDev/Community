@@ -1,9 +1,10 @@
 package dev.pgm.community.assistance.commands;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Syntax;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.specifier.Greedy;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
@@ -14,13 +15,20 @@ import org.bukkit.entity.Player;
 
 public class PlayerHelpCommand extends CommunityCommand {
 
-  @Dependency private AssistanceFeature assistance;
-  @Dependency private ModerationFeature moderation;
+  private static final String CMD_NAME = "assistance|assist|helpop|helpme";
 
-  @CommandAlias("assistance|assist|helpop|helpme")
-  @Description("Request help from staff members")
-  @Syntax("[reason] - Let staff know what you need help with")
-  public void assistanceCommand(CommandAudience viewer, Player player, String reason) {
+  private AssistanceFeature assistance;
+  private ModerationFeature moderation;
+
+  public PlayerHelpCommand() {
+    this.assistance = Community.get().getFeatures().getReports();
+    this.moderation = Community.get().getFeatures().getModeration();
+  }
+
+  @CommandMethod(CMD_NAME + " <reason>")
+  @CommandDescription("Request help from a staff member")
+  public void assistanceCommand(
+      CommandAudience viewer, Player player, @Argument("reason") @Greedy String reason) {
     Optional<MutePunishment> mute = moderation.getCachedMute(player.getUniqueId());
     if (mute.isPresent()) {
       viewer.sendWarning(mute.get().getChatMuteMessage());

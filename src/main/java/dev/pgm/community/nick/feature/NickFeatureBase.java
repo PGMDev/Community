@@ -7,14 +7,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.nick.Nick;
 import dev.pgm.community.nick.NickConfig;
-import dev.pgm.community.nick.commands.NickCommands;
 import dev.pgm.community.nick.data.NickSelection;
 import dev.pgm.community.nick.skin.SkinManager;
 import dev.pgm.community.utils.PGMUtils;
@@ -23,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -134,11 +130,6 @@ public abstract class NickFeatureBase extends FeatureBase implements NickFeature
               nickChoices.put(playerId, selection);
               return selection;
             });
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getNickConfig().isEnabled() ? Sets.newHashSet(new NickCommands()) : Sets.newHashSet();
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

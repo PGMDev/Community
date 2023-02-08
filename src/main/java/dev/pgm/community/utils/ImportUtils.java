@@ -1,6 +1,5 @@
 package dev.pgm.community.utils;
 
-import co.aikar.commands.InvalidCommandArgument;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -22,12 +21,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import tc.oc.pgm.util.text.TextException;
 
 public class ImportUtils {
 
   private static final Gson GSON = new Gson();
 
-  public static List<BukkitBanEntry> getBukkitBans() throws InvalidCommandArgument {
+  public static List<BukkitBanEntry> getBukkitBans() throws TextException {
     File file = new File("banned-players.json");
     if (file.exists()) {
       try {
@@ -35,10 +35,10 @@ public class ImportUtils {
             GSON.fromJson(Files.newReader(file, Charset.defaultCharset()), BukkitBanEntry[].class));
       } catch (JsonSyntaxException | JsonIOException | FileNotFoundException e) {
         e.printStackTrace();
-        throw new InvalidCommandArgument(e.getMessage(), false);
+        throw TextException.exception(e.getMessage());
       }
     } else {
-      throw new InvalidCommandArgument("No banned-players.json file was found!", false);
+      throw TextException.exception("No banned-players.json file was found!");
     }
   }
 

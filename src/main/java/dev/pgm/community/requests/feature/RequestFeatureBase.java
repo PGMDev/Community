@@ -18,9 +18,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.party.MapParty;
@@ -28,8 +26,6 @@ import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
-import dev.pgm.community.requests.commands.RequestCommands;
-import dev.pgm.community.requests.commands.SponsorCommands;
 import dev.pgm.community.requests.menu.SponsorMenu;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
@@ -127,17 +123,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
         .filter(m -> !hasMapCooldown(m))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    if (!getConfig().isEnabled()) return Sets.newHashSet();
-
-    Set<CommunityCommand> commands = Sets.newHashSet(new RequestCommands());
-
-    if (getRequestConfig().isSponsorEnabled()) commands.add(new SponsorCommands());
-
-    return commands;
   }
 
   @Override

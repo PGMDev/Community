@@ -6,14 +6,12 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Syntax;
-import co.aikar.commands.bukkit.contexts.OnlinePlayer;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
+import cloud.commandframework.annotations.Flag;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.ModerationConfig;
@@ -22,7 +20,6 @@ import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentFormats;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
-import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -48,33 +45,41 @@ import tc.oc.pgm.util.text.TextFormatter;
 
 public class PunishmentCommand extends CommunityCommand {
 
+  private static final String HISTORY_CMD = "punishmenthistory|ph";
+  private static final String REPEAT_CMD = "repeatpunishment|rp";
+  private static final String PARDON_CMD = "unban|pardon|forgive";
+  private static final String RECORD_CMD = "record|infractions|mypunishments";
+  private static final String LOOKUP_CMD = "lookup|l";
+
   public static final Duration DEFAULT_TEMPBAN_LENGTH = Duration.ofDays(7); // TODO: Maybe config?
 
-  @Dependency private ModerationFeature moderation;
-  @Dependency private UsersFeature usernames;
-  @Dependency private NickFeature nicks;
+  private final ModerationFeature moderation;
+  private final UsersFeature usernames;
 
-  @CommandAlias("punishmenthistory|ph")
-  @Description("View a list of recent punishments")
-  @Syntax("[page]")
+  public PunishmentCommand() {
+    this.moderation = Community.get().getFeatures().getModeration();
+    this.usernames = Community.get().getFeatures().getUsers();
+  }
+
+  @CommandMethod(HISTORY_CMD + " [page]")
+  @CommandDescription("View a list of recent punishments")
   @CommandPermission(CommunityPermissions.PUNISH)
   public void viewRecentPunishments(
-      CommandAudience audience, @Default("1") int page, @Default("1h") Duration length) {
+      CommandAudience audience,
+      @Argument(value = "page", defaultValue = "1") int page,
+      @Flag(value = "time", aliases = "l") Duration length) {
     moderation
-        .getRecentPunishments(length)
+        .getRecentPunishments(length != null ? length : Duration.ofHours(1))
         .thenAcceptAsync(
             punishments -> {
               sendPunishmentHistory(audience, null, punishments, page);
             });
   }
 
-  @CommandAlias("repeatpunishment|rp")
-  @Description("Repeat the last punishment you performed for another player")
-  @Syntax("[player]")
-  @CommandCompletion("@players")
+  @CommandMethod(REPEAT_CMD + " <target>")
+  @CommandDescription("Repeat the last punishment you performed for another player")
   @CommandPermission(CommunityPermissions.PUNISH)
-  public void repeatPunishment(
-      CommandAudience audience, @co.aikar.commands.annotation.Optional OnlinePlayer target) {
+  public void repeatPunishment(CommandAudience audience, @Argument("target") Player target) {
     audience
         .getId()
         .ifPresent(
@@ -89,7 +94,7 @@ public class PunishmentCommand extends CommunityCommand {
                 if (target != null) {
                   moderation.punish(
                       type,
-                      target.getPlayer().getUniqueId(),
+                      target.getUniqueId(),
                       audience,
                       reason,
                       length,
@@ -114,12 +119,10 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandAlias("unban|pardon|forgive")
-  @Description("Pardon all active punishments for a player")
-  @Syntax("[player]")
-  @CommandCompletion("*")
+  @CommandMethod(PARDON_CMD + " <target>")
+  @CommandDescription("Pardon all active punishments for a player")
   @CommandPermission(CommunityPermissions.UNBAN)
-  public void unbanPlayer(CommandAudience audience, String target) {
+  public void unbanPlayer(CommandAudience audience, @Argument("target") String target) {
     moderation
         .isBanned(target)
         .thenAcceptAsync(
@@ -152,22 +155,23 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandAlias("record|infractions|mypunishments")
-  @Description("View your punishment history")
-  @Syntax("[page]")
+  @CommandMethod(RECORD_CMD + " [page]")
+  @CommandDescription("View your own punishment history")
   @CommandPermission(CommunityPermissions.LOOKUP)
   public void viewOwnPunishmentHistory(
-      CommandAudience audience, Player player, @Default("1") int page) {
+      CommandAudience audience,
+      Player player,
+      @Argument(value = "page", defaultValue = "1") int page) {
     viewPunishmentHistory(audience, player.getName(), page);
   }
 
-  @CommandAlias("lookup|l")
-  @Description("View infraction history of a player")
-  @Syntax("[player] [page]")
-  @CommandCompletion("@players *")
+  @CommandMethod(LOOKUP_CMD + " <target> [page]")
+  @CommandDescription("View infraction history of a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewPunishmentHistory(
-      CommandAudience audience, String target, @Default("1") int page) {
+      CommandAudience audience,
+      @Argument("target") String target,
+      @Argument(value = "page", defaultValue = "1") int page) {
     moderation
         .query(target)
         .thenAcceptAsync(punishments -> sendPunishmentHistory(audience, target, punishments, page));

@@ -6,15 +6,11 @@ import static net.kyori.adventure.text.Component.translatable;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.assistance.AssistanceRequest;
 import dev.pgm.community.assistance.AssistanceRequest.RequestType;
 import dev.pgm.community.assistance.PlayerHelpRequest;
 import dev.pgm.community.assistance.Report;
 import dev.pgm.community.assistance.ReportConfig;
-import dev.pgm.community.assistance.commands.PlayerHelpCommand;
-import dev.pgm.community.assistance.commands.ReportCommands;
 import dev.pgm.community.assistance.menu.ReportCategoryMenu;
 import dev.pgm.community.events.PlayerHelpRequestEvent;
 import dev.pgm.community.events.PlayerPunishmentEvent;
@@ -90,13 +86,6 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
 
   protected ReportConfig getReportConfig() {
     return (ReportConfig) getConfig();
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getReportConfig().isEnabled()
-        ? Sets.newHashSet(new ReportCommands(), new PlayerHelpCommand())
-        : Sets.newHashSet();
   }
 
   private boolean isCooldownEnabled() {

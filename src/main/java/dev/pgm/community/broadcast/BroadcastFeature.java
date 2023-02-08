@@ -3,16 +3,13 @@ package dev.pgm.community.broadcast;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -88,10 +85,5 @@ public class BroadcastFeature extends FeatureBase {
     if (getBroadcastConfig().isSoundEnabled()) {
       BroadcastUtils.playGlobalSound(Sounds.BROADCAST);
     }
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() ? Sets.newHashSet(new BroadcastCommand()) : Sets.newHashSet();
   }
 }

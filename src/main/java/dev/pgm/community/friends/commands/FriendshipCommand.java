@@ -6,14 +6,10 @@ import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Subcommand;
-import co.aikar.commands.annotation.Syntax;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -52,19 +48,24 @@ import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandAlias("friend|friendship|fs|frs")
-@Description("Manage your friend relationships")
-@CommandPermission(CommunityPermissions.FRIENDSHIP)
 public class FriendshipCommand extends CommunityCommand {
 
-  @Dependency private FriendshipFeature friends;
-  @Dependency private UsersFeature users;
-  @Dependency private NickFeature nicks;
+  private static final String CMD_NAME = "friend|friendship|fs|friends";
 
-  @Default
-  @CommandAlias("friends")
-  @Subcommand("list")
-  public void list(CommandAudience sender, @Default("1") int page) {
+  private final FriendshipFeature friends;
+  private final UsersFeature users;
+  private final NickFeature nicks;
+
+  public FriendshipCommand() {
+    this.friends = Community.get().getFeatures().getFriendships();
+    this.users = Community.get().getFeatures().getUsers();
+    this.nicks = Community.get().getFeatures().getNick();
+  }
+
+  @CommandMethod(CMD_NAME + " [page]")
+  @CommandDescription("View a list of your friends")
+  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  public void list(CommandAudience sender, @Argument(value = "page", defaultValue = "1") int page) {
     if (sender.isPlayer()) {
       friends
           .getFriends(sender.getPlayer().getUniqueId())
@@ -75,9 +76,11 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @Subcommand("requests|incoming|pending")
-  @Description("View a list of your pending friend requests")
-  public void requests(CommandAudience sender, @Default("1") int page) {
+  @CommandMethod(CMD_NAME + " requests [page]")
+  @CommandDescription("View a list of your pending friend requests")
+  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  public void requests(
+      CommandAudience sender, @Argument(value = "page", defaultValue = "1") int page) {
     if (sender.isPlayer()) {
       friends
           .getIncomingRequests(sender.getPlayer().getUniqueId())
@@ -99,11 +102,10 @@ public class FriendshipCommand extends CommunityCommand {
                 }
               });
 
-  @Subcommand("add|request|a")
-  @Syntax("[username | uuid] - Name or uuid of friend to add")
-  @Description("Sends a friend request to another player")
-  @CommandCompletion("@visible")
-  public void add(CommandAudience sender, String target) {
+  @CommandMethod(CMD_NAME + " add <username>")
+  @CommandDescription("Sends a friend request to another player")
+  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  public void add(CommandAudience sender, @Argument("username") String target) {
     if (sender.isPlayer()) {
 
       // Handle disguised players with fake requests
@@ -188,9 +190,10 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @Subcommand("remove|delete|rm")
-  @Syntax("[username | uuid] - Name or uuid of friend to remove")
-  public void remove(CommandAudience sender, String target) {
+  @CommandMethod(CMD_NAME + " remove <username>")
+  @CommandDescription("Unfriend the input user")
+  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  public void remove(CommandAudience sender, @Argument("username") String target) {
     if (sender.isPlayer()) {
       getTarget(target, users)
           .thenAcceptAsync(
@@ -232,10 +235,10 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @Subcommand("accept|acc")
-  @Syntax("[username | uuid] - Name or uuid to accept")
-  @Description("Accept an incoming friend request")
-  public void acceptRequest(CommandAudience sender, String target) {
+  @CommandMethod(CMD_NAME + " accept <username>")
+  @CommandDescription("Accept an incoming friend request")
+  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  public void acceptRequest(CommandAudience sender, @Argument("username") String target) {
     if (sender.isPlayer()) {
       getTarget(target, users)
           .thenAcceptAsync(
@@ -294,9 +297,9 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @Subcommand("reject|deny")
-  @Syntax("[username | uuid] - Name or uuid to reject")
-  public void rejectRequest(CommandAudience sender, String target) {
+  @CommandMethod(CMD_NAME + " reject <username>")
+  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  public void rejectRequest(CommandAudience sender, @Argument("username") String target) {
     if (sender.isPlayer()) {
       getTarget(target, users)
           .thenAcceptAsync(

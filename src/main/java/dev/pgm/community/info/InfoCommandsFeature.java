@@ -1,9 +1,6 @@
 package dev.pgm.community.info;
 
-import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
@@ -26,18 +23,13 @@ public class InfoCommandsFeature extends FeatureBase {
   public void onPlayerCommandProcess(PlayerCommandPreprocessEvent event) {
     // We dynamically check for defined commands, and send the related feedback
     getInfoConfig().getInfoCommands().stream()
-        .filter(c -> event.getMessage().startsWith("/" + c.getName()))
+        .filter(c -> event.getMessage().toLowerCase().startsWith("/" + c.getName().toLowerCase()))
         .findAny()
         .ifPresent(
             command -> {
               command.sendCommand(event.getPlayer());
               event.setCancelled(true);
             });
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet(); // No actual commands, see #onPlayerCommandProcess
   }
 
   @Override

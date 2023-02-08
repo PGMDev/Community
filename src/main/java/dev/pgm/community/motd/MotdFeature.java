@@ -1,9 +1,6 @@
 package dev.pgm.community.motd;
 
-import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
@@ -31,10 +28,5 @@ public class MotdFeature extends FeatureBase {
     for (String line : getMotdConfig().getLines()) {
       event.getPlayer().sendMessage(BukkitUtils.colorize(line));
     }
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet();
   }
 }

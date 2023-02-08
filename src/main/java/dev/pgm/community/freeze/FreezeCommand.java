@@ -4,12 +4,11 @@ import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Flags;
+import cloud.commandframework.annotations.Argument;
+import cloud.commandframework.annotations.CommandDescription;
+import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
@@ -22,18 +21,24 @@ import tc.oc.pgm.util.player.PlayerComponent;
 
 public class FreezeCommand extends CommunityCommand {
 
-  @Dependency private FreezeFeature freeze;
+  private static final String FREEZE_CMD = "freeze|fz|f";
+  private static final String FREEZE_LIST_CMD = "frozenlist|fls|flist";
 
-  @CommandAlias("freeze|fz|f")
-  @Description("Toggle a player's frozen state")
-  @CommandCompletion("@players")
+  private FreezeFeature freeze;
+
+  public FreezeCommand() {
+    this.freeze = Community.get().getFeatures().getFreeze();
+  }
+
+  @CommandMethod(FREEZE_CMD + " <player>")
+  @CommandDescription("Toggle a player's frozen state")
   @CommandPermission(CommunityPermissions.FREEZE)
-  public void freeze(CommandAudience sender, @Flags("other") Player target) {
+  public void freeze(CommandAudience sender, @Argument("player") Player target) {
     freeze.setFrozen(sender, target, !freeze.isFrozen(target), isDisguised(sender));
   }
 
-  @CommandAlias("frozenlist|fls|flist")
-  @Description("View a list of frozen players")
+  @CommandMethod(FREEZE_LIST_CMD)
+  @CommandDescription("View a list of frozen players")
   @CommandPermission(CommunityPermissions.FREEZE)
   public void sendFrozenList(CommandAudience sender) {
 
