@@ -1,7 +1,5 @@
 package dev.pgm.community.commands.graph;
 
-import cloud.commandframework.extra.confirmation.CommandConfirmationManager;
-import cloud.commandframework.minecraft.extras.MinecraftHelp;
 import dev.pgm.community.Community;
 import dev.pgm.community.assistance.commands.PlayerHelpCommand;
 import dev.pgm.community.assistance.commands.ReportCommands;
@@ -39,6 +37,8 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.command.injectors.MatchPlayerProvider;
 import tc.oc.pgm.command.injectors.MatchProvider;
 import tc.oc.pgm.command.util.CommandGraph;
+import tc.oc.pgm.lib.cloud.commandframework.extra.confirmation.CommandConfirmationManager;
+import tc.oc.pgm.lib.cloud.commandframework.minecraft.extras.MinecraftHelp;
 import tc.oc.pgm.util.Audience;
 
 public class CommunityCommandGraph extends CommandGraph<Community> {
