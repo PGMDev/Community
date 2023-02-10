@@ -4,10 +4,6 @@ import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -16,13 +12,14 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 
 public class FreezeCommand extends CommunityCommand {
-
-  private static final String FREEZE_CMD = "freeze|fz|f";
-  private static final String FREEZE_LIST_CMD = "frozenlist|fls|flist";
 
   private FreezeFeature freeze;
 
@@ -30,14 +27,14 @@ public class FreezeCommand extends CommunityCommand {
     this.freeze = Community.get().getFeatures().getFreeze();
   }
 
-  @CommandMethod(FREEZE_CMD + " <player>")
+  @CommandMethod("freeze|fz|f <player>")
   @CommandDescription("Toggle a player's frozen state")
   @CommandPermission(CommunityPermissions.FREEZE)
   public void freeze(CommandAudience sender, @Argument("player") Player target) {
     freeze.setFrozen(sender, target, !freeze.isFrozen(target), isDisguised(sender));
   }
 
-  @CommandMethod(FREEZE_LIST_CMD)
+  @CommandMethod("frozenlist|fls|flist")
   @CommandDescription("View a list of frozen players")
   @CommandPermission(CommunityPermissions.FREEZE)
   public void sendFrozenList(CommandAudience sender) {

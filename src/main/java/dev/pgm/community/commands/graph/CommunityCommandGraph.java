@@ -1,10 +1,13 @@
 package dev.pgm.community.commands.graph;
 
+import static net.kyori.adventure.text.Component.text;
+
 import dev.pgm.community.Community;
 import dev.pgm.community.assistance.commands.PlayerHelpCommand;
 import dev.pgm.community.assistance.commands.ReportCommands;
 import dev.pgm.community.broadcast.BroadcastCommand;
 import dev.pgm.community.chat.management.ChatManagementCommand;
+import dev.pgm.community.commands.CommunityPluginCommand;
 import dev.pgm.community.commands.ContainerCommand;
 import dev.pgm.community.commands.FlightCommand;
 import dev.pgm.community.commands.GamemodeCommand;
@@ -24,20 +27,27 @@ import dev.pgm.community.moderation.commands.WarnCommand;
 import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.nick.commands.NickCommands;
 import dev.pgm.community.party.MapPartyCommands;
+import dev.pgm.community.party.MapPartyType;
 import dev.pgm.community.requests.commands.RequestCommands;
 import dev.pgm.community.requests.commands.SponsorCommands;
 import dev.pgm.community.requests.commands.TokenCommands;
 import dev.pgm.community.teleports.TeleportCommand;
 import dev.pgm.community.users.commands.UserInfoCommands;
 import dev.pgm.community.utils.CommandAudience;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.command.CommandSender;
 import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.command.injectors.MatchPlayerProvider;
 import tc.oc.pgm.command.injectors.MatchProvider;
+import tc.oc.pgm.command.parsers.MapInfoParser;
 import tc.oc.pgm.command.util.CommandGraph;
+import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.EnumArgument.EnumParser;
+import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.StringArgument;
 import tc.oc.pgm.lib.cloud.commandframework.extra.confirmation.CommandConfirmationManager;
+import tc.oc.pgm.lib.cloud.commandframework.meta.CommandMeta;
 import tc.oc.pgm.lib.cloud.commandframework.minecraft.extras.MinecraftHelp;
 import tc.oc.pgm.util.Audience;
 
@@ -54,19 +64,32 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
 
   @Override
   protected CommandConfirmationManager<CommandSender> createConfirmationManager() {
-    return null;
+    CommandConfirmationManager<CommandSender> ccm =
+        new CommandConfirmationManager<>(
+            30L,
+            TimeUnit.SECONDS,
+            context ->
+                Audience.get(context.getCommandContext().getSender())
+                    .sendWarning(text("Confirmation required. Confirm using /community confirm.")),
+            sender ->
+                Audience.get(sender).sendWarning(text("You don't have any pending commands.")));
+    ccm.registerConfirmationProcessor(this.manager);
+    return ccm;
   }
 
   @Override
   protected void setupInjectors() {
+    registerInjector(CommandAudience.class, new CommandAudienceProvider());
     registerInjector(PGM.class, PGM::get);
     registerInjector(Match.class, new MatchProvider());
     registerInjector(MatchPlayer.class, new MatchPlayerProvider());
-    registerInjector(CommandAudience.class, new CommandAudienceProvider());
   }
 
   @Override
-  protected void setupParsers() {}
+  protected void setupParsers() {
+    registerParser(MapInfo.class, MapInfoParser::new);
+    registerParser(MapPartyType.class, new EnumParser<>(MapPartyType.class));
+  }
 
   @Override
   protected void registerCommands() {
@@ -124,5 +147,27 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     register(new ServerInfoCommand());
     register(new StaffCommand());
     register(new SudoCommand());
+
+    // Community plugin command
+    register(new CommunityPluginCommand());
+
+    // Confirm command
+    manager.command(
+        manager
+            .commandBuilder("community")
+            .literal("confirm")
+            .meta(CommandMeta.DESCRIPTION, "Confirm a pending command")
+            .handler(this.confirmationManager.createConfirmationExecutionHandler()));
+
+    // Help command
+    manager.command(
+        manager
+            .commandBuilder("community")
+            .literal("help")
+            .argument(StringArgument.optional("query", StringArgument.StringMode.GREEDY))
+            .handler(
+                context ->
+                    minecraftHelp.queryCommands(
+                        context.<String>getOptional("query").orElse(""), context.getSender())));
   }
 }

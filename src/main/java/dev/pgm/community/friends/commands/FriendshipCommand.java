@@ -6,10 +6,6 @@ import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -43,14 +39,16 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class FriendshipCommand extends CommunityCommand {
-
-  private static final String CMD_NAME = "friend|friendship|fs|friends";
 
   private final FriendshipFeature friends;
   private final UsersFeature users;
@@ -62,7 +60,7 @@ public class FriendshipCommand extends CommunityCommand {
     this.nicks = Community.get().getFeatures().getNick();
   }
 
-  @CommandMethod(CMD_NAME + " [page]")
+  @CommandMethod("friend|friendship|fs|friends [page]")
   @CommandDescription("View a list of your friends")
   @CommandPermission(CommunityPermissions.FRIENDSHIP)
   public void list(CommandAudience sender, @Argument(value = "page", defaultValue = "1") int page) {
@@ -76,7 +74,7 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " requests [page]")
+  @CommandMethod("friend|friendship|fs|friends requests [page]")
   @CommandDescription("View a list of your pending friend requests")
   @CommandPermission(CommunityPermissions.FRIENDSHIP)
   public void requests(
@@ -102,7 +100,7 @@ public class FriendshipCommand extends CommunityCommand {
                 }
               });
 
-  @CommandMethod(CMD_NAME + " add <username>")
+  @CommandMethod("friend|friendship|fs|friends add <username>")
   @CommandDescription("Sends a friend request to another player")
   @CommandPermission(CommunityPermissions.FRIENDSHIP)
   public void add(CommandAudience sender, @Argument("username") String target) {
@@ -190,7 +188,7 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " remove <username>")
+  @CommandMethod("friend|friendship|fs|friends remove <username>")
   @CommandDescription("Unfriend the input user")
   @CommandPermission(CommunityPermissions.FRIENDSHIP)
   public void remove(CommandAudience sender, @Argument("username") String target) {
@@ -235,7 +233,7 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " accept <username>")
+  @CommandMethod("friend|friendship|fs|friends accept <username>")
   @CommandDescription("Accept an incoming friend request")
   @CommandPermission(CommunityPermissions.FRIENDSHIP)
   public void acceptRequest(CommandAudience sender, @Argument("username") String target) {
@@ -297,7 +295,7 @@ public class FriendshipCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " reject <username>")
+  @CommandMethod("friend|friendship|fs|friends reject <username>")
   @CommandPermission(CommunityPermissions.FRIENDSHIP)
   public void rejectRequest(CommandAudience sender, @Argument("username") String target) {
     if (sender.isPlayer()) {

@@ -1,9 +1,5 @@
 package dev.pgm.community.assistance.commands;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.specifier.Greedy;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
@@ -12,10 +8,12 @@ import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Optional;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 
 public class PlayerHelpCommand extends CommunityCommand {
-
-  private static final String CMD_NAME = "assistance|assist|helpop|helpme";
 
   private AssistanceFeature assistance;
   private ModerationFeature moderation;
@@ -25,7 +23,7 @@ public class PlayerHelpCommand extends CommunityCommand {
     this.moderation = Community.get().getFeatures().getModeration();
   }
 
-  @CommandMethod(CMD_NAME + " <reason>")
+  @CommandMethod("assistance|assist|helpop|helpme <reason>")
   @CommandDescription("Request help from a staff member")
   public void assistanceCommand(
       CommandAudience viewer, Player player, @Argument("reason") @Greedy String reason) {

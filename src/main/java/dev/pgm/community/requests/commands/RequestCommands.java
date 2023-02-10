@@ -4,10 +4,6 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -29,15 +25,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class RequestCommands extends CommunityCommand {
-
-  private static final String REQUEST_CMD = "request|req";
-  private static final String REQUESTS_CMD = "requests|reqs";
-  private static final String COOLDOWNS_CMD = "mapcooldowns|mapcd|mapcooldown";
 
   private final RequestFeature requests;
 
@@ -45,7 +41,7 @@ public class RequestCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod(REQUEST_CMD + " <map>")
+  @CommandMethod("request|req <map>")
   @CommandDescription("Request a map")
   @Syntax("[map] - Name of map to request")
   @CommandPermission(CommunityPermissions.REQUEST)
@@ -53,7 +49,7 @@ public class RequestCommands extends CommunityCommand {
     requests.request(sender, map);
   }
 
-  @CommandMethod(COOLDOWNS_CMD + " [page]")
+  @CommandMethod("mapcooldowns|mapcd|mapcooldown [page]")
   @CommandDescription("View a list of current map cooldowns")
   @CommandPermission(CommunityPermissions.VIEW_MAP_COOLDOWNS)
   public void viewCooldowns(
@@ -127,7 +123,7 @@ public class RequestCommands extends CommunityCommand {
     }.display(audience.getAudience(), maps, page);
   }
 
-  @CommandMethod(REQUESTS_CMD + " [page]")
+  @CommandMethod("requests|reqs [page]")
   @CommandDescription("View and manage map requests")
   @CommandPermission(CommunityPermissions.STAFF)
   public void listRequests(
@@ -199,7 +195,7 @@ public class RequestCommands extends CommunityCommand {
     }.display(audience.getAudience(), requestCounts.keySet(), page);
   }
 
-  @CommandMethod(REQUESTS_CMD + " clear [map]")
+  @CommandMethod("requests|reqs clear [map]")
   @CommandDescription("Clear map requests")
   @CommandPermission(CommunityPermissions.STAFF)
   public void clearRequests(CommandAudience audience, @Argument("map") MapInfo map) {

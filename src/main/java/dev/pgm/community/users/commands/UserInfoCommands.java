@@ -8,10 +8,6 @@ import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
@@ -40,15 +36,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class UserInfoCommands extends CommunityCommand {
-
-  private static final String SEEN_CMD = "seen|lastseen|find";
-  private static final String ALTS_CMD = "alts|alternateaccounts";
-  private static final String PROFILE_CMD = "profile|user";
 
   private final UsersFeature users;
   private final ModerationFeature moderation;
@@ -60,7 +56,7 @@ public class UserInfoCommands extends CommunityCommand {
     this.friends = Community.get().getFeatures().getFriendships();
   }
 
-  @CommandMethod(SEEN_CMD + " <target>")
+  @CommandMethod("seen|lastseen|find <target>")
   @CommandDescription("View when a player was last online")
   @CommandPermission(CommunityPermissions.FIND)
   public void seenPlayer(CommandAudience audience, @Argument("target") String target) {
@@ -114,7 +110,7 @@ public class UserInfoCommands extends CommunityCommand {
         });
   }
 
-  @CommandMethod(ALTS_CMD + " [target]")
+  @CommandMethod("alts|alternateaccounts [target]")
   @CommandDescription("View a list of alternate accounts of a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewAlts(CommandAudience audience, @Argument("target") String target) {
@@ -214,7 +210,7 @@ public class UserInfoCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod(PROFILE_CMD + " <target> [all]")
+  @CommandMethod("profile|user <target> [all]")
   @CommandDescription("View account info for a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewUserProfile(

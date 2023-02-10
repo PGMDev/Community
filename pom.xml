@@ -123,6 +123,7 @@
                     <artifactSet>
                         <includes>
                             <include>net.kyori:*:*</include>
+                            <include>co.aikar:*</include>
                             <include>cloud.commandframework:cloud-*:*</include>
                             <include>me.lucko:commodore:*</include>
                             <include>tc.oc.pgm:util</include>
@@ -140,16 +141,6 @@
                             </excludes>
                         </filter>
                     </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>io.leangen.geantyref</pattern>
-                            <shadedPattern>tc.oc.pgm.lib.io.leangen.geantyref</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>me.lucko.commodore</pattern>
-                            <shadedPattern>tc.oc.pgm.lib.me.lucko.commodore</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
                 <executions>
                     <execution>

@@ -4,11 +4,6 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.annotations.Flag;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -21,6 +16,11 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextException;
@@ -28,16 +28,13 @@ import tc.oc.pgm.util.text.TextFormatter;
 
 public class MobCommand extends CommunityCommand {
 
-  private static final String MOB_CMD = "mob";
-  private static final String MOBS_CMD = "mobs";
-
   private final MobFeature mobs;
 
   public MobCommand() {
     this.mobs = Community.get().getFeatures().getMobs();
   }
 
-  @CommandMethod(MOBS_CMD)
+  @CommandMethod("mobs")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void viewMobs(CommandAudience audience) {
     if (!audience.isPlayer()) {
@@ -121,7 +118,7 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod(MOB_CMD + " <mob> [amount]")
+  @CommandMethod("mob <mob> [amount]")
   @CommandDescription("Spawn a mob that attack nearby targets")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void mob(
@@ -145,7 +142,7 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod(MOBS_CMD + " clear")
+  @CommandMethod("mobs clear")
   @CommandDescription("Remove your spawned mobs from the world")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void clear(CommandAudience audience) {
@@ -160,7 +157,7 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod(MOBS_CMD + " tphere|tph")
+  @CommandMethod("mobs tphere|tph")
   @CommandDescription("Bring all of your spawned mobs to your location")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void tphere(CommandAudience audience) {
@@ -175,7 +172,7 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod(MOBS_CMD + " heal")
+  @CommandMethod("mobs heal")
   @CommandDescription("Replenish all spawned mobs health to their max value")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void heal(CommandAudience audience) {
@@ -190,7 +187,7 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod(MOBS_CMD + " attack [target]")
+  @CommandMethod("mobs attack [target]")
   @CommandDescription(
       "Toggle whether hostile targeting is enabled. When provided a player will set the target")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
@@ -217,7 +214,7 @@ public class MobCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod(MOBS_CMD + " follow")
+  @CommandMethod("mobs follow")
   @CommandDescription("Toggle whether your spawned mobs are in follow mode or not")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void follow(CommandAudience audience) {
@@ -236,7 +233,7 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod(MOBS_CMD + " speed <speed>")
+  @CommandMethod("mobs speed <speed>")
   @CommandDescription("Set the global speed at which followed mobs travel towards their target")
   @CommandPermission(CommunityPermissions.MOB_SPAWN)
   public void speed(CommandAudience audience, @Argument("speed") float speed) {

@@ -2,13 +2,13 @@ package dev.pgm.community.commands;
 
 import static net.kyori.adventure.text.Component.text;
 
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.time.Instant;
 import net.kyori.adventure.text.format.NamedTextColor;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.util.text.TemporalComponent;
 
 public class ServerInfoCommand extends CommunityCommand {

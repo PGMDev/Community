@@ -5,11 +5,6 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.text.TextException.exception;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.annotations.specifier.Range;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -32,15 +27,18 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Range;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class ReportCommands extends CommunityCommand {
-
-  private static final String REPORT_CMD = "report";
-  private static final String REPORT_LIST_CMD = "reports|reporthistory|reps";
 
   private final AssistanceFeature reports;
   private final UsersFeature usernames;
@@ -52,13 +50,13 @@ public class ReportCommands extends CommunityCommand {
     this.moderation = Community.get().getFeatures().getModeration();
   }
 
-  @CommandMethod(REPORT_CMD + " <username> [reason]")
+  @CommandMethod("report <username> [reason]")
   @CommandDescription("Report a player who is breaking the rules")
   public void report(
       CommandAudience viewer,
       Player sender,
       @Argument("username") String target,
-      @Argument("reason") String reason) {
+      @Argument("reason") @Greedy String reason) {
     checkEnabled();
     Optional<MutePunishment> mute = moderation.getCachedMute(sender.getUniqueId());
     if (mute.isPresent()) {
@@ -80,7 +78,7 @@ public class ReportCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod(REPORT_LIST_CMD + " [page]")
+  @CommandMethod("reports|reporthistory|reps [page]")
   @CommandDescription("View report history")
   @CommandPermission(CommunityPermissions.REPORTS)
   public void recentReports(
@@ -90,7 +88,7 @@ public class ReportCommands extends CommunityCommand {
     sendReportHistory(audience, reports.getRecentReports(), page);
   }
 
-  @CommandMethod(REPORT_LIST_CMD + " player <player> [page]")
+  @CommandMethod("reports|reporthistory|reps player <player> [page]")
   @CommandDescription("View a list of recent reports for a target player")
   @CommandPermission(CommunityPermissions.REPORTS)
   public void sendPlayerReportHistory(

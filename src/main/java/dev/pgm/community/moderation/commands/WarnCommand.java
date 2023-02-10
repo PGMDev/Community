@@ -1,9 +1,5 @@
 package dev.pgm.community.moderation.commands;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -11,10 +7,12 @@ import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 
 public class WarnCommand extends CommunityCommand {
-
-  private static final String WARN_CMD = "warn|w";
 
   private final ModerationFeature moderation;
   private final UsersFeature usernames;
@@ -24,7 +22,7 @@ public class WarnCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod(WARN_CMD + " [target] [reason]")
+  @CommandMethod("warn|w [target] [reason]")
   @CommandDescription("Warn a player for bad behavior")
   @CommandPermission(CommunityPermissions.WARN)
   public void warn(

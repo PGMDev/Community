@@ -3,10 +3,6 @@ package dev.pgm.community.commands;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import com.google.common.collect.Maps;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -18,13 +14,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.StringUtils;
 
 public class GamemodeCommand extends CommunityCommand {
 
-  private static final String CMD_NAME = "gamemode|gm";
-
-  @CommandMethod(CMD_NAME + " [gamemode] [targets]")
+  @CommandMethod("gamemode|gm [gamemode] [targets]")
   @CommandDescription("Adjust your or another player's gamemode")
   @CommandPermission(CommunityPermissions.GAMEMODE)
   public void gamemode(

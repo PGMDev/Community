@@ -3,12 +3,6 @@ package dev.pgm.community.moderation.commands;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.annotations.Flag;
-import cloud.commandframework.annotations.specifier.FlagYielding;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -25,15 +19,17 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.FlagYielding;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 
 public class MuteCommand extends CommunityCommand {
-
-  private static final String MUTE_CMD = "mute|m";
-  private static final String UNMUTE_CMD = "unmute|um";
-  private static final String MUTE_LIST_CMD = "mutes";
 
   private final ModerationFeature moderation;
   private final UsersFeature usernames;
@@ -43,7 +39,7 @@ public class MuteCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod(MUTE_CMD + " <target> <duration> <reason>")
+  @CommandMethod("mute|m <target> <duration> <reason>")
   @CommandDescription("Prevent player from speaking in the chat")
   @CommandPermission(CommunityPermissions.MUTE)
   public void mutePlayer(
@@ -70,7 +66,7 @@ public class MuteCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod(UNMUTE_CMD + " <target>")
+  @CommandMethod("unmute|um <target>")
   @CommandDescription("Unmute a player")
   @CommandPermission(CommunityPermissions.MUTE)
   public void unMutePlayer(CommandAudience audience, @Argument("target") String target) {
@@ -138,7 +134,7 @@ public class MuteCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod(MUTE_LIST_CMD)
+  @CommandMethod("mutes")
   @CommandDescription("List all online players who are muted")
   @CommandPermission(CommunityPermissions.MUTE)
   public void listOnlineMuted(CommandAudience audience) {

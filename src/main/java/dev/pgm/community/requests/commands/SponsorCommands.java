@@ -6,9 +6,6 @@ import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -38,13 +35,14 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.Phase;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class SponsorCommands extends CommunityCommand {
-
-  private static final String CMD_NAME = "sponsor";
 
   private final RequestFeature requests;
 
@@ -52,7 +50,7 @@ public class SponsorCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod(CMD_NAME)
+  @CommandMethod("sponsor")
   public void info(CommandAudience audience, Player player) {
     Component header =
         TextFormatter.horizontalLineHeading(
@@ -192,13 +190,13 @@ public class SponsorCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod(CMD_NAME + " request <map>")
+  @CommandMethod("sponsor request <map>")
   @CommandDescription("Sponsor a map request")
   public void sponsor(CommandAudience audience, Player sender, @Argument("map") MapInfo map) {
     requests.sponsor(sender, map);
   }
 
-  @CommandMethod(CMD_NAME + " cancel")
+  @CommandMethod("sponsor cancel")
   public void cancel(CommandAudience audience, Player sender) {
     if (requests.cancelSponsorRequest(sender.getUniqueId())) {
       audience.sendMessage(text("Removed sponsor request!", NamedTextColor.GREEN));
@@ -207,12 +205,12 @@ public class SponsorCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " menu")
+  @CommandMethod("sponsor menu")
   public void menu(CommandAudience audience, Player sender) {
     requests.openMenu(sender);
   }
 
-  @CommandMethod(CMD_NAME + " maps [page]")
+  @CommandMethod("sponsor maps [page]")
   @CommandDescription("View a list of maps which can be sponsored")
   public void viewMapList(
       CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
@@ -299,7 +297,7 @@ public class SponsorCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " queue [page]")
+  @CommandMethod("sponsor queue [page]")
   @CommandDescription("View the sponsored maps queue")
   public void viewQueue(
       CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {

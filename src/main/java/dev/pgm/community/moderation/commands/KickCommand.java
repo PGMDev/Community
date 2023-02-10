@@ -1,11 +1,5 @@
 package dev.pgm.community.moderation.commands;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.annotations.Flag;
-import cloud.commandframework.annotations.specifier.FlagYielding;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -13,10 +7,14 @@ import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.FlagYielding;
 
 public class KickCommand extends CommunityCommand {
-
-  private static final String KICK_CMD = "kick|k";
 
   private final ModerationFeature moderation;
   private final UsersFeature usernames;
@@ -26,7 +24,7 @@ public class KickCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod(KICK_CMD + " <target> <reason>")
+  @CommandMethod("kick|k <target> <reason>")
   @CommandDescription("Kick a player from the server")
   @CommandPermission(CommunityPermissions.KICK)
   public void kick(

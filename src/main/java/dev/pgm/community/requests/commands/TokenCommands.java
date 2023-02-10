@@ -4,10 +4,6 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -23,12 +19,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
 public class TokenCommands extends CommunityCommand {
-
-  private static final String CMD_NAME = "tokens|sponsortokens|token";
 
   private final UsersFeature users;
   private final RequestFeature requests;
@@ -38,7 +36,7 @@ public class TokenCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod(CMD_NAME + " give <target> <amount>")
+  @CommandMethod("tokens|sponsortokens|token give <target> <amount>")
   @CommandDescription("Give the targeted player sponsor tokens")
   @CommandPermission(CommunityPermissions.ADMIN)
   public void give(
@@ -69,7 +67,7 @@ public class TokenCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod(CMD_NAME + " [target]")
+  @CommandMethod("tokens|sponsortokens|token [target]")
   @CommandDescription("Check your token balance")
   public void tokens(CommandAudience audience, @Argument(value = "target") String target) {
     if (target != null && audience.hasPermission(CommunityPermissions.TOKEN_BALANCE)) {

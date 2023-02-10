@@ -6,11 +6,6 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.annotations.Flag;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -38,18 +33,17 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class PunishmentCommand extends CommunityCommand {
-
-  private static final String HISTORY_CMD = "punishmenthistory|ph";
-  private static final String REPEAT_CMD = "repeatpunishment|rp";
-  private static final String PARDON_CMD = "unban|pardon|forgive";
-  private static final String RECORD_CMD = "record|infractions|mypunishments";
-  private static final String LOOKUP_CMD = "lookup|l";
 
   public static final Duration DEFAULT_TEMPBAN_LENGTH = Duration.ofDays(7); // TODO: Maybe config?
 
@@ -61,7 +55,7 @@ public class PunishmentCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod(HISTORY_CMD + " [page]")
+  @CommandMethod("punishmenthistory|ph [page]")
   @CommandDescription("View a list of recent punishments")
   @CommandPermission(CommunityPermissions.PUNISH)
   public void viewRecentPunishments(
@@ -76,7 +70,7 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod(REPEAT_CMD + " <target>")
+  @CommandMethod("repeatpunishment|rp <target>")
   @CommandDescription("Repeat the last punishment you performed for another player")
   @CommandPermission(CommunityPermissions.PUNISH)
   public void repeatPunishment(CommandAudience audience, @Argument("target") Player target) {
@@ -119,7 +113,7 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod(PARDON_CMD + " <target>")
+  @CommandMethod("unban|pardon|forgive <target>")
   @CommandDescription("Pardon all active punishments for a player")
   @CommandPermission(CommunityPermissions.UNBAN)
   public void unbanPlayer(CommandAudience audience, @Argument("target") String target) {
@@ -155,7 +149,7 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod(RECORD_CMD + " [page]")
+  @CommandMethod("record|infractions|mypunishments [page]")
   @CommandDescription("View your own punishment history")
   @CommandPermission(CommunityPermissions.LOOKUP)
   public void viewOwnPunishmentHistory(
@@ -165,7 +159,7 @@ public class PunishmentCommand extends CommunityCommand {
     viewPunishmentHistory(audience, player.getName(), page);
   }
 
-  @CommandMethod(LOOKUP_CMD + " <target> [page]")
+  @CommandMethod("lookup|l <target> [page]")
   @CommandDescription("View infraction history of a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewPunishmentHistory(

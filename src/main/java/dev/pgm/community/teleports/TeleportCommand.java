@@ -2,22 +2,18 @@ package dev.pgm.community.teleports;
 
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 
 public class TeleportCommand extends CommunityCommand {
-
-  private static final String TP_CMD = "tp|teleport";
-  private static final String TP_HERE_CMD = "tphere|bring|tph";
-  private static final String TP_LOC_CMD = "tplocation|tpl|tploc";
 
   private final TeleportFeature teleport;
 
@@ -25,13 +21,12 @@ public class TeleportCommand extends CommunityCommand {
     this.teleport = Community.get().getFeatures().getTeleports();
   }
 
-  // NEW TARGET SELECTORS
+  // TARGET SELECTORS
 
   // /tp * <single>
   // /tp ? <single>
   // /tp team=[name] <single>
-
-  @CommandMethod(TP_CMD + " <target> [others]")
+  @CommandMethod("tp|teleport <target> [others]")
   @CommandDescription("Teleport to another player")
   @CommandPermission(CommunityPermissions.TELEPORT)
   public void teleportCommand(
@@ -67,7 +62,7 @@ public class TeleportCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod(TP_HERE_CMD + " <target>")
+  @CommandMethod("tphere|bring|tph <target>")
   @CommandDescription("Teleport players to you")
   @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
   public void teleportHereCommand(
@@ -75,7 +70,7 @@ public class TeleportCommand extends CommunityCommand {
     teleportCommand(viewer, target, sender.getName());
   }
 
-  @CommandMethod(TP_LOC_CMD + " <coords> [target]")
+  @CommandMethod("tplocation|tpl|tploc <coords> [target]")
   @CommandDescription("Teleport to specific coordinates")
   @CommandPermission(CommunityPermissions.TELEPORT_LOCATION)
   public void teleportLocation(

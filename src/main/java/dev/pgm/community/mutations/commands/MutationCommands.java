@@ -3,10 +3,6 @@ package dev.pgm.community.mutations.commands;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
@@ -18,12 +14,14 @@ import dev.pgm.community.utils.PaginatedComponentResults;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.text.TextException;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class MutationCommands extends CommunityCommand {
-
-  private static final String CMD_NAME = "mutate|mutation|mt";
 
   private final MutationFeature mutations;
 
@@ -31,7 +29,7 @@ public class MutationCommands extends CommunityCommand {
     this.mutations = Community.get().getFeatures().getMutations();
   }
 
-  @CommandMethod(CMD_NAME + " [page]")
+  @CommandMethod("mutate|mutation|mt [page]")
   @CommandDescription("View a list of mutations")
   public void list(
       CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
@@ -87,7 +85,7 @@ public class MutationCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " add <type>")
+  @CommandMethod("mutate|mutation|mt add <type>")
   @CommandDescription("Add a mutation to the match")
   @CommandPermission(CommunityPermissions.MUTATION)
   public void addMutation(CommandAudience audience, @Argument("type") MutationType type) {
@@ -101,7 +99,7 @@ public class MutationCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod(CMD_NAME + " remove <type>")
+  @CommandMethod("mutate|mutation|mt remove <type>")
   @CommandDescription("Remove an active mutation from the match")
   @CommandPermission(CommunityPermissions.MUTATION)
   public void removeMutation(CommandAudience audience, @Argument("type") MutationType type) {
