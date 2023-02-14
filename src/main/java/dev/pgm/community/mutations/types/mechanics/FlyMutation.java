@@ -56,6 +56,8 @@ public class FlyMutation extends KitMutationBase {
               .scheduleSyncRepeatingTask(
                   Community.get(), new DisableFlightTask(FLY_DISABLE_DELAY.getValue()), 0L, 20L);
       this.disableTaskEnabled = true;
+    } else {
+      super.disable();
     }
   }
 

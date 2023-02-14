@@ -47,6 +47,7 @@ public class BlockDecayMutation extends ScheduledMutationBase {
       this.placedBlocks.keySet().forEach(location -> location.getBlock().setType(Material.AIR));
       this.placedBlocks.clear();
     }
+    super.disable();
   }
 
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
