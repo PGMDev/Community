@@ -41,7 +41,7 @@ public class MutationToggleMenu implements InventoryProvider {
               }));
     }
 
-    contents.set(2, 4, getOptionIcon(player));
+    contents.set(3, 4, getOptionIcon(player));
   }
 
   private ClickableItem getOptionIcon(Player player) {

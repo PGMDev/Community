@@ -10,7 +10,7 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 public enum MutationType {
   RAGE("Rage", "Instant death", Material.BOW),
   BLITZ("Blitz", "A limited number of lives", Material.EGG),
-  EXPLOSION("Explosion", "Random explosions when mining blocks", Material.TNT),
+  EXPLOSION("Explosion", "Random explosions when mining blocks", Material.SULPHUR),
   FLY("Fly", "Everyone can fly", Material.FEATHER),
   JUMP("Jump", "Double jump", Material.SLIME_BLOCK),
   FIREWORK("Firework", "Celebrate with random fireworks!", Material.FIREWORK),
@@ -25,7 +25,9 @@ public enum MutationType {
   BLOCK_DECAY("Block Decay", "Blocks placed decay after some time", Material.SOUL_SAND),
   KNOCKBACK("Knockback", "Knockback applied to everything", Material.FISHING_ROD),
   WEB_SLINGERS("Web Slingers", "Shoot webs like a spider", Material.WEB),
-  MOBS("Mob", "Attack of the mobs", Material.MOB_SPAWNER);
+  MOBS("Mob", "Attack of the mobs", Material.MOB_SPAWNER),
+  TNT_BOW("TNT Bow", "All projectiles are TNT", Material.TNT),
+  FIREBALL_BOW("Fireball Bow", "All projectiles are fireballs", Material.FIREBALL);
 
   String displayName;
   String description;

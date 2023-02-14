@@ -15,6 +15,8 @@ import dev.pgm.community.mutations.menu.MutationOptionsMenu;
 import dev.pgm.community.mutations.menu.MutationToggleMenu;
 import dev.pgm.community.mutations.types.arrows.ArrowTrailMutation;
 import dev.pgm.community.mutations.types.arrows.EnderpearlMutation;
+import dev.pgm.community.mutations.types.arrows.FireballBowMutation;
+import dev.pgm.community.mutations.types.arrows.TNTBowMutation;
 import dev.pgm.community.mutations.types.arrows.WebSlingersMutation;
 import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
 import dev.pgm.community.mutations.types.gameplay.GhostMutation;
@@ -194,6 +196,10 @@ public class MutationFeature extends FeatureBase {
         return new WebSlingersMutation(getMatch());
       case MOBS:
         return new MobMutation(getMatch());
+      case TNT_BOW:
+        return new TNTBowMutation(getMatch());
+      case FIREBALL_BOW:
+        return new FireballBowMutation(getMatch());
       default:
         logger.warning(type.getDisplayName() + " has not been implemented yet");
     }
@@ -247,7 +253,7 @@ public class MutationFeature extends FeatureBase {
         .title(ChatColor.GREEN + "Toggle Mutations")
         .manager(inventory)
         .provider(new MutationToggleMenu(this))
-        .size(3, 9)
+        .size(4, 9)
         .build();
   }
 
