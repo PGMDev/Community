@@ -275,7 +275,7 @@ public abstract class CommunityCommand extends BaseCommand {
     boolean vanished = isVanished(player);
     if (vanished
         && viewer.isPlayer()
-        && !viewer.getPlayer().hasPermission(CommunityPermissions.STAFF)) {
+        && !viewer.getPlayer().hasPermission(CommunityPermissions.VIEW_VANISHED)) {
       return false;
     }
     return true;
