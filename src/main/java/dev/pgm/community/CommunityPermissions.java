@@ -55,6 +55,7 @@ public interface CommunityPermissions {
   String NICKNAME_SET = NICKNAME + ".set"; // Access to /nick set
   String NICKNAME_OTHER = NICKNAME_SET + ".other"; // Access to /nick setother
   String NICKNAME_CLEAR = NICKNAME_SET + ".clear"; // Access to /nick clear <username>
+  String NICKNAME_VIEW = NICKNAME + ".view-skins"; // Access to view normal skins
 
   // General Staff
   String STAFF =
