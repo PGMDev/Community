@@ -6,7 +6,7 @@ import static tc.oc.pgm.util.player.PlayerComponent.player;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.commands.target.TargetPlayer;
+import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.party.hosts.MapPartyHosts;
 import dev.pgm.community.party.menu.MapPartyMainMenu;

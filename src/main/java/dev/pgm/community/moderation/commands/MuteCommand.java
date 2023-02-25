@@ -6,7 +6,7 @@ import static net.kyori.adventure.text.Component.translatable;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.commands.target.TargetPlayer;
+import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;

@@ -6,7 +6,7 @@ import static tc.oc.pgm.lib.cloud.commandframework.arguments.parser.ArgumentPars
 import static tc.oc.pgm.util.text.TextException.exception;
 import static tc.oc.pgm.util.text.TextException.playerOnly;
 
-import dev.pgm.community.commands.target.TargetPlayer;
+import dev.pgm.community.commands.player.TargetPlayer;
 import java.util.List;
 import java.util.Queue;
 import org.bukkit.command.CommandSender;

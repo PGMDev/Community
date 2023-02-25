@@ -4,7 +4,7 @@ import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.commands.target.TargetPlayer;
+import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.utils.CommandAudience;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
