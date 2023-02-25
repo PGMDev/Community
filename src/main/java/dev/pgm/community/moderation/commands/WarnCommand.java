@@ -23,7 +23,7 @@ public class WarnCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod("warn|w [target] [reason]")
+  @CommandMethod("warn|w <target> [reason]")
   @CommandDescription("Warn a player for bad behavior")
   @CommandPermission(CommunityPermissions.WARN)
   public void warn(
