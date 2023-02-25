@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
@@ -120,9 +121,14 @@ public class ExplosionMutation extends KitMutationBase {
 
   private void explode(Block block) {
     Location loc = block.getLocation();
-    loc.getWorld().createExplosion(loc, 3.3f);
+    World world = block.getWorld();
+
+    if (loc == null || world == null) return;
+
+    world.createExplosion(loc, 3.3f);
+
     for (int i = 0; i < 5; i++)
-      loc.getWorld().spigot().playEffect(loc, Effect.LAVA_POP, 0, 0, 0, 0, 0, 0, 15, 50);
+      world.spigot().playEffect(loc, Effect.LAVA_POP, 0, 0, 0, 0, 0, 0, 15, 50);
   }
 
   private static Kit getRandomKit() {
