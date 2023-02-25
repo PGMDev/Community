@@ -3,6 +3,7 @@ package dev.pgm.community.moderation.commands;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -31,7 +32,7 @@ public class BanCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.BAN)
   public void ban(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "time", aliases = "t") Duration time,
       @Flag(value = "silent", aliases = "s") boolean silent) {
@@ -47,10 +48,10 @@ public class BanCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.BAN)
   public void permBan(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "silent", aliases = "s") boolean silent) {
-    getTarget(target, usernames)
+    getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
               if (id.isPresent()) {
@@ -63,7 +64,7 @@ public class BanCommand extends CommunityCommand {
                     true,
                     isDisguised(audience) || silent);
               } else {
-                audience.sendWarning(formatNotFoundComponent(target));
+                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }
@@ -73,11 +74,11 @@ public class BanCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.BAN)
   public void tempBan(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument("time") Duration time,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "silent", aliases = "s") boolean silent) {
-    getTarget(target, usernames)
+    getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
               if (id.isPresent()) {
@@ -90,7 +91,7 @@ public class BanCommand extends CommunityCommand {
                     true,
                     isDisguised(audience) || silent);
               } else {
-                audience.sendWarning(formatNotFoundComponent(target));
+                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }
@@ -100,10 +101,10 @@ public class BanCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.BAN)
   public void nameBan(
       CommandAudience audience,
-      @Argument("target") @FlagYielding String target,
+      @Argument("target") TargetPlayer target,
       @Flag(value = "silent", aliases = "s") boolean silent) {
     usernames
-        .getStoredProfile(target)
+        .getStoredProfile(target.getIdentifier())
         .thenAccept(
             profile -> {
               if (profile != null) {
@@ -122,7 +123,7 @@ public class BanCommand extends CommunityCommand {
                               isDisguised(audience) || silent);
                         });
               } else {
-                audience.sendWarning(formatNotFoundComponent(target));
+                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }

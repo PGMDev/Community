@@ -21,6 +21,7 @@ import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.text.TextException;
 import tc.oc.pgm.util.text.TextFormatter;
 
+@CommandMethod("mutate|mutation|mt")
 public class MutationCommands extends CommunityCommand {
 
   private final MutationFeature mutations;
@@ -29,7 +30,7 @@ public class MutationCommands extends CommunityCommand {
     this.mutations = Community.get().getFeatures().getMutations();
   }
 
-  @CommandMethod("mutate|mutation|mt [page]")
+  @CommandMethod("[page]")
   @CommandDescription("View a list of mutations")
   public void list(
       CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
@@ -85,7 +86,7 @@ public class MutationCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("mutate|mutation|mt add <type>")
+  @CommandMethod("add <type>")
   @CommandDescription("Add a mutation to the match")
   @CommandPermission(CommunityPermissions.MUTATION)
   public void addMutation(CommandAudience audience, @Argument("type") MutationType type) {
@@ -99,7 +100,7 @@ public class MutationCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("mutate|mutation|mt remove <type>")
+  @CommandMethod("remove <type>")
   @CommandDescription("Remove an active mutation from the match")
   @CommandPermission(CommunityPermissions.MUTATION)
   public void removeMutation(CommandAudience audience, @Argument("type") MutationType type) {

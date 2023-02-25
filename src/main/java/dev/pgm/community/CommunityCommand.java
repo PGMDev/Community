@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.NameUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.util.List;
@@ -42,7 +43,7 @@ public abstract class CommunityCommand {
   }
 
   protected CompletableFuture<Optional<UUID>> getTarget(String target, UsersFeature service) {
-    boolean username = UsersFeature.USERNAME_REGEX.matcher(target).matches();
+    boolean username = NameUtils.isMinecraftName(target);
     if (!username) {
       try {
         return CompletableFuture.completedFuture(Optional.ofNullable(UUID.fromString(target)));
@@ -226,9 +227,8 @@ public abstract class CommunityCommand {
   }
 
   protected UUID getOnlineTarget(String target, UsersFeature service) {
-    boolean username = UsersFeature.USERNAME_REGEX.matcher(target).matches();
     UUID id = null;
-    if (!username) {
+    if (!NameUtils.isMinecraftName(target)) {
       try {
         id = UUID.fromString(target);
       } catch (IllegalArgumentException e) {

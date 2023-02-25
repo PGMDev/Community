@@ -272,12 +272,12 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
             .append(space())
             .append(
                 text(
-                    "A staff member will assist you once available",
+                    "A staff member will assist you once available.",
                     NamedTextColor.GOLD)) // TODO: translate
             .hoverEvent(
                 HoverEvent.showText(
                     text(
-                        "Please note: not all requests can be accommodated. However, we will do our best to help",
+                        "Please be aware that we may not be able to fulfill all requests, but we will make every effort to provide assistance to the best of our ability.",
                         NamedTextColor.GRAY)))
             .build();
     Audience.get(player).sendMessage(thanks);

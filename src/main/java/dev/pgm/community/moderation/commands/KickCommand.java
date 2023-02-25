@@ -3,6 +3,7 @@ package dev.pgm.community.moderation.commands;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -29,11 +30,11 @@ public class KickCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.KICK)
   public void kick(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "silent", aliases = "s") boolean silent,
       @Flag(value = "off-record", aliases = "o") boolean offRecord) {
-    getTarget(target, usernames)
+    getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
               if (id.isPresent()) {
@@ -46,7 +47,7 @@ public class KickCommand extends CommunityCommand {
                     false,
                     isDisguised(audience) || silent);
               } else {
-                audience.sendWarning(formatNotFoundComponent(target));
+                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }

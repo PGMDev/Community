@@ -78,9 +78,9 @@ public class BroadcastFeature extends FeatureBase {
 
     if (title) {
       BroadcastUtils.sendGlobalTitle(prefix, msg, getBroadcastConfig().getTitleSeconds());
-    } else {
-      BroadcastUtils.sendGlobalMessage(text().append(prefix).append(msg).build());
     }
+
+    BroadcastUtils.sendGlobalMessage(text().append(prefix).append(msg).build());
 
     if (getBroadcastConfig().isSoundEnabled()) {
       BroadcastUtils.playGlobalSound(Sounds.BROADCAST);

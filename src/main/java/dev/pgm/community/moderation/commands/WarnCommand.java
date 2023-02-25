@@ -3,6 +3,7 @@ package dev.pgm.community.moderation.commands;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -27,9 +28,9 @@ public class WarnCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.WARN)
   public void warn(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument("reason") String reason) {
-    getTarget(target, usernames)
+    getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
               if (id.isPresent()) {
@@ -42,7 +43,7 @@ public class WarnCommand extends CommunityCommand {
                     false,
                     isDisguised(audience));
               } else {
-                audience.sendWarning(formatNotFoundComponent(target));
+                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }

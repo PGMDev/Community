@@ -7,9 +7,11 @@ import static net.kyori.adventure.text.Component.text;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.NameUtils;
 import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
@@ -29,12 +31,14 @@ import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.ProxiedBy;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextException;
 import tc.oc.pgm.util.text.TextFormatter;
 
+@CommandMethod("nick")
 public class NickCommands extends CommunityCommand {
 
   private final NickFeature nicks;
@@ -45,7 +49,7 @@ public class NickCommands extends CommunityCommand {
     this.users = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod("nick")
+  @CommandMethod("")
   @CommandDescription("Check your current nickname status")
   public void checkNickStatus(
       CommandAudience viewer, @Flag(value = "target", aliases = "t") String target) {
@@ -75,7 +79,7 @@ public class NickCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("nick random [page]")
+  @CommandMethod("random [page]")
   @CommandDescription("Set a random nickname")
   @CommandPermission(CommunityPermissions.NICKNAME)
   public void setRandomNick(
@@ -150,7 +154,7 @@ public class NickCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("nick confirm <name>")
+  @CommandMethod("confirm <name>")
   @CommandDescription("Confirm random nickname choice")
   public void selectNick(CommandAudience viewer, Player sender, @Argument("name") String name) {
     nicks
@@ -171,7 +175,7 @@ public class NickCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("nick skin <name>")
+  @CommandMethod("skin <name>")
   @CommandDescription("Set skin for current nick session")
   @CommandPermission(CommunityPermissions.NICKNAME_SET)
   public void setOwnSkin(CommandAudience viewer, Player sender, @Argument("name") String name) {
@@ -208,7 +212,7 @@ public class NickCommands extends CommunityCommand {
   }
 
   // /nick set [name]
-  @CommandMethod("nick set <nick>")
+  @CommandMethod("set <nick>")
   @CommandDescription("Set your nickname")
   @CommandPermission(CommunityPermissions.NICKNAME_SET)
   public void setOwnNick(CommandAudience viewer, Player sender, @Argument("nick") String nick) {
@@ -258,13 +262,15 @@ public class NickCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("nick setother <target> <nick>")
+  @CommandMethod("setother <target> <nick>")
   @CommandDescription("Set the nickname of another player")
   @CommandPermission(CommunityPermissions.NICKNAME_OTHER)
   public void setOtherNick(
-      CommandAudience viewer, @Argument("target") String target, @Argument("nick") String nick) {
+      CommandAudience viewer,
+      @Argument("target") TargetPlayer target,
+      @Argument("nick") String nick) {
     validateNick(nick);
-    getTarget(target, users)
+    getTarget(target.getIdentifier(), users)
         .thenAcceptAsync(
             uuid -> {
               if (uuid.isPresent()) {
@@ -294,23 +300,23 @@ public class NickCommands extends CommunityCommand {
                             viewer.sendWarning(
                                 text()
                                     .append(text("Could not set nickname for "))
-                                    .append(text(target, NamedTextColor.AQUA))
+                                    .append(text(target.getIdentifier(), NamedTextColor.AQUA))
                                     .build());
                           }
                         });
 
               } else {
-                viewer.sendWarning(formatNotFoundComponent(target));
+                viewer.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }
 
-  @CommandMethod("nick clear [target]")
+  @CommandMethod("clear [target]")
   @CommandDescription("Remove nickname from yourself or another player")
-  public void clearNick(CommandAudience viewer, @Argument("target") String target) {
+  public void clearNick(CommandAudience viewer, @Argument("target") TargetPlayer target) {
     // Clear other user names
-    if (viewer.hasPermission(CommunityPermissions.NICKNAME_CLEAR) && target == null) {
-      getTarget(target, users)
+    if (viewer.hasPermission(CommunityPermissions.NICKNAME_CLEAR) && target != null) {
+      getTarget(target.getIdentifier(), users)
           .thenAcceptAsync(
               uuid -> {
                 if (uuid.isPresent()) {
@@ -338,7 +344,7 @@ public class NickCommands extends CommunityCommand {
                                     });
                           });
                 } else {
-                  viewer.sendWarning(formatNotFoundComponent(target));
+                  viewer.sendWarning(formatNotFoundComponent(target.getIdentifier()));
                 }
               });
       return;
@@ -358,7 +364,7 @@ public class NickCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("nick toggle")
+  @CommandMethod("toggle")
   @CommandDescription("Toggle your nickname status")
   public void enableNick(CommandAudience viewer, Player sender) {
     nicks
@@ -377,29 +383,8 @@ public class NickCommands extends CommunityCommand {
                         .build()));
   }
 
-  @CommandMethod("nick check <name>")
-  @CommandDescription("Check if the provided name is available")
-  public void checkNick(CommandAudience viewer, @Argument("name") String nick) {
-    validateNick(nick);
-    nicks
-        .isNameAvailable(nick)
-        .thenAcceptAsync(
-            available -> {
-              viewer.sendWarning(
-                  text()
-                      .append(
-                          text(
-                              nick,
-                              available ? NamedTextColor.GREEN : NamedTextColor.RED,
-                              TextDecoration.BOLD))
-                      .append(text(" is "))
-                      .append(text(available ? "available for use" : "unavailable at this time."))
-                      .color(NamedTextColor.GRAY)
-                      .build());
-            });
-  }
-
-  @CommandMethod("nicks")
+  @ProxiedBy("nicks")
+  @CommandMethod("list")
   @CommandDescription("View a list of online nicked players")
   @CommandPermission(CommunityPermissions.STAFF)
   public void viewNicks(CommandAudience viewer) {
@@ -526,7 +511,7 @@ public class NickCommands extends CommunityCommand {
   }
 
   private void validateNick(String name) throws TextException {
-    if (!UsersFeature.USERNAME_REGEX.matcher(name).matches()) {
+    if (!NameUtils.isMinecraftName(name)) {
       throw TextException.exception(name + " is not a valid minecraft username");
     }
   }

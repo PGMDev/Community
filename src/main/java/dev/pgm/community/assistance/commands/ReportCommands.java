@@ -55,7 +55,7 @@ public class ReportCommands extends CommunityCommand {
   public void report(
       CommandAudience viewer,
       Player sender,
-      @Argument("username") String target,
+      @Argument("username") Player target,
       @Argument("reason") @Greedy String reason) {
     checkEnabled();
     Optional<MutePunishment> mute = moderation.getCachedMute(sender.getUniqueId());
@@ -72,9 +72,8 @@ public class ReportCommands extends CommunityCommand {
       }
     }
 
-    Player targetPlayer = getSinglePlayer(viewer, target, true);
-    if (targetPlayer != null) {
-      reports.requestAssistance(sender, targetPlayer, reason);
+    if (target != null) {
+      reports.requestAssistance(sender, target, reason);
     }
   }
 

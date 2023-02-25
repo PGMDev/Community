@@ -7,6 +7,7 @@ import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.feature.RequestFeature;
@@ -26,6 +27,7 @@ import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
+@CommandMethod("tokens|sponsortokens|token")
 public class TokenCommands extends CommunityCommand {
 
   private final UsersFeature users;
@@ -36,12 +38,49 @@ public class TokenCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod("tokens|sponsortokens|token give <target> <amount>")
+  @CommandMethod("[target]")
+  @CommandDescription("Check your token balance")
+  public void tokens(CommandAudience audience, @Argument(value = "target") TargetPlayer target) {
+    if (target != null && audience.hasPermission(CommunityPermissions.TOKEN_BALANCE)) {
+      getTarget(target.getIdentifier(), users)
+          .thenAcceptAsync(
+              uuid -> {
+                if (uuid.isPresent()) {
+                  RequestProfile profile = requests.getRequestProfile(uuid.get()).join();
+                  if (profile == null) {
+                    audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
+                    return;
+                  }
+
+                  Component name = users.renderUsername(uuid, NameStyle.FANCY).join();
+                  sendTokenBalanceMessage(audience.getAudience(), name, profile.getSponsorTokens());
+                } else {
+                  audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
+                }
+              });
+    } else if (audience.isPlayer()) {
+      Player player = audience.getPlayer();
+      requests
+          .getRequestProfile(player.getUniqueId())
+          .thenAcceptAsync(
+              profile -> {
+                int tokens = profile.getSponsorTokens();
+                sendTokenBalanceMessage(audience.getAudience(), null, tokens);
+                sendRefreshDuration(audience.getAudience(), player, profile);
+              });
+    } else {
+      audience.sendWarning(text("Please provide a username to check the token balance of"));
+    }
+  }
+
+  @CommandMethod("give <target> <amount>")
   @CommandDescription("Give the targeted player sponsor tokens")
   @CommandPermission(CommunityPermissions.ADMIN)
   public void give(
-      CommandAudience audience, @Argument("target") String target, @Argument("amount") int amount) {
-    getTarget(target, users)
+      CommandAudience audience,
+      @Argument("target") TargetPlayer target,
+      @Argument("amount") int amount) {
+    getTarget(target.getIdentifier(), users)
         .thenAcceptAsync(
             targetId -> {
               if (targetId.isPresent()) {
@@ -63,43 +102,8 @@ public class TokenCommands extends CommunityCommand {
                   return;
                 }
               }
-              audience.sendWarning(formatNotFoundComponent(target));
+              audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
             });
-  }
-
-  @CommandMethod("tokens|sponsortokens|token [target]")
-  @CommandDescription("Check your token balance")
-  public void tokens(CommandAudience audience, @Argument(value = "target") String target) {
-    if (target != null && audience.hasPermission(CommunityPermissions.TOKEN_BALANCE)) {
-      getTarget(target, users)
-          .thenAcceptAsync(
-              uuid -> {
-                if (uuid.isPresent()) {
-                  RequestProfile profile = requests.getRequestProfile(uuid.get()).join();
-                  if (profile == null) {
-                    audience.sendWarning(formatNotFoundComponent(target));
-                    return;
-                  }
-
-                  Component name = users.renderUsername(uuid, NameStyle.FANCY).join();
-                  sendTokenBalanceMessage(audience.getAudience(), name, profile.getSponsorTokens());
-                } else {
-                  audience.sendWarning(formatNotFoundComponent(target));
-                }
-              });
-    } else if (audience.isPlayer()) {
-      Player player = audience.getPlayer();
-      requests
-          .getRequestProfile(player.getUniqueId())
-          .thenAcceptAsync(
-              profile -> {
-                int tokens = profile.getSponsorTokens();
-                sendTokenBalanceMessage(audience.getAudience(), null, tokens);
-                sendRefreshDuration(audience.getAudience(), player, profile);
-              });
-    } else {
-      audience.sendWarning(text("Please provide a username to check the token balance of"));
-    }
   }
 
   private void sendTokenBalanceMessage(Audience viewer, Component name, int tokens) {

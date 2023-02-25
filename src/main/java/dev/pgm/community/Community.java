@@ -70,69 +70,6 @@ public class Community extends JavaPlugin {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
-    //    this.commands = new BukkitCommandManager(this);
-    //    commands.registerDependency(Random.class, new Random());
-    //    commands.registerDependency(Instant.class, "startTime", startTime);
-    //    commands.registerDependency(InventoryManager.class, inventory);
-    //
-    //    // Contexts
-    //    commands
-    //        .getCommandContexts()
-    //        .registerIssuerOnlyContext(CommandAudience.class, c -> new
-    // CommandAudience(c.getSender()));
-    //
-    //    commands
-    //        .getCommandContexts()
-    //        .registerContext(
-    //            Duration.class,
-    //            c -> {
-    //              Duration value = Duration.ZERO;
-    //              String time = c.popFirstArg();
-    //              if (time != null) {
-    //                try {
-    //                  value = TextParser.parseDuration(time);
-    //                } catch (TextException e) {
-    //                  throw new InvalidCommandArgument(
-    //                      time + " is not a valid duration"); // TODO: Translate this
-    //                }
-    //              }
-    //              return value.abs();
-    //            });
-    //
-    //    // Command Completions
-    //
-    //    // Use for commands ALL players have access to, allows for vanished players to be hidden
-    // from
-    //    // tab-complete
-    //    // Note: use @players if you need ALL players
-    //    commands
-    //        .getCommandCompletions()
-    //        .registerCompletion(
-    //            "visible",
-    //            c -> {
-    //              // TODO: maybe add a config value to allow specific vanish perms to check (if
-    // server
-    //              // was not using PGM)
-    //              return Bukkit.getOnlinePlayers().stream()
-    //                  .filter(
-    //                      p ->
-    //                          !p.hasMetadata("isVanished")
-    //                              || c.getPlayer() != null &&
-    // c.getPlayer().hasPermission("pgm.vanish"))
-    //                  .map(
-    //                      player -> {
-    //                        // Replace nicked user names
-    //                        if (features.getNick() != null) {
-    //                          NickFeature nicks = features.getNick();
-    //                          if (nicks.isNicked(player.getUniqueId())) {
-    //                            return nicks.getOnlineNick(player.getUniqueId());
-    //                          }
-    //                        }
-    //                        return player.getName();
-    //                      })
-    //                  .collect(Collectors.toSet());
-    //            });
   }
 
   private void setupInventory() {

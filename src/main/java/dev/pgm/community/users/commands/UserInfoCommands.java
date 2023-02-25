@@ -13,6 +13,7 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -59,19 +60,19 @@ public class UserInfoCommands extends CommunityCommand {
   @CommandMethod("seen|lastseen|find <target>")
   @CommandDescription("View when a player was last online")
   @CommandPermission(CommunityPermissions.FIND)
-  public void seenPlayer(CommandAudience audience, @Argument("target") String target) {
+  public void seenPlayer(CommandAudience audience, @Argument("target") TargetPlayer target) {
     boolean staff = audience.hasPermission(CommunityPermissions.STAFF);
     boolean findAnyone = audience.hasPermission(CommunityPermissions.FIND_ANYONE);
 
     users.findUserWithSession(
-        target,
+        target.getIdentifier(),
         !staff,
         (profile, session) -> {
           if (profile == null || session == null) {
             audience.sendWarning(
                 findAnyone
-                    ? MessageUtils.formatUnseen(target)
-                    : MessageUtils.formatNotFriend(target));
+                    ? MessageUtils.formatUnseen(target.getIdentifier())
+                    : MessageUtils.formatNotFriend(target.getIdentifier()));
             return;
           }
 
@@ -79,7 +80,8 @@ public class UserInfoCommands extends CommunityCommand {
               && !friends.isFriend(audience.getPlayer().getUniqueId(), profile.getId())
               && !findAnyone) {
             audience.sendWarning(
-                text("You are not friends with ").append(text(target, NamedTextColor.DARK_AQUA)));
+                text("You are not friends with ")
+                    .append(text(profile.getUsername(), NamedTextColor.DARK_AQUA)));
             return;
           }
 
@@ -113,7 +115,7 @@ public class UserInfoCommands extends CommunityCommand {
   @CommandMethod("alts|alternateaccounts [target]")
   @CommandDescription("View a list of alternate accounts of a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
-  public void viewAlts(CommandAudience audience, @Argument("target") String target) {
+  public void viewAlts(CommandAudience audience, @Argument("target") TargetPlayer target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
       showBannedAlts(audience, 1);
@@ -121,11 +123,11 @@ public class UserInfoCommands extends CommunityCommand {
     }
 
     users
-        .getStoredProfile(target)
+        .getStoredProfile(target.getIdentifier())
         .thenAcceptAsync(
             profile -> {
               if (profile == null) {
-                audience.sendWarning(MessageUtils.formatUnseen(target));
+                audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
                 return;
               }
 
@@ -215,14 +217,14 @@ public class UserInfoCommands extends CommunityCommand {
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewUserProfile(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument(value = "all", defaultValue = "false") boolean viewAll) {
     users.findUserWithSession(
-        target,
+        target.getIdentifier(),
         false,
         (profile, session) -> {
           if (profile == null || session == null) {
-            audience.sendWarning(MessageUtils.formatUnseen(target));
+            audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
             return;
           }
 

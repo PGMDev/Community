@@ -15,6 +15,8 @@ import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
 import dev.pgm.community.commands.SudoCommand;
 import dev.pgm.community.commands.providers.CommandAudienceProvider;
+import dev.pgm.community.commands.providers.TargetPlayerParser;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.freeze.FreezeCommand;
 import dev.pgm.community.friends.commands.FriendshipCommand;
 import dev.pgm.community.mobs.MobCommand;
@@ -35,14 +37,20 @@ import dev.pgm.community.teleports.TeleportCommand;
 import dev.pgm.community.users.commands.UserInfoCommands;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.concurrent.TimeUnit;
+import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.api.party.Party;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.command.injectors.MatchPlayerProvider;
 import tc.oc.pgm.command.injectors.MatchProvider;
+import tc.oc.pgm.command.injectors.PlayerProvider;
 import tc.oc.pgm.command.parsers.MapInfoParser;
+import tc.oc.pgm.command.parsers.PartyParser;
+import tc.oc.pgm.command.parsers.PlayerParser;
 import tc.oc.pgm.command.util.CommandGraph;
 import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.EnumArgument.EnumParser;
 import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.StringArgument;
@@ -83,12 +91,17 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     registerInjector(PGM.class, PGM::get);
     registerInjector(Match.class, new MatchProvider());
     registerInjector(MatchPlayer.class, new MatchPlayerProvider());
+    registerInjector(Player.class, new PlayerProvider());
   }
 
   @Override
   protected void setupParsers() {
     registerParser(MapInfo.class, MapInfoParser::new);
     registerParser(MapPartyType.class, new EnumParser<>(MapPartyType.class));
+    registerParser(TargetPlayer.class, new TargetPlayerParser());
+    registerParser(Player.class, new PlayerParser());
+    registerParser(Party.class, PartyParser::new);
+    registerParser(GameMode.class, new EnumParser<>(GameMode.class));
   }
 
   @Override

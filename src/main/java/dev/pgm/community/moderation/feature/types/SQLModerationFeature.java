@@ -10,6 +10,7 @@ import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.moderation.services.SQLModerationService;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
+import dev.pgm.community.utils.NameUtils;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +80,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<List<Punishment>> query(String target) {
-    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
+    if (NameUtils.isMinecraftName(target)) {
       // CONVERT TO UUID if username
       return getUsers()
           .getStoredId(target)
@@ -95,7 +96,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   @Override
   public CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer) {
     CompletableFuture<Optional<UUID>> playerId =
-        UsersFeature.USERNAME_REGEX.matcher(target).matches()
+        NameUtils.isMinecraftName(target)
             ? getUsers().getStoredId(target)
             : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
     return playerId.thenApplyAsync(
@@ -113,7 +114,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<Boolean> isBanned(String target) {
-    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
+    if (NameUtils.isMinecraftName(target)) {
       return getUsers()
           .getStoredId(target)
           .thenApplyAsync(

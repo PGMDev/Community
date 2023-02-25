@@ -4,9 +4,9 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
 import dev.pgm.community.users.UsersConfig;
-import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.UsersFeatureBase;
 import dev.pgm.community.users.services.AddressHistoryService.LatestAddressInfo;
+import dev.pgm.community.utils.NameUtils;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -42,7 +42,7 @@ public class NoDBUsersFeature extends UsersFeatureBase {
   public CompletableFuture<UserProfile> getStoredProfile(String query) {
     return CompletableFuture.completedFuture(
         getProfile(
-            UsersFeature.USERNAME_REGEX.matcher(query).matches()
+            NameUtils.isMinecraftName(query)
                 ? getStoredId(query).getNow(Optional.empty()).orElseGet(null)
                 : UUID.fromString(query)));
   }

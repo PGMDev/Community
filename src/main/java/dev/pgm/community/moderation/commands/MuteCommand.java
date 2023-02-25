@@ -6,6 +6,7 @@ import static net.kyori.adventure.text.Component.translatable;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -69,8 +70,8 @@ public class MuteCommand extends CommunityCommand {
   @CommandMethod("unmute|um <target>")
   @CommandDescription("Unmute a player")
   @CommandPermission(CommunityPermissions.MUTE)
-  public void unMutePlayer(CommandAudience audience, @Argument("target") String target) {
-    getTarget(target, usernames)
+  public void unMutePlayer(CommandAudience audience, @Argument("target") TargetPlayer target) {
+    getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
               if (id.isPresent()) {

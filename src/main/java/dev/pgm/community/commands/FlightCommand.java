@@ -4,6 +4,7 @@ import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.utils.CommandAudience;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -18,11 +19,11 @@ public class FlightCommand extends CommunityCommand {
   @CommandMethod("fly|flight [target]")
   @CommandDescription("Toggle flight mode for yourself or other players")
   @CommandPermission(CommunityPermissions.FLIGHT)
-  public void fly(CommandAudience sender, @Argument("target") String targets) {
-    if (sender.isPlayer() && targets == null) {
+  public void fly(CommandAudience sender, @Argument("target") TargetPlayer target) {
+    if (sender.isPlayer() && target == null) {
       toggleFlight(sender.getPlayer());
     } else {
-      PlayerSelection selection = getPlayers(sender, targets);
+      PlayerSelection selection = getPlayers(sender, target.getIdentifier());
       if (!selection.getPlayers().isEmpty()) {
         selection.getPlayers().forEach(this::toggleFlight);
         sender.sendMessage(

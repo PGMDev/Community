@@ -9,6 +9,7 @@ import static net.kyori.adventure.text.Component.translatable;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.target.TargetPlayer;
 import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.Punishment;
@@ -19,6 +20,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
+import dev.pgm.community.utils.NameUtils;
 import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
@@ -116,25 +118,25 @@ public class PunishmentCommand extends CommunityCommand {
   @CommandMethod("unban|pardon|forgive <target>")
   @CommandDescription("Pardon all active punishments for a player")
   @CommandPermission(CommunityPermissions.UNBAN)
-  public void unbanPlayer(CommandAudience audience, @Argument("target") String target) {
+  public void unbanPlayer(CommandAudience audience, @Argument("target") TargetPlayer target) {
     moderation
-        .isBanned(target)
+        .isBanned(target.getIdentifier())
         .thenAcceptAsync(
             isBanned -> {
               if (isBanned) {
                 moderation
-                    .pardon(target, audience.getId())
+                    .pardon(target.getIdentifier(), audience.getId())
                     .thenAcceptAsync(
                         pardon -> {
                           if (!pardon) {
                             audience.sendWarning(
-                                text(target, NamedTextColor.DARK_AQUA)
+                                text(target.getIdentifier(), NamedTextColor.DARK_AQUA)
                                     .append(text(" could not be ", NamedTextColor.GRAY))
                                     .append(text("unbanned"))
                                     .color(NamedTextColor.RED));
                           } else {
                             BroadcastUtils.sendAdminChatMessage(
-                                text(target, NamedTextColor.DARK_AQUA)
+                                text(target.getIdentifier(), NamedTextColor.DARK_AQUA)
                                     .append(text(" was unbanned by ", NamedTextColor.GRAY))
                                     .append(audience.getStyledName()),
                                 Sounds.PUNISHMENT_PARDON);
@@ -143,7 +145,7 @@ public class PunishmentCommand extends CommunityCommand {
                         });
               } else {
                 audience.sendWarning(
-                    text(target, NamedTextColor.AQUA)
+                    text(target.getIdentifier(), NamedTextColor.AQUA)
                         .append(text(" has no active bans", NamedTextColor.GRAY)));
               }
             });
@@ -156,7 +158,7 @@ public class PunishmentCommand extends CommunityCommand {
       CommandAudience audience,
       Player player,
       @Argument(value = "page", defaultValue = "1") int page) {
-    viewPunishmentHistory(audience, player.getName(), page);
+    viewPunishmentHistory(audience, new TargetPlayer(player), page);
   }
 
   @CommandMethod("lookup|l <target> [page]")
@@ -164,11 +166,13 @@ public class PunishmentCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewPunishmentHistory(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument(value = "page", defaultValue = "1") int page) {
     moderation
-        .query(target)
-        .thenAcceptAsync(punishments -> sendPunishmentHistory(audience, target, punishments, page));
+        .query(target.getIdentifier())
+        .thenAcceptAsync(
+            punishments ->
+                sendPunishmentHistory(audience, target.getIdentifier(), punishments, page));
   }
 
   public void sendPunishmentHistory(
@@ -188,8 +192,7 @@ public class PunishmentCommand extends CommunityCommand {
 
     Component targetName = empty();
     if (target != null) {
-      UUID targetID =
-          (!UsersFeature.USERNAME_REGEX.matcher(target).matches() ? UUID.fromString(target) : null);
+      UUID targetID = (!NameUtils.isMinecraftName(target) ? UUID.fromString(target) : null);
       if (targetID != null) {
         targetName = PlayerComponent.player(targetID, NameStyle.FANCY);
       } else {
