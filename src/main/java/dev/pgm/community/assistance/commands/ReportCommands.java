@@ -31,6 +31,7 @@ import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Range;
 import tc.oc.pgm.util.named.NameStyle;
@@ -82,30 +83,26 @@ public class ReportCommands extends CommunityCommand {
   @CommandPermission(CommunityPermissions.REPORTS)
   public void recentReports(
       CommandAudience audience,
-      @Argument(value = "page", defaultValue = "1") @Range(min = "1") int page) {
+      @Argument(value = "page", defaultValue = "1") @Range(min = "1") int page,
+      @Flag(value = "player", aliases = "p") String player) {
     checkEnabled();
-    sendReportHistory(audience, reports.getRecentReports(), page);
-  }
 
-  @CommandMethod("reports|reporthistory|reps player <player> [page]")
-  @CommandDescription("View a list of recent reports for a target player")
-  @CommandPermission(CommunityPermissions.REPORTS)
-  public void sendPlayerReportHistory(
-      final CommandAudience audience,
-      @Argument("player") String target,
-      @Argument(value = "page", defaultValue = "1") @Range(min = "1") final int page) {
-    checkEnabled();
-    reports
-        .query(target)
-        .thenAcceptAsync(
-            reports -> {
-              if (reports.isEmpty()) {
-                audience.sendWarning(
-                    text("No reports found for ").append(text(target, NamedTextColor.AQUA)));
-                return;
-              }
-              sendReportHistory(audience, reports, page);
-            });
+    if (player != null) {
+      reports
+          .query(player)
+          .thenAcceptAsync(
+              reports -> {
+                if (reports.isEmpty()) {
+                  audience.sendWarning(
+                      text("No reports found for ").append(text(player, NamedTextColor.AQUA)));
+                  return;
+                }
+                sendReportHistory(audience, reports, page);
+              });
+      return;
+    }
+
+    sendReportHistory(audience, reports.getRecentReports(), page);
   }
 
   public void sendReportHistory(CommandAudience audience, Collection<Report> reportData, int page) {
