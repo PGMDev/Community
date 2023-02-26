@@ -38,6 +38,7 @@ import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -193,7 +194,8 @@ public class SponsorCommands extends CommunityCommand {
 
   @CommandMethod("request <map>")
   @CommandDescription("Sponsor a map request")
-  public void sponsor(CommandAudience audience, Player sender, @Argument("map") MapInfo map) {
+  public void sponsor(
+      CommandAudience audience, Player sender, @Argument("map") @Greedy MapInfo map) {
     requests.sponsor(sender, map);
   }
 

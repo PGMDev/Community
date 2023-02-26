@@ -54,7 +54,7 @@ public class MapPartyCommands extends CommunityCommand {
   @CommandMethod("preset [name]")
   @CommandPermission(CommunityPermissions.PARTY)
   public void createPreset(
-      CommandAudience viewer, Player sender, @Argument("name") String presetName) {
+      CommandAudience viewer, Player sender, @Argument("name") @Greedy String presetName) {
     if (party.getParty() != null) {
       viewer.sendWarning(MapPartyMessages.CREATION_ERROR);
       return;
@@ -99,7 +99,7 @@ public class MapPartyCommands extends CommunityCommand {
 
   @CommandMethod("setpool <pool>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void setMapPool(CommandAudience viewer, @Argument("pool") String pool) {
+  public void setMapPool(CommandAudience viewer, @Argument("pool") @Greedy String pool) {
     party.setMapPool(viewer, pool);
   }
 
@@ -129,13 +129,13 @@ public class MapPartyCommands extends CommunityCommand {
 
   @CommandMethod("addmap <map>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void addMap(CommandAudience viewer, @Argument("map") MapInfo map) {
+  public void addMap(CommandAudience viewer, @Argument("map") @Greedy MapInfo map) {
     party.addMap(viewer, map);
   }
 
   @CommandMethod("removemap <map>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void removeMap(CommandAudience viewer, @Argument("map") MapInfo map) {
+  public void removeMap(CommandAudience viewer, @Argument("map") @Greedy MapInfo map) {
     party.removeMap(viewer, map);
   }
 

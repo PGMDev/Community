@@ -12,6 +12,7 @@ import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 
 public class WarnCommand extends CommunityCommand {
 
@@ -23,13 +24,13 @@ public class WarnCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod("warn|w <target> [reason]")
+  @CommandMethod("warn|w <target> <reason>")
   @CommandDescription("Warn a player for bad behavior")
   @CommandPermission(CommunityPermissions.WARN)
   public void warn(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
-      @Argument("reason") String reason) {
+      @Argument("reason") @Greedy String reason) {
     getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
