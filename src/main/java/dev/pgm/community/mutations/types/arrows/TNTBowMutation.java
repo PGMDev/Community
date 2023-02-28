@@ -10,6 +10,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.HandlerList;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.MatchScope;
+import tc.oc.pgm.filters.matcher.StaticFilter;
 import tc.oc.pgm.modules.ModifyBowProjectileMatchModule;
 
 public class TNTBowMutation extends MutationBase implements BowMutation {
@@ -29,7 +30,9 @@ public class TNTBowMutation extends MutationBase implements BowMutation {
   @Override
   public void enable() {
     super.enable();
-    this.module = new ModifyBowProjectileMatchModule(match, TNTPrimed.class, 1, Sets.newHashSet());
+    this.module =
+        new ModifyBowProjectileMatchModule(
+            match, TNTPrimed.class, 1, Sets.newHashSet(), StaticFilter.ALLOW);
     module.enable();
     match.addListener(module, MatchScope.RUNNING);
   }
