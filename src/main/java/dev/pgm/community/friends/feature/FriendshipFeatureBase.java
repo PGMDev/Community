@@ -2,16 +2,12 @@ package dev.pgm.community.friends.feature;
 
 import static net.kyori.adventure.text.Component.text;
 
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.friends.FriendshipConfig;
-import dev.pgm.community.friends.commands.FriendshipCommand;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
@@ -49,11 +45,6 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
     if (isPGMEnabled()) {
       this.integration = new PGMFriendIntegration();
     }
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() ? Sets.newHashSet(new FriendshipCommand()) : Sets.newHashSet();
   }
 
   public void sendFriendRequestLoginMessage(Player player, int requestCount) {

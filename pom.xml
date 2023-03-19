@@ -1,39 +1,37 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>dev.pgm</groupId>
-	<artifactId>Community</artifactId>
-	<version>0.2-SNAPSHOT</version>
-	<name>Community</name>
-	<description>A plugin for managing a Minecraft community</description>
-	<url>https://pgm.dev</url>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dev.pgm</groupId>
+    <artifactId>Community</artifactId>
+    <version>0.2-SNAPSHOT</version>
+    <name>Community</name>
+    <description>A plugin for managing a Minecraft community</description>
+    <url>https://pgm.dev</url>
 
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.mainClass>dev.pgm.community.Community</project.mainClass>
-		<project.author>applenick</project.author>
-	</properties>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.mainClass>dev.pgm.community.Community</project.mainClass>
+        <project.author>applenick</project.author>
+    </properties>
 
-	<repositories>
-		<repository>
-			<id>pgm.fyi</id>
-			<url>https://repo.pgm.fyi/snapshots</url>
-		</repository>
-		<repository>
-			<id>spigot-repo</id>
-			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>aikar</id>
-			<url>https://repo.aikar.co/content/groups/aikar/</url>
-		</repository>
-	</repositories>
+    <repositories>
+        <repository>
+            <id>pgm.fyi</id>
+            <url>https://repo.pgm.fyi/snapshots</url>
+        </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>aikar</id>
+            <url>https://repo.aikar.co/content/groups/aikar/</url>
+        </repository>
+    </repositories>
 
-	<dependencies>
-		<!-- SportBukkit 1.8 -->
+    <dependencies>
+        <!-- SportBukkit 1.8 -->
         <dependency>
             <groupId>app.ashcon</groupId>
             <artifactId>sportpaper</artifactId>
@@ -55,13 +53,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Command Framework - https://github.com/aikar/commands -->
-		<dependency>
-			<groupId>co.aikar</groupId>
-			<artifactId>acf-bukkit</artifactId>
-			<version>0.5.0-SNAPSHOT</version>
-		</dependency>
-        
         <!-- Database Operations -->
         <dependency>
             <groupId>co.aikar</groupId>
@@ -78,136 +69,134 @@
             <artifactId>idb-bukkit</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-		
-		<!-- Redis -->
-		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>3.5.1</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		
-		<!-- Smart Invs - https://github.com/MinusKube/SmartInvs -->
-		<dependency>
-			<groupId>fr.minuskube.inv</groupId>
-			<artifactId>smart-invs</artifactId>
-			<version>1.2.7</version>
-		</dependency>		
-	</dependencies>
+
+        <!-- Redis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.5.1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- Smart Invs - https://github.com/MinusKube/SmartInvs -->
+        <dependency>
+            <groupId>fr.minuskube.inv</groupId>
+            <artifactId>smart-invs</artifactId>
+            <version>1.2.7</version>
+        </dependency>
+    </dependencies>
 
 
-	<build>
+    <build>
         <finalName>Community</finalName>
-		<resources>
-			<!-- Include the required plugin.yml and config.yml for Bukkit -->
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
+        <resources>
+            <!-- Include the required plugin.yml and config.yml for Bukkit -->
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
 
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<compilerArgs>
-						<arg>-parameters</arg> <!-- Required for aikar/commands to auto generate syntax -->
-					</compilerArgs>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.3</version>
-				<configuration>
-					<createDependencyReducedPom>false</createDependencyReducedPom>
-					<minimizeJar>true</minimizeJar>
-					<artifactSet>
-						<includes>
-							<include>net.kyori:*:*</include>
-							<include>co.aikar:*</include>
-							<include>tc.oc.pgm:util</include>
-							<include>redis.clients:jedis</include>
-							<include>org.apache.commons:commons-pool2</include>
-							<include>fr.minuskube.inv:smart-invs</include>
-							<include>com.zaxxer:HikariCP</include>
-						</includes>
-					</artifactSet>
-					<filters>
-						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/**</exclude>
-							</excludes>
-						</filter>
-					</filters>
-					<relocations>
-						<relocation>
-							<pattern>co.aikar.commands</pattern>
-							<shadedPattern>dev.pgm.community.lib.acf</shadedPattern>
-						</relocation>
-					</relocations>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>cloud.commandframework</groupId>
+                            <artifactId>cloud-annotations</artifactId>
+                            <version>1.7.1</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.3</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <minimizeJar>true</minimizeJar>
+                    <artifactSet>
+                        <includes>
+                            <include>net.kyori:*:*</include>
+                            <include>co.aikar:*</include>
+                            <include>cloud.commandframework:cloud-*:*</include>
+                            <include>me.lucko:commodore:*</include>
+                            <include>tc.oc.pgm:util</include>
+                            <include>redis.clients:jedis</include>
+                            <include>org.apache.commons:commons-pool2</include>
+                            <include>fr.minuskube.inv:smart-invs</include>
+                            <include>com.zaxxer:HikariCP</include>
+                        </includes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/**</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<!-- Exposes git information to the build environment -->
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>4.0.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>revision</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<failOnNoGitDirectory>false</failOnNoGitDirectory>
-					<failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-				</configuration>
-			</plugin>
+            <!-- Exposes git information to the build environment -->
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+                </configuration>
+            </plugin>
 
-			<!-- Validates that code is properly formatted with Google's code style -->
-			<plugin>
-				<groupId>com.coveo</groupId>
-				<artifactId>fmt-maven-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<style>google</style>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			
-			<!-- Allows for building of java docs, although not used yet -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<failOnError>false</failOnError>
-					<includeDependencySources>true</includeDependencySources>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+            <!-- Validates that code is properly formatted with Google's code style -->
+            <plugin>
+                <groupId>com.coveo</groupId>
+                <artifactId>fmt-maven-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <style>google</style>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-
+            <!-- Allows for building of java docs, although not used yet -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <includeDependencySources>true</includeDependencySources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

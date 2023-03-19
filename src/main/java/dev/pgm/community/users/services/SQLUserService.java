@@ -7,7 +7,7 @@ import com.google.common.cache.LoadingCache;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
-import dev.pgm.community.users.feature.UsersFeature;
+import dev.pgm.community.utils.NameUtils;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
     UserData data = null;
 
     // If Username, search through looking for existing usernames in profiles
-    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
+    if (NameUtils.isMinecraftName(target)) {
       Optional<UserData> uQuery =
           profileCache.asMap().values().stream()
               .filter(u -> u.getUsername() != null)

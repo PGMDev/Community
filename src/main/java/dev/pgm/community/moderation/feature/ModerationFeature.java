@@ -5,6 +5,7 @@ import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
+import dev.pgm.community.moderation.tools.ModerationTools;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.util.List;
@@ -121,4 +122,6 @@ public interface ModerationFeature extends Feature {
   void recieveUpdate(NetworkPunishment punishment);
 
   void recieveRefresh(UUID playerId);
+
+  ModerationTools getTools();
 }

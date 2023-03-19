@@ -1,6 +1,5 @@
 package dev.pgm.community.utils;
 
-import co.aikar.commands.InvalidCommandArgument;
 import com.google.common.collect.Lists;
 import java.time.Duration;
 import java.util.List;
@@ -17,6 +16,7 @@ import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.blitz.BlitzMatchModule;
 import tc.oc.pgm.rotation.MapPoolManager;
 import tc.oc.pgm.rotation.pools.MapPool;
+import tc.oc.pgm.util.text.TextException;
 
 public class PGMUtils {
 
@@ -93,15 +93,15 @@ public class PGMUtils {
     return true;
   }
 
-  public static MapInfo parseMapText(String input) throws InvalidCommandArgument {
+  public static MapInfo parseMapText(String input) throws TextException {
     if (input.contains(PGMUtils.SPACE)) {
       input = input.replaceAll(PGMUtils.SPACE, " ");
     }
     MapInfo map = PGM.get().getMapLibrary().getMap(input);
 
     if (map == null) {
-      throw new InvalidCommandArgument(
-          ChatColor.AQUA + input + ChatColor.RED + " is not a valid map name", false);
+      throw TextException.exception(
+          ChatColor.AQUA + input + ChatColor.RED + " is not a valid map name");
     }
 
     return map;

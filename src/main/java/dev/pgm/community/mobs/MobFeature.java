@@ -3,7 +3,6 @@ package dev.pgm.community.mobs;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import java.util.List;
 import java.util.Map;
@@ -214,10 +213,5 @@ public class MobFeature extends FeatureBase {
       this.attackers.add(playerId);
     }
     return attackers.contains(playerId);
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getMobConfig().isEnabled() ? Sets.newHashSet(new MobCommand()) : Sets.newHashSet();
   }
 }

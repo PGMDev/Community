@@ -3,44 +3,41 @@ package dev.pgm.community.commands;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Optional;
-import co.aikar.commands.annotation.Syntax;
-import com.google.common.collect.Maps;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
-import java.util.Map;
-import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.util.StringUtils;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 
 public class GamemodeCommand extends CommunityCommand {
 
-  @CommandAlias("gamemode|gm")
-  @Description("Adjust your or another player's gamemode")
-  @Syntax("<gamemode> " + SELECTION)
+  @CommandMethod("gamemode|gm [gamemode] [target]")
+  @CommandDescription("Adjust your or another player's gamemode")
   @CommandPermission(CommunityPermissions.GAMEMODE)
   public void gamemode(
-      CommandAudience viewer, @Optional String gamemode, @Optional String targets) {
+      CommandAudience viewer,
+      @Argument("gamemode") GameMode gamemode,
+      @Argument("target") Player target,
+      @Flag(value = "all", aliases = "a") boolean everyone) {
     Player player = viewer.getPlayer();
     // /gm <gamemode>
-    if (gamemode == null && targets == null) {
+    if (gamemode == null && target == null) {
       // Send current gamemode
       viewer.sendMessage(
           text()
               .append(text("Your current gamemode is ", NamedTextColor.GRAY))
               .append(getGamemodeName(player.getGameMode()))
               .build());
-    } else if (gamemode != null && targets == null) {
+    } else if (gamemode != null && target == null && !everyone) {
       // /gm <gamemode>
-      player.setGameMode(parseGamemode(gamemode, player.getGameMode()));
+      player.setGameMode(gamemode);
       viewer.sendMessage(
           text()
               .append(text("Set your gamemode to ", NamedTextColor.GRAY))
@@ -48,15 +45,14 @@ public class GamemodeCommand extends CommunityCommand {
               .build());
     } else {
       // /gm <gamemode> <targets>
-      PlayerSelection selection = getPlayers(viewer, targets);
+      PlayerSelection selection = getPlayers(viewer, everyone ? "*" : target.getName());
 
       if (!selection.getPlayers().isEmpty()) {
-        GameMode gm = parseGamemode(gamemode, player.getGameMode());
-        selection.getPlayers().forEach(pl -> pl.setGameMode(gm));
+        selection.getPlayers().forEach(pl -> pl.setGameMode(gamemode));
         viewer.sendMessage(
             text()
                 .append(text("Gamemode has been set to "))
-                .append(getGamemodeName(gm))
+                .append(getGamemodeName(gamemode))
                 .append(text(" for "))
                 .append(selection.getText())
                 .color(NamedTextColor.GRAY)
@@ -69,19 +65,5 @@ public class GamemodeCommand extends CommunityCommand {
 
   private Component getGamemodeName(GameMode gamemode) {
     return translatable("gameMode." + gamemode.name().toLowerCase(), NamedTextColor.AQUA);
-  }
-
-  private GameMode parseGamemode(String input, GameMode def) {
-    GameMode gamemode = def;
-    int gmValue = NumberUtils.toInt(input, -1);
-    if (gmValue >= 0 && gmValue <= 3) {
-      gamemode = GameMode.getByValue(gmValue);
-    } else {
-      Map<String, GameMode> names = Maps.newHashMap();
-      Stream.of(GameMode.values()).forEach(gm -> names.put(gm.name().toLowerCase(), gm));
-      GameMode gmMatch = StringUtils.bestFuzzyMatch(input.toLowerCase(), names);
-      gamemode = gmMatch != null ? gmMatch : def;
-    }
-    return gamemode;
   }
 }

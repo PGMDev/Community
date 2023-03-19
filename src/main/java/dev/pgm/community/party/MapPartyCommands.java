@@ -1,20 +1,12 @@
 package dev.pgm.community.party;
 
-import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Subcommand;
-import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.party.hosts.MapPartyHosts;
 import dev.pgm.community.party.menu.MapPartyMainMenu;
@@ -25,35 +17,44 @@ import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 import tc.oc.pgm.util.named.NameStyle;
 
-@CommandAlias("event")
-@Description("View/manage event info")
+@CommandMethod("event")
 public class MapPartyCommands extends CommunityCommand {
 
-  @Dependency private MapPartyFeature party;
+  private final MapPartyFeature party;
 
-  @Default
-  public void menu(CommandAudience viewer, Player player) {
+  public MapPartyCommands() {
+    this.party = Community.get().getFeatures().getParty();
+  }
+
+  @CommandMethod("")
+  public void menu(CommandAudience viewer, Player sender) {
     if (viewer.hasPermission(CommunityPermissions.PARTY)) {
-      new MapPartyMainMenu(party, player);
+      new MapPartyMainMenu(party, sender);
     } else {
       if (isPartyMissing(viewer)) return;
-      party.sendPartyWelcome(player);
+      party.sendPartyWelcome(sender);
     }
   }
 
-  @Subcommand("create")
+  @CommandMethod("create [type]")
   @CommandPermission(CommunityPermissions.PARTY)
-  public void create(CommandAudience viewer, Player sender, MapPartyType type) {
+  public void create(CommandAudience viewer, Player sender, @Argument("type") MapPartyType type) {
     if (!party.create(viewer, sender, type)) {
       viewer.sendWarning(MapPartyMessages.CREATION_ERROR);
     }
   }
 
-  @Subcommand("preset")
+  @CommandMethod("preset [name]")
   @CommandPermission(CommunityPermissions.PARTY)
-  public void createPreset(CommandAudience viewer, Player sender, String presetName) {
+  public void createPreset(
+      CommandAudience viewer, Player sender, @Argument("name") @Greedy String presetName) {
     if (party.getParty() != null) {
       viewer.sendWarning(MapPartyMessages.CREATION_ERROR);
       return;
@@ -67,163 +68,150 @@ public class MapPartyCommands extends CommunityCommand {
     party.create(viewer, sender, preset);
   }
 
-  @Subcommand("start|begin")
+  @CommandMethod("start [delayed]")
   @CommandPermission(CommunityPermissions.PARTY)
-  public void start(CommandAudience viewer, Player player, @Default("false") boolean delayed) {
+  public void start(
+      CommandAudience viewer,
+      Player sender,
+      @Argument(value = "delayed", defaultValue = "false") boolean delayed) {
     if (isPartyMissing(viewer)) return;
 
-    if (!party.start(player, delayed)) {
+    if (!party.start(sender, delayed)) {
       viewer.sendWarning(MapPartyMessages.STARTED_ERROR);
     }
   }
 
-  @Subcommand("stop|end")
+  @CommandMethod("stop")
   @CommandPermission(CommunityPermissions.PARTY)
-  public void stop(CommandAudience viewer, Player player) {
-    if (!party.stop(player)) {
+  public void stop(CommandAudience viewer) {
+    if (!party.stop(viewer.getSender())) {
       viewer.sendWarning(MapPartyMessages.MISSING_ERROR);
     }
   }
 
-  @Subcommand("restart")
+  @CommandMethod("restart")
   @CommandPermission(CommunityPermissions.PARTY)
-  public void restart(CommandAudience viewer, Player player) {
-    if (!party.restart(player)) {
+  public void restart(CommandAudience viewer) {
+    if (!party.restart(viewer.getSender())) {
       viewer.sendWarning(MapPartyMessages.RESTART_ERROR);
     }
   }
 
-  @Subcommand("setpool")
-  @Syntax("[pool] - Name of a map pool")
+  @CommandMethod("setpool <pool>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void setMapPool(CommandAudience viewer, String pool) {
+  public void setMapPool(CommandAudience viewer, @Argument("pool") @Greedy String pool) {
     party.setMapPool(viewer, pool);
   }
 
-  @Subcommand("setname|name")
-  @Syntax("[name] - Name of the party")
+  @CommandMethod("setname <name>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void setPartyName(CommandAudience viewer, String name) {
+  public void setPartyName(CommandAudience viewer, @Argument("name") @Greedy String name) {
     party.setName(viewer, name);
   }
 
-  @Subcommand("setdesc|description|desc")
-  @Syntax("[description] - Party description")
+  @CommandMethod("setdesc <desc>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void setPartyDesc(CommandAudience viewer, String description) {
+  public void setPartyDesc(CommandAudience viewer, @Argument("desc") @Greedy String description) {
     party.setDescription(viewer, description);
   }
 
-  @Subcommand("timelimit|tl")
-  @Syntax("[duration] - Duration of the party")
+  @CommandMethod("timelimit <duration>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void setTimeLimit(CommandAudience viewer, Duration timeLimit) {
+  public void setTimeLimit(CommandAudience viewer, @Argument("duration") Duration timeLimit) {
     party.setTimelimit(viewer, timeLimit);
   }
 
-  @Subcommand("mode")
+  @CommandMethod("mode")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
   public void toggleMapPoolMode(CommandAudience viewer) {
     party.toggleMode(viewer);
   }
 
-  @Subcommand("addmap")
-  @Syntax("[map] - Name of a map")
-  @CommandCompletion("@maps")
+  @CommandMethod("addmap <map>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void addMap(CommandAudience viewer, String mapName) {
-    party.addMap(viewer, parseMapText(mapName));
+  public void addMap(CommandAudience viewer, @Argument("map") @Greedy MapInfo map) {
+    party.addMap(viewer, map);
   }
 
-  @Subcommand("removemap")
-  @Syntax("[map] - Name of a map")
-  @CommandCompletion("@partyMaps")
+  @CommandMethod("removemap <map>")
   @CommandPermission(CommunityPermissions.PARTY_HOST)
-  public void removeMap(CommandAudience viewer, String mapName) {
-    party.removeMap(viewer, parseMapText(mapName));
+  public void removeMap(CommandAudience viewer, @Argument("map") @Greedy MapInfo map) {
+    party.removeMap(viewer, map);
   }
 
-  @Subcommand("maps")
+  @CommandMethod("maps")
   @CommandPermission(CommunityPermissions.PARTY)
   public void maps(CommandAudience viewer, Player sender) {
     if (isPartyMissing(viewer)) return;
     new MapMenu(party, sender);
   }
 
-  @Subcommand("hosts|host")
+  @CommandMethod("hosts")
   @CommandPermission(CommunityPermissions.PARTY)
-  private class HostCommand extends BaseCommand {
+  public void viewHosts(CommandAudience viewer, Player sender) {
+    if (isPartyMissing(viewer)) return;
+    new HostMenu(party, sender);
+  }
 
-    @Default
-    public void viewHosts(CommandAudience viewer, Player sender) {
-      if (isPartyMissing(viewer)) return;
-      new HostMenu(party, sender);
+  @CommandMethod("hosts add <targets>")
+  @CommandPermission(CommunityPermissions.PARTY)
+  public void addHost(CommandAudience viewer, @Argument("targets") String targets) {
+    if (isPartyMissing(viewer)) return;
+    MapPartyHosts hosts = party.getParty().getHosts();
+    PlayerSelection selection = getPlayers(viewer, targets);
+    selection
+        .getPlayers()
+        .forEach(
+            player -> {
+              if (!party.canHost(player)) {
+                viewer.sendWarning(MapPartyMessages.getAddHostError(player));
+                return;
+              }
+
+              if (hosts.isHost(player.getUniqueId())) {
+                viewer.sendWarning(MapPartyMessages.getExistingHostError(player));
+                return;
+              }
+              hosts.addSubHost(player);
+            });
+  }
+
+  @CommandMethod("hosts remove <target>")
+  @CommandPermission(CommunityPermissions.PARTY)
+  public void removeHost(CommandAudience viewer, @Argument("target") TargetPlayer target) {
+    if (isPartyMissing(viewer)) return;
+    MapPartyHosts hosts = party.getParty().getHosts();
+    if (!hosts.removeSubHost(target.getIdentifier())) {
+      viewer.sendWarning(
+          text()
+              .append(text(target.getIdentifier(), NamedTextColor.DARK_AQUA))
+              .append(text(" is not a party host"))
+              .build());
+    }
+  }
+
+  @CommandMethod("hosts transfer <target>")
+  @CommandPermission(CommunityPermissions.PARTY)
+  public void transferHost(CommandAudience viewer, @Argument("target") Player target) {
+    if (isPartyMissing(viewer)) return;
+
+    MapPartyHosts hosts = party.getParty().getHosts();
+
+    if (!party.canHost(target)) {
+      viewer.sendWarning(MapPartyMessages.getAddHostError(target));
+      return;
     }
 
-    @Subcommand("add")
-    @Syntax("[players]")
-    @CommandCompletion("@players")
-    public void addHost(CommandAudience viewer, String targets) {
-      if (isPartyMissing(viewer)) return;
-      MapPartyHosts hosts = party.getParty().getHosts();
-      PlayerSelection selection = getPlayers(viewer, targets);
-      selection
-          .getPlayers()
-          .forEach(
-              player -> {
-                if (!party.canHost(player)) {
-                  viewer.sendWarning(MapPartyMessages.getAddHostError(player));
-                  return;
-                }
-
-                if (hosts.isHost(player.getUniqueId())) {
-                  viewer.sendWarning(MapPartyMessages.getExistingHostError(player));
-                  return;
-                }
-                hosts.addSubHost(player);
-              });
+    if (hosts.isMainHost(target.getUniqueId())) {
+      viewer.sendWarning(
+          text()
+              .append(player(target, NameStyle.FANCY))
+              .append(text(" is already the main party host"))
+              .build());
+      return;
     }
 
-    @Subcommand("remove")
-    @Syntax("[player]")
-    @CommandCompletion("@players") // TODO: get cached offline names for completion here
-    public void removeHost(CommandAudience viewer, String target) {
-      if (isPartyMissing(viewer)) return;
-      MapPartyHosts hosts = party.getParty().getHosts();
-      if (!hosts.removeSubHost(target)) {
-        viewer.sendWarning(
-            text()
-                .append(text(target, NamedTextColor.DARK_AQUA))
-                .append(text(" is not a party host"))
-                .build());
-      }
-    }
-
-    @Subcommand("transfer")
-    @Syntax("[player]")
-    @CommandCompletion("@players")
-    public void transferHost(CommandAudience viewer, String target) {
-      if (isPartyMissing(viewer)) return;
-
-      MapPartyHosts hosts = party.getParty().getHosts();
-      Player player = getSinglePlayer(viewer, target, true);
-
-      if (!party.canHost(player)) {
-        viewer.sendWarning(MapPartyMessages.getAddHostError(player));
-        return;
-      }
-
-      if (hosts.isMainHost(player.getUniqueId())) {
-        viewer.sendWarning(
-            text()
-                .append(player(player, NameStyle.FANCY))
-                .append(text(" is already the main party host"))
-                .build());
-        return;
-      }
-
-      party.getParty().getHosts().setMainHost(player);
-    }
+    party.getParty().getHosts().setMainHost(target);
   }
 
   private boolean isPartyMissing(CommandAudience viewer) {

@@ -1,9 +1,6 @@
 package dev.pgm.community.assistance.commands;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
@@ -11,16 +8,25 @@ import dev.pgm.community.moderation.punishments.types.MutePunishment;
 import dev.pgm.community.utils.CommandAudience;
 import java.util.Optional;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 
 public class PlayerHelpCommand extends CommunityCommand {
 
-  @Dependency private AssistanceFeature assistance;
-  @Dependency private ModerationFeature moderation;
+  private AssistanceFeature assistance;
+  private ModerationFeature moderation;
 
-  @CommandAlias("assistance|assist|helpop|helpme")
-  @Description("Request help from staff members")
-  @Syntax("[reason] - Let staff know what you need help with")
-  public void assistanceCommand(CommandAudience viewer, Player player, String reason) {
+  public PlayerHelpCommand() {
+    this.assistance = Community.get().getFeatures().getReports();
+    this.moderation = Community.get().getFeatures().getModeration();
+  }
+
+  @CommandMethod("assistance|assist|helpop|helpme <reason>")
+  @CommandDescription("Request help from a staff member")
+  public void assistanceCommand(
+      CommandAudience viewer, Player player, @Argument("reason") @Greedy String reason) {
     Optional<MutePunishment> mute = moderation.getCachedMute(player.getUniqueId());
     if (mute.isPresent()) {
       viewer.sendWarning(mute.get().getChatMuteMessage());

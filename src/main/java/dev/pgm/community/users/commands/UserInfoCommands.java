@@ -8,18 +8,12 @@ import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Optional;
-import co.aikar.commands.annotation.Syntax;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -43,34 +37,42 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class UserInfoCommands extends CommunityCommand {
 
-  @Dependency private UsersFeature users;
-  @Dependency private ModerationFeature moderation;
-  @Dependency private FriendshipFeature friends;
+  private final UsersFeature users;
+  private final ModerationFeature moderation;
+  private final FriendshipFeature friends;
 
-  @CommandAlias("seen|lastseen|find")
-  @Description("View when a player was last online")
-  @Syntax("[player]")
-  @CommandCompletion("@visible")
+  public UserInfoCommands() {
+    this.users = Community.get().getFeatures().getUsers();
+    this.moderation = Community.get().getFeatures().getModeration();
+    this.friends = Community.get().getFeatures().getFriendships();
+  }
+
+  @CommandMethod("seen|lastseen|find <target>")
+  @CommandDescription("View when a player was last online")
   @CommandPermission(CommunityPermissions.FIND)
-  public void seenPlayer(CommandAudience audience, String target) {
+  public void seenPlayer(CommandAudience audience, @Argument("target") TargetPlayer target) {
     boolean staff = audience.hasPermission(CommunityPermissions.STAFF);
     boolean findAnyone = audience.hasPermission(CommunityPermissions.FIND_ANYONE);
 
     users.findUserWithSession(
-        target,
+        target.getIdentifier(),
         !staff,
         (profile, session) -> {
           if (profile == null || session == null) {
             audience.sendWarning(
                 findAnyone
-                    ? MessageUtils.formatUnseen(target)
-                    : MessageUtils.formatNotFriend(target));
+                    ? MessageUtils.formatUnseen(target.getIdentifier())
+                    : MessageUtils.formatNotFriend(target.getIdentifier()));
             return;
           }
 
@@ -78,7 +80,8 @@ public class UserInfoCommands extends CommunityCommand {
               && !friends.isFriend(audience.getPlayer().getUniqueId(), profile.getId())
               && !findAnyone) {
             audience.sendWarning(
-                text("You are not friends with ").append(text(target, NamedTextColor.DARK_AQUA)));
+                text("You are not friends with ")
+                    .append(text(profile.getUsername(), NamedTextColor.DARK_AQUA)));
             return;
           }
 
@@ -109,12 +112,10 @@ public class UserInfoCommands extends CommunityCommand {
         });
   }
 
-  @CommandAlias("alts|alternateaccounts")
-  @Description("View a list of alternate accounts of a player")
-  @CommandCompletion("@players")
-  @Syntax("[target]")
+  @CommandMethod("alts|alternateaccounts [target]")
+  @CommandDescription("View a list of alternate accounts of a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
-  public void viewAlts(CommandAudience audience, @Optional String target) {
+  public void viewAlts(CommandAudience audience, @Argument("target") TargetPlayer target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
       showBannedAlts(audience, 1);
@@ -122,11 +123,11 @@ public class UserInfoCommands extends CommunityCommand {
     }
 
     users
-        .getStoredProfile(target)
+        .getStoredProfile(target.getIdentifier())
         .thenAcceptAsync(
             profile -> {
               if (profile == null) {
-                audience.sendWarning(MessageUtils.formatUnseen(target));
+                audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
                 return;
               }
 
@@ -211,19 +212,19 @@ public class UserInfoCommands extends CommunityCommand {
             });
   }
 
-  @CommandAlias("profile|user")
-  @Description("View account info for a player")
-  @Syntax("(name | uuid)")
-  @CommandCompletion("@players")
+  @CommandMethod("profile|user <target> [all]")
+  @CommandDescription("View account info for a player")
   @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewUserProfile(
-      CommandAudience audience, String target, @Default("false") boolean viewAll) {
+      CommandAudience audience,
+      @Argument("target") TargetPlayer target,
+      @Argument(value = "all", defaultValue = "false") boolean viewAll) {
     users.findUserWithSession(
-        target,
+        target.getIdentifier(),
         false,
         (profile, session) -> {
           if (profile == null || session == null) {
-            audience.sendWarning(MessageUtils.formatUnseen(target));
+            audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
             return;
           }
 

@@ -39,6 +39,17 @@ public interface TeleportFeature extends Feature {
         text("Teleported to ").append(formatLocation(target)).color(NamedTextColor.GRAY));
   }
 
+  default void teleport(
+      CommandAudience sender, Set<Player> targets, Location target, @Nullable Component type) {
+    targets.forEach(player -> teleport(sender, player, target));
+    sender.sendMessage(
+        text("Teleported ")
+            .append(type != null ? type : text(targets.size()))
+            .append(text(" to "))
+            .append(formatLocation(target))
+            .color(NamedTextColor.GRAY));
+  }
+
   void teleport(
       CommandAudience audience, Player teleporter, Location target, @Nullable Component message);
 

@@ -1,90 +1,92 @@
 package dev.pgm.community.teleports;
 
-import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.text.Component.text;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Flags;
-import co.aikar.commands.annotation.Optional;
-import co.aikar.commands.annotation.Syntax;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.utils.CommandAudience;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.party.Party;
+import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.util.text.TextException;
 
 public class TeleportCommand extends CommunityCommand {
 
-  @Dependency private TeleportFeature teleport;
-  @Dependency private NickFeature nick;
+  private final TeleportFeature teleport;
 
-  // NEW TARGET SELECTORS
+  public TeleportCommand() {
+    this.teleport = Community.get().getFeatures().getTeleports();
+  }
 
-  // /tp * <single>
-  // /tp ? <single>
-  // /tp team=[name] <single>
-
-  @CommandAlias("tp|teleport")
-  @Description("Teleport to another player")
-  @Syntax("<player> <other player> | " + SELECTION + " <target>")
-  @CommandCompletion("@visible @visible")
+  @CommandMethod("tp|teleport <target>")
+  @CommandDescription("Teleport to another player")
   @CommandPermission(CommunityPermissions.TELEPORT)
-  public void teleportCommand(CommandAudience viewer, String target1, @Optional String target2) {
+  public void teleportCommand(
+      CommandAudience viewer, Player sender, @Argument("target") Player target) {
+    teleport.teleport(viewer, sender, target);
+  }
 
-    if (viewer.isPlayer()) {
-      Player sender = viewer.getPlayer();
-      if (target2 == null) {
-        Player player = getSinglePlayer(viewer, target1, true);
-        if (player != null) {
-          teleport.teleport(viewer, sender, player);
-        }
-        return;
-      }
-    }
+  @CommandMethod("tpall|tpa <target>")
+  @CommandDescription("Teleport all players to the target player")
+  @CommandPermission(CommunityPermissions.TELEPORT_ALL)
+  public void teleportAll(CommandAudience viewer, @Argument("target") Player target) {
+    PlayerSelection selection = getPlayers(viewer, "*");
 
-    if (!viewer.getSender().hasPermission(CommunityPermissions.TELEPORT_OTHERS)) {
-      viewer.sendWarning(translatable("misc.noPermission"));
+    if (selection.getPlayers().isEmpty()) {
+      selection.sendNoPlayerComponent(viewer);
       return;
     }
 
-    if (target2 != null) {
-      PlayerSelection targets = getPlayers(viewer, target1);
-
-      Player player2 = getSinglePlayer(viewer, target2, true);
-      if (!targets.getPlayers().isEmpty() && player2 != null) {
-        teleport.teleport(viewer, targets.getPlayers(), player2, targets.getText());
-      } else {
-        targets.sendNoPlayerComponent(viewer);
-      }
-    }
+    teleport.teleport(viewer, selection.getPlayers(), target, selection.getText());
   }
 
-  @CommandAlias("tphere|bring|tph")
-  @Description("Teleport players to you")
-  @Syntax("[player] - Player to teleport")
-  @CommandCompletion("@players")
+  @CommandMethod("tpteam <team> <target>")
+  @CommandDescription("Teleport all players on the given team to the target player")
   @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
-  public void teleportHereCommand(CommandAudience viewer, String target) {
-    if (viewer.isPlayer()) {
-      teleportCommand(viewer, target, viewer.getPlayer().getName());
+  public void teleportTeam(
+      CommandAudience viewer, @Argument("team") Party team, @Argument("target") Player target) {
+    Set<Player> players =
+        team.getPlayers().stream().map(MatchPlayer::getBukkit).collect(Collectors.toSet());
+
+    if (players.isEmpty()) {
+      viewer.sendWarning(
+          text().append(team.getName()).append(text(" has no players to teleport")).build());
+      return;
     }
+
+    teleport.teleport(viewer, players, target, team.getName());
   }
 
-  @CommandAlias("tplocation|tpl|tploc")
-  @Description("Teleport to specific coordinates")
-  @Syntax("[x,y,z] [target]")
-  @CommandCompletion("@players")
+  @CommandMethod("tphere|bring|tph <target>")
+  @CommandDescription("Teleport players to you")
+  @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
+  public void teleportHereCommand(
+      CommandAudience viewer, Player sender, @Argument("target") Player target) {
+    teleportCommand(viewer, target, sender);
+  }
+
+  @CommandMethod("tplocation|tpl|tploc <coords> [target]")
+  @CommandDescription("Teleport to specific coordinates")
   @CommandPermission(CommunityPermissions.TELEPORT_LOCATION)
   public void teleportLocation(
       CommandAudience viewer,
-      Location location,
-      @Optional @Flags("other,defaultself") Player target) {
+      @Argument("coords") Location location,
+      @Argument("target") Player target) {
     if (target != null) {
       teleport.teleport(viewer, target, location);
+      return;
     }
+
+    if (!viewer.isPlayer()) TextException.playerOnly();
+
+    teleport.teleport(viewer, viewer.getPlayer(), location);
   }
 }

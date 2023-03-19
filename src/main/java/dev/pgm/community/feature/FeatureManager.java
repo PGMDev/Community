@@ -1,18 +1,11 @@
 package dev.pgm.community.feature;
 
-import co.aikar.commands.BukkitCommandManager;
 import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.assistance.feature.types.SQLAssistanceFeature;
 import dev.pgm.community.broadcast.BroadcastFeature;
 import dev.pgm.community.chat.management.ChatManagementFeature;
 import dev.pgm.community.chat.network.NetworkChatFeature;
-import dev.pgm.community.commands.CommunityPluginCommand;
-import dev.pgm.community.commands.ContainerCommand;
-import dev.pgm.community.commands.FlightCommand;
-import dev.pgm.community.commands.GamemodeCommand;
-import dev.pgm.community.commands.ServerInfoCommand;
-import dev.pgm.community.commands.StaffCommand;
-import dev.pgm.community.commands.SudoCommand;
+import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.freeze.FreezeFeature;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.types.SQLFriendshipFeature;
@@ -21,7 +14,6 @@ import dev.pgm.community.mobs.MobFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.feature.types.SQLModerationFeature;
 import dev.pgm.community.motd.MotdFeature;
-import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.types.RedisNetworkFeature;
@@ -36,15 +28,9 @@ import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.feature.types.SQLUsersFeature;
-import dev.pgm.community.utils.PGMUtils;
 import fr.minuskube.inv.InventoryManager;
-import java.util.Arrays;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 
 /** Manages all {@link Feature}s of the plugin */
 public class FeatureManager {
@@ -72,7 +58,7 @@ public class FeatureManager {
   public FeatureManager(
       Configuration config,
       Logger logger,
-      BukkitCommandManager commands,
+      DatabaseConnection database,
       InventoryManager inventory) {
     // Networking
     this.network = new RedisNetworkFeature(config, logger);
@@ -102,8 +88,6 @@ public class FeatureManager {
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
     this.mob = new MobFeature(config, logger);
     this.party = new MapPartyFeature(config, logger);
-
-    this.registerCommands(commands);
   }
 
   public AssistanceFeature getReports() {
@@ -172,102 +156,6 @@ public class FeatureManager {
 
   public MobFeature getMobs() {
     return mob;
-  }
-
-  // Register Feature commands and any dependency
-  private void registerCommands(BukkitCommandManager commands) {
-    // Dependency injection for features
-    commands.registerDependency(UsersFeature.class, getUsers());
-    commands.registerDependency(AssistanceFeature.class, getReports());
-    commands.registerDependency(ModerationFeature.class, getModeration());
-    commands.registerDependency(SessionFeature.class, getSessions());
-    commands.registerDependency(TeleportFeature.class, getTeleports());
-    commands.registerDependency(ChatManagementFeature.class, getChatManagement());
-    commands.registerDependency(FriendshipFeature.class, getFriendships());
-    commands.registerDependency(FreezeFeature.class, getFreeze());
-    commands.registerDependency(MutationFeature.class, getMutations());
-    commands.registerDependency(BroadcastFeature.class, getBroadcast());
-    commands.registerDependency(NickFeature.class, getNick());
-    commands.registerDependency(RequestFeature.class, getRequests());
-    commands.registerDependency(MobFeature.class, getMobs());
-    commands.registerDependency(MapPartyFeature.class, getParty());
-
-    // Custom command completions
-    commands
-        .getCommandCompletions()
-        .registerCompletion(
-            "mutes",
-            x ->
-                getModeration().getOnlineMutes().stream()
-                    .map(Player::getName)
-                    .collect(Collectors.toSet()));
-
-    commands
-        .getCommandCompletions()
-        .registerCompletion(
-            "addMutations",
-            x ->
-                Stream.of(MutationType.values())
-                    .filter(mt -> !getMutations().hasMutation(mt))
-                    .map(MutationType::name)
-                    .collect(Collectors.toSet()));
-    commands
-        .getCommandCompletions()
-        .registerCompletion(
-            "removeMutations",
-            x ->
-                Stream.of(MutationType.values())
-                    .filter(mt -> getMutations().hasMutation(mt))
-                    .map(MutationType::name)
-                    .collect(Collectors.toSet()));
-
-    commands.getCommandCompletions().registerCompletion("maps", x -> PGMUtils.getMapNames());
-    commands
-        .getCommandCompletions()
-        .registerCompletion("allowedMaps", x -> PGMUtils.getAllowedMapNames());
-
-    commands
-        .getCommandCompletions()
-        .registerCompletion(
-            "mobs",
-            c ->
-                Arrays.asList(EntityType.values()).stream()
-                    .filter(EntityType::isAlive)
-                    .filter(EntityType::isSpawnable)
-                    .map(EntityType::toString)
-                    .map(String::toLowerCase)
-                    .collect(Collectors.toList()));
-
-    // Feature commands
-    registerFeatureCommands(getUsers(), commands);
-    registerFeatureCommands(getReports(), commands);
-    registerFeatureCommands(getModeration(), commands);
-    registerFeatureCommands(getSessions(), commands);
-    registerFeatureCommands(getTeleports(), commands);
-    registerFeatureCommands(getChatManagement(), commands);
-    registerFeatureCommands(getFriendships(), commands);
-    registerFeatureCommands(getFreeze(), commands);
-    registerFeatureCommands(getMutations(), commands);
-    registerFeatureCommands(getBroadcast(), commands);
-    registerFeatureCommands(getNick(), commands);
-    registerFeatureCommands(getRequests(), commands);
-    registerFeatureCommands(getMobs(), commands);
-    registerFeatureCommands(getParty(), commands);
-    // TODO: Group calls together and perform upon reload
-    // will allow commands to be enabled/disabled with features
-
-    // Other commands
-    commands.registerCommand(new CommunityPluginCommand());
-    commands.registerCommand(new FlightCommand());
-    commands.registerCommand(new StaffCommand());
-    commands.registerCommand(new GamemodeCommand());
-    commands.registerCommand(new ServerInfoCommand());
-    commands.registerCommand(new ContainerCommand());
-    commands.registerCommand(new SudoCommand());
-  }
-
-  private void registerFeatureCommands(Feature feature, BukkitCommandManager commandManager) {
-    feature.getCommands().forEach(commandManager::registerCommand);
   }
 
   public void reloadConfig(Configuration config) {

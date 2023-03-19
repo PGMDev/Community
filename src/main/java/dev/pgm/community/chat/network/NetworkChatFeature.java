@@ -3,8 +3,6 @@ package dev.pgm.community.chat.network;
 import static dev.pgm.community.utils.NetworkUtils.getServer;
 import static net.kyori.adventure.text.Component.text;
 
-import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.subs.types.ChatSubscriber;
@@ -12,7 +10,6 @@ import dev.pgm.community.network.updates.types.ChatUpdate;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
-import java.util.Set;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -51,10 +48,5 @@ public class NetworkChatFeature extends FeatureBase {
 
   private Component formatMessage(Component sender, Component message) {
     return text().append(sender).append(text(": ", NamedTextColor.WHITE)).append(message).build();
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return Sets.newHashSet();
   }
 }

@@ -3,12 +3,9 @@ package dev.pgm.community.teleports;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 
-import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.Sounds;
-import java.util.Set;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -26,13 +23,6 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
 
   public TeleportConfig getTeleportConfig() {
     return (TeleportConfig) getConfig();
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getTeleportConfig().isEnabled()
-        ? Sets.newHashSet(new TeleportCommand())
-        : Sets.newHashSet();
   }
 
   @Override

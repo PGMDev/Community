@@ -5,12 +5,10 @@ import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationConfig;
 import dev.pgm.community.mutations.MutationType;
-import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.mutations.menu.MutationOptionsMenu;
 import dev.pgm.community.mutations.menu.MutationToggleMenu;
 import dev.pgm.community.mutations.types.arrows.ArrowTrailMutation;
@@ -71,13 +69,6 @@ public class MutationFeature extends FeatureBase {
 
   public MutationConfig getMutationConfig() {
     return (MutationConfig) getConfig();
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() && isPGMEnabled()
-        ? Sets.newHashSet(new MutationCommands())
-        : Sets.newHashSet();
   }
 
   public boolean addMutation(CommandAudience sender, MutationType type, boolean broadcast) {

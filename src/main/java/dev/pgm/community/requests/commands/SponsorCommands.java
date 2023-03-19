@@ -1,29 +1,19 @@
 package dev.pgm.community.requests.commands;
 
-import static dev.pgm.community.requests.commands.RequestCommands.getTimeLeft;
-import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Dependency;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Optional;
-import co.aikar.commands.annotation.Subcommand;
-import co.aikar.commands.annotation.Syntax;
 import com.google.common.collect.Sets;
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.requests.RequestConfig;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
-import dev.pgm.community.requests.commands.RequestCommands.TokenRefreshAmount;
+import dev.pgm.community.requests.commands.TokenCommands.TokenRefreshAmount;
 import dev.pgm.community.requests.feature.RequestFeature;
-import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
@@ -45,33 +35,24 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.Phase;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandAlias("sponsor")
-@Description("View the sponsor request menu")
+@CommandMethod("sponsor")
 public class SponsorCommands extends CommunityCommand {
 
-  @Dependency private RequestFeature requests;
-  @Dependency private UsersFeature users;
+  private final RequestFeature requests;
 
-  @Subcommand("cancel")
-  public void cancel(CommandAudience audience, Player player) {
-    if (requests.cancelSponsorRequest(player.getUniqueId())) {
-      audience.sendMessage(text("Removed sponsor request!", NamedTextColor.GREEN));
-    } else {
-      audience.sendWarning(text("You don't have any pending sponsor requests to cancel"));
-    }
+  public SponsorCommands() {
+    this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @Subcommand("menu")
-  public void menu(CommandAudience audience, Player player) {
-    requests.openMenu(player);
-  }
-
-  @Default
-  @Subcommand("info")
+  @CommandMethod("")
   public void info(CommandAudience audience, Player player) {
     Component header =
         TextFormatter.horizontalLineHeading(
@@ -124,7 +105,7 @@ public class SponsorCommands extends CommunityCommand {
                           button(
                               "Queue",
                               NamedTextColor.DARK_GREEN,
-                              "/queue",
+                              "/sponsor queue",
                               "View a list of waiting sponsor requests ("
                                   + ChatColor.YELLOW
                                   + requests.getSponsorQueue().size()
@@ -211,21 +192,31 @@ public class SponsorCommands extends CommunityCommand {
             });
   }
 
-  @Subcommand("request|submit|add")
-  @Description("Sponsor a map request")
-  @Syntax("[map] - Name of map to sponsor")
-  @CommandCompletion("@allowedMaps")
-  public void sponsor(CommandAudience audience, Player player, @Optional String mapName) {
-    if (mapName != null) {
-      requests.sponsor(player, parseMapText(mapName));
+  @CommandMethod("request <map>")
+  @CommandDescription("Sponsor a map request")
+  public void sponsor(
+      CommandAudience audience, Player sender, @Argument("map") @Greedy MapInfo map) {
+    requests.sponsor(sender, map);
+  }
+
+  @CommandMethod("cancel")
+  public void cancel(CommandAudience audience, Player sender) {
+    if (requests.cancelSponsorRequest(sender.getUniqueId())) {
+      audience.sendMessage(text("Removed sponsor request!", NamedTextColor.GREEN));
     } else {
-      audience.sendWarning(text("Please provide a map to sponsor."));
+      audience.sendWarning(text("You don't have any pending sponsor requests to cancel"));
     }
   }
 
-  @Subcommand("maps")
-  @Description("View a list of maps which can be sponsored")
-  public void viewMapList(CommandAudience audience, @Default("1") int page) {
+  @CommandMethod("menu")
+  public void menu(CommandAudience audience, Player sender) {
+    requests.openMenu(sender);
+  }
+
+  @CommandMethod("maps [page]")
+  @CommandDescription("View a list of maps which can be sponsored")
+  public void viewMapList(
+      CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
     Set<MapInfo> maps =
         Sets.newHashSet(PGM.get().getMapLibrary().getMaps()).stream()
             .filter(PGMUtils::isMapSizeAllowed)
@@ -309,10 +300,10 @@ public class SponsorCommands extends CommunityCommand {
     }
   }
 
-  @CommandAlias("queue|sponsorqueue|sq")
-  @Subcommand("queue")
-  @Description("View the sponsored maps queue")
-  public void viewQueue(CommandAudience audience, @Default("1") int page) {
+  @CommandMethod("queue [page]")
+  @CommandDescription("View the sponsored maps queue")
+  public void viewQueue(
+      CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
     Queue<SponsorRequest> queue = requests.getSponsorQueue();
 
     int resultsPerPage = ((RequestConfig) requests.getConfig()).getMaxQueue();
@@ -370,7 +361,8 @@ public class SponsorCommands extends CommunityCommand {
 
   private Component renderExtraInfo(Player player, RequestProfile profile) {
     RequestConfig config = (RequestConfig) requests.getConfig();
-    TokenRefreshAmount info = getTimeLeft(player, profile.getLastTokenRefreshTime(), requests);
+    TokenRefreshAmount info =
+        TokenCommands.getTimeLeft(player, profile.getLastTokenRefreshTime(), requests);
 
     // If token refresh is disabled, display cooldown
     if (config.getDailyTokenAmount() == 0) {

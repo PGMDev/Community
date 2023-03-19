@@ -5,15 +5,12 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.utils.BroadcastUtils;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -220,13 +217,6 @@ public class ChatManagementFeature extends FeatureBase {
               }
             },
             30L);
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getChatConfig().isEnabled()
-        ? Sets.newHashSet(new ChatManagementCommand())
-        : Sets.newHashSet();
   }
 
   private Component formatSeconds(long seconds) {

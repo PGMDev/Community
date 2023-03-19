@@ -1,8 +1,6 @@
 package dev.pgm.community.freeze;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.utils.CommandAudience;
@@ -10,7 +8,6 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -66,13 +63,6 @@ public class FreezeFeature extends FeatureBase {
 
   public FreezeConfig getFreezeConfig() {
     return (FreezeConfig) getConfig();
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() && isPGMEnabled()
-        ? Sets.newHashSet(new FreezeCommand())
-        : Sets.newHashSet();
   }
 
   public boolean isFrozen(Player player) {

@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -25,10 +24,6 @@ import tc.oc.pgm.util.player.PlayerComponent;
  * <p>Features related to users
  */
 public interface UsersFeature extends Feature {
-
-  // Not sure if this was the right place to put this
-  // But better than calling XMLUtils
-  static final Pattern USERNAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{1,16}");
 
   default CompletableFuture<Component> renderUsername(UUID userId, NameStyle style) {
     return renderUsername(Optional.ofNullable(userId), style);

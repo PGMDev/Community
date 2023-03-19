@@ -6,15 +6,10 @@ import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
-import co.aikar.commands.InvalidCommandArgument;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.party.MapParty;
-import dev.pgm.community.party.MapPartyCommands;
 import dev.pgm.community.party.MapPartyConfig;
 import dev.pgm.community.party.MapPartyMessages;
 import dev.pgm.community.party.MapPartyStatusType;
@@ -36,7 +31,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -58,6 +52,7 @@ import tc.oc.pgm.rotation.pools.MapPool;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
+import tc.oc.pgm.util.text.TextException;
 
 public class MapPartyFeature extends FeatureBase {
 
@@ -70,17 +65,18 @@ public class MapPartyFeature extends FeatureBase {
 
     if (getConfig().isEnabled()) {
       enable();
-      Community.get()
-          .getCommandManager()
-          .getCommandCompletions()
-          .registerCompletion(
-              "partyMaps",
-              c -> {
-                if (party != null && party.canAddMaps()) {
-                  return PGMUtils.convertMapNames(party.getCustomMaps());
-                }
-                return Lists.newArrayList();
-              });
+      // TODO:
+      //      Community.get()
+      //          .getCommandManager()
+      //          .getCommandCompletions()
+      //          .registerCompletion(
+      //              "partyMaps",
+      //              c -> {
+      //                if (party != null && party.canAddMaps()) {
+      //                  return PGMUtils.convertMapNames(party.getCustomMaps());
+      //                }
+      //                return Lists.newArrayList();
+      //              });
 
       Community.get()
           .getServer()
@@ -197,7 +193,7 @@ public class MapPartyFeature extends FeatureBase {
         party.start(sender);
         return true;
       } catch (MapPartySetupException e) {
-        throw new InvalidCommandArgument(e.getMessage());
+        throw TextException.exception(e.getMessage());
       }
     }
     return false;
@@ -211,17 +207,12 @@ public class MapPartyFeature extends FeatureBase {
     return false;
   }
 
-  public boolean restart(Player sender) {
+  public boolean restart(CommandSender sender) {
     if (canModify(sender) && party.isSetup()) {
       party.restart(sender);
       return true;
     }
     return false;
-  }
-
-  @Override
-  public Set<CommunityCommand> getCommands() {
-    return getConfig().isEnabled() ? Sets.newHashSet(new MapPartyCommands()) : Sets.newHashSet();
   }
 
   private boolean canModify(CommandSender sender) {

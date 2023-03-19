@@ -7,6 +7,7 @@ import dev.pgm.community.assistance.feature.AssistanceFeatureBase;
 import dev.pgm.community.assistance.services.SQLAssistanceService;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.users.feature.UsersFeature;
+import dev.pgm.community.utils.NameUtils;
 import fr.minuskube.inv.InventoryManager;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class SQLAssistanceFeature extends AssistanceFeatureBase {
 
   @Override
   public CompletableFuture<List<Report>> query(String target) {
-    if (UsersFeature.USERNAME_REGEX.matcher(target).matches()) {
+    if (NameUtils.isMinecraftName(target)) {
       // CONVERT TO UUID if username
       return users
           .getStoredId(target)
