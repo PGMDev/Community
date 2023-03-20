@@ -30,6 +30,13 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>pgm-repo-snapshots</id>
+            <url>https://repo.pgm.fyi/snapshots</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <!-- SportBukkit 1.8 -->
         <dependency>
@@ -39,19 +46,19 @@
             <scope>provided</scope>
         </dependency>
 
-		<!-- PGM Utils -->
-		<dependency>
-			<groupId>tc.oc.pgm</groupId>
-			<artifactId>util</artifactId>
-			<version>0.16-SNAPSHOT</version>
-		</dependency>
+        <!-- PGM Utils -->
+        <dependency>
+            <groupId>tc.oc.pgm</groupId>
+            <artifactId>util</artifactId>
+            <version>0.16-SNAPSHOT</version>
+        </dependency>
 
-		<dependency>
-			<groupId>tc.oc.pgm</groupId>
-			<artifactId>core</artifactId>
-			<version>0.16-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>tc.oc.pgm</groupId>
+            <artifactId>core</artifactId>
+            <version>0.16-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Database Operations -->
         <dependency>
