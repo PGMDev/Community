@@ -146,7 +146,8 @@ public class FreezeManager {
     }
     Audience.get(freezee).playSound(FREEZE_SOUND);
 
-    BroadcastUtils.sendAdminChatMessage(createInteractiveBroadcast(senderName, freezee, true));
+    BroadcastUtils.sendAdminChatMessage(
+        createInteractiveBroadcast(senderName, freezee, true), CommunityPermissions.FREEZE);
   }
 
   private void thaw(Player freezee, Component senderName, boolean silent) {
@@ -164,7 +165,8 @@ public class FreezeManager {
     Audience.get(freezee).playSound(THAW_SOUND);
     Audience.get(freezee).sendMessage(thawedTitle.color(NamedTextColor.GREEN));
 
-    BroadcastUtils.sendAdminChatMessage(createInteractiveBroadcast(senderName, freezee, false));
+    BroadcastUtils.sendAdminChatMessage(
+        createInteractiveBroadcast(senderName, freezee, false), CommunityPermissions.FREEZE);
   }
 
   private Component createInteractiveBroadcast(

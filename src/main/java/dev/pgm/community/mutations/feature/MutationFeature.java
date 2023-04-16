@@ -5,6 +5,7 @@ import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.collect.Sets;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationConfig;
@@ -87,7 +88,8 @@ public class MutationFeature extends FeatureBase {
                 .append(newMutation.getName())
                 .append(text(" mutation"))
                 .color(NamedTextColor.GRAY)
-                .build());
+                .build(),
+            CommunityPermissions.MUTATION);
         return true;
       } else {
         sender.sendWarning(
@@ -109,7 +111,8 @@ public class MutationFeature extends FeatureBase {
               .append(mutation.get().getName())
               .append(text(" mutation"))
               .color(NamedTextColor.GRAY)
-              .build());
+              .build(),
+          CommunityPermissions.MUTATION);
 
       mutations.remove(mutation.get());
       return true;

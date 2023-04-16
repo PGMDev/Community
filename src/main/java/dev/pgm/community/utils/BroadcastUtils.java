@@ -57,16 +57,13 @@ public class BroadcastUtils {
     return builder.append(space()).append(message).build();
   }
 
-  public static void sendExclusiveChatMessage(Component message, String permission) {
+  public static void sendAdminChatMessage(Component message, String permission) {
     sendAdminChatMessage(message, null, null, permission);
   }
 
-  public static void sendAdminChatMessage(Component message) {
-    sendAdminChatMessage(message, null);
-  }
-
-  public static void sendAdminChatMessage(Component message, @Nullable Sound sound) {
-    sendAdminChatMessage(message, null, sound, null);
+  public static void sendAdminChatMessage(
+      Component message, @Nullable Sound sound, String permission) {
+    sendAdminChatMessage(message, null, sound, permission);
   }
 
   public static void sendAdminChatMessage(

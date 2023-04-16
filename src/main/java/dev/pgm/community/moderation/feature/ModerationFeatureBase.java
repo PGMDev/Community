@@ -265,7 +265,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
                   BroadcastUtils.sendAdminChatMessage(
                       PunishmentFormats.formatBanEvasion(
                           event.getPlayer(), banEvasion.get(), bannedName),
-                      Sounds.BAN_EVASION);
+                      Sounds.BAN_EVASION,
+                      CommunityPermissions.UNBAN);
                 }
               });
     }
@@ -376,7 +377,8 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             broadcast -> {
               if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
                 if (silent || !getModerationConfig().isPunishmentPublic(punishment)) {
-                  BroadcastUtils.sendAdminChatMessage(broadcast, server, null, null);
+                  BroadcastUtils.sendAdminChatMessage(
+                      broadcast, server, null, CommunityPermissions.PUNISHMENT_BROADCASTS);
                 } else {
                   BroadcastUtils.sendGlobalMessage(broadcast);
                 }

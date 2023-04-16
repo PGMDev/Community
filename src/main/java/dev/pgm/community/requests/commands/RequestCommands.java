@@ -127,7 +127,7 @@ public class RequestCommands extends CommunityCommand {
 
   @CommandMethod("requests|reqs [page]")
   @CommandDescription("View and manage map requests")
-  @CommandPermission(CommunityPermissions.STAFF)
+  @CommandPermission(CommunityPermissions.REQUEST_STAFF)
   public void listRequests(
       CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
     Map<MapInfo, Integer> requestCounts = requests.getRequests();
@@ -199,7 +199,7 @@ public class RequestCommands extends CommunityCommand {
 
   @CommandMethod("requests|reqs clear [map]")
   @CommandDescription("Clear map requests")
-  @CommandPermission(CommunityPermissions.STAFF)
+  @CommandPermission(CommunityPermissions.REQUEST_STAFF)
   public void clearRequests(CommandAudience audience, @Argument("map") @Greedy MapInfo map) {
     if (map != null) {
       int removalCount = requests.clearRequests(map);
@@ -217,14 +217,16 @@ public class RequestCommands extends CommunityCommand {
               .append(map.getStyledName(MapNameStyle.COLOR))
               .append(removed)
               .color(NamedTextColor.GRAY)
-              .build());
+              .build(),
+          CommunityPermissions.REQUEST_STAFF);
     } else {
       requests.clearAllRequests();
       BroadcastUtils.sendAdminChatMessage(
           text()
               .append(audience.getStyledName())
               .append(text(" has cleared all map requests", NamedTextColor.GRAY))
-              .build());
+              .build(),
+          CommunityPermissions.REQUEST_STAFF);
     }
   }
 

@@ -316,7 +316,8 @@ public class MapPartyFeature extends FeatureBase {
             .append(text(" to "))
             .append(party.getStyledName())
             .color(NamedTextColor.GRAY)
-            .build());
+            .build(),
+        CommunityPermissions.PARTY_HOST);
   }
 
   public void removeMap(CommandAudience viewer, MapInfo map) {
@@ -346,7 +347,8 @@ public class MapPartyFeature extends FeatureBase {
             .append(text(" from "))
             .append(party.getStyledName())
             .color(NamedTextColor.GRAY)
-            .build());
+            .build(),
+        CommunityPermissions.PARTY_HOST);
   }
 
   public boolean isPartyMissing(CommandAudience viewer) {

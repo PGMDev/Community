@@ -666,7 +666,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
             .color(NamedTextColor.YELLOW)
             .build();
 
-    BroadcastUtils.sendAdminChatMessage(alert);
+    BroadcastUtils.sendAdminChatMessage(alert, CommunityPermissions.REQUEST_STAFF);
   }
 
   private void queueRequest(Player player, MapInfo map) {

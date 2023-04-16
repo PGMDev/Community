@@ -6,6 +6,7 @@ import static net.kyori.adventure.text.Component.translatable;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.assistance.AssistanceRequest;
 import dev.pgm.community.assistance.AssistanceRequest.RequestType;
 import dev.pgm.community.assistance.PlayerHelpRequest;
@@ -243,7 +244,8 @@ public abstract class AssistanceFeatureBase extends FeatureBase implements Assis
             ? formatReportBroadcast(sender, target, reason)
             : formatHelpBroadcast(sender, reason);
     Sound sound = report ? Sounds.PLAYER_REPORT : Sounds.HELP_REQUEST;
-    BroadcastUtils.sendAdminChatMessage(component, server, sound, null);
+    BroadcastUtils.sendAdminChatMessage(
+        component, server, sound, CommunityPermissions.REPORT_BROADCASTS);
   }
 
   private Component formatReportBroadcast(Component sender, Component target, String reason) {

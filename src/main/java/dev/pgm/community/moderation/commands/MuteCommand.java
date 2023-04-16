@@ -110,7 +110,7 @@ public class MuteCommand extends CommunityCommand {
                                                                   NamedTextColor.GRAY))
                                                           .append(audience.getStyledName())
                                                           .build(),
-                                                      null);
+                                                      CommunityPermissions.MUTE);
 
                                                   Player online = Bukkit.getPlayer(id.get());
                                                   if (online != null) {

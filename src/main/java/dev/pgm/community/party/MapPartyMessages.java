@@ -126,7 +126,7 @@ public class MapPartyMessages {
     }
     broadcast.color(NamedTextColor.GRAY);
 
-    BroadcastUtils.sendExclusiveChatMessage(broadcast.build(), CommunityPermissions.PARTY);
+    BroadcastUtils.sendAdminChatMessage(broadcast.build(), CommunityPermissions.PARTY);
   }
 
   public static List<Component> getWelcome(MapParty party, MapPartyConfig config) {

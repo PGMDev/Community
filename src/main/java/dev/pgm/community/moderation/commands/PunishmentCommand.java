@@ -139,7 +139,8 @@ public class PunishmentCommand extends CommunityCommand {
                                 text(target.getIdentifier(), NamedTextColor.DARK_AQUA)
                                     .append(text(" was unbanned by ", NamedTextColor.GRAY))
                                     .append(audience.getStyledName()),
-                                Sounds.PUNISHMENT_PARDON);
+                                Sounds.PUNISHMENT_PARDON,
+                                CommunityPermissions.UNBAN);
                           }
                           // TODO: translate
                         });

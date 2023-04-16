@@ -3,6 +3,7 @@ package dev.pgm.community.chat.network;
 import static dev.pgm.community.utils.NetworkUtils.getServer;
 import static net.kyori.adventure.text.Component.text;
 
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.network.feature.NetworkFeature;
 import dev.pgm.community.network.subs.types.ChatSubscriber;
@@ -42,7 +43,11 @@ public class NetworkChatFeature extends FeatureBase {
   public void recieveUpdate(NetworkChatMessage message) {
     if (message.getChannel() == Channel.ADMIN) {
       Component formatted = formatMessage(message.getSender(), message.getMessage());
-      BroadcastUtils.sendAdminChatMessage(formatted, message.getServer(), Sounds.ADMIN_CHAT, null);
+      BroadcastUtils.sendAdminChatMessage(
+          formatted,
+          message.getServer(),
+          Sounds.ADMIN_CHAT,
+          CommunityPermissions.CROSS_NETWORK_CHAT);
     }
   }
 

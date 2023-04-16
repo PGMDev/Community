@@ -5,6 +5,7 @@ import static net.kyori.adventure.text.Component.text;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
+import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -163,7 +164,8 @@ public class MapPartyHosts {
             .color(NamedTextColor.GRAY)
             .clickEvent(ClickEvent.runCommand("/event hosts"))
             .hoverEvent(HoverEvent.showText(text("Click to view event hosts", NamedTextColor.GRAY)))
-            .build());
+            .build(),
+        CommunityPermissions.PARTY_HOST);
   }
 
   private void broadcastHostRemoval(UUID hostId) {
@@ -175,7 +177,8 @@ public class MapPartyHosts {
             .color(NamedTextColor.GRAY)
             .clickEvent(ClickEvent.runCommand("/event hosts"))
             .hoverEvent(HoverEvent.showText(text("Click to view event hosts", NamedTextColor.GRAY)))
-            .build());
+            .build(),
+        CommunityPermissions.PARTY_HOST);
   }
 
   private void broadcastHostTransfer(UUID oldHost, Player newHost) {
@@ -190,6 +193,7 @@ public class MapPartyHosts {
             .color(NamedTextColor.GRAY)
             .hoverEvent(HoverEvent.showText(text("Click to view event hosts", NamedTextColor.GRAY)))
             .clickEvent(ClickEvent.runCommand("/event hosts"))
-            .build());
+            .build(),
+        CommunityPermissions.PARTY_HOST);
   }
 }

@@ -24,9 +24,12 @@ public interface CommunityPermissions {
   String LOOKUP_OTHERS = LOOKUP + ".others"; // Access to lookup other players
   String UNBAN = ROOT + ".pardon"; // Access to the /unban command
   String PUNISH = ROOT + ".punish"; // Access to punishment commands (/rp, /ph)
+  String PUNISHMENT_BROADCASTS =
+      ROOT + ".view-punishments"; // Access to view when punishments are broadcast silently
 
   // Reports
   String REPORTS = ROOT + ".reports"; // Access to view report broadcast & report history
+  String REPORT_BROADCASTS = REPORTS + ".view-broadcasts"; // Access to view report broadcasts
 
   // Staff
   String RELOAD = ROOT + ".reload";
@@ -46,6 +49,9 @@ public interface CommunityPermissions {
   // Chat Management
   String CHAT_MANAGEMENT =
       ROOT + ".chat"; // Able to use /chat commands, and exempt during lock & slowmode
+
+  // Network chat
+  String CROSS_NETWORK_CHAT = ROOT + ".network-chat";
 
   // Friends
   String FRIENDSHIP = ROOT + ".friendship"; // Access to /friend commands
