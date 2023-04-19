@@ -138,6 +138,7 @@
                             <include>org.apache.commons:commons-pool2</include>
                             <include>fr.minuskube.inv:smart-invs</include>
                             <include>com.zaxxer:HikariCP</include>
+                            <include>org.slf4j:*</include>
                         </includes>
                     </artifactSet>
                     <filters>
