@@ -421,7 +421,7 @@ public class SponsorCommands extends CommunityCommand {
                   HoverEvent.showText(
                       text("Click to sponsor ", NamedTextColor.GRAY)
                           .append(map.getStyledName(MapNameStyle.COLOR))))
-              .clickEvent(ClickEvent.runCommand("/sponsor add " + map.getName()))
+              .clickEvent(ClickEvent.runCommand("/sponsor request " + map.getName()))
               .color(NamedTextColor.GRAY)
               .build();
         }
