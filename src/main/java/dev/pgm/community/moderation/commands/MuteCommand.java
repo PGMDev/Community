@@ -45,11 +45,11 @@ public class MuteCommand extends CommunityCommand {
   @CommandPermission(CommunityPermissions.MUTE)
   public void mutePlayer(
       CommandAudience audience,
-      @Argument("target") String target,
+      @Argument("target") TargetPlayer target,
       @Argument("duration") Duration length,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "silent", aliases = "s") boolean silent) {
-    getTarget(target, usernames)
+    getTarget(target.getIdentifier(), usernames)
         .thenAccept(
             id -> {
               if (id.isPresent()) {
@@ -62,7 +62,7 @@ public class MuteCommand extends CommunityCommand {
                     true,
                     isDisguised(audience) || silent);
               } else {
-                audience.sendWarning(formatNotFoundComponent(target));
+                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
               }
             });
   }
