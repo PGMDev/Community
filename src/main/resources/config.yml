@@ -200,7 +200,8 @@ party:
   settings:
     login-message: true # If a login message should be sent to notify new players of party
     party-notifications: true # If title & chat message should be sent when party starts/stops
-    raindrop-command: "/rdm enable" # Command used to toggle raindrop multiplier
+    raindrop-activate: "rdm set 1.5" # Command used to enable raindrop multiplier
+    raindrop-deactivate: "rdm clear" # Command used to disable raindrop multiplier
 
   # Extra server management - When enabled will auto-execute the given commands to the console
   extra:

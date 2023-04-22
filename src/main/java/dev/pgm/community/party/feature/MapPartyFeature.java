@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -59,9 +60,12 @@ public class MapPartyFeature extends FeatureBase {
   private MapParty party; // Only 1 party at a time, for now
   private final MapPartyBroadcastManager broadcasts;
 
+  private boolean raindropsEnabled;
+
   public MapPartyFeature(Configuration config, Logger logger) {
     super(new MapPartyConfig(config), logger, "Map Party (PGM)");
     this.broadcasts = new MapPartyBroadcastManager(this);
+    this.raindropsEnabled = false;
 
     if (getConfig().isEnabled()) {
       enable();
@@ -397,6 +401,37 @@ public class MapPartyFeature extends FeatureBase {
             .replace("$time$", MapPartyMessages.formatTime(party)));
   }
 
+  public boolean isRaindropMultiplierActive() {
+    return this.raindropsEnabled;
+  }
+
+  public void toggleMultiplier(CommandAudience sender) {
+
+    this.raindropsEnabled = !raindropsEnabled;
+
+    // Activate asap if party is running, otherwise will be run when event starts
+    if (getParty().isRunning()) {
+      String command =
+          raindropsEnabled
+              ? getEventConfig().getRaindropActivateCommand()
+              : getEventConfig().getRaindropDeactivateCommand();
+      Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+    }
+
+    Component status =
+        text(
+            raindropsEnabled ? "enabled" : "disabled",
+            raindropsEnabled ? NamedTextColor.GREEN : NamedTextColor.RED);
+
+    MapPartyMessages.broadcastHostAction(
+        sender.getStyledName(),
+        status,
+        text()
+            .append(text("the ", NamedTextColor.GRAY))
+            .append(text("the raindrop multiplier", NamedTextColor.GRAY))
+            .build());
+  }
+
   @EventHandler
   public void onPartyCreate(MapPartyCreateEvent event) {
     // Broadcast to staff
@@ -413,6 +448,18 @@ public class MapPartyFeature extends FeatureBase {
   public void onPartyStart(MapPartyStartEvent event) {
     if (getEventConfig().isExtraServerEnabled()) {
       Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getEventConfig().getOpenExtraCommand());
+    }
+
+    if (this.isRaindropMultiplierActive()) {
+      // Delay running of command so it will appear 1 second after party broadcast
+      Bukkit.getScheduler()
+          .runTaskLater(
+              Community.get(),
+              () -> {
+                Bukkit.dispatchCommand(
+                    Bukkit.getConsoleSender(), getEventConfig().getRaindropActivateCommand());
+              },
+              20L * 8);
     }
 
     MapPartyMessages.broadcastHostAction(
@@ -434,6 +481,12 @@ public class MapPartyFeature extends FeatureBase {
       Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getEventConfig().getCloseExtraCommand());
     }
 
+    if (isRaindropMultiplierActive()) {
+      Bukkit.dispatchCommand(
+          Bukkit.getConsoleSender(), getEventConfig().getRaindropDeactivateCommand());
+      this.raindropsEnabled = false;
+    }
+
     if (getEventConfig().showPartyNotifications() && event.getParty().isSetup()) {
       BroadcastUtils.sendMultiLineGlobal(
           MapPartyMessages.getGoodbye(event.getParty(), getEventConfig()));
@@ -444,7 +497,7 @@ public class MapPartyFeature extends FeatureBase {
         MapPartyMessages.getEventStatusAlert(party, MapPartyStatusType.END));
     broadcasts.disable();
     this.party = null;
-    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "setpool -r");
+    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "setpool reset");
   }
 
   @EventHandler

@@ -40,8 +40,9 @@ public class MapPartyConfig extends FeatureConfigImpl {
   private String broadcastPrefix;
   private List<String> broadcastMessages;
 
-  // Raindrop Command
-  private String raindropCommand;
+  // Raindrop Commands
+  private String raindropActivateCommand;
+  private String raindropDeactivateCommand;
 
   // Default Party Settings
   private boolean showLoginMessage;
@@ -85,8 +86,12 @@ public class MapPartyConfig extends FeatureConfigImpl {
     return welcomeCommand;
   }
 
-  public String getRaindropCommand() {
-    return raindropCommand;
+  public String getRaindropActivateCommand() {
+    return raindropActivateCommand;
+  }
+
+  public String getRaindropDeactivateCommand() {
+    return raindropDeactivateCommand;
   }
 
   public String getGoodbyeMessage() {
@@ -140,7 +145,8 @@ public class MapPartyConfig extends FeatureConfigImpl {
     this.welcomeHover = config.getString(KEY + ".welcome.hover");
     this.welcomeCommand = config.getString(KEY + ".welcome.command");
     this.goodbyeLine = config.getString(KEY + ".goodbye.line");
-    this.raindropCommand = config.getString(KEY + ".settings.raindrop-command");
+    this.raindropActivateCommand = config.getString(KEY + ".settings.raindrop-activate");
+    this.raindropDeactivateCommand = config.getString(KEY + ".settings.raindrop-deactivate");
     this.extraServerEnabled = config.getBoolean(KEY + ".extra.enabled");
     this.openExtraCommand = config.getString(KEY + ".extra.open-command");
     this.closeExtraCommand = config.getString(KEY + ".extra.close-command");

@@ -214,6 +214,13 @@ public class MapPartyCommands extends CommunityCommand {
     party.getParty().getHosts().setMainHost(target);
   }
 
+  @CommandMethod("raindrops")
+  @CommandPermission(CommunityPermissions.PARTY)
+  public void raindropMultiplier(CommandAudience viewer) {
+    if (isPartyMissing(viewer)) return;
+    party.toggleMultiplier(viewer);
+  }
+
   private boolean isPartyMissing(CommandAudience viewer) {
     if (party.getParty() == null) {
       viewer.sendWarning(MapPartyMessages.MISSING_ERROR);

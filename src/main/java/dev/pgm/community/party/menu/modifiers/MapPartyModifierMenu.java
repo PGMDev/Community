@@ -51,11 +51,17 @@ public class MapPartyModifierMenu extends MapPartyMenu {
             .material(Material.GHAST_TEAR)
             .amount(2)
             .name(colorize("&b&lRaindrop Multiplier"))
-            .lore(colorize("&7Click to toggle multiplier"))
+            .lore(
+                colorize("&7Click to toggle multiplier"),
+                "",
+                colorize(
+                    "&7Status&8: "
+                        + (getFeature().isRaindropMultiplierActive() ? "&aEnabled" : "&cDisabled")))
             .flags(ItemFlag.values())
             .build(),
         c -> {
-          Bukkit.dispatchCommand(getViewer(), getFeature().getEventConfig().getRaindropCommand());
+          close();
+          Bukkit.dispatchCommand(getViewer(), "event raindrops");
         });
   }
 
