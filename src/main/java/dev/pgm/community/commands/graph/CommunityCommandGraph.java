@@ -14,8 +14,9 @@ import dev.pgm.community.commands.GamemodeCommand;
 import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
 import dev.pgm.community.commands.SudoCommand;
+import dev.pgm.community.commands.injectors.CommandAudienceProvider;
 import dev.pgm.community.commands.player.TargetPlayer;
-import dev.pgm.community.commands.providers.CommandAudienceProvider;
+import dev.pgm.community.commands.providers.GameModeParser;
 import dev.pgm.community.commands.providers.TargetPlayerParser;
 import dev.pgm.community.freeze.FreezeCommand;
 import dev.pgm.community.friends.commands.FriendshipCommand;
@@ -101,7 +102,7 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     registerParser(TargetPlayer.class, new TargetPlayerParser());
     registerParser(Player.class, new PlayerParser());
     registerParser(Party.class, PartyParser::new);
-    registerParser(GameMode.class, new EnumParser<>(GameMode.class));
+    registerParser(GameMode.class, new GameModeParser());
   }
 
   @Override

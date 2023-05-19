@@ -1,4 +1,4 @@
-package dev.pgm.community.commands.providers;
+package dev.pgm.community.commands.injectors;
 
 import dev.pgm.community.utils.CommandAudience;
 import org.bukkit.command.CommandSender;
