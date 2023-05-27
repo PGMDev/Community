@@ -15,6 +15,7 @@ public enum MutationType {
   JUMP("Jump", "Double jump", Material.SLIME_BLOCK),
   FIREWORK("Firework", "Celebrate with random fireworks!", Material.FIREWORK),
   POTION("Potion", "Random potions everywhere", Material.POTION),
+  BREAD("Bread", "Bread with powerful enchantments or attributes", Material.BREAD),
   BLIND("Blindness", "Lights out", Material.COAL),
   HEALTH("Health", "Double health", Material.RED_ROSE),
   GHOST("Ghost", "Everyone turns invisible", Material.GLASS),
