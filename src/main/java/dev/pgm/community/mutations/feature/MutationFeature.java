@@ -20,6 +20,7 @@ import dev.pgm.community.mutations.types.arrows.WebSlingersMutation;
 import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
 import dev.pgm.community.mutations.types.gameplay.GhostMutation;
 import dev.pgm.community.mutations.types.gameplay.RageMutation;
+import dev.pgm.community.mutations.types.items.BreadMutation;
 import dev.pgm.community.mutations.types.items.ExplosionMutation;
 import dev.pgm.community.mutations.types.items.FireworkMutation;
 import dev.pgm.community.mutations.types.items.PotionMutation;
@@ -168,6 +169,8 @@ public class MutationFeature extends FeatureBase {
         return new FireworkMutation(getMatch());
       case POTION:
         return new PotionMutation(getMatch());
+      case BREAD:
+        return new BreadMutation(getMatch());
       case BLIND:
         return new BlindMutation(getMatch());
       case HEALTH:
