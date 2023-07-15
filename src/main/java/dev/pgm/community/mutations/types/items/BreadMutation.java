@@ -273,8 +273,8 @@ public class BreadMutation extends KitMutationBase {
   }
 
   /**
-   * Teleport a player somewhere within 6 blocks.
-   * Location will always be somewhere safe, and somewhere that the player could walk to
+   * Teleport a player somewhere within 6 blocks. Location will always be somewhere safe, and
+   * somewhere that the player could walk to
    */
   private void performBreadTeleport(Player hitPlayer) {
     Location origin = chooseStartingLocation(hitPlayer);
