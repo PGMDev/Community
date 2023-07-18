@@ -41,7 +41,6 @@ import tc.oc.pgm.events.PlayerJoinMatchEvent;
 import tc.oc.pgm.events.PlayerPartyChangeEvent;
 import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
-import tc.oc.pgm.kits.tag.ItemTags;
 import tc.oc.pgm.loot.WeightedRandomChooser;
 import tc.oc.pgm.match.ObserverParty;
 import tc.oc.pgm.util.block.BlockVectors;
@@ -99,11 +98,6 @@ public class BreadMutation extends KitMutationBase {
     potionChooser = new WeightedRandomChooser<>();
     potionChooser.addAll(BAD_POTION_MAP);
     badBreadSet = new HashSet<>();
-  }
-
-  static ItemStack preventSharing(ItemStack itemStack) {
-    ItemTags.PREVENT_SHARING.set(itemStack, true);
-    return itemStack;
   }
 
   static ImmutableMap<ItemStack, Double> getBreadsMap() {
