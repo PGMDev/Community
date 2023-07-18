@@ -21,6 +21,7 @@ import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
 import dev.pgm.community.mutations.types.gameplay.GhostMutation;
 import dev.pgm.community.mutations.types.gameplay.RageMutation;
 import dev.pgm.community.mutations.types.items.BreadMutation;
+import dev.pgm.community.mutations.types.items.CannonSuppliesMutation;
 import dev.pgm.community.mutations.types.items.ExplosionMutation;
 import dev.pgm.community.mutations.types.items.FireworkMutation;
 import dev.pgm.community.mutations.types.items.PotionMutation;
@@ -197,6 +198,8 @@ public class MutationFeature extends FeatureBase {
         return new TNTBowMutation(getMatch());
       case FIREBALL_BOW:
         return new FireballBowMutation(getMatch());
+      case CANNON_SUPPLIES:
+        return new CannonSuppliesMutation(getMatch());
       default:
         logger.warning(type.getDisplayName() + " has not been implemented yet");
     }

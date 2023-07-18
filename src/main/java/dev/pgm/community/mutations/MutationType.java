@@ -28,7 +28,8 @@ public enum MutationType {
   WEB_SLINGERS("Web Slingers", "Shoot webs like a spider", Material.WEB),
   MOBS("Mob", "Attack of the mobs", Material.MOB_SPAWNER),
   TNT_BOW("TNT Bow", "All projectiles are TNT", Material.TNT),
-  FIREBALL_BOW("Fireball Bow", "All projectiles are fireballs", Material.FIREBALL);
+  FIREBALL_BOW("Fireball Bow", "All projectiles are fireballs", Material.FIREBALL),
+  CANNON_SUPPLIES("Cannon Supplies", "Supplies for making TNT cannons", Material.REDSTONE);
 
   String displayName;
   String description;
