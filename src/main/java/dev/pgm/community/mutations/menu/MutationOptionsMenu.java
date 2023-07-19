@@ -37,9 +37,11 @@ public class MutationOptionsMenu implements InventoryProvider {
     contents.add(getOptionIcon(DoubleJumpMutation.JUMP_POWER));
     contents.add(getOptionIcon(FlyMutation.FLY_DISABLE_DELAY));
     contents.add(getOptionIcon(FlyMutation.FLY_SPEED));
-    contents.add(getOptionIcon(ExplosionMutation.FIREBALL_COOLDOWN));
+    contents.add(getOptionIcon(ExplosionMutation.LAUNCH_COOLDOWN));
     contents.add(getOptionIcon(ExplosionMutation.FIREBALL_POWER));
     contents.add(getOptionIcon(ExplosionMutation.FIREBALL_FIRE));
+    contents.add(getOptionIcon(ExplosionMutation.MYSTERY_TNT));
+    contents.add(getOptionIcon(ExplosionMutation.TNT_SIZE));
     contents.add(getOptionIcon(MobMutation.TOTAL_MOBS));
     contents.add(getOptionIcon(BlockDecayMutation.DECAY_SECONDS));
     contents.add(getOptionIcon(WebSlingersMutation.WEB_LIFE));

@@ -10,10 +10,10 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 public enum MutationType {
   RAGE("Rage", "Instant death", Material.BOW),
   BLITZ("Blitz", "A limited number of lives", Material.EGG),
-  EXPLOSION("Explosion", "Random explosions when mining blocks", Material.SULPHUR),
+  EXPLOSION("Explosion", "TNT, Fireballs, and random explosions", Material.SULPHUR),
   FLY("Fly", "Everyone can fly", Material.FEATHER),
   JUMP("Jump", "Double jump", Material.SLIME_BLOCK),
-  FIREWORK("Firework", "Celebrate with random fireworks!", Material.FIREWORK),
+  FIREWORK("Firework", "Celebrate with fireworks!", Material.FIREWORK),
   POTION("Potion", "Random potions everywhere", Material.POTION),
   BREAD("Bread", "Bread with powerful enchantments or attributes", Material.BREAD),
   BLIND("Blindness", "Lights out", Material.COAL),
