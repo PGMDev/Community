@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.api.player.ParticipantState;
@@ -46,10 +47,6 @@ public class CannonSuppliesMutation extends KitMutationBase {
                       new ItemStack(Material.TNT, 64),
                       new ItemStack(Material.DIODE, 64)))));
 
-  static ItemKit killRewardKit =
-      new ItemKit(
-          Maps.newHashMap(), Lists.newArrayList(preventSharing(new ItemStack(Material.TNT, 16))));
-
   @Override
   public List<Kit> getKits() {
     return spawnKit;
@@ -74,7 +71,10 @@ public class CannonSuppliesMutation extends KitMutationBase {
     if (event.isChallengeKill() && killer != null) {
       MatchPlayer player = match.getPlayer(killer.getId());
       if (player != null && player.isAlive()) {
-        player.applyKit(killRewardKit, false);
+        PlayerInventory inventory = player.getInventory();
+        if (inventory != null) {
+          inventory.addItem(preventSharing(new ItemStack(Material.TNT, 16)));
+        }
       }
     }
   }
