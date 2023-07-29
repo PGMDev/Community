@@ -1,10 +1,12 @@
 package dev.pgm.community.mutations.types.mechanics;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationListOption;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +38,7 @@ public class MobMutation extends ScheduledMutationBase {
   private static final int RANDOM_DISTANCE = 45;
   private static final String MOB_METADATA = "mob-mutation";
 
-  public static MutationListOption<Integer> TOTAL_MOBS =
+  private static MutationListOption<Integer> TOTAL_MOBS =
       new MutationListOption(
           "Total Mobs",
           "Total number of mobs spawned",
@@ -46,6 +48,11 @@ public class MobMutation extends ScheduledMutationBase {
 
   public MobMutation(Match match) {
     super(match, MutationType.MOBS, UPDATE_DELAY);
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(TOTAL_MOBS);
   }
 
   @Override

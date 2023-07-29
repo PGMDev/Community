@@ -4,9 +4,11 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.title.Title.title;
 
+import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
 import dev.pgm.community.utils.BroadcastUtils;
@@ -25,7 +27,7 @@ import tc.oc.pgm.kits.FlyKit;
 /** FlyMutation - Enables the {@link FlyKit} for all players */
 public class FlyMutation extends KitMutationBase {
 
-  public static MutationRangeOption FLY_DISABLE_DELAY =
+  private static MutationRangeOption FLY_DISABLE_DELAY =
       new MutationRangeOption(
           "Flight Disable countdown",
           "Delay before flight is disabled",
@@ -35,7 +37,7 @@ public class FlyMutation extends KitMutationBase {
           0,
           20);
 
-  public static MutationRangeOption FLY_SPEED =
+  private static MutationRangeOption FLY_SPEED =
       new MutationRangeOption(
           "Flight Speed", "Speed of flight", MutationType.FLY.getMaterial(), true, 1, 1, 5);
 
@@ -44,6 +46,11 @@ public class FlyMutation extends KitMutationBase {
 
   public FlyMutation(Match match) {
     super(match, MutationType.FLY, getFlightKit());
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(FLY_DISABLE_DELAY, FLY_SPEED);
   }
 
   @Override

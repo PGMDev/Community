@@ -1,50 +1,81 @@
 package dev.pgm.community.mutations.menu;
 
+import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
+
+import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
-import dev.pgm.community.mutations.types.arrows.WebSlingersMutation;
-import dev.pgm.community.mutations.types.gameplay.BlitzMutation;
-import dev.pgm.community.mutations.types.items.ExplosionMutation;
-import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
-import dev.pgm.community.mutations.types.mechanics.FlyMutation;
-import dev.pgm.community.mutations.types.mechanics.MobMutation;
-import dev.pgm.community.mutations.types.world.BlockDecayMutation;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.InventoryProvider;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class MutationOptionsMenu implements InventoryProvider {
 
+  private final MutationFeature mutations;
+
+  public MutationOptionsMenu(MutationFeature mutations) {
+    this.mutations = mutations;
+  }
+
   @Override
   public void init(Player player, InventoryContents contents) {
-    render(contents);
+    render(player, contents);
   }
 
   @Override
   public void update(Player player, InventoryContents contents) {
-    render(contents);
+    render(player, contents);
   }
 
-  private void render(InventoryContents contents) {
+  private void render(Player player, InventoryContents contents) {
     contents.fill(null);
-    contents.add(getOptionIcon(BlitzMutation.BLITZ_LIVES));
-    contents.add(getOptionIcon(DoubleJumpMutation.JUMP_POWER));
-    contents.add(getOptionIcon(FlyMutation.FLY_DISABLE_DELAY));
-    contents.add(getOptionIcon(FlyMutation.FLY_SPEED));
-    contents.add(getOptionIcon(ExplosionMutation.LAUNCH_COOLDOWN));
-    contents.add(getOptionIcon(ExplosionMutation.FIREBALL_POWER));
-    contents.add(getOptionIcon(ExplosionMutation.FIREBALL_FIRE));
-    contents.add(getOptionIcon(ExplosionMutation.MYSTERY_TNT));
-    contents.add(getOptionIcon(ExplosionMutation.TNT_SIZE));
-    contents.add(getOptionIcon(MobMutation.TOTAL_MOBS));
-    contents.add(getOptionIcon(BlockDecayMutation.DECAY_SECONDS));
-    contents.add(getOptionIcon(WebSlingersMutation.WEB_LIFE));
+
+    List<MutationOption> options =
+        mutations.getMutations().stream()
+            .map(mt -> mt.getOptions())
+            .flatMap(mo -> mo.stream())
+            .collect(Collectors.toList());
+
+    if (options.isEmpty()) {
+      contents.set(1, 4, getNoMutationsIcon());
+    }
+
+    for (MutationOption option : options) {
+      contents.add(getOptionIcon(option));
+    }
+
+    contents.set(3, 4, getReturnIcon(player));
+  }
+
+  private ClickableItem getNoMutationsIcon() {
+    return ClickableItem.empty(
+        new ItemBuilder()
+            .material(Material.SIGN)
+            .name(colorize("&c&lNo mutation options found!"))
+            .lore(colorize("&7Options only display when mutation is enabled"))
+            .flags(ItemFlag.values())
+            .build());
+  }
+
+  private ClickableItem getReturnIcon(Player viewer) {
+    return ClickableItem.of(
+        new ItemBuilder()
+            .material(Material.BARRIER)
+            .name(colorize("&eReturn to Mutations"))
+            .flags(ItemFlag.values())
+            .build(),
+        c -> {
+          mutations.getMenu().open(viewer);
+        });
   }
 
   private ClickableItem getOptionIcon(MutationOption option) {

@@ -1,8 +1,10 @@
 package dev.pgm.community.mutations.types.gameplay;
 
+import com.google.common.collect.Sets;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationBase;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import java.util.Set;
 import org.bukkit.Material;
@@ -16,7 +18,7 @@ import tc.oc.pgm.filters.matcher.StaticFilter;
 /** BlitzMutation - Enables blitz on a non-blitz match * */
 public class BlitzMutation extends MutationBase {
 
-  public static MutationRangeOption BLITZ_LIVES =
+  private static MutationRangeOption BLITZ_LIVES =
       new MutationRangeOption(
           "Blitz Lives", "The number of lives per-user", Material.EGG, true, 1, 1, 999);
 
@@ -24,6 +26,11 @@ public class BlitzMutation extends MutationBase {
 
   public BlitzMutation(Match match) {
     super(match, MutationType.BLITZ);
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(BLITZ_LIVES);
   }
 
   @Override

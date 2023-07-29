@@ -1,7 +1,9 @@
 package dev.pgm.community.mutations.types.mechanics;
 
+import com.google.common.collect.Sets;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
 import java.util.Set;
@@ -15,7 +17,7 @@ import tc.oc.pgm.doublejump.DoubleJumpKit;
 /** DoubleJumpMutation - Enables {@link DoubleJumpKit} and no fall damage for all players * */
 public class DoubleJumpMutation extends KitMutationBase {
 
-  public static MutationRangeOption JUMP_POWER =
+  private static MutationRangeOption JUMP_POWER =
       new MutationRangeOption(
           "Jump Power", "Power of double jump", MutationType.JUMP.getMaterial(), true, 2, 1, 10);
 
@@ -24,6 +26,11 @@ public class DoubleJumpMutation extends KitMutationBase {
   public DoubleJumpMutation(Match match) {
     super(match, MutationType.JUMP, getJumpKit(true));
     disabledKit = getJumpKit(false);
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(JUMP_POWER);
   }
 
   @Override

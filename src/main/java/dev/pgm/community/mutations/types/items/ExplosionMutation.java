@@ -4,10 +4,12 @@ import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationBooleanOption;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
 import java.util.List;
@@ -46,7 +48,7 @@ import tc.oc.pgm.util.inventory.tag.ItemTag;
 /** ExplosionMutation - TNT, Fireballs, and random explosions when mining blocks * */
 public class ExplosionMutation extends KitMutationBase {
 
-  public static MutationRangeOption FIREBALL_POWER =
+  private static MutationRangeOption FIREBALL_POWER =
       new MutationRangeOption(
           "Fireball Power",
           "Power of fireball explosion",
@@ -56,7 +58,7 @@ public class ExplosionMutation extends KitMutationBase {
           0,
           10);
 
-  public static MutationBooleanOption FIREBALL_FIRE =
+  private static MutationBooleanOption FIREBALL_FIRE =
       new MutationBooleanOption(
           "Fireball Fire",
           "Whether fireballs are incendiary",
@@ -64,7 +66,7 @@ public class ExplosionMutation extends KitMutationBase {
           true,
           false);
 
-  public static MutationRangeOption LAUNCH_COOLDOWN =
+  private static MutationRangeOption LAUNCH_COOLDOWN =
       new MutationRangeOption(
           "Explosive Cooldown",
           "Delay between fireball or TNT shots",
@@ -74,7 +76,7 @@ public class ExplosionMutation extends KitMutationBase {
           0,
           60);
 
-  public static MutationBooleanOption MYSTERY_TNT =
+  private static MutationBooleanOption MYSTERY_TNT =
       new MutationBooleanOption(
           "Mystery TNT",
           "Whether TNT should have a random effect",
@@ -82,7 +84,7 @@ public class ExplosionMutation extends KitMutationBase {
           true,
           false);
 
-  public static MutationRangeOption TNT_SIZE =
+  private static MutationRangeOption TNT_SIZE =
       new MutationRangeOption(
           "TNT Amount",
           "Amount of TNT given per player",
@@ -103,6 +105,11 @@ public class ExplosionMutation extends KitMutationBase {
 
   public ExplosionMutation(Match match) {
     super(match, MutationType.EXPLOSION);
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(FIREBALL_POWER, FIREBALL_FIRE, LAUNCH_COOLDOWN, MYSTERY_TNT, TNT_SIZE);
   }
 
   @Override

@@ -261,7 +261,8 @@ public class MutationFeature extends FeatureBase {
     return SmartInventory.builder()
         .title(ChatColor.GOLD + "Mutation Options")
         .manager(inventory)
-        .provider(new MutationOptionsMenu())
+        .provider(new MutationOptionsMenu(this))
+        .parent(getMenu())
         .size(4, 9)
         .build();
   }

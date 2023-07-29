@@ -1,8 +1,10 @@
 package dev.pgm.community.mutations.types.world;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
 import java.util.Iterator;
@@ -20,7 +22,7 @@ import tc.oc.pgm.api.player.MatchPlayer;
 
 public class BlockDecayMutation extends ScheduledMutationBase {
 
-  public static MutationRangeOption DECAY_SECONDS =
+  private static MutationRangeOption DECAY_SECONDS =
       new MutationRangeOption(
           "Decay Delay",
           "Delay of time before blocks decay",
@@ -34,6 +36,11 @@ public class BlockDecayMutation extends ScheduledMutationBase {
 
   public BlockDecayMutation(Match match) {
     super(match, MutationType.BLOCK_DECAY, 1);
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(DECAY_SECONDS);
   }
 
   @Override

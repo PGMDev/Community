@@ -2,9 +2,11 @@ package dev.pgm.community.mutations.types.arrows;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.BowMutation;
 import dev.pgm.community.mutations.types.KitMutationBase;
@@ -30,7 +32,7 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class WebSlingersMutation extends KitMutationBase implements BowMutation {
 
-  public static MutationRangeOption WEB_LIFE =
+  private static MutationRangeOption WEB_LIFE =
       new MutationRangeOption(
           "Web Life",
           "Length of time before webs are removed",
@@ -47,6 +49,11 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
   public WebSlingersMutation(Match match) {
     super(match, MutationType.WEB_SLINGERS, getWebBowKit());
     this.webLocations = Maps.newHashMap();
+  }
+
+  @Override
+  public Set<MutationOption> getOptions() {
+    return Sets.newHashSet(WEB_LIFE);
   }
 
   @Override
