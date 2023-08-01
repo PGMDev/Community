@@ -20,6 +20,7 @@ import dev.pgm.community.network.types.RedisNetworkFeature;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.nick.feature.types.SQLNickFeature;
 import dev.pgm.community.party.feature.MapPartyFeature;
+import dev.pgm.community.polls.feature.PollFeature;
 import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.requests.feature.types.SQLRequestFeature;
 import dev.pgm.community.sessions.feature.SessionFeature;
@@ -54,6 +55,7 @@ public class FeatureManager {
   private final BroadcastFeature broadcast;
   private final MobFeature mob;
   private final MapPartyFeature party;
+  private final PollFeature polls;
 
   public FeatureManager(
       Configuration config,
@@ -88,6 +90,7 @@ public class FeatureManager {
     this.chatNetwork = new NetworkChatFeature(config, logger, network);
     this.mob = new MobFeature(config, logger);
     this.party = new MapPartyFeature(config, logger);
+    this.polls = new PollFeature(config, logger);
   }
 
   public AssistanceFeature getReports() {
@@ -150,12 +153,16 @@ public class FeatureManager {
     return requests;
   }
 
+  public MobFeature getMobs() {
+    return mob;
+  }
+
   public MapPartyFeature getParty() {
     return party;
   }
 
-  public MobFeature getMobs() {
-    return mob;
+  public PollFeature getPolls() {
+    return polls;
   }
 
   public void reloadConfig(Configuration config) {
@@ -176,6 +183,7 @@ public class FeatureManager {
     getRequests().getConfig().reload(config);
     getMobs().getConfig().reload(config);
     getParty().getConfig().reload(config);
+    getPolls().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
@@ -197,5 +205,7 @@ public class FeatureManager {
     if (getNetworkChat().isEnabled()) getNetworkChat().disable();
     if (getRequests().isEnabled()) getRequests().disable();
     if (getMobs().isEnabled()) getMobs().disable();
+    if (getParty().isEnabled()) getParty().disable();
+    if (getPolls().isEnabled()) getPolls().disable();
   }
 }

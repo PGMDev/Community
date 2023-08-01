@@ -258,6 +258,10 @@ party:
       pool: "fun"
       # List of map names if mode is CUSTOM
       maps: [] 
+      
+# Polls - Feature that allows polling of players in-game
+polls:
+  enabled: true
 
 # Network - Features which assist in running Community on multiple servers  
 network:

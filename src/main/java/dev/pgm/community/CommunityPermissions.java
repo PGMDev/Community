@@ -99,6 +99,9 @@ public interface CommunityPermissions {
   String PARTY_HOST = PARTY + ".host"; // Given to those who are currently hosting an event
   String PARTY_ADMIN = PARTY + ".admin"; // Administrative event permission
 
+  // Polls
+  String POLL = ROOT + ".poll";
+
   // General Commands
   String FLIGHT = ROOT + ".fly";
   String FLIGHT_SPEED = FLIGHT + ".speed";

@@ -32,6 +32,8 @@ import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.nick.commands.NickCommands;
 import dev.pgm.community.party.MapPartyCommands;
 import dev.pgm.community.party.MapPartyType;
+import dev.pgm.community.polls.commands.PollManagementCommands;
+import dev.pgm.community.polls.commands.PollVoteCommands;
 import dev.pgm.community.requests.commands.RequestCommands;
 import dev.pgm.community.requests.commands.SponsorCommands;
 import dev.pgm.community.requests.commands.TokenCommands;
@@ -144,6 +146,10 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
 
     // Party
     register(new MapPartyCommands());
+
+    // Polls
+    register(new PollManagementCommands());
+    register(new PollVoteCommands());
 
     // Requests
     register(new RequestCommands());
