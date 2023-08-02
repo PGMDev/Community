@@ -14,13 +14,13 @@ public class CommandEndAction implements EndAction {
   private final String command;
 
   public CommandEndAction(String command) {
-    this.command = command;
+    this.command = command.startsWith("/") ? command.substring(1) : command;
   }
 
   @Override
   public void execute(Player creator) {
     if (creator != null) {
-      Bukkit.dispatchCommand(creator, command); // Do we need a slash? /command or just command
+      Bukkit.dispatchCommand(creator, command);
     }
   }
 
