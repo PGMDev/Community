@@ -75,7 +75,7 @@ public class PollBuilder {
   }
 
   public PollBuilder kickPlayer(CommandAudience sender, Player target) {
-    alert.broadcastChange(sender, "Poll Kick Target", target.getName());
+    alert.broadcastChange(sender, "Poll Kick Target", target);
 
     if (target == null || !target.isOnline()) {
       endAction = new NullEndAction();

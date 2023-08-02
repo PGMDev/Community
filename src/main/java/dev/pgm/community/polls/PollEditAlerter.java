@@ -1,6 +1,7 @@
 package dev.pgm.community.polls;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
@@ -13,8 +14,10 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.util.named.MapNameStyle;
+import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 
 public interface PollEditAlerter {
@@ -45,6 +48,11 @@ public interface PollEditAlerter {
       if (value instanceof MapInfo) {
         MapInfo map = (MapInfo) value;
         valueComponent = map.getStyledName(MapNameStyle.COLOR);
+      }
+
+      if (value instanceof Player) {
+        Player player = (Player) value;
+        valueComponent = player(player, NameStyle.FANCY);
       }
     }
 
