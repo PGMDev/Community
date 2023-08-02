@@ -10,6 +10,7 @@ import dev.pgm.community.polls.PollBuilder;
 import dev.pgm.community.polls.PollConfig;
 import dev.pgm.community.polls.PollEditAlerter;
 import dev.pgm.community.polls.ending.EndAction;
+import dev.pgm.community.polls.ending.types.NullEndAction;
 import dev.pgm.community.polls.types.TimedPoll;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CenterUtils;
@@ -336,15 +337,14 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
   }
 
   private static Component formatButton(
-      String text, NamedTextColor color, String command, String hover) {
+      String text, NamedTextColor color, String command, String hover, boolean suggest) {
     return text()
         .append(text("[", NamedTextColor.GRAY))
-        .appendSpace()
         .append(text(text, color))
         .append(text("]", NamedTextColor.GRAY))
         .appendSpace()
         .hoverEvent(HoverEvent.showText(text(hover, NamedTextColor.GRAY)))
-        .clickEvent(ClickEvent.runCommand(command))
+        .clickEvent(suggest ? ClickEvent.suggestCommand(command) : ClickEvent.runCommand(command))
         .build();
   }
 
@@ -366,6 +366,7 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
         getPoll().getQuestion(),
         duration,
         getPoll().getEndAction(),
+        false,
         false);
 
     if (getPoll() instanceof TimedPoll) {
@@ -379,6 +380,8 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
               "Time Since Start", TemporalComponent.duration(timeSinceStart, NamedTextColor.AQUA)));
     }
     audience.sendMessage(formatCategoryDetail("Total Votes", text(poll.getVotes().size())));
+    audience.sendMessage(
+        formatButton("End", NamedTextColor.RED, "/poll end", "Click to end the poll", false));
     audience.sendMessage(FOOTER);
   }
 
@@ -389,16 +392,19 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
         getBuilder().getQuestion(),
         getBuilder().getDuration(),
         getBuilder().getEndAction(),
+        true,
         !builder.canBuild());
 
     if (builder.canBuild()) {
       Component buttons =
           text()
               .append(
-                  formatButton("Start", NamedTextColor.GREEN, "/poll start", "Click to start poll"))
+                  formatButton(
+                      "Start", NamedTextColor.GREEN, "/poll start", "Click to start poll", false))
               .appendSpace()
               .append(
-                  formatButton("Reset", NamedTextColor.RED, "/poll reset", "Click to reset values"))
+                  formatButton(
+                      "Reset", NamedTextColor.RED, "/poll reset", "Click to reset values", false))
               .build();
 
       audience.sendMessage(buttons);
@@ -412,6 +418,7 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
       Component question,
       Duration duration,
       EndAction action,
+      boolean builder,
       boolean footer) {
 
     audience.sendMessage(
@@ -427,6 +434,24 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
                     : text(""))
             .build();
 
+    if (builder && action instanceof NullEndAction) {
+      endAction =
+          endAction
+              .append(text(" - ", NamedTextColor.GRAY))
+              .append(
+                  formatButton(
+                      "Command",
+                      NamedTextColor.YELLOW,
+                      "/poll command",
+                      "Click to set a command",
+                      true))
+              .append(
+                  formatButton("Map", NamedTextColor.GOLD, "/poll map", "Click to set a map", true))
+              .append(
+                  formatButton(
+                      "Kick", NamedTextColor.RED, "/poll kick", "Click to kick a player", true));
+    }
+
     Component durationComponent =
         duration == null
             ? text()
@@ -441,6 +466,33 @@ public class PollFeature extends FeatureBase implements PollEditAlerter {
                             .build()))
                 .build()
             : TemporalComponent.duration(duration);
+
+    if (builder && duration == null) {
+      durationComponent =
+          durationComponent
+              .append(text(" - ", NamedTextColor.GRAY))
+              .append(
+                  formatButton(
+                      "1m",
+                      NamedTextColor.DARK_AQUA,
+                      "/poll duration 1m",
+                      "Click to set a 1 minute time limit",
+                      false))
+              .append(
+                  formatButton(
+                      "5m",
+                      NamedTextColor.DARK_AQUA,
+                      "/poll duration 5m",
+                      "Click to set a 5 minute time limit",
+                      false))
+              .append(
+                  formatButton(
+                      "Custom",
+                      NamedTextColor.DARK_AQUA,
+                      "/poll duration",
+                      "Click to set a custom time limit",
+                      true));
+    }
 
     if (question == null) {
       question = action.getDefaultQuestion();
