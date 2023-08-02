@@ -17,6 +17,7 @@ import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.util.text.TextException;
 
 @CommandMethod("poll")
 @CommandPermission(CommunityPermissions.POLL)
@@ -80,33 +81,49 @@ public class PollManagementCommands extends CommunityCommand {
   }
 
   @CommandMethod("question [question]")
-  public void create(CommandAudience audience, @Argument("question") @Greedy String question) {
+  public void question(CommandAudience audience, @Argument("question") @Greedy String question) {
+    checkPoll();
+
     polls.getBuilder().question(audience, question);
   }
 
   @CommandMethod("duration [duration]")
   public void timelimit(CommandAudience audience, @Argument("duration") Duration duration) {
+    checkPoll();
+
     polls.getBuilder().duration(audience, duration);
   }
 
   @CommandMethod("map [map]")
   public void map(CommandAudience audience, @Argument("map") MapInfo map) {
+    checkPoll();
+
     polls.getBuilder().map(audience, map);
   }
 
   @CommandMethod("kick [target]")
   public void kickPlayer(CommandAudience audience, @Argument("target") Player target) {
+    checkPoll();
+
     polls.getBuilder().kickPlayer(audience, target);
   }
 
   @CommandMethod("command [command]")
   public void command(CommandAudience audience, @Argument("command") @Greedy String command) {
+    checkPoll();
     polls.getBuilder().command(audience, command);
   }
 
   @CommandMethod("reset")
   public void reset(CommandAudience audience) {
+    checkPoll();
     polls.resetBuilder();
     audience.sendWarning(text("Poll values have been reset!"));
+  }
+
+  private void checkPoll() {
+    if (polls.isRunning()) {
+      throw TextException.exception("Poll can not be adjusted at this time!");
+    }
   }
 }
