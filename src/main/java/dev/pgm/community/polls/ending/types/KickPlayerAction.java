@@ -1,16 +1,17 @@
 package dev.pgm.community.polls.ending.types;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import dev.pgm.community.Community;
-import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.polls.ending.EndAction;
-import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.BroadcastUtils;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.util.named.NameStyle;
@@ -25,12 +26,36 @@ public class KickPlayerAction implements EndAction {
 
   @Override
   public void execute(Player creator) {
-    CommandAudience audience =
-        new CommandAudience(creator != null ? creator : Bukkit.getConsoleSender());
-    Community.get()
-        .getFeatures()
-        .getModeration()
-        .punish(PunishmentType.KICK, targetId, audience, "Voted off the server", null, true, false);
+    Player target = Bukkit.getPlayer(targetId);
+    if (target == null || !target.isOnline()) {
+      Community.get()
+          .getFeatures()
+          .getUsers()
+          .renderUsername(targetId, NameStyle.FANCY)
+          .thenAcceptAsync(
+              playerName -> {
+                BroadcastUtils.sendGlobalMessage(
+                    text()
+                        .append(playerName)
+                        .append(text(" is no longer online!", NamedTextColor.YELLOW))
+                        .build());
+              });
+      return;
+    }
+
+    // Schedule kick after 2 seconds so target can view results
+    Bukkit.getScheduler()
+        .scheduleSyncDelayedTask(
+            Community.get(),
+            () -> {
+              target.kickPlayer(colorize("&4&lYou have been voted off the server!"));
+              BroadcastUtils.sendGlobalMessage(
+                  text()
+                      .append(player(target, NameStyle.FANCY))
+                      .append(text(" has been kicked!", NamedTextColor.RED, TextDecoration.BOLD))
+                      .build());
+            },
+            40L);
   }
 
   @Override
