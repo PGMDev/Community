@@ -14,13 +14,17 @@ public class CommandEndAction implements EndAction {
   private final String command;
 
   public CommandEndAction(String command) {
-    this.command = command.startsWith("/") ? command.substring(1) : command;
+    this.command = command;
+  }
+
+  public String getBukkitCommand() {
+    return command.startsWith("/") ? command.substring(1) : command;
   }
 
   @Override
   public void execute(Player creator) {
     if (creator != null) {
-      Bukkit.dispatchCommand(creator, command);
+      Bukkit.dispatchCommand(creator, getBukkitCommand());
     }
   }
 
