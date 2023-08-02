@@ -5,6 +5,7 @@ import static net.kyori.adventure.text.Component.text;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.polls.feature.PollFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
@@ -83,28 +84,24 @@ public class PollManagementCommands extends CommunityCommand {
   @CommandMethod("question [question]")
   public void question(CommandAudience audience, @Argument("question") @Greedy String question) {
     checkPoll();
-
     polls.getBuilder().question(audience, question);
   }
 
   @CommandMethod("duration [duration]")
   public void timelimit(CommandAudience audience, @Argument("duration") Duration duration) {
     checkPoll();
-
     polls.getBuilder().duration(audience, duration);
   }
 
   @CommandMethod("map [map]")
   public void map(CommandAudience audience, @Argument("map") MapInfo map) {
     checkPoll();
-
     polls.getBuilder().map(audience, map);
   }
 
   @CommandMethod("kick [target]")
   public void kickPlayer(CommandAudience audience, @Argument("target") Player target) {
     checkPoll();
-
     polls.getBuilder().kickPlayer(audience, target);
   }
 
@@ -112,6 +109,12 @@ public class PollManagementCommands extends CommunityCommand {
   public void command(CommandAudience audience, @Argument("command") @Greedy String command) {
     checkPoll();
     polls.getBuilder().command(audience, command);
+  }
+
+  @CommandMethod("mutation [mutation]")
+  public void mutation(CommandAudience audience, @Argument("mutation") MutationType mutation) {
+    checkPoll();
+    polls.getBuilder().mutation(audience, mutation);
   }
 
   @CommandMethod("reset")
