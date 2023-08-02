@@ -17,6 +17,7 @@ import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 import tc.oc.pgm.util.text.TextException;
 
@@ -39,8 +40,11 @@ public class PollManagementCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("start [delay]")
-  public void start(CommandAudience audience, @Argument("delay") Duration delay) {
+  @CommandMethod("start [duration]")
+  public void start(
+      CommandAudience audience,
+      @Argument("duration") Duration duration,
+      @Flag(value = "delay", aliases = "d") Duration delay) {
     if (polls.isDelayedStartScheduled()) {
       audience.sendWarning(
           text("A poll is already scheduled to start soon!")
@@ -66,6 +70,10 @@ public class PollManagementCommands extends CommunityCommand {
               .clickEvent(ClickEvent.runCommand("/poll"))
               .build());
       return;
+    }
+
+    if (duration != null) {
+      polls.getBuilder().duration(audience, duration);
     }
 
     polls.getBuilder().creator(audience.getId().orElse(null));
