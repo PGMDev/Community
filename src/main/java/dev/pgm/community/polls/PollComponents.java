@@ -141,8 +141,8 @@ public interface PollComponents {
   default Component createColoredBar(int yayBarLength, int nayBarLength, int maxBarLength) {
     TextComponent.Builder builder = text();
 
-    // final Component SQUARE = text("\u2b1b");
-    final Component SQUARE = text("\u2b1c");
+    final Component SQUARE = text("\u2b1b"); // Filled square
+    // final Component SQUARE = text("\u2b1c"); - Hollow square
 
     for (int i = 0; i < maxBarLength; i++) {
       if (i < yayBarLength) {
