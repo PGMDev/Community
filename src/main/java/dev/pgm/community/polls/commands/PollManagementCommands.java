@@ -34,9 +34,9 @@ public class PollManagementCommands extends CommunityCommand {
   @CommandMethod("")
   public void info(CommandAudience audience) {
     if (polls.isRunning()) {
-      polls.sendPollDetails(audience);
+      polls.sendPollDetails(polls.getPoll(), audience);
     } else {
-      polls.sendBuilderDetails(audience);
+      polls.sendBuilderDetails(polls.getBuilder(), audience);
     }
   }
 
