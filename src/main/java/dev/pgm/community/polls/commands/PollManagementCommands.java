@@ -120,6 +120,7 @@ public class PollManagementCommands extends CommunityCommand {
   }
 
   @CommandMethod("mutation [mutation]")
+  @CommandPermission(CommunityPermissions.MUTATION)
   public void mutation(CommandAudience audience, @Argument("mutation") MutationType mutation) {
     checkPoll();
     polls.getBuilder().mutation(audience, mutation);
