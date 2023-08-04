@@ -9,6 +9,9 @@ import dev.pgm.community.polls.PollBuilder;
 import dev.pgm.community.polls.PollComponents;
 import dev.pgm.community.polls.PollConfig;
 import dev.pgm.community.polls.PollEditAlerter;
+import dev.pgm.community.polls.events.PollEndEvent;
+import dev.pgm.community.polls.events.PollStartEvent;
+import dev.pgm.community.polls.events.PollVoteEvent;
 import dev.pgm.community.polls.types.TimedPoll;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
@@ -111,6 +114,9 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
 
     // Broadcast Poll info
     sendPollBroadcast(poll);
+
+    // Call start event
+    Community.get().callEvent(new PollStartEvent(poll));
   }
 
   public void delayedStart(CommandAudience audience, Duration delay) {
@@ -155,6 +161,9 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
       poll.getEndAction().execute(creatorPlayer);
     }
 
+    // Call end event
+    Community.get().callEvent(new PollEndEvent(poll));
+
     poll = null; // Reset the poll
     resetBuilder(); // Reset builder so values are clean
   }
@@ -169,6 +178,9 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
       viewer.sendWarning(text("You have already voted for this poll!"));
       return;
     }
+
+    // Call vote event
+    Community.get().callEvent(new PollVoteEvent(sender, poll));
 
     viewer.sendMessage(
         text("Thanks for voting! The results will be announced soon.", NamedTextColor.GREEN));
