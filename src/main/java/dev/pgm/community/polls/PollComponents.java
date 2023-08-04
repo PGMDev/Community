@@ -250,7 +250,7 @@ public interface PollComponents {
           formatCategoryDetail(
               "Time Since Start", TemporalComponent.duration(timeSinceStart, NamedTextColor.AQUA)));
     }
-    audience.sendMessage(formatCategoryDetail("Total Votes", text(poll.getVotes().size())));
+    audience.sendMessage(formatCategoryDetail("Total Votes", text(poll.getTotalVotes())));
     audience.sendMessage(
         formatButton("End", NamedTextColor.RED, "/poll end", "Click to end the poll", false));
     audience.sendMessage(getFooter());

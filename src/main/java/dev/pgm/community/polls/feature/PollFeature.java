@@ -143,8 +143,8 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
       poll.setEndTime(Instant.now());
     }
 
-    long yesVotes = poll.getVotes().values().stream().filter(Boolean::booleanValue).count();
-    long noVotes = poll.getVotes().size() - yesVotes;
+    long yesVotes = poll.getYesVotesCount();
+    long noVotes = poll.getNoVotesCount();
 
     boolean majorityOption = yesVotes > noVotes;
 

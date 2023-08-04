@@ -8,7 +8,9 @@ import dev.pgm.community.polls.ending.EndAction;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class NormalPoll implements Poll {
@@ -75,9 +77,33 @@ public class NormalPoll implements Poll {
     return false;
   }
 
-  @Override
   public Map<UUID, Boolean> getVotes() {
     return votes;
+  }
+
+  public Map<UUID, Boolean> getOnlineVotes() {
+    return getVotes().entrySet().stream()
+        .filter(
+            entry -> {
+              Player player = Bukkit.getPlayer(entry.getKey());
+              return player != null && player.isOnline();
+            })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  @Override
+  public long getYesVotesCount() {
+    return getOnlineVotes().values().stream().filter(Boolean::booleanValue).count();
+  }
+
+  @Override
+  public long getNoVotesCount() {
+    return getOnlineVotes().values().stream().filter(vote -> !vote).count();
+  }
+
+  @Override
+  public long getTotalVotes() {
+    return getOnlineVotes().size();
   }
 
   public boolean hasVoted(Player player) {
