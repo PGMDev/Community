@@ -6,6 +6,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.mutations.MutationType;
+import dev.pgm.community.polls.PollThreshold;
 import dev.pgm.community.polls.feature.PollFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
@@ -99,6 +100,12 @@ public class PollManagementCommands extends CommunityCommand {
   public void timelimit(CommandAudience audience, @Argument("duration") Duration duration) {
     checkPoll();
     polls.getBuilder().duration(audience, duration);
+  }
+
+  @CommandMethod("threshold [threshold]")
+  public void threshold(CommandAudience audience, @Argument("threshold") PollThreshold threshold) {
+    checkPoll();
+    polls.getBuilder().threshold(audience, threshold);
   }
 
   @CommandMethod("map [map]")

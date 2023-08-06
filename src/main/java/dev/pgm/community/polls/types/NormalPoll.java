@@ -4,6 +4,7 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.collect.Maps;
 import dev.pgm.community.polls.Poll;
+import dev.pgm.community.polls.PollThreshold;
 import dev.pgm.community.polls.ending.EndAction;
 import java.time.Instant;
 import java.util.Map;
@@ -19,13 +20,15 @@ public class NormalPoll implements Poll {
   private final UUID creator;
   private final Instant startTime;
   protected Instant endTime;
-  private EndAction action;
+  private final EndAction action;
   private final Map<UUID, Boolean> votes;
+  private final PollThreshold threshold;
 
-  public NormalPoll(Component question, UUID creator, EndAction action) {
+  public NormalPoll(Component question, UUID creator, PollThreshold threshold, EndAction action) {
     this.question = question;
     this.creator = creator;
     this.action = action;
+    this.threshold = threshold;
     this.startTime = Instant.now();
     this.votes = Maps.newHashMap();
   }
@@ -66,6 +69,11 @@ public class NormalPoll implements Poll {
   @Override
   public EndAction getEndAction() {
     return action;
+  }
+
+  @Override
+  public PollThreshold getRequiredThreshold() {
+    return threshold;
   }
 
   @Override

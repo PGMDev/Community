@@ -145,14 +145,18 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
 
     broadcastChange(audience, "Ended Poll");
 
-    if (poll != null && poll.getEndTime() == null) {
+    if (poll.getEndTime() == null) {
       poll.setEndTime(Instant.now());
     }
 
     long yesVotes = poll.getYesVotesCount();
     long noVotes = poll.getNoVotesCount();
+    long totalVotes = yesVotes + noVotes;
 
-    boolean majorityOption = yesVotes > noVotes;
+    double desiredThresholdPercentage = poll.getRequiredThreshold().getValue();
+    long requiredThreshold = Math.round(totalVotes * desiredThresholdPercentage);
+
+    boolean majorityOption = yesVotes >= requiredThreshold;
 
     sendPollResults(poll, yesVotes, noVotes, majorityOption);
 

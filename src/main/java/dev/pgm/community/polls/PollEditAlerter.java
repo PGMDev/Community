@@ -54,6 +54,11 @@ public interface PollEditAlerter {
         Player player = (Player) value;
         valueComponent = player(player, NameStyle.FANCY);
       }
+
+      if (value instanceof PollThreshold) {
+        PollThreshold threshold = (PollThreshold) value;
+        valueComponent = threshold.toComponent();
+      }
     }
 
     if (sender == null) {

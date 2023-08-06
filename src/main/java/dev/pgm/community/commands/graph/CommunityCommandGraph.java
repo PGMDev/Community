@@ -32,6 +32,7 @@ import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.nick.commands.NickCommands;
 import dev.pgm.community.party.MapPartyCommands;
 import dev.pgm.community.party.MapPartyType;
+import dev.pgm.community.polls.PollThreshold;
 import dev.pgm.community.polls.commands.PollManagementCommands;
 import dev.pgm.community.polls.commands.PollVoteCommands;
 import dev.pgm.community.requests.commands.RequestCommands;
@@ -103,6 +104,7 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     registerParser(MapInfo.class, MapInfoParser::new);
     registerParser(MapPartyType.class, new EnumParser<>(MapPartyType.class));
     registerParser(MutationType.class, new EnumParser<>(MutationType.class));
+    registerParser(PollThreshold.class, new EnumParser<>(PollThreshold.class));
     registerParser(TargetPlayer.class, new TargetPlayerParser());
     registerParser(Player.class, new PlayerParser());
     registerParser(Party.class, PartyParser::new);

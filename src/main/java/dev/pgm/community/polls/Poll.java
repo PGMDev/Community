@@ -29,4 +29,6 @@ public interface Poll {
   long getNoVotesCount();
 
   EndAction getEndAction();
+
+  PollThreshold getRequiredThreshold();
 }

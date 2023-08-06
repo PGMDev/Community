@@ -28,11 +28,12 @@ public class PollBuilder {
   }
 
   // Required
-  private Component question; // If null & not NullEndAction, then we customize the message on build
-  private UUID creator; // Only set when built
+  private Component question;
+  private UUID creator;
+  private PollThreshold threshold = PollThreshold.SIMPLE;
 
   // Optional
-  private Duration duration; // null for open-ended
+  private Duration duration;
   private EndAction endAction = new NullEndAction();
 
   public PollBuilder question(CommandAudience sender, String question) {
@@ -100,6 +101,18 @@ public class PollBuilder {
     return this;
   }
 
+  public PollBuilder threshold(CommandAudience sender, PollThreshold threshold) {
+    alert.broadcastChange(sender, "Poll Threshold", threshold);
+
+    if (threshold == null) {
+      this.threshold = PollThreshold.SIMPLE;
+      return this;
+    }
+
+    this.threshold = threshold;
+    return this;
+  }
+
   public Poll build() {
     Poll poll;
 
@@ -108,9 +121,9 @@ public class PollBuilder {
     }
 
     if (duration != null) {
-      poll = new TimedPoll(question, creator, endAction, duration);
+      poll = new TimedPoll(question, creator, threshold, endAction, duration);
     } else {
-      poll = new NormalPoll(question, creator, endAction);
+      poll = new NormalPoll(question, creator, threshold, endAction);
     }
     return poll;
   }
@@ -126,6 +139,10 @@ public class PollBuilder {
 
   public EndAction getEndAction() {
     return endAction;
+  }
+
+  public PollThreshold getThreshold() {
+    return threshold;
   }
 
   public boolean canBuild() {
