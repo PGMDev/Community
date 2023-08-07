@@ -3,15 +3,20 @@ package dev.pgm.community.polls.ending.types;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.polls.ending.EndAction;
+import java.util.Collection;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.map.Gamemode;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapTag;
 import tc.oc.pgm.util.named.MapNameStyle;
+import tc.oc.pgm.util.text.TextFormatter;
 
 public class SetNextAction implements EndAction {
 
@@ -39,14 +44,33 @@ public class SetNextAction implements EndAction {
   }
 
   private Component getFancyMapName() {
-    // TODO: add gamemode once PGM#1210 is merged
-    Component tags =
+    TextComponent.Builder hover = text();
+
+    Collection<Gamemode> gamemodes = map.getGamemodes();
+
+    if (map.getGamemode() != null) {
+      hover.append(map.getGamemode().colorIfAbsent(NamedTextColor.AQUA)).appendNewline();
+    } else if (!gamemodes.isEmpty()) {
+      boolean acronyms = gamemodes.size() > 1;
+      hover
+          .append(
+              TextFormatter.list(
+                  gamemodes.stream()
+                      .map(gm -> text(acronyms ? gm.getAcronym() : gm.getFullName()))
+                      .collect(Collectors.toList()),
+                  NamedTextColor.AQUA))
+          .appendNewline();
+    }
+
+    hover.append(
         text(
             map.getTags().stream().map(MapTag::toString).collect(Collectors.joining(" ")),
-            NamedTextColor.YELLOW);
+            NamedTextColor.YELLOW));
+
     return text()
         .append(map.getStyledName(MapNameStyle.PLAIN).color(NamedTextColor.AQUA))
-        .hoverEvent(HoverEvent.showText(tags))
+        .hoverEvent(HoverEvent.showText(hover))
+        .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
         .build();
   }
 
