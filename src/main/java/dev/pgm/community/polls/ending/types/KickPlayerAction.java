@@ -18,6 +18,8 @@ import tc.oc.pgm.util.named.NameStyle;
 
 public class KickPlayerAction implements EndAction {
 
+  private static int DELAY_SECONDS = 2;
+
   private final UUID targetId;
 
   public KickPlayerAction(UUID targetId) {
@@ -43,19 +45,20 @@ public class KickPlayerAction implements EndAction {
       return;
     }
 
-    // Schedule kick after 2 seconds so target can view results
+    // Schedule kick after a delay so target can view results
     Bukkit.getScheduler()
         .scheduleSyncDelayedTask(
             Community.get(),
             () -> {
-              target.kickPlayer(colorize("&4&lYou have been voted off the server!"));
+              // Send broadcast before kick, so name renders properly
               BroadcastUtils.sendGlobalMessage(
                   text()
                       .append(player(target, NameStyle.FANCY))
                       .append(text(" has been kicked!", NamedTextColor.RED, TextDecoration.BOLD))
                       .build());
+              target.kickPlayer(colorize("&4&lYou have been voted off the server!"));
             },
-            40L);
+            20L * DELAY_SECONDS);
   }
 
   @Override
