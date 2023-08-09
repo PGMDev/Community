@@ -14,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.named.NameStyle;
 
 public class KickPlayerAction implements EndAction {
@@ -29,7 +30,7 @@ public class KickPlayerAction implements EndAction {
   @Override
   public void execute(Player creator) {
     Player target = Bukkit.getPlayer(targetId);
-    if (target == null || !target.isOnline()) {
+    if (target == null || !target.isOnline() || Integration.isVanished(target)) {
       Community.get()
           .getFeatures()
           .getUsers()

@@ -1,6 +1,7 @@
 package dev.pgm.community.polls.commands;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -14,12 +15,14 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextException;
 
 @CommandMethod("poll")
@@ -117,6 +120,16 @@ public class PollManagementCommands extends CommunityCommand {
   @CommandMethod("kick [target]")
   public void kickPlayer(CommandAudience audience, @Argument("target") Player target) {
     checkPoll();
+
+    if (target != null && Integration.isVanished(target)) {
+      audience.sendWarning(
+          text()
+              .append(player(target, NameStyle.FANCY))
+              .append(text(" is vanished! Please select a non-vanished target."))
+              .build());
+      return;
+    }
+
     polls.getBuilder().kickPlayer(audience, target);
   }
 
