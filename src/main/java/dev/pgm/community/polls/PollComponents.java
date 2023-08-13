@@ -3,6 +3,7 @@ package dev.pgm.community.polls;
 import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.collect.Lists;
+import dev.pgm.community.polls.commands.PollVoteCommands;
 import dev.pgm.community.polls.ending.EndAction;
 import dev.pgm.community.polls.ending.types.NullEndAction;
 import dev.pgm.community.polls.types.TimedPoll;
@@ -28,12 +29,20 @@ public interface PollComponents {
 
   default Component getYesButton() {
     return formatIconButton(
-        MessageUtils.ACCEPT, "Yes", NamedTextColor.DARK_GREEN, "/yes", "Click to vote yes!");
+        MessageUtils.ACCEPT,
+        "Yes",
+        NamedTextColor.DARK_GREEN,
+        "/" + PollVoteCommands.COMMAND + " yes",
+        "Click to vote yes!");
   }
 
   default Component getNoButton() {
     return formatIconButton(
-        MessageUtils.DENY, "No", NamedTextColor.RED, "/no", "Click to vote no!");
+        MessageUtils.DENY,
+        "No",
+        NamedTextColor.RED,
+        "/" + PollVoteCommands.COMMAND + " no",
+        "Click to vote no!");
   }
 
   default Component getVoteButtons() {

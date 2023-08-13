@@ -172,13 +172,13 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
     resetBuilder(); // Reset builder so values are clean
   }
 
-  public void vote(CommandAudience viewer, Player sender, boolean vote) {
+  public void vote(CommandAudience viewer, Player sender, String option) {
     if (poll == null) {
       viewer.sendWarning(text("There's no poll to vote for at this time!"));
       return;
     }
 
-    if (!poll.vote(sender, vote)) {
+    if (!poll.vote(sender, option)) {
       viewer.sendWarning(text("You have already voted for this poll!"));
       return;
     }

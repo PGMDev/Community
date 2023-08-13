@@ -20,7 +20,7 @@ public interface Poll {
 
   boolean isRunning();
 
-  boolean vote(Player player, boolean option);
+  boolean vote(Player player, String option);
 
   long getTotalVotes();
 

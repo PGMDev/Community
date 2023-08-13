@@ -5,9 +5,13 @@ import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.polls.feature.PollFeature;
 import dev.pgm.community.utils.CommandAudience;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
 
 public class PollVoteCommands extends CommunityCommand {
+
+  public static final String COMMAND = "pollvote";
 
   private final PollFeature polls;
 
@@ -15,13 +19,9 @@ public class PollVoteCommands extends CommunityCommand {
     this.polls = Community.get().getFeatures().getPolls();
   }
 
-  @CommandMethod("yes")
-  public void pollYes(CommandAudience viewer, Player sender) {
-    polls.vote(viewer, sender, true);
-  }
-
-  @CommandMethod("no")
-  public void pollNo(CommandAudience viewer, Player sender) {
-    polls.vote(viewer, sender, false);
+  @CommandMethod(COMMAND + " <option>")
+  public void pollVote(
+      CommandAudience viewer, Player sender, @Argument("option") @Greedy String option) {
+    polls.vote(viewer, sender, option);
   }
 }

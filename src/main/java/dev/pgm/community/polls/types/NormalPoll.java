@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import dev.pgm.community.polls.Poll;
 import dev.pgm.community.polls.PollThreshold;
 import dev.pgm.community.polls.ending.EndAction;
+import dev.pgm.community.polls.response.BooleanResponseConverter;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -77,9 +78,11 @@ public class NormalPoll implements Poll {
   }
 
   @Override
-  public boolean vote(Player player, boolean option) {
+  public boolean vote(Player player, String option) {
+    boolean vote = BooleanResponseConverter.convert(option);
+
     if (!hasVoted(player)) {
-      votes.put(player.getUniqueId(), option);
+      votes.put(player.getUniqueId(), vote);
       return true;
     }
     return false;
