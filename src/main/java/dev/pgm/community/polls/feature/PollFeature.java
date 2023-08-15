@@ -41,6 +41,10 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
     }
   }
 
+  private PollConfig getPollConfig() {
+    return (PollConfig) getConfig();
+  }
+
   private void task() {
     if (!isRunning()) return;
 
@@ -80,7 +84,7 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
   }
 
   public void resetBuilder() {
-    this.builder = new PollBuilder(this);
+    this.builder = new PollBuilder(getPollConfig(), this);
   }
 
   public boolean canStart() {

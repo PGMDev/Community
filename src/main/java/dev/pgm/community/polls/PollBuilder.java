@@ -23,10 +23,6 @@ public class PollBuilder {
 
   private PollEditAlerter alert; // Used to broadcast changes to values
 
-  public PollBuilder(PollEditAlerter alert) {
-    this.alert = alert;
-  }
-
   // Required
   private Component question;
   private UUID creator;
@@ -35,6 +31,12 @@ public class PollBuilder {
   // Optional
   private Duration duration;
   private EndAction endAction = new NullEndAction();
+
+  public PollBuilder(PollConfig config, PollEditAlerter alert) {
+    this.alert = alert;
+    this.duration = (config.getDuration().isNegative() ? null : config.getDuration());
+    this.threshold = config.getThreshold();
+  }
 
   public PollBuilder question(CommandAudience sender, String question) {
     this.question = (question != null ? text(question) : null);
@@ -48,6 +50,7 @@ public class PollBuilder {
   }
 
   public PollBuilder duration(CommandAudience sender, Duration duration) {
+    duration = duration.abs();
     this.duration = duration;
     alert.broadcastChange(sender, "Poll Duration", duration);
     return this;
@@ -133,6 +136,7 @@ public class PollBuilder {
     return question;
   }
 
+  @Nullable
   public Duration getDuration() {
     return duration;
   }
