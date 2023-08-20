@@ -1,13 +1,18 @@
 package dev.pgm.community.mutations.types.items;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,21 +30,23 @@ import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.kits.ItemKit;
 import tc.oc.pgm.kits.Kit;
 import tc.oc.pgm.kits.tag.ItemTags;
-import tc.oc.pgm.util.bukkit.OnlinePlayerMapAdapter;
 import tc.oc.pgm.util.inventory.ItemBuilder;
 import tc.oc.pgm.util.inventory.tag.ItemTag;
 
 public class GrapplingHookMutation extends KitMutationBase {
 
-  private final OnlinePlayerMapAdapter<Long> playerCooldowns;
-
+  protected final Cache<UUID, Instant> cooldowns;
   private static final int COOLDOWN_MILISECONDS = 2000;
+
   public final String GRAPPLE_META = "grappling-hook";
   public final ItemTag<Boolean> GRAPPLE_META_TAG = ItemTag.newBoolean(GRAPPLE_META);
 
   public GrapplingHookMutation(Match match) {
     super(match, MutationType.GRAPPLING_HOOK);
-    playerCooldowns = new OnlinePlayerMapAdapter<>(Community.get());
+    cooldowns =
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(COOLDOWN_MILISECONDS, TimeUnit.MILLISECONDS)
+            .build();
   }
 
   @Override
@@ -92,7 +99,7 @@ public class GrapplingHookMutation extends KitMutationBase {
     event.getPlayer().setVelocity(direction);
     event.getPlayer().playSound(playerLocation, Sound.BAT_TAKEOFF, 2, 1.2f);
 
-    playerCooldowns.put(event.getPlayer(), System.currentTimeMillis());
+    cooldowns.put(event.getPlayer().getUniqueId(), Instant.now());
   }
 
   @EventHandler(ignoreCancelled = true)
@@ -106,7 +113,10 @@ public class GrapplingHookMutation extends KitMutationBase {
   }
 
   private boolean isPlayerOnCooldown(Player player) {
-    Long lastGrapple = playerCooldowns.get(player);
-    return (lastGrapple != null && lastGrapple > System.currentTimeMillis() - COOLDOWN_MILISECONDS);
+    Instant lastGrapple = cooldowns.getIfPresent(player.getUniqueId());
+    if (lastGrapple == null) return false;
+
+    Instant nextValidInstant = lastGrapple.plusMillis(COOLDOWN_MILISECONDS);
+    return Instant.now().isBefore(nextValidInstant);
   }
 }
