@@ -81,7 +81,7 @@ public class AddressHistoryService implements AddressQuery {
 
               if (result == null) {
                 // Track a new ip-id
-                DB.executeUpdateAsync(INSERT_IP_QUERY, address, UUID.randomUUID().toString());
+                DB.executeUpdateAsync(INSERT_IP_QUERY, address, ipId);
               } else {
                 ipId = result.getString(IP_ID_FIELD);
               }
