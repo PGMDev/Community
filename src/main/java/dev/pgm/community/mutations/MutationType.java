@@ -29,7 +29,8 @@ public enum MutationType {
   MOBS("Mob", "Attack of the mobs", Material.MOB_SPAWNER),
   TNT_BOW("TNT Bow", "All projectiles are TNT", Material.TNT),
   FIREBALL_BOW("Fireball Bow", "All projectiles are fireballs", Material.FIREBALL),
-  CANNON_SUPPLIES("Cannon Supplies", "Supplies for making TNT cannons", Material.REDSTONE);
+  CANNON_SUPPLIES("Cannon Supplies", "Supplies for making TNT cannons", Material.REDSTONE),
+  GRAPPLING_HOOK("Grappling Hook", "Everyone can use a grappling hook", Material.FISHING_ROD);
 
   String displayName;
   String description;
