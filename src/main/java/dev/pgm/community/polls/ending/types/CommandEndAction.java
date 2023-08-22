@@ -22,6 +22,16 @@ public class CommandEndAction implements EndAction {
   }
 
   @Override
+  public String getValue() {
+    return getBukkitCommand();
+  }
+
+  @Override
+  public String getTypeName() {
+    return "Poll Command";
+  }
+
+  @Override
   public void execute(Player creator) {
     if (creator != null && creator.isOnline()) {
       Bukkit.dispatchCommand(creator, getBukkitCommand());
@@ -41,6 +51,11 @@ public class CommandEndAction implements EndAction {
   }
 
   @Override
+  public Component getButtonValue(boolean mixed) {
+    return getPreviewValue();
+  }
+
+  @Override
   public Component getDefaultQuestion() {
     return text()
         .append(text("Should we execute "))
@@ -48,5 +63,16 @@ public class CommandEndAction implements EndAction {
         .append(text("?"))
         .color(NamedTextColor.WHITE)
         .build();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof CommandEndAction)) return false;
+    return ((CommandEndAction) other).getBukkitCommand().equalsIgnoreCase(getBukkitCommand());
+  }
+
+  @Override
+  public int hashCode() {
+    return getBukkitCommand().toLowerCase().hashCode();
   }
 }

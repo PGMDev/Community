@@ -17,14 +17,32 @@ import org.bukkit.entity.Player;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.named.NameStyle;
 
-public class KickPlayerAction implements EndAction {
+public class KickPlayerEndAction implements EndAction {
 
   private static int DELAY_SECONDS = 2;
 
   private final UUID targetId;
 
-  public KickPlayerAction(UUID targetId) {
+  public KickPlayerEndAction(UUID targetId) {
     this.targetId = targetId;
+  }
+
+  public UUID getPlayerId() {
+    return targetId;
+  }
+
+  @Override
+  public String getValue() {
+    Player player = Bukkit.getPlayer(targetId);
+    if (player != null) {
+      return player.getName();
+    }
+    return targetId.toString();
+  }
+
+  @Override
+  public String getTypeName() {
+    return "Poll Kick Target";
   }
 
   @Override
@@ -76,6 +94,18 @@ public class KickPlayerAction implements EndAction {
   }
 
   @Override
+  public Component getButtonValue(boolean mixed) {
+    if (mixed)
+      return text()
+          .append(text("Kick", NamedTextColor.YELLOW))
+          .appendSpace()
+          .append(getPreviewValue())
+          .build();
+
+    return getPreviewValue();
+  }
+
+  @Override
   public Component getDefaultQuestion() {
     return text()
         .append(text("Should we kick "))
@@ -83,5 +113,16 @@ public class KickPlayerAction implements EndAction {
         .append(text("?"))
         .color(NamedTextColor.WHITE)
         .build();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof KickPlayerEndAction)) return false;
+    return ((KickPlayerEndAction) other).getPlayerId().equals(getPlayerId());
+  }
+
+  @Override
+  public int hashCode() {
+    return getPlayerId().hashCode();
   }
 }

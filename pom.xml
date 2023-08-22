@@ -131,8 +131,6 @@
                         <includes>
                             <include>net.kyori:*:*</include>
                             <include>co.aikar:*</include>
-                            <include>cloud.commandframework:cloud-*:*</include>
-                            <include>me.lucko:commodore:*</include>
                             <include>tc.oc.pgm:util</include>
                             <include>redis.clients:jedis</include>
                             <include>org.apache.commons:commons-pool2</include>

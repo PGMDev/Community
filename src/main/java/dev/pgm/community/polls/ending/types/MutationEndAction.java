@@ -6,6 +6,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.polls.ending.EndAction;
+import java.util.Objects;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -20,6 +21,20 @@ public class MutationEndAction implements EndAction {
   public MutationEndAction(MutationType mutation) {
     this.mutation = mutation;
     this.mutationFeature = Community.get().getFeatures().getMutations();
+  }
+
+  public MutationType getMutation() {
+    return mutation;
+  }
+
+  @Override
+  public String getValue() {
+    return mutation.name().toLowerCase();
+  }
+
+  @Override
+  public String getTypeName() {
+    return "Poll Mutation";
   }
 
   @Override
@@ -39,7 +54,18 @@ public class MutationEndAction implements EndAction {
 
   @Override
   public Component getPreviewValue() {
-    return mutation.getComponent();
+    return mutation.getComponent().color(NamedTextColor.GREEN);
+  }
+
+  @Override
+  public Component getButtonValue(boolean mixed) {
+    if (mixed)
+      return text()
+          .append(getPreviewValue().color(NamedTextColor.GREEN))
+          .append(text(" Mutation", NamedTextColor.DARK_GREEN))
+          .build();
+
+    return getPreviewValue();
   }
 
   @Override
@@ -51,5 +77,16 @@ public class MutationEndAction implements EndAction {
         .append(text("?"))
         .color(NamedTextColor.WHITE)
         .build();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof MutationEndAction)) return false;
+    return ((MutationEndAction) other).getMutation().equals(getMutation());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getMutation());
   }
 }

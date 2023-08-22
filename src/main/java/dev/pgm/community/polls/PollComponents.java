@@ -1,20 +1,21 @@
 package dev.pgm.community.polls;
 
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.polls.commands.PollVoteCommands;
 import dev.pgm.community.polls.ending.EndAction;
 import dev.pgm.community.polls.ending.types.NullEndAction;
-import dev.pgm.community.polls.types.TimedPoll;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CenterUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -45,13 +46,47 @@ public interface PollComponents {
         "Click to vote no!");
   }
 
-  default Component getVoteButtons() {
+  default Component getBooleanVoteButtons(boolean compact) {
+    TextComponent.Builder buttons = text().append(getYesButton()).appendSpace();
+
+    if (!compact) {
+      buttons.appendSpace().appendSpace();
+    }
+
+    buttons.append(getNoButton());
+
+    return buttons.build();
+  }
+
+  default Component generateVoteButtons(List<EndAction> options, boolean mixed) {
+    TextComponent.Builder builder = text();
+    for (int i = 0; i < options.size(); i++) {
+      EndAction option = options.get(i);
+      Component optionBtn = formatEndActionButton(option, i, mixed);
+      builder.append(optionBtn).appendSpace();
+    }
+    return builder.build();
+  }
+
+  default Component formatEndActionButton(EndAction action, int index, boolean mixed) {
+    TextComponent.Builder hover = text();
+
+    HoverEvent<?> existingHover = action.getButtonValue(mixed).hoverEvent();
+    if (existingHover != null) {
+      TextComponent existingHoverMsg = (TextComponent) existingHover.value();
+      hover.append(existingHoverMsg).appendNewline();
+    }
+
+    hover
+        .append(text("Click to vote for ", NamedTextColor.GRAY))
+        .append(action.getButtonValue(mixed));
+
     return text()
-        .append(getYesButton())
-        .appendSpace()
-        .appendSpace()
-        .appendSpace()
-        .append(getNoButton())
+        .append(text("[", NamedTextColor.GRAY))
+        .append(action.getButtonValue(mixed).hoverEvent(null))
+        .append(text("]", NamedTextColor.GRAY))
+        .hoverEvent(HoverEvent.showText(hover.build()))
+        .clickEvent(ClickEvent.runCommand("/" + PollVoteCommands.COMMAND + " " + index))
         .build();
   }
 
@@ -93,14 +128,14 @@ public interface PollComponents {
 
     lines.add(CenterUtils.centerComponent(question));
     lines.add(text(" "));
-    lines.add(CenterUtils.centerComponent(getVoteButtons()));
+    lines.add(CenterUtils.centerComponent(poll.getVoteButtons(false)));
     lines.add(text(" "));
     lines.add(TextFormatter.horizontalLine(NamedTextColor.YELLOW, TextFormatter.MAX_CHAT_WIDTH));
 
     BroadcastUtils.sendMultiLineGlobal(lines, Sounds.ALERT);
   }
 
-  default void sendPollResults(Poll poll, long yay, long nay, boolean success) {
+  default void sendBooleanPollResults(Poll poll, long yay, long nay, boolean success) {
     List<Component> lines = Lists.newArrayList();
 
     final NamedTextColor lineColor = success ? NamedTextColor.GREEN : NamedTextColor.RED;
@@ -186,13 +221,152 @@ public interface PollComponents {
         .build();
   }
 
+  default void sendMultiChoicePollResults(
+      Poll poll, Map<EndAction, Integer> voteCounts, EndAction winningAction) {
+    List<Component> lines = Lists.newArrayList();
+
+    Component header =
+        TextFormatter.horizontalLineHeading(
+            null, text("Poll Results", NamedTextColor.AQUA), NamedTextColor.GREEN);
+    Component footer =
+        TextFormatter.horizontalLine(NamedTextColor.GREEN, TextFormatter.MAX_CHAT_WIDTH);
+
+    Component question = formatQuestion(poll);
+
+    Component finalResult =
+        text()
+            .append(text("Final Result", NamedTextColor.GOLD, TextDecoration.BOLD))
+            .append(text(": ", NamedTextColor.GRAY))
+            .append(winningAction.getPreviewValue().decorate(TextDecoration.UNDERLINED))
+            .hoverEvent(
+                HoverEvent.showText(
+                    text()
+                        .append(poll.getRequiredThreshold().toComponent())
+                        .appendNewline()
+                        .append(createMultiChoiceInfo(voteCounts))))
+            .build();
+
+    Component graphBreakdown = createRankedGraphBreakdown(voteCounts, winningAction);
+
+    lines.add(header);
+    lines.add(text(" "));
+    lines.add(CenterUtils.centerComponent(question));
+    lines.add(text(" "));
+    lines.add(CenterUtils.centerComponent(finalResult));
+    lines.add(CenterUtils.centerComponent(graphBreakdown));
+    lines.add(footer);
+
+    BroadcastUtils.sendMultiLineGlobal(lines, Sounds.ALERT);
+  }
+
+  default Component createMultiChoiceInfo(Map<EndAction, Integer> voteCounts) {
+    TextComponent.Builder builder = text().append(text("Votes: ", NamedTextColor.GRAY));
+
+    boolean first = true;
+    for (Map.Entry<EndAction, Integer> entry : voteCounts.entrySet()) {
+      if (!first) {
+        builder.append(text(" | ", NamedTextColor.DARK_GRAY));
+      } else {
+        first = false;
+      }
+
+      builder
+          .append(text("(", NamedTextColor.DARK_GRAY))
+          .append(text(entry.getValue(), NamedTextColor.GRAY))
+          .append(text(" "))
+          .append(entry.getKey().getPreviewValue())
+          .append(text(")", NamedTextColor.DARK_GRAY));
+    }
+
+    return builder.build();
+  }
+
+  default Component createRankedGraphBreakdown(
+      Map<EndAction, Integer> voteCounts, EndAction winningAction) {
+    List<EndAction> rankedActions =
+        voteCounts.entrySet().stream()
+            .sorted(Map.Entry.<EndAction, Integer>comparingByValue().reversed())
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
+
+    final int maxBarLength = 17; // Max length of the bar in characters
+    int totalVotes = rankedActions.stream().mapToInt(voteCounts::get).sum();
+
+    TextComponent.Builder builder = text().append(text("Votes: ", NamedTextColor.GRAY));
+
+    for (EndAction action : rankedActions) {
+      int actionVotes = voteCounts.getOrDefault(action, 0);
+      double actionPercentage = (double) actionVotes / totalVotes;
+      int actionBarLength = (int) (actionPercentage * maxBarLength);
+
+      NamedTextColor barColor;
+      if (action == winningAction) {
+        barColor = NamedTextColor.DARK_GREEN;
+      } else if (rankedActions.indexOf(action) == 1) {
+        barColor = NamedTextColor.GOLD;
+      } else if (rankedActions.indexOf(action) == 2) {
+        barColor = NamedTextColor.YELLOW;
+      } else if (rankedActions.indexOf(action) == 3) {
+        barColor = NamedTextColor.RED;
+      } else {
+        barColor = NamedTextColor.GRAY;
+      }
+
+      builder.append(
+          createHoverableBar(
+              action, actionBarLength, maxBarLength, barColor, actionVotes, actionPercentage));
+    }
+
+    builder
+        .append(text(" (", NamedTextColor.GRAY))
+        .append(text(totalVotes, NamedTextColor.DARK_GREEN))
+        .append(text(" total vote" + (totalVotes != 1 ? "s" : ""), NamedTextColor.GRAY))
+        .append(text(")", NamedTextColor.GRAY));
+
+    return builder.build();
+  }
+
+  default Component createHoverableBar(
+      EndAction action,
+      int barLength,
+      int maxBarLength,
+      NamedTextColor barColor,
+      int actionVotes,
+      double actionPercentage) {
+    TextComponent.Builder builder = text();
+
+    final Component SQUARE = text("\u2b1b", barColor); // Filled square
+
+    for (int i = 0; i < maxBarLength; i++) {
+      if (i < barLength) {
+        Component hoverText =
+            text()
+                .append(action.getPreviewValue().color(barColor))
+                .append(text(": ", NamedTextColor.GRAY))
+                .append(text(actionVotes + " vote" + (actionVotes != 1 ? "s" : ""), barColor))
+                .append(text(" (", NamedTextColor.GRAY))
+                .append(text(String.format("%.2f", actionPercentage * 100) + "%", barColor))
+                .append(text(")", NamedTextColor.GRAY))
+                .build();
+        builder.append(SQUARE.hoverEvent(HoverEvent.showText(hoverText)));
+      }
+    }
+
+    return builder.build();
+  }
+
   default Component formatIconButton(
       Component icon, String text, NamedTextColor color, String command, String hover) {
+    Component textComponent = empty();
+
+    if (text != null) {
+      textComponent = text(" " + text, color);
+    }
+
     return text()
         .append(text("[", NamedTextColor.GRAY))
         .append(icon)
-        .appendSpace()
-        .append(text(text, color))
+        .append(textComponent)
         .append(text("]", NamedTextColor.GRAY))
         .appendSpace()
         .hoverEvent(HoverEvent.showText(text(hover, NamedTextColor.GRAY)))
@@ -226,7 +400,7 @@ public interface PollComponents {
             .hoverEvent(HoverEvent.showText(poll.getQuestion()));
 
     if (!hasVoted) {
-      alert.append(getYesButton()).appendSpace().append(getNoButton());
+      alert.append(poll.getVoteButtons(true));
     }
 
     return alert.build();
@@ -266,16 +440,8 @@ public interface PollComponents {
         false,
         false);
 
-    if (poll instanceof TimedPoll) {
-      TimedPoll timedPoll = (TimedPoll) poll;
-      audience.sendMessage(
-          formatCategoryDetail("Time Left", TemporalComponent.clock(timedPoll.getTimeLeft())));
-    } else {
-      Duration timeSinceStart = Duration.between(poll.getStartTime(), Instant.now());
-      audience.sendMessage(
-          formatCategoryDetail(
-              "Time Since Start", TemporalComponent.duration(timeSinceStart, NamedTextColor.AQUA)));
-    }
+    audience.sendMessage(
+        formatCategoryDetail("Time Left", TemporalComponent.clock(poll.getTimeLeft())));
     audience.sendMessage(formatCategoryDetail("Total Votes", text(poll.getTotalVotes())));
     audience.sendMessage(
         formatButton("End", NamedTextColor.RED, "/poll end", "Click to end the poll", false));
@@ -289,7 +455,7 @@ public interface PollComponents {
         builder.getQuestion(),
         builder.getDuration(),
         builder.getThreshold(),
-        builder.getEndAction(),
+        builder.getEndAction().stream().collect(Collectors.toList()),
         true,
         !builder.canBuild());
 
@@ -316,7 +482,7 @@ public interface PollComponents {
       Component question,
       Duration duration,
       PollThreshold threshold,
-      EndAction action,
+      List<EndAction> options,
       boolean builder,
       boolean footer) {
 
@@ -324,18 +490,16 @@ public interface PollComponents {
         TextFormatter.horizontalLineHeading(
             audience.getSender(), text(title, NamedTextColor.AQUA), NamedTextColor.GRAY));
 
-    Component endAction =
-        text()
-            .append(action.getName().color(NamedTextColor.DARK_GREEN))
-            .append(
-                action.getPreviewValue() != null
-                    ? text().append(BroadcastUtils.BROADCAST_DIV).append(action.getPreviewValue())
-                    : text(""))
-            .build();
+    List<Component> optionLines = Lists.newArrayList();
+    int i = 0;
+    for (EndAction e : options) {
+      optionLines.add(createEndActionLine(e, i, options.size() > 1 && builder));
+      i++;
+    }
 
-    if (builder && action instanceof NullEndAction) {
-      endAction =
-          endAction
+    if (builder && optionLines.isEmpty()) {
+      optionLines.add(
+          createEndActionLine(new NullEndAction(), 0, false)
               .append(text(" - ", NamedTextColor.GRAY))
               .append(
                   formatButton(
@@ -348,25 +512,12 @@ public interface PollComponents {
                   formatButton("Map", NamedTextColor.GOLD, "/poll map", "Click to set a map", true))
               .append(
                   formatButton(
-                      "Kick", NamedTextColor.RED, "/poll kick", "Click to kick a player", true));
+                      "Kick", NamedTextColor.RED, "/poll kick", "Click to kick a player", true)));
     }
 
-    Component durationComponent =
-        duration == null
-            ? text()
-                .append(text("Open Ended", NamedTextColor.DARK_PURPLE))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        text()
-                            .append(text("No time limit. Poll will end when "))
-                            .append(text("/poll end", NamedTextColor.AQUA))
-                            .append(text(" is executed."))
-                            .color(NamedTextColor.GRAY)
-                            .build()))
-                .build()
-            : TemporalComponent.duration(duration, NamedTextColor.GREEN);
+    Component durationComponent = TemporalComponent.duration(duration, NamedTextColor.GREEN);
 
-    if (builder && duration == null) {
+    if (builder) {
       durationComponent =
           durationComponent
               .append(text(" - ", NamedTextColor.GRAY))
@@ -402,18 +553,51 @@ public interface PollComponents {
             .build();
 
     if (question == null) {
-      question = action.getDefaultQuestion();
+      question = PollBuilder.generateQuestion(options);
     }
 
     audience.sendMessage(formatCategoryDetail("Question", question));
     audience.sendMessage(formatCategoryDetail("Duration", durationComponent));
     audience.sendMessage(formatCategoryDetail("Threshold", thresholdComponent));
-    audience.sendMessage(formatCategoryDetail("End Action", endAction));
+    audience.sendMessage(
+        formatCategoryDetail(options.size() > 1 ? "Options" : "End Action", empty()));
+
+    for (Component line : optionLines) {
+      audience.sendMessage(line);
+    }
 
     audience.sendMessage(text(""));
 
     if (footer) {
       audience.sendMessage(getFooter());
     }
+  }
+
+  default Component createEndActionLine(EndAction action, int index, boolean showRemove) {
+    Component remove =
+        formatIconButton(
+            MessageUtils.DENY,
+            null,
+            NamedTextColor.RED,
+            "/poll remove " + action.getValue(),
+            "Click to remove");
+
+    TextComponent.Builder line = text();
+
+    if (showRemove) {
+      line.append(BroadcastUtils.RIGHT_DIV).appendSpace();
+    }
+
+    line.append(action.getName().color(NamedTextColor.DARK_GREEN))
+        .append(
+            action.getPreviewValue() != null
+                ? text().append(BroadcastUtils.BROADCAST_DIV).append(action.getPreviewValue())
+                : text(""));
+
+    if (showRemove) {
+      line.appendSpace().append(remove);
+    }
+
+    return line.build();
   }
 }

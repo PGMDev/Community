@@ -12,7 +12,6 @@ import dev.pgm.community.polls.PollEditAlerter;
 import dev.pgm.community.polls.events.PollEndEvent;
 import dev.pgm.community.polls.events.PollStartEvent;
 import dev.pgm.community.polls.events.PollVoteEvent;
-import dev.pgm.community.polls.types.TimedPoll;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import java.time.Instant;
@@ -48,23 +47,20 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
   private void task() {
     if (!isRunning()) return;
 
-    if (poll instanceof TimedPoll) {
-      TimedPoll timedPoll = (TimedPoll) poll;
-      Duration timeLeft = timedPoll.getTimeLeft();
+    Duration timeLeft = poll.getTimeLeft();
 
-      for (Player player : Bukkit.getOnlinePlayers()) {
-        Audience viewer = Audience.get(player);
-        boolean hasVoted = timedPoll.hasVoted(player);
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      Audience viewer = Audience.get(player);
+      boolean hasVoted = poll.hasVoted(player);
 
-        if (shouldShowVoteReminder(hasVoted, timeLeft)) {
-          Component alert = createVoteReminderBroadcast(poll, timeLeft, hasVoted);
-          viewer.sendMessage(alert);
-        }
+      if (shouldShowVoteReminder(hasVoted, timeLeft)) {
+        Component alert = createVoteReminderBroadcast(poll, timeLeft, hasVoted);
+        viewer.sendMessage(alert);
       }
+    }
 
-      if (timeLeft.getSeconds() == 0) {
-        end(null);
-      }
+    if (timeLeft.getSeconds() == 0) {
+      end(null);
     }
   }
 
@@ -108,16 +104,16 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
     delayedStart = false;
     delayedTaskID = null;
 
+    // Build the poll
+    poll = builder.build();
+
     // Let staff know who started the poll
     if (audience != null) {
       broadcastChange(audience, "Started Poll");
     }
 
-    // Build the poll
-    poll = builder.build();
-
-    // Broadcast Poll info
-    sendPollBroadcast(poll);
+    // Start the poll
+    poll.start();
 
     // Call start event
     Community.get().callEvent(new PollStartEvent(poll));
@@ -153,21 +149,8 @@ public class PollFeature extends FeatureBase implements PollEditAlerter, PollCom
       poll.setEndTime(Instant.now());
     }
 
-    long yesVotes = poll.getYesVotesCount();
-    long noVotes = poll.getNoVotesCount();
-    long totalVotes = yesVotes + noVotes;
-
-    double desiredThresholdPercentage = poll.getRequiredThreshold().getValue();
-    long requiredThreshold = Math.round(totalVotes * desiredThresholdPercentage);
-
-    boolean majorityOption = yesVotes >= requiredThreshold;
-
-    sendPollResults(poll, yesVotes, noVotes, majorityOption);
-
-    if (majorityOption) {
-      Player creatorPlayer = Bukkit.getPlayer(poll.getCreator());
-      poll.getEndAction().execute(creatorPlayer);
-    }
+    // Decide winner and broadcast
+    poll.tallyVotes();
 
     // Call end event
     Community.get().callEvent(new PollEndEvent(poll));

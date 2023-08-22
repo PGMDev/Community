@@ -264,7 +264,7 @@ polls:
   # Set to true to enable polls, false to disable.
   enabled: true
   
-  # Default time limit for polls upon creation. Set to -1 for open ended polls.
+  # Default time limit for polls upon creation.
   duration: 5m  # for 5 minutes
   
   # The default threshold required for a poll to pass.

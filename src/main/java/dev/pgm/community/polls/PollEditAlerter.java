@@ -8,13 +8,13 @@ import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
@@ -50,14 +50,18 @@ public interface PollEditAlerter {
         valueComponent = map.getStyledName(MapNameStyle.COLOR);
       }
 
-      if (value instanceof Player) {
-        Player player = (Player) value;
-        valueComponent = player(player, NameStyle.FANCY);
+      if (value instanceof UUID) {
+        UUID playerId = (UUID) value;
+        valueComponent = player(playerId, NameStyle.FANCY);
       }
 
       if (value instanceof PollThreshold) {
         PollThreshold threshold = (PollThreshold) value;
         valueComponent = threshold.toComponent();
+      }
+
+      if (value instanceof Component) {
+        valueComponent = (Component) value;
       }
     }
 

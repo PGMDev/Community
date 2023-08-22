@@ -93,31 +93,31 @@ public class PollManagementCommands extends CommunityCommand {
     polls.end(audience);
   }
 
-  @CommandMethod("question [question]")
+  @CommandMethod("question <question>")
   public void question(CommandAudience audience, @Argument("question") @Greedy String question) {
     checkPoll();
     polls.getBuilder().question(audience, question);
   }
 
-  @CommandMethod("duration [duration]")
+  @CommandMethod("duration <duration>")
   public void timelimit(CommandAudience audience, @Argument("duration") Duration duration) {
     checkPoll();
     polls.getBuilder().duration(audience, duration);
   }
 
-  @CommandMethod("threshold [threshold]")
+  @CommandMethod("threshold <threshold>")
   public void threshold(CommandAudience audience, @Argument("threshold") PollThreshold threshold) {
     checkPoll();
     polls.getBuilder().threshold(audience, threshold);
   }
 
-  @CommandMethod("map [map]")
+  @CommandMethod("map <map>")
   public void map(CommandAudience audience, @Argument("map") MapInfo map) {
     checkPoll();
     polls.getBuilder().map(audience, map);
   }
 
-  @CommandMethod("kick [target]")
+  @CommandMethod("kick <target>")
   public void kickPlayer(CommandAudience audience, @Argument("target") Player target) {
     checkPoll();
 
@@ -130,20 +130,26 @@ public class PollManagementCommands extends CommunityCommand {
       return;
     }
 
-    polls.getBuilder().kickPlayer(audience, target);
+    polls.getBuilder().kickPlayer(audience, target.getUniqueId());
   }
 
-  @CommandMethod("command [command]")
+  @CommandMethod("command <command>")
   public void command(CommandAudience audience, @Argument("command") @Greedy String command) {
     checkPoll();
     polls.getBuilder().command(audience, command);
   }
 
-  @CommandMethod("mutation [mutation]")
+  @CommandMethod("mutation <mutation>")
   @CommandPermission(CommunityPermissions.MUTATION)
   public void mutation(CommandAudience audience, @Argument("mutation") MutationType mutation) {
     checkPoll();
     polls.getBuilder().mutation(audience, mutation);
+  }
+
+  @CommandMethod("remove <option>")
+  public void remove(CommandAudience audience, @Argument("option") String option) {
+    checkPoll();
+    polls.getBuilder().remove(audience, option);
   }
 
   @CommandMethod("reset")

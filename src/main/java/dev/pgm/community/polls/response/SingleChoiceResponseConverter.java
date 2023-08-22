@@ -2,7 +2,7 @@ package dev.pgm.community.polls.response;
 
 import static tc.oc.pgm.util.text.TextException.exception;
 
-public class BooleanResponseConverter {
+public class SingleChoiceResponseConverter {
 
   public static boolean convert(String input) {
     String cleanInput = input.trim().toLowerCase();

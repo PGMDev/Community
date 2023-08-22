@@ -18,12 +18,26 @@ import tc.oc.pgm.api.map.MapTag;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 
-public class SetNextAction implements EndAction {
+public class MapEndAction implements EndAction {
 
   private MapInfo map;
 
-  public SetNextAction(MapInfo map) {
+  public MapEndAction(MapInfo map) {
     this.map = map;
+  }
+
+  public MapInfo getMap() {
+    return map;
+  }
+
+  @Override
+  public String getValue() {
+    return map.getName();
+  }
+
+  @Override
+  public String getTypeName() {
+    return "Poll Map";
   }
 
   @Override
@@ -41,6 +55,11 @@ public class SetNextAction implements EndAction {
   @Override
   public Component getPreviewValue() {
     return map.getStyledName(MapNameStyle.COLOR);
+  }
+
+  @Override
+  public Component getButtonValue(boolean mixed) {
+    return getPreviewValue();
   }
 
   private Component getFancyMapName() {
@@ -82,5 +101,16 @@ public class SetNextAction implements EndAction {
         .append(text("?"))
         .color(NamedTextColor.WHITE)
         .build();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof MapEndAction)) return false;
+    return ((MapEndAction) other).getMap().equals(getMap());
+  }
+
+  @Override
+  public int hashCode() {
+    return getMap().hashCode();
   }
 }

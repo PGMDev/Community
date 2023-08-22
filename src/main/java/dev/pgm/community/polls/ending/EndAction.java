@@ -12,4 +12,10 @@ public interface EndAction {
   Component getPreviewValue();
 
   Component getDefaultQuestion();
+
+  Component getButtonValue(boolean mixed);
+
+  String getValue();
+
+  String getTypeName();
 }
