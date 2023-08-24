@@ -14,12 +14,14 @@ import dev.pgm.community.utils.NameUtils;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
@@ -113,6 +115,24 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
+  public CompletableFuture<Boolean> deactivate(String target, PunishmentType punishmentType) {
+    CompletableFuture<Optional<UUID>> playerId =
+        NameUtils.isMinecraftName(target)
+            ? getUsers().getStoredId(target)
+            : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
+    return playerId.thenApplyAsync(
+        uuid -> {
+          if (uuid.isPresent()) {
+            if (service.deactivate(uuid.get(), punishmentType).join()) {
+              sendRefresh(uuid.get());
+              return true;
+            }
+          }
+          return false;
+        });
+  }
+
+  @Override
   public CompletableFuture<Boolean> isBanned(String target) {
     if (NameUtils.isMinecraftName(target)) {
       return getUsers()
@@ -158,6 +178,22 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       Optional<MutePunishment> mute = hasActiveMute(punishments);
       if (mute.isPresent()) {
         addMute(event.getUniqueId(), mute.get());
+      }
+
+      Set<Punishment> deferredPunishments = getDeferredPunishments(punishments);
+      for (Punishment punishment : deferredPunishments) {
+        Bukkit.getScheduler()
+            .runTaskLater(
+                Community.get(),
+                () -> {
+                  if (PunishmentType.WARN.equals(punishment.getType())
+                      || PunishmentType.KICK.equals(punishment.getType())) {
+                    if (punishment.punish(true)) {
+                      deactivate(event.getUniqueId().toString(), punishment.getType());
+                    }
+                  }
+                },
+                20 * 5);
       }
 
       logger.info(
@@ -237,6 +273,16 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                     && p.getType().isLoginPrevented()
                     && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
         .findAny();
+  }
+
+  private Set<Punishment> getDeferredPunishments(List<Punishment> punishments) {
+    return punishments.stream()
+        .filter(
+            p ->
+                p.isActive()
+                    && (PunishmentType.WARN.equals(p.getType())
+                        || PunishmentType.KICK.equals(p.getType())))
+        .collect(Collectors.toSet());
   }
 
   @Override

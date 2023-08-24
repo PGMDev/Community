@@ -167,6 +167,17 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
         .thenApplyAsync(result -> result != 0);
   }
 
+  public CompletableFuture<Boolean> deactivate(UUID id, PunishmentType punishmentType) {
+    punishmentCache.invalidate(id);
+    return DB.executeUpdateAsync(
+            DEACTIVATE_QUERY + SINGLE_PARDON_TYPE,
+            false,
+            true,
+            id.toString(),
+            punishmentType.toString())
+        .thenApplyAsync(result -> result != 0);
+  }
+
   public CompletableFuture<Boolean> unmute(UUID id, Optional<UUID> issuer) {
     punishmentCache.invalidate(id);
 

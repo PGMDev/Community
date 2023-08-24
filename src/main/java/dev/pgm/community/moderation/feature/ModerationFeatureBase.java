@@ -209,6 +209,10 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
                     .build());
         return;
       }
+    } else if (PunishmentType.WARN.equals(punishment.getType())
+        || PunishmentType.KICK.equals(punishment.getType())) {
+      // If its a warn or kick set it to active so the player sees it when they next login
+      punishment.setActive(true);
     }
 
     save(punishment); // Save punishment to database

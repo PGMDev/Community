@@ -37,6 +37,7 @@ import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.UsernameFormatUtils;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
+import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextTranslations;
 
 public class Punishment implements Comparable<Punishment> {
@@ -115,6 +116,10 @@ public class Punishment implements Comparable<Punishment> {
     return active;
   }
 
+  public void setActive(boolean active) {
+    this.active = active;
+  }
+
   public Instant getLastUpdated() {
     return lastUpdated;
   }
@@ -178,7 +183,19 @@ public class Punishment implements Comparable<Punishment> {
   public void sendWarning(Audience target, String reason) {
     Component titleWord = translatable("misc.warning", NamedTextColor.DARK_RED);
     Component title = text().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
-    Component subtitle = text(reason, NamedTextColor.GOLD);
+    Component subtitle;
+    if (Duration.between(timeIssued, Instant.now()).getSeconds() >= 60) {
+      subtitle =
+          text()
+              .append(
+                  TemporalComponent.relativePastApproximate(timeIssued)
+                      .color(NamedTextColor.YELLOW)
+                      .append(text(": ", NamedTextColor.YELLOW)))
+              .append(text(reason, NamedTextColor.GOLD))
+              .build();
+    } else {
+      subtitle = text(reason, NamedTextColor.GOLD);
+    }
 
     target.showTitle(
         title(
@@ -227,7 +244,18 @@ public class Punishment implements Comparable<Punishment> {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(empty());
-    lines.add(getType().getScreenComponent(text(getReason(), NamedTextColor.RED)));
+    lines.add(
+        getType()
+            .getScreenComponent(
+                Duration.between(timeIssued, Instant.now()).getSeconds() >= 60
+                    ? text()
+                        .append(
+                            TemporalComponent.relativePastApproximate(timeIssued)
+                                .color(NamedTextColor.YELLOW)
+                                .append(text(": ", NamedTextColor.YELLOW)))
+                        .append(text(reason, NamedTextColor.RED))
+                        .build()
+                    : text(reason, NamedTextColor.RED)));
 
     // If punishment expires, display when
     if (this instanceof ExpirablePunishment) {
