@@ -20,6 +20,8 @@ public interface ModerationQuery {
       "UPDATE "
           + TABLE_NAME
           + " SET active = ?, last_updated = ?, updated_by = ? WHERE active = ? AND punished = ? ";
+  static final String DEACTIVATE_QUERY =
+      "UPDATE " + TABLE_NAME + " SET active = ?  WHERE active = ? AND punished = ? ";
 
   static final String SELECT_RECENT_QUERY =
       "SELECT * from " + TABLE_NAME + " WHERE time > ? LIMIT ?";

@@ -61,6 +61,15 @@ public interface ModerationFeature extends Feature {
   CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer);
 
   /**
+   * Deactivate an active punishment
+   *
+   * @param target A username or UUID string
+   * @param punishmentType PunishmentType to deactivate
+   * @return True if any punishments were deactivated, false if none
+   */
+  CompletableFuture<Boolean> deactivate(String target, PunishmentType punishmentType);
+
+  /**
    * Get whether the target is currently banned
    *
    * @param target A username or UUID string
