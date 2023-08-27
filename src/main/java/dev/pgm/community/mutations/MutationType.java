@@ -30,7 +30,8 @@ public enum MutationType {
   TNT_BOW("TNT Bow", "All projectiles are TNT", Material.TNT),
   FIREBALL_BOW("Fireball Bow", "All projectiles are fireballs", Material.FIREBALL),
   CANNON_SUPPLIES("Cannon Supplies", "Supplies for making TNT cannons", Material.REDSTONE),
-  GRAPPLING_HOOK("Grappling Hook", "Everyone can use a grappling hook", Material.FISHING_ROD);
+  GRAPPLING_HOOK("Grappling Hook", "Everyone can use a grappling hook", Material.FISHING_ROD),
+  NO_SPAWN_KIT("No Spawn Kit", "No Spawn Kits!", Material.BARRIER);
 
   String displayName;
   String description;

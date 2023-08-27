@@ -25,6 +25,7 @@ import dev.pgm.community.mutations.types.items.CannonSuppliesMutation;
 import dev.pgm.community.mutations.types.items.ExplosionMutation;
 import dev.pgm.community.mutations.types.items.FireworkMutation;
 import dev.pgm.community.mutations.types.items.GrapplingHookMutation;
+import dev.pgm.community.mutations.types.items.NoSpawnKitMutation;
 import dev.pgm.community.mutations.types.items.PotionMutation;
 import dev.pgm.community.mutations.types.mechanics.BlindMutation;
 import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
@@ -203,6 +204,8 @@ public class MutationFeature extends FeatureBase {
         return new CannonSuppliesMutation(getMatch());
       case GRAPPLING_HOOK:
         return new GrapplingHookMutation(getMatch());
+      case NO_SPAWN_KIT:
+        return new NoSpawnKitMutation(getMatch());
       default:
         logger.warning(type.getDisplayName() + " has not been implemented yet");
     }
