@@ -427,8 +427,9 @@ public class MapPartyFeature extends FeatureBase {
         sender.getStyledName(),
         status,
         text()
-            .append(text("the ", NamedTextColor.GRAY))
-            .append(text("the raindrop multiplier", NamedTextColor.GRAY))
+            .append(text("the", NamedTextColor.GRAY))
+            .appendSpace()
+            .append(text("raindrop multiplier", NamedTextColor.GRAY))
             .build());
   }
 
