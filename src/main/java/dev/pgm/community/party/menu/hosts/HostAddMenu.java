@@ -57,7 +57,7 @@ public class HostAddMenu extends PlayerSelectionProvider {
       Player viewer = (Player) c.getWhoClicked();
       if (viewer.hasPermission(CommunityPermissions.PARTY) && !hosts.isHost(target.getUniqueId())) {
         viewer.closeInventory();
-        Bukkit.dispatchCommand(viewer, "event host add " + target.getName());
+        Bukkit.dispatchCommand(viewer, "event hosts add " + target.getName());
       }
     };
   }
