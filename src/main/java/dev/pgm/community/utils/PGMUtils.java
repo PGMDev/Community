@@ -85,7 +85,7 @@ public class PGMUtils {
 
       int max = map.getMaxPlayers().stream().reduce(0, Integer::sum);
       int lowerBound = participants;
-      int upperBound = total + (int) (total * 0.35);
+      int upperBound = Math.max(5, total + (int) (total * 0.35));
 
       return max >= lowerBound && max <= upperBound;
     }
