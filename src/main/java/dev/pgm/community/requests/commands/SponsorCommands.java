@@ -3,10 +3,10 @@ package dev.pgm.community.requests.commands;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.Assert.assertNotNull;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
-import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.requests.RequestConfig;
@@ -20,9 +20,16 @@ import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -33,12 +40,19 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.map.Contributor;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.api.map.MapTag;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.lib.cloud.commandframework.annotations.suggestions.Suggestions;
+import tc.oc.pgm.lib.cloud.commandframework.context.CommandContext;
+import tc.oc.pgm.util.LiquidMetal;
+import tc.oc.pgm.util.StringUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -216,13 +230,41 @@ public class SponsorCommands extends CommunityCommand {
   @CommandMethod("maps [page]")
   @CommandDescription("View a list of maps which can be sponsored")
   public void viewMapList(
-      CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
-    Set<MapInfo> maps =
-        Sets.newHashSet(PGM.get().getMapLibrary().getMaps()).stream()
+      CommandAudience audience,
+      @Argument(value = "page", defaultValue = "1") int page,
+      @Flag(value = "tags", aliases = "t", repeatable = true, suggestions = "maptags")
+          List<String> tags,
+      @Flag(value = "author", aliases = "a") String author,
+      @Flag(value = "name", aliases = "n") String name) {
+    Stream<MapInfo> search =
+        PGM.get()
+            .getMapLibrary()
+            .getMaps(name)
             .filter(PGMUtils::isMapSizeAllowed)
             .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
-            .filter(m -> !requests.hasMapCooldown(m))
-            .collect(Collectors.toSet());
+            .filter(m -> !requests.hasMapCooldown(m));
+
+    if (!tags.isEmpty()) {
+      final Map<Boolean, Set<String>> tagSet =
+          tags.stream()
+              .flatMap(t -> Arrays.stream(t.split(",")))
+              .map(String::toLowerCase)
+              .map(String::trim)
+              .collect(
+                  Collectors.partitioningBy(
+                      s -> s.startsWith("!"),
+                      Collectors.mapping(
+                          (String s) -> s.startsWith("!") ? s.substring(1) : s,
+                          Collectors.toSet())));
+      search = search.filter(map -> matchesTags(map, tagSet.get(false), tagSet.get(true)));
+    }
+
+    if (author != null) {
+      String query = StringUtils.normalize(author);
+      search = search.filter(map -> matchesAuthor(map, query));
+    }
+
+    Set<MapInfo> maps = search.collect(Collectors.toCollection(TreeSet::new));
 
     int resultsPerPage = 8;
     int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
@@ -298,6 +340,43 @@ public class SponsorCommands extends CommunityCommand {
           TextFormatter.horizontalLineHeading(
               audience.getSender(), buttons.build(), NamedTextColor.DARK_PURPLE, 250));
     }
+  }
+
+  @Suggestions("maptags")
+  public List<String> suggestMapTags(CommandContext<CommandSender> sender, String input) {
+    int commaIdx = input.lastIndexOf(',');
+
+    final String prefix = input.substring(0, commaIdx == -1 ? 0 : commaIdx + 1);
+    final String toComplete =
+        input.substring(commaIdx + 1).toLowerCase(Locale.ROOT).replace("!", "");
+
+    return MapTag.getAllTagIds().stream()
+        .filter(mt -> LiquidMetal.match(mt, toComplete))
+        .flatMap(tag -> Stream.of(prefix + tag, prefix + "!" + tag))
+        .collect(Collectors.toList());
+  }
+
+  private static boolean matchesTags(
+      MapInfo map, Collection<String> posTags, Collection<String> negTags) {
+    int matches = 0;
+    for (MapTag tag : assertNotNull(map).getTags()) {
+      if (negTags != null && negTags.contains(tag.getId())) {
+        return false;
+      }
+      if (posTags != null && posTags.contains(tag.getId())) {
+        matches++;
+      }
+    }
+    return posTags == null || matches == posTags.size();
+  }
+
+  private static boolean matchesAuthor(MapInfo map, String query) {
+    for (Contributor contributor : map.getAuthors()) {
+      if (StringUtils.normalize(contributor.getNameLegacy()).contains(query)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @CommandMethod("queue [page]")
