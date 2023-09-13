@@ -323,7 +323,9 @@ public class UserInfoCommands extends CommunityCommand {
                                   .append(text("[", NamedTextColor.GRAY))
                                   .append(text("View All", NamedTextColor.BLUE))
                                   .append(text("]", NamedTextColor.GRAY))
-                                  .clickEvent(ClickEvent.runCommand("/profile " + target + " true"))
+                                  .clickEvent(
+                                      ClickEvent.runCommand(
+                                          "/profile " + target.getIdentifier() + " true"))
                                   .hoverEvent(
                                       HoverEvent.showText(
                                           text("Click to view all ips", NamedTextColor.GRAY)))
