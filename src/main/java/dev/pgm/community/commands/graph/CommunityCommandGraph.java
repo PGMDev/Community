@@ -27,6 +27,7 @@ import dev.pgm.community.moderation.commands.MuteCommand;
 import dev.pgm.community.moderation.commands.PunishmentCommand;
 import dev.pgm.community.moderation.commands.ToolCommand;
 import dev.pgm.community.moderation.commands.WarnCommand;
+import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.commands.MutationCommands;
 import dev.pgm.community.nick.commands.NickCommands;
 import dev.pgm.community.party.MapPartyCommands;
@@ -49,11 +50,11 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.command.injectors.MatchPlayerProvider;
 import tc.oc.pgm.command.injectors.MatchProvider;
 import tc.oc.pgm.command.injectors.PlayerProvider;
+import tc.oc.pgm.command.parsers.EnumParser;
 import tc.oc.pgm.command.parsers.MapInfoParser;
 import tc.oc.pgm.command.parsers.PartyParser;
 import tc.oc.pgm.command.parsers.PlayerParser;
 import tc.oc.pgm.command.util.CommandGraph;
-import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.EnumArgument.EnumParser;
 import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.StringArgument;
 import tc.oc.pgm.lib.cloud.commandframework.extra.confirmation.CommandConfirmationManager;
 import tc.oc.pgm.lib.cloud.commandframework.meta.CommandMeta;
@@ -99,6 +100,7 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
   protected void setupParsers() {
     registerParser(MapInfo.class, MapInfoParser::new);
     registerParser(MapPartyType.class, new EnumParser<>(MapPartyType.class));
+    registerParser(MutationType.class, new EnumParser<>(MutationType.class));
     registerParser(TargetPlayer.class, new TargetPlayerParser());
     registerParser(Player.class, new PlayerParser());
     registerParser(Party.class, PartyParser::new);
