@@ -90,7 +90,7 @@ public class KickPlayerEndAction implements EndAction {
 
   @Override
   public Component getPreviewValue() {
-    return player(targetId, NameStyle.FANCY);
+    return player(targetId, NameStyle.SIMPLE_COLOR);
   }
 
   @Override
