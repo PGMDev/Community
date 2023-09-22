@@ -93,6 +93,11 @@ public class BroadcastUtils {
     Audience.get(Bukkit.getConsoleSender()).sendMessage(formatted);
   }
 
+  public static void sendMultiLineGlobal(List<Component> lines, Sound sound) {
+    sendMultiLineGlobal(lines);
+    playGlobalSound(sound);
+  }
+
   public static void sendMultiLineGlobal(List<Component> lines) {
     lines.forEach(BroadcastUtils::sendGlobalMessage);
   }

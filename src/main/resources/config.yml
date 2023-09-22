@@ -258,6 +258,18 @@ party:
       pool: "fun"
       # List of map names if mode is CUSTOM
       maps: [] 
+      
+# Polls - Feature that empowers players to collectively decide on in-game questions asked by staff.
+polls:
+  # Set to true to enable polls, false to disable.
+  enabled: true
+  
+  # Default time limit for polls upon creation.
+  duration: 5m  # for 5 minutes
+  
+  # The default threshold required for a poll to pass.
+  # Options: "CLEAR_MINORITY", "SIMPLE", "TWO_THIRDS", "STRONG_MAJORITY"
+  threshold: "simple" 
 
 # Network - Features which assist in running Community on multiple servers  
 network:

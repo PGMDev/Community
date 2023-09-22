@@ -1,5 +1,10 @@
 package dev.pgm.community.mutations;
 
+import static net.kyori.adventure.text.Component.text;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -69,5 +74,12 @@ public enum MutationType {
     }
 
     return item.build();
+  }
+
+  public Component getComponent() {
+    return text()
+        .append(text(getDisplayName()))
+        .hoverEvent(HoverEvent.showText(text(getDescription(), NamedTextColor.GRAY)))
+        .build();
   }
 }
