@@ -6,6 +6,7 @@ import dev.pgm.community.mutations.MutationBase;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
+import java.util.Collection;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
@@ -29,7 +30,7 @@ public class BlitzMutation extends MutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(BLITZ_LIVES);
   }
 

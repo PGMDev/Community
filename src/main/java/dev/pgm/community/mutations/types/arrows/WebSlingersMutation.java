@@ -10,6 +10,7 @@ import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.BowMutation;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +53,7 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(WEB_LIFE);
   }
 

@@ -6,6 +6,7 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import java.util.Collection;
 import java.util.Set;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -29,7 +30,7 @@ public class DoubleJumpMutation extends KitMutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(JUMP_POWER);
   }
 

@@ -3,6 +3,7 @@ package dev.pgm.community.mutations;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.mutations.options.MutationOption;
+import java.util.Collection;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -38,7 +39,7 @@ public interface Mutation {
    *
    * @return a set of {@link MutationOption}
    */
-  Set<MutationOption> getOptions();
+  Collection<MutationOption> getOptions();
 
   /**
    * Gets whether it is safe to enable current mutation Ex. If map is rage, don't allow rage
