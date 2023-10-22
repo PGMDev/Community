@@ -8,6 +8,7 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class MobMutation extends ScheduledMutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(TOTAL_MOBS);
   }
 

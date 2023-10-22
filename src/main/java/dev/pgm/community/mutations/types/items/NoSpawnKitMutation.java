@@ -6,6 +6,7 @@ import dev.pgm.community.mutations.MutationBase;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationOption;
+import java.util.Collection;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -37,7 +38,7 @@ public class NoSpawnKitMutation extends MutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(CLEAR_ITEMS_OPTION, CLEAR_ARMOR_OPTION, CLEAR_EFFECTS_OPTION);
   }
 

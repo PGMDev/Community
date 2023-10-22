@@ -31,7 +31,11 @@ public enum MutationType {
   FIREBALL_BOW("Fireball Bow", "All projectiles are fireballs", Material.FIREBALL),
   CANNON_SUPPLIES("Cannon Supplies", "Supplies for making TNT cannons", Material.REDSTONE),
   GRAPPLING_HOOK("Grappling Hook", "Everyone can use a grappling hook", Material.FISHING_ROD),
-  NO_SPAWN_KIT("No Spawn Kit", "No Spawn Kits!", Material.BARRIER);
+  NO_SPAWN_KIT("No Spawn Kit", "No Spawn Kits!", Material.BARRIER),
+  PROXIMITY_EFFECT(
+      "Proximity Effects",
+      "Give potion effects based on distance to Objectives",
+      Material.GLASS_BOTTLE);
 
   String displayName;
   String description;

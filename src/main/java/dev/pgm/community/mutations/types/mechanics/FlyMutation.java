@@ -12,6 +12,7 @@ import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
 import dev.pgm.community.utils.BroadcastUtils;
+import java.util.Collection;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -49,7 +50,7 @@ public class FlyMutation extends KitMutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(FLY_DISABLE_DELAY, FLY_SPEED);
   }
 

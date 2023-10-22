@@ -2,6 +2,7 @@ package dev.pgm.community.mutations.menu;
 
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
+import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.feature.MutationFeature;
 import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationListOption;
@@ -41,7 +42,7 @@ public class MutationOptionsMenu implements InventoryProvider {
 
     List<MutationOption> options =
         mutations.getMutations().stream()
-            .map(mt -> mt.getOptions())
+            .map(Mutation::getOptions)
             .flatMap(mo -> mo.stream())
             .collect(Collectors.toList());
 

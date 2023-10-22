@@ -27,6 +27,7 @@ import dev.pgm.community.mutations.types.items.FireworkMutation;
 import dev.pgm.community.mutations.types.items.GrapplingHookMutation;
 import dev.pgm.community.mutations.types.items.NoSpawnKitMutation;
 import dev.pgm.community.mutations.types.items.PotionMutation;
+import dev.pgm.community.mutations.types.mapdev.ProximityEffectsMutation;
 import dev.pgm.community.mutations.types.mechanics.BlindMutation;
 import dev.pgm.community.mutations.types.mechanics.DoubleJumpMutation;
 import dev.pgm.community.mutations.types.mechanics.FlyMutation;
@@ -206,6 +207,8 @@ public class MutationFeature extends FeatureBase {
         return new GrapplingHookMutation(getMatch());
       case NO_SPAWN_KIT:
         return new NoSpawnKitMutation(getMatch());
+      case PROXIMITY_EFFECT:
+        return new ProximityEffectsMutation(getMatch());
       default:
         logger.warning(type.getDisplayName() + " has not been implemented yet");
     }

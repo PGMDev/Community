@@ -7,6 +7,7 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +40,7 @@ public class BlockDecayMutation extends ScheduledMutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(DECAY_SECONDS);
   }
 

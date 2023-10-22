@@ -12,6 +12,7 @@ import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -108,7 +109,7 @@ public class ExplosionMutation extends KitMutationBase {
   }
 
   @Override
-  public Set<MutationOption> getOptions() {
+  public Collection<MutationOption> getOptions() {
     return Sets.newHashSet(FIREBALL_POWER, FIREBALL_FIRE, LAUNCH_COOLDOWN, MYSTERY_TNT, TNT_SIZE);
   }
 
