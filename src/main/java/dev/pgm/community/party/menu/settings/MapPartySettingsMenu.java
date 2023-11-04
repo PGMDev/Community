@@ -49,6 +49,7 @@ public class MapPartySettingsMenu extends MapPartyMenu {
     MapParty party = getFeature().getParty();
     MapPartySettings settings = party.getSettings();
 
+    contents.set(1, 1, getAutoScalingItem(settings.getAutoscalingTeams()));
     contents.set(3, 1, getNameItem(party));
     contents.set(3, 3, getTimelimitItem(party));
     contents.set(3, 5, getSettingItem(settings.getShowLoginMessage()));
@@ -194,18 +195,27 @@ public class MapPartySettingsMenu extends MapPartyMenu {
   }
 
   private ClickableItem getSettingItem(PartyBooleanSetting setting) {
+    return ClickableItem.of(settingItemBuilder(setting), c -> setting.toggle());
+  }
+
+  private ClickableItem getAutoScalingItem(PartyBooleanSetting setting) {
     return ClickableItem.of(
-        new ItemBuilder()
-            .material(setting.getIcon())
-            .name(colorize((setting.getValue() ? "&a&l" : "&c&l") + setting.getName()))
-            .lore(
-                colorize("&7" + setting.getDescription()),
-                colorize("&7Current: " + (setting.getValue() ? "&aEnabled" : "&cDisabled")),
-                colorize("&7Click to toggle"))
-            .flags(ItemFlag.values())
-            .build(),
+        settingItemBuilder(setting),
         c -> {
           setting.toggle();
+          Bukkit.dispatchCommand(getViewer(), "event autoscaling " + setting.getValue());
         });
+  }
+
+  private static ItemStack settingItemBuilder(PartyBooleanSetting setting) {
+    return new ItemBuilder()
+        .material(setting.getIcon())
+        .name(colorize((setting.getValue() ? "&a&l" : "&c&l") + setting.getName()))
+        .lore(
+            colorize("&7" + setting.getDescription()),
+            colorize("&7Current: " + (setting.getValue() ? "&aEnabled" : "&cDisabled")),
+            colorize("&7Click to toggle"))
+        .flags(ItemFlag.values())
+        .build();
   }
 }

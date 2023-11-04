@@ -221,6 +221,13 @@ public class MapPartyCommands extends CommunityCommand {
     party.toggleMultiplier(viewer);
   }
 
+  @CommandMethod("autoscaling <autoscale>")
+  @CommandPermission(CommunityPermissions.PARTY)
+  public void toggleAutoScale(CommandAudience viewer, @Argument("autoscale") boolean autoscaling) {
+    if (isPartyMissing(viewer)) return;
+    party.setAutoScale(viewer, autoscaling);
+  }
+
   private boolean isPartyMissing(CommandAudience viewer) {
     if (party.getParty() == null) {
       viewer.sendWarning(MapPartyMessages.MISSING_ERROR);

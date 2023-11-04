@@ -48,8 +48,13 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.api.match.event.MatchAfterLoadEvent;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
+import tc.oc.pgm.ffa.FreeForAllMatchModule;
 import tc.oc.pgm.rotation.pools.MapPool;
+import tc.oc.pgm.teams.Team;
+import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
@@ -401,6 +406,20 @@ public class MapPartyFeature extends FeatureBase {
             .replace("$time$", MapPartyMessages.formatTime(party)));
   }
 
+  public void setAutoScale(CommandAudience sender, boolean autoscaling) {
+    party.setAutoScaling(autoscaling);
+
+    Component status =
+        text(
+            party.shouldAutoScale() ? "enabled" : "disabled",
+            party.shouldAutoScale() ? NamedTextColor.GREEN : NamedTextColor.RED);
+
+    MapPartyMessages.broadcastHostAction(
+        sender.getStyledName(),
+        status,
+        text().append(text("Team Size Auto Scaling", NamedTextColor.GRAY)).build());
+  }
+
   public boolean isRaindropMultiplierActive() {
     return this.raindropsEnabled;
   }
@@ -566,6 +585,30 @@ public class MapPartyFeature extends FeatureBase {
             text("is no longer online, delayed map party has been removed", NamedTextColor.GRAY));
 
         stop(Bukkit.getConsoleSender());
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onMatchLoad(MatchAfterLoadEvent event) {
+    if (this.party != null && this.party.shouldAutoScale()) {
+      Match match = event.getMatch();
+      double scale = match.getPlayers().size() / (double) match.getMaxPlayers();
+
+      if (scale > 1) {
+        if (match.hasModule(TeamMatchModule.class)) {
+          TeamMatchModule teams = match.needModule(TeamMatchModule.class);
+          for (Team team : teams.getParticipatingTeams()) {
+            int maxOverfill = (int) (team.getMaxOverfill() * scale);
+            int maxSize = (int) (team.getMaxPlayers() * scale);
+            team.setMaxSize(maxSize, maxOverfill);
+          }
+        } else if (match.hasModule(FreeForAllMatchModule.class)) {
+          FreeForAllMatchModule ffa = match.needModule(FreeForAllMatchModule.class);
+          int maxOverfill = (int) (ffa.getMaxOverfill() * scale);
+          int maxSize = (int) (ffa.getMaxPlayers() * scale);
+          ffa.setMaxPlayers(maxSize, maxOverfill);
+        }
       }
     }
   }

@@ -7,6 +7,7 @@ public class MapPartySettings {
 
   private PartyBooleanSetting showLoginMessage;
   private PartyBooleanSetting showPartyNotifications;
+  private PartyBooleanSetting autoscalingTeams;
 
   public MapPartySettings(MapPartyConfig config) {
     this.showLoginMessage =
@@ -23,6 +24,13 @@ public class MapPartySettings {
             config.showPartyNotifications(),
             Material.BOOK_AND_QUILL,
             Material.BARRIER);
+    this.autoscalingTeams =
+        new PartyBooleanSetting(
+            "Autoscaling Teams",
+            "Automatically resize teams on match cycle",
+            true,
+            Material.GOLD_PLATE,
+            Material.WOOD_PLATE);
   }
 
   public PartyBooleanSetting getShowLoginMessage() {
@@ -31,5 +39,9 @@ public class MapPartySettings {
 
   public PartyBooleanSetting getShowPartyNotifications() {
     return showPartyNotifications;
+  }
+
+  public PartyBooleanSetting getAutoscalingTeams() {
+    return autoscalingTeams;
   }
 }

@@ -27,6 +27,10 @@ public interface MapParty {
 
   void setDescription(String description);
 
+  boolean shouldAutoScale();
+
+  void setAutoScaling(boolean autoScaling);
+
   @Nullable
   Duration getLength();
 
