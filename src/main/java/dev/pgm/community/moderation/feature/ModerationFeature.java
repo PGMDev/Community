@@ -132,5 +132,9 @@ public interface ModerationFeature extends Feature {
 
   void recieveRefresh(UUID playerId);
 
+  String getGlobalFormat();
+
+  String getStaffFormat();
+
   ModerationTools getTools();
 }

@@ -21,6 +21,9 @@ public class ModerationConfig extends FeatureConfigImpl {
   private static final String BAN_KEY = KEY + ".ban";
   private static final String MUTE_KEY = KEY + ".mute";
 
+  private static final String GLOBAL_FORMAT_KEY = KEY + ".global-broadcast";
+  private static final String STAFF_FORMAT_KEY = KEY + ".staff-broadcast";
+
   private static final String RULES_KEY = KEY + ".rules-link";
   private static final String APPEAL_KEY = KEY + ".appeal-link";
 
@@ -53,6 +56,10 @@ public class ModerationConfig extends FeatureConfigImpl {
   private boolean warnPublic;
   private boolean banPublic;
   private boolean mutePublic;
+
+  // Broadcasts
+  private String globalBroadcastFormat;
+  private String staffBroadcastFormat;
 
   // Messages
   private String rulesLink;
@@ -236,6 +243,14 @@ public class ModerationConfig extends FeatureConfigImpl {
     return lookupSignSlot;
   }
 
+  public String getGlobalBroadcastFormat() {
+    return globalBroadcastFormat;
+  }
+
+  public String getStaffBroadcastFormat() {
+    return staffBroadcastFormat;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -252,6 +267,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     this.warnPublic = config.getBoolean(getBroadcastKey(WARN_KEY));
     this.mutePublic = config.getBoolean(getBroadcastKey(MUTE_KEY));
     this.banPublic = config.getBoolean(getBroadcastKey(BAN_KEY));
+
+    // Broadcasts
+    this.globalBroadcastFormat = config.getString(GLOBAL_FORMAT_KEY);
+    this.staffBroadcastFormat = config.getString(STAFF_FORMAT_KEY);
 
     // Messages
     this.rulesLink = config.getString(RULES_KEY);

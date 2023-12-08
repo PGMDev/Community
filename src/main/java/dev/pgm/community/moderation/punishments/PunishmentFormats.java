@@ -26,7 +26,7 @@ public class PunishmentFormats {
 
   // Broadcast
   public static CompletableFuture<Component> formatBroadcast(
-      Punishment punishment, String server, UsersFeature users) {
+      Punishment punishment, String server, String format, UsersFeature users) {
     CompletableFuture<Component> broadcast = new CompletableFuture<>();
     CompletableFuture<Component> issuer =
         users.renderUsername(punishment.getIssuerId(), NameStyle.FANCY);
@@ -35,7 +35,7 @@ public class PunishmentFormats {
     CompletableFuture.allOf(issuer, target)
         .thenAcceptAsync(
             x -> {
-              Component msg = punishment.formatBroadcast(issuer.join(), target.join());
+              Component msg = punishment.formatBroadcast(issuer.join(), target.join(), format);
               broadcast.complete(msg);
             });
     return broadcast;

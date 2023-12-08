@@ -98,7 +98,8 @@ public class PunishmentCommand extends CommunityCommand {
                       isDisguised(audience));
                 } else {
                   // No target supplied, show last punishment
-                  PunishmentFormats.formatBroadcast(lastPunishment, null, usernames)
+                  PunishmentFormats.formatBroadcast(
+                          lastPunishment, null, moderation.getStaffFormat(), usernames)
                       .thenAcceptAsync(
                           lpm -> {
                             Component lastPunishMsg =
@@ -235,7 +236,8 @@ public class PunishmentCommand extends CommunityCommand {
         builder.append(
             data.formatBroadcast(
                 usernames.renderUsername(data.getIssuerId(), NameStyle.FANCY).join(),
-                usernames.renderUsername(Optional.of(data.getTargetId()), NameStyle.FANCY).join()));
+                usernames.renderUsername(Optional.of(data.getTargetId()), NameStyle.FANCY).join(),
+                moderation.getStaffFormat()));
 
         TextComponent.Builder hover = text();
         hover

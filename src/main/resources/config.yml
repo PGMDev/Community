@@ -3,10 +3,18 @@
 # A plugin for managing a Minecraft community
 #
 general:
-  server-name: "&4Overcast &7Community" # Network display name used at various places
-  
-  server-id: "occ" # id of server for cross-server tracking
-  
+  # Display name for the network used in various locations.
+  server-name: "&4Overcast &7Community"
+
+  # Unique identifier for the server, used for cross-server tracking.
+  server-id: "occ"
+
+  # Determine whether to utilize the Environment API to retrieve the server ID.
+  use-environment: false
+
+  # The specific key ID used for fetching the server ID from the Environment API.
+  environment-server-id: "server-id"
+
 # Moderation - Settings related to punishments (/warn, /kick, /ban, /mute)
 moderation:
   enabled: true   # Whether punishments are enabled
@@ -19,8 +27,22 @@ moderation:
   rules-link: "https://pgm.dev/rules" # Link to rules
   appeal-link: "&7If this ban was made in error, contact &estaff@pgm.dev" # Appeal message (Only shown for perm-bans)
   staff-signoff: true # Whether staff name will be revealed in kick screen (for non disguised staff)
+
+  # Broadcast message format for Punishments
+  #
+  # Available Placeholders:
+  # %issuer% - The name of the player issuing the punishment
+  # %type% - The abbreviated punishment type
+  # %full_type% - The full punishment type w/ duration (if available)
+  # %target% - The name of the target player
+  # %reason% - The reason for the action
+  # %div% - A broadcast divider 
+  #
+  # Note: order placeholders with a space between, color codes not supported
+  global-broadcast: "%issuer% %div% %type% %div% %target%"
+  staff-broadcast: "%issuer% %div% %full_type% %div% %target% %div% %reason%"
   
-  #Punishments types - TODO: more options will be found under each punishment type  
+  #Punishments types and options
   warn:
     enabled: true
     public: false
@@ -35,7 +57,7 @@ moderation:
   mute:
     enabled: true
     public: true
-    
+        
   #Logins
   login-timeout: 30
   

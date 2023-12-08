@@ -22,11 +22,14 @@ import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title.Times;
@@ -203,31 +206,46 @@ public class Punishment implements Comparable<Punishment> {
     target.playSound(Sounds.WARN_SOUND);
   }
 
-  public Component formatBroadcast(Component issuer, Component target) {
-    Component prefix = getType().getPunishmentPrefix();
+  public Component formatBroadcast(Component issuer, Component target, String formatString) {
+    Map<String, Component> placeholders = new HashMap<>();
+    placeholders.put("%issuer%", issuer);
+    placeholders.put("%type%", getType().getPunishmentPrefix());
+    placeholders.put("%full_type%", getType().getPunishmentPrefix());
     if (this.getDuration() != null) {
-      Duration length = this.getDuration();
-      String time = TextTranslations.translateLegacy(duration(length));
-
-      // TODO: Clean up (There's most likely an easier way to do this)
-      String[] timeParts = time.split(" ");
-      boolean seconds = timeParts.length == 2 && timeParts[1].toLowerCase().startsWith("s");
-      if (!seconds && time.contains("s")) {
-        time = time.substring(0, time.lastIndexOf('s'));
-      } else if (time.lastIndexOf("s") == time.length() - 1) {
-        time = time.substring(0, time.length() - 1);
-      }
-      prefix = getType().getPunishmentPrefix(text(time, NamedTextColor.GOLD));
+      placeholders.put("%full_type%", formatTimeComponent(getDuration()));
     }
-    return text()
-        .append(issuer)
-        .append(BroadcastUtils.BROADCAST_DIV)
-        .append(prefix)
-        .append(BroadcastUtils.BROADCAST_DIV)
-        .append(target)
-        .append(BroadcastUtils.BROADCAST_DIV)
-        .append(text(getReason(), NamedTextColor.RED))
-        .build();
+    placeholders.put("%target%", target);
+    placeholders.put("%reason%", text(getReason(), NamedTextColor.RED));
+    placeholders.put("%div%", BroadcastUtils.BROADCAST_DIV);
+
+    TextComponent.Builder builder = text();
+
+    String[] parts = formatString.split(" ");
+
+    for (String part : parts) {
+      if (placeholders.containsKey(part)) {
+        builder.append(placeholders.get(part));
+      } else {
+        builder.append(text(part));
+      }
+    }
+
+    return builder.build();
+  }
+
+  private Component formatTimeComponent(Duration duration) {
+    Duration length = this.getDuration();
+    String time = TextTranslations.translateLegacy(duration(length));
+
+    // TODO: Clean up (There's most likely an easier way to do this)
+    String[] timeParts = time.split(" ");
+    boolean seconds = timeParts.length == 2 && timeParts[1].toLowerCase().startsWith("s");
+    if (!seconds && time.contains("s")) {
+      time = time.substring(0, time.lastIndexOf('s'));
+    } else if (time.lastIndexOf("s") == time.length() - 1) {
+      time = time.substring(0, time.length() - 1);
+    }
+    return getType().getPunishmentPrefix(text(time, NamedTextColor.GOLD));
   }
 
   public Component getExpireDateMessage() {

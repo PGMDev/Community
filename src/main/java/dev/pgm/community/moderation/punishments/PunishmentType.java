@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation.punishments;
 
 import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
 import net.kyori.adventure.text.Component;
@@ -8,12 +9,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 /** Types of Punishments* */
 public enum PunishmentType {
-  MUTE(false, true, false),
-  WARN(false, false, false),
-  KICK(true, false, false),
-  BAN(true, true, true),
-  TEMP_BAN(true, true, true),
-  NAME_BAN(true, true, true);
+  MUTE(false, true, false, true, "Muted"),
+  WARN(false, false, false, false, "Warned"),
+  KICK(true, false, false, false, "Kicked"),
+  BAN(true, true, true, false, "Permanent Ban"),
+  TEMP_BAN(true, true, true, true, "Temporary Ban"),
+  NAME_BAN(true, true, true, false, "Username Ban");
 
   private String PREFIX_TRANSLATE_KEY = "moderation.type.";
   private String SCREEN_TRANSLATE_KEY = "moderation.screen.";
@@ -21,6 +22,8 @@ public enum PunishmentType {
   private final boolean screen;
   private final boolean canRescind;
   private final boolean preventLogin;
+  private final boolean durationBased;
+  private final String fallbackActionName;
 
   /**
    * A Punishment Type
@@ -29,10 +32,17 @@ public enum PunishmentType {
    * @param rescind Whether punishment can be revoked
    * @param preventLogin Whether punishment will prevent login to the server
    */
-  PunishmentType(boolean screen, boolean rescind, boolean preventLogin) {
+  PunishmentType(
+      boolean screen,
+      boolean rescind,
+      boolean preventLogin,
+      boolean durationBased,
+      String fallbackActionName) {
     this.screen = screen;
     this.canRescind = rescind;
     this.preventLogin = preventLogin;
+    this.durationBased = durationBased;
+    this.fallbackActionName = fallbackActionName;
   }
 
   /**
@@ -53,7 +63,20 @@ public enum PunishmentType {
     return preventLogin;
   }
 
+  public boolean isDurationBased() {
+    return durationBased;
+  }
+
+  public String getFallbackActionName() {
+    return fallbackActionName;
+  }
+
   public Component getPunishmentPrefix() {
+    // TODO: TEMP SOLUTION - fix when we add full translation support
+    if (isDurationBased()) {
+      return text(getFallbackActionName(), NamedTextColor.GOLD);
+    }
+
     return translatable(PREFIX_TRANSLATE_KEY + name().toLowerCase(), NamedTextColor.GOLD);
   }
 

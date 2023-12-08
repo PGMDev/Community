@@ -90,7 +90,7 @@ public class BroadcastUtils {
                 viewer.playSound(sound);
               }
             });
-    Audience.get(Bukkit.getConsoleSender()).sendMessage(formatted);
+    Audience.console().sendMessage(formatted);
   }
 
   public static void sendMultiLineGlobal(List<Component> lines, Sound sound) {

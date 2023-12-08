@@ -27,6 +27,7 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -189,6 +190,16 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   @Override
   public void sendRefresh(UUID playerId) {
     network.sendUpdate(new RefreshPunishmentUpdate(playerId));
+  }
+
+  @Override
+  public String getGlobalFormat() {
+    return getModerationConfig().getGlobalBroadcastFormat();
+  }
+
+  @Override
+  public String getStaffFormat() {
+    return getModerationConfig().getStaffBroadcastFormat();
   }
 
   // EVENTS
@@ -369,6 +380,22 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             });
   }
 
+  private Audience getStaffAudience() {
+    List<Player> staff =
+        Bukkit.getOnlinePlayers().stream()
+            .filter(p -> p.hasPermission(CommunityPermissions.PUNISHMENT_BROADCASTS))
+            .collect(Collectors.toList());
+    return Audience.get(staff);
+  }
+
+  private Audience getGlobalAudience() {
+    List<Player> normal =
+        Bukkit.getOnlinePlayers().stream()
+            .filter(p -> !p.hasPermission(CommunityPermissions.PUNISHMENT_BROADCASTS))
+            .collect(Collectors.toList());
+    return Audience.get(normal);
+  }
+
   private void broadcastPunishment(
       Punishment punishment, boolean silent, @Nullable Audience audience) {
     broadcastPunishment(punishment, silent, null, audience);
@@ -376,23 +403,22 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
 
   private void broadcastPunishment(
       Punishment punishment, boolean silent, @Nullable String server, @Nullable Audience sender) {
-    PunishmentFormats.formatBroadcast(punishment, server, getUsers())
+
+    boolean global = !silent && getModerationConfig().isPunishmentPublic(punishment);
+
+    if (global) {
+      PunishmentFormats.formatBroadcast(punishment, server, getGlobalFormat(), users)
+          .thenAcceptAsync(
+              broadcast -> {
+                getGlobalAudience().sendMessage(broadcast);
+              });
+    }
+
+    PunishmentFormats.formatBroadcast(punishment, server, getStaffFormat(), users)
         .thenAcceptAsync(
             broadcast -> {
-              if (getModerationConfig().isBroadcasted()) { // Broadcast to global or staff
-                if (silent || !getModerationConfig().isPunishmentPublic(punishment)) {
-                  BroadcastUtils.sendAdminChatMessage(
-                      broadcast, server, null, CommunityPermissions.PUNISHMENT_BROADCASTS);
-                } else {
-                  BroadcastUtils.sendGlobalMessage(broadcast);
-                }
-              } else { // Send feedback if not broadcast
-                Audience viewer = sender;
-                if (viewer == null) {
-                  viewer = Audience.console();
-                }
-                viewer.sendMessage(broadcast);
-              }
+              BroadcastUtils.sendAdminChatMessage(
+                  broadcast, CommunityPermissions.PUNISHMENT_BROADCASTS);
             });
   }
 }
