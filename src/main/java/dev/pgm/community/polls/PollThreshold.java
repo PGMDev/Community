@@ -8,8 +8,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public enum PollThreshold {
   CLEAR_MINORITY("Clear Minority", 0.25, NamedTextColor.DARK_GREEN),
   SIMPLE("Simple Majority", 0.5, NamedTextColor.GREEN),
-  TWO_THIRDS("2/3 Majority", 0.6667, NamedTextColor.YELLOW),
-  STRONG_MAJORITY("Strong Majority", 0.75, NamedTextColor.GOLD);
+  THREE_FIFTHS("3/5 Majority", 0.6, NamedTextColor.GOLD),
+  TWO_THIRDS("2/3 Majority", 0.6667, NamedTextColor.RED),
+  STRONG_MAJORITY("Strong Majority", 0.75, NamedTextColor.DARK_RED);
 
   private final String displayName;
   private final double value;
