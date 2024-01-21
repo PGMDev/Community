@@ -212,7 +212,7 @@ public class Punishment implements Comparable<Punishment> {
     placeholders.put("%type%", getType().getPunishmentPrefix());
     placeholders.put("%full_type%", getType().getPunishmentPrefix());
     if (this.getDuration() != null) {
-      placeholders.put("%full_type%", formatTimeComponent(getDuration()));
+      placeholders.put("%full_type%", formatTimeComponent());
     }
     placeholders.put("%target%", target);
     placeholders.put("%reason%", text(getReason(), NamedTextColor.RED));
@@ -233,7 +233,7 @@ public class Punishment implements Comparable<Punishment> {
     return builder.build();
   }
 
-  private Component formatTimeComponent(Duration duration) {
+  public Component formatTimeComponent() {
     Duration length = this.getDuration();
     String time = TextTranslations.translateLegacy(duration(length));
 

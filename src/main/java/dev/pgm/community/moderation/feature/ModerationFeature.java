@@ -86,6 +86,14 @@ public interface ModerationFeature extends Feature {
   CompletableFuture<Optional<Punishment>> isMuted(UUID target);
 
   /**
+   * Gets active ban for the provided UUID, if any
+   *
+   * @param target A username or UUID string
+   * @return An optional {@link Punishment}
+   */
+  CompletableFuture<Optional<Punishment>> getActiveBan(String target);
+
+  /**
    * Unmutes any active mutes for the provided target
    *
    * @param target A player UUID

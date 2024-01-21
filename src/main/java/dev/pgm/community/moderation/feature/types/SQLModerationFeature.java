@@ -144,6 +144,20 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
+  public CompletableFuture<Optional<Punishment>> getActiveBan(String target) {
+    if (NameUtils.isMinecraftName(target)) {
+      return getUsers()
+          .getStoredId(target)
+          .thenApplyAsync(
+              uuid ->
+                  uuid.isPresent()
+                      ? service.getActiveBan(uuid.get().toString()).join()
+                      : Optional.empty());
+    }
+    return service.getActiveBan(target);
+  }
+
+  @Override
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
     List<Punishment> punishments;
     try {
