@@ -218,6 +218,19 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
             });
   }
 
+  public CompletableFuture<Optional<Punishment>> getActiveBan(String id) {
+    return queryList(id)
+        .thenApplyAsync(
+            punishments -> {
+              for (Punishment p : punishments) {
+                if (p.getType().isLoginPrevented() && p.isActive()) {
+                  return Optional.of(p);
+                }
+              }
+              return Optional.empty();
+            });
+  }
+
   public CompletableFuture<List<Punishment>> getRecentPunishments(Duration period) {
     return DB.getResultsAsync(
             SELECT_RECENT_QUERY, Instant.now().toEpochMilli() - period.toMillis(), RECENT_LIMIT)

@@ -16,6 +16,7 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.moderation.feature.ModerationFeature;
+import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
@@ -24,13 +25,18 @@ import dev.pgm.community.utils.PaginatedComponentResults;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -385,15 +391,17 @@ public class UserInfoCommands extends CommunityCommand {
           Set<UUID> accountedFor = Sets.newHashSet();
 
           for (Player player : Bukkit.getOnlinePlayers()) {
-            Set<UUID> bannedAlts =
-                users.getAlternateAccounts(player.getUniqueId()).join().stream()
-                    .filter(altId -> moderation.isBanned(altId.toString()).join())
-                    .collect(Collectors.toSet());
+            Set<UUID> alts = users.getAlternateAccounts(player.getUniqueId()).join();
+            Map<UUID, Punishment> punishmentMap = new HashMap<>();
+            for (UUID alt : alts) {
+              Optional<Punishment> punishment = moderation.getActiveBan(alt.toString()).join();
+              punishment.ifPresent(value -> punishmentMap.put(alt, value));
+            }
 
-            if (!bannedAlts.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
-              altAccounts.add(formatAltAccountList(player, bannedAlts));
+            if (!punishmentMap.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
+              altAccounts.add(formatAltAccountList(player, punishmentMap));
               accountedFor.add(player.getUniqueId());
-              accountedFor.addAll(bannedAlts);
+              accountedFor.addAll(punishmentMap.keySet());
             }
           }
 
@@ -451,6 +459,42 @@ public class UserInfoCommands extends CommunityCommand {
             text(", ", NamedTextColor.GRAY),
             alts.stream()
                 .map(pl -> users.renderUsername(pl, NameStyle.FANCY).join())
+                .collect(Collectors.toSet()));
+    Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
+
+    return text("[", NamedTextColor.GOLD)
+        .append(player(target, NameStyle.FANCY))
+        .append(text("] ", NamedTextColor.GOLD))
+        .append(text("(", NamedTextColor.GRAY))
+        .append(size)
+        .append(text("): ", NamedTextColor.GRAY))
+        .append(names);
+  }
+
+  private Component formatAltAccountList(Player target, Map<UUID, Punishment> alts) {
+    Component names =
+        Component.join(
+            text(", ", NamedTextColor.GRAY),
+            alts.entrySet().stream()
+                .map(
+                    pl -> {
+                      Punishment punishment = pl.getValue();
+                      List<Component> components = new ArrayList<>();
+                      components.add(
+                          TemporalComponent.relativePastApproximate(punishment.getTimeIssued())
+                              .color(NamedTextColor.YELLOW));
+                      components.add(punishment.formatTimeComponent());
+                      components.add(text(punishment.getReason()).color(NamedTextColor.RED));
+
+                      return users
+                          .renderUsername(pl.getKey(), NameStyle.FANCY)
+                          .join()
+                          .hoverEvent(
+                              HoverEvent.showText(
+                                  Component.join(
+                                      JoinConfiguration.separator(BroadcastUtils.BROADCAST_DIV),
+                                      components)));
+                    })
                 .collect(Collectors.toSet()));
     Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
 
