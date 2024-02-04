@@ -26,6 +26,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
 import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
@@ -386,12 +387,13 @@ public class NickCommands extends CommunityCommand {
   @ProxiedBy("nicks")
   @CommandMethod("list")
   @CommandDescription("View a list of online nicked players")
-  @CommandPermission(CommunityPermissions.STAFF)
   public void viewNicks(CommandAudience viewer) {
+    boolean staff = viewer.hasPermission(CommunityPermissions.STAFF);
     List<Component> nickedNames =
         Bukkit.getOnlinePlayers().stream()
+            .filter(player -> staff || Integration.isFriend(player, viewer.getPlayer()))
             .filter(player -> nicks.isNicked(player.getUniqueId()))
-            .map(player -> PlayerComponent.player(player, NameStyle.FANCY))
+            .map(player -> PlayerComponent.player(player, NameStyle.VERBOSE))
             .collect(Collectors.toList());
 
     if (nickedNames.isEmpty()) {
