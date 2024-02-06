@@ -107,7 +107,9 @@ public class SkinCache implements Listener {
   private void refreshFakeName(Player player, Player viewer) {
     boolean nicked = Integration.getNick(player) != null;
     boolean areFriends = Integration.isFriend(player, viewer);
-    boolean canOverride = viewer.hasPermission(CommunityPermissions.NICKNAME_VIEW);
+    boolean canOverride =
+        viewer.hasPermission(Permissions.STAFF)
+            || viewer.hasPermission(CommunityPermissions.NICKNAME_VIEW);
 
     boolean canSeeRealName = (canOverride || player == viewer || areFriends);
 
