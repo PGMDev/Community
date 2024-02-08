@@ -14,6 +14,7 @@ import dev.pgm.community.commands.GamemodeCommand;
 import dev.pgm.community.commands.ServerInfoCommand;
 import dev.pgm.community.commands.StaffCommand;
 import dev.pgm.community.commands.SudoCommand;
+import dev.pgm.community.commands.VanishedCommand;
 import dev.pgm.community.commands.injectors.CommandAudienceProvider;
 import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.commands.providers.GameModeParser;
@@ -171,6 +172,7 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     register(new ServerInfoCommand());
     register(new StaffCommand());
     register(new SudoCommand());
+    register(new VanishedCommand());
 
     // Community plugin command
     register(new CommunityPluginCommand());
