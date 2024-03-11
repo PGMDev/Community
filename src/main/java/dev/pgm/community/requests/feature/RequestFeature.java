@@ -92,6 +92,11 @@ public interface RequestFeature extends Feature {
   /** Remove all player requests */
   void clearAllRequests();
 
+  /** Toggle requests */
+  boolean isAccepting();
+
+  void toggleAccepting();
+
   /**
    * Get a set of {@link UUID}s who have requested the provided {@link MapInfo}
    *
