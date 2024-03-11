@@ -87,6 +87,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   private SponsorRequest currentSponsor;
   private SponsorVotingBookCreator bookCreator;
 
+  private boolean accepting;
+
   public RequestFeatureBase(
       RequestConfig config, Logger logger, String featureName, UsersFeature users) {
     super(config, logger, "Requests (" + featureName + ")");
@@ -99,6 +101,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     this.sponsors = Lists.newLinkedList();
     this.currentSponsor = null;
     this.bookCreator = new SponsorVotingBookCreator(this);
+    this.accepting = true;
 
     if (getConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
@@ -311,6 +314,12 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   public void request(Player player, MapInfo map) {
     Audience viewer = Audience.get(player);
 
+    // Check if enabled
+    if (!isAccepting()) {
+      viewer.sendWarning(text("Sorry, map requests are not being accepted at this time"));
+      return;
+    }
+
     // Cooldown
     if (hasCooldown(player, viewer)) return;
 
@@ -522,6 +531,16 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   @Override
   public void clearAllRequests() {
     requests.invalidateAll();
+  }
+
+  @Override
+  public boolean isAccepting() {
+    return accepting;
+  }
+
+  @Override
+  public void toggleAccepting() {
+    this.accepting = !accepting;
   }
 
   @Override

@@ -230,6 +230,25 @@ public class RequestCommands extends CommunityCommand {
     }
   }
 
+  @CommandMethod("requests|reqs toggle")
+  @CommandDescription("Toggle map requests")
+  @CommandPermission(CommunityPermissions.REQUEST_STAFF)
+  public void toggleRequests(CommandAudience audience) {
+    requests.toggleAccepting();
+    BroadcastUtils.sendAdminChatMessage(
+        text()
+            .append(audience.getStyledName())
+            .append(text(" has ", NamedTextColor.GRAY))
+            .append(
+                text(
+                    requests.isAccepting() ? "enabled" : "disabled",
+                    requests.isAccepting() ? NamedTextColor.GREEN : NamedTextColor.RED,
+                    TextDecoration.BOLD))
+            .append(text(" map requests", NamedTextColor.GRAY))
+            .build(),
+        CommunityPermissions.REQUEST_STAFF);
+  }
+
   private Component getRequestsButton(
       String text, String hover, NamedTextColor color, String command) {
     return text()
