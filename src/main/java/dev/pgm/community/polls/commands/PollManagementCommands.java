@@ -17,16 +17,16 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextException;
 
-@CommandMethod("poll")
-@CommandPermission(CommunityPermissions.POLL)
+@Command("poll")
+@Permission(CommunityPermissions.POLL)
 public class PollManagementCommands extends CommunityCommand {
 
   private final PollFeature polls;
@@ -35,7 +35,7 @@ public class PollManagementCommands extends CommunityCommand {
     this.polls = Community.get().getFeatures().getPolls();
   }
 
-  @CommandMethod("")
+  @Command("")
   public void info(CommandAudience audience) {
     if (polls.isRunning()) {
       polls.sendPollDetails(polls.getPoll(), audience);
@@ -44,7 +44,7 @@ public class PollManagementCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("start [duration]")
+  @Command("start [duration]")
   public void start(
       CommandAudience audience,
       @Argument("duration") Duration duration,
@@ -88,36 +88,36 @@ public class PollManagementCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("end")
+  @Command("end")
   public void end(CommandAudience audience) {
     polls.end(audience);
   }
 
-  @CommandMethod("question <question>")
+  @Command("question <question>")
   public void question(CommandAudience audience, @Argument("question") @Greedy String question) {
     checkPoll();
     polls.getBuilder().question(audience, question);
   }
 
-  @CommandMethod("duration <duration>")
+  @Command("duration <duration>")
   public void timelimit(CommandAudience audience, @Argument("duration") Duration duration) {
     checkPoll();
     polls.getBuilder().duration(audience, duration);
   }
 
-  @CommandMethod("threshold <threshold>")
+  @Command("threshold <threshold>")
   public void threshold(CommandAudience audience, @Argument("threshold") PollThreshold threshold) {
     checkPoll();
     polls.getBuilder().threshold(audience, threshold);
   }
 
-  @CommandMethod("map <map>")
+  @Command("map <map>")
   public void map(CommandAudience audience, @Argument("map") MapInfo map) {
     checkPoll();
     polls.getBuilder().map(audience, map);
   }
 
-  @CommandMethod("kick <target>")
+  @Command("kick <target>")
   public void kickPlayer(CommandAudience audience, @Argument("target") Player target) {
     checkPoll();
 
@@ -133,26 +133,26 @@ public class PollManagementCommands extends CommunityCommand {
     polls.getBuilder().kickPlayer(audience, target.getUniqueId());
   }
 
-  @CommandMethod("command <command>")
+  @Command("command <command>")
   public void command(CommandAudience audience, @Argument("command") @Greedy String command) {
     checkPoll();
     polls.getBuilder().command(audience, command);
   }
 
-  @CommandMethod("mutation <mutation>")
-  @CommandPermission(CommunityPermissions.MUTATION)
+  @Command("mutation <mutation>")
+  @Permission(CommunityPermissions.MUTATION)
   public void mutation(CommandAudience audience, @Argument("mutation") MutationType mutation) {
     checkPoll();
     polls.getBuilder().mutation(audience, mutation);
   }
 
-  @CommandMethod("remove <option>")
+  @Command("remove <option>")
   public void remove(CommandAudience audience, @Argument("option") String option) {
     checkPoll();
     polls.getBuilder().remove(audience, option);
   }
 
-  @CommandMethod("reset")
+  @Command("reset")
   public void reset(CommandAudience audience) {
     checkPoll();
     polls.resetBuilder();

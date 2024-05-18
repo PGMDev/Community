@@ -10,12 +10,12 @@ import dev.pgm.community.utils.CommandAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandMethod("chat")
+@Command("chat")
 public class ChatManagementCommand extends CommunityCommand {
 
   private final ChatManagementFeature chat;
@@ -24,9 +24,9 @@ public class ChatManagementCommand extends CommunityCommand {
     this.chat = Community.get().getFeatures().getChatManagement();
   }
 
-  @CommandMethod("")
+  @Command("")
   @CommandDescription("View the current chat mode status")
-  @CommandPermission(CommunityPermissions.CHAT_MANAGEMENT)
+  @Permission(CommunityPermissions.CHAT_MANAGEMENT)
   public void viewStatus(CommandAudience audience) {
     audience.sendMessage(
         TextFormatter.horizontalLineHeading(
@@ -35,23 +35,23 @@ public class ChatManagementCommand extends CommunityCommand {
     audience.sendMessage(formatStatus(text("Chat Slowmode"), chat.isSlowmode()));
   }
 
-  @CommandMethod("lock")
+  @Command("lock")
   @CommandDescription("Toggle lock status for the chat")
-  @CommandPermission(CommunityPermissions.CHAT_MANAGEMENT)
+  @Permission(CommunityPermissions.CHAT_MANAGEMENT)
   public void toggleLock(CommandAudience viewer) {
     chat.toggleLockdown(viewer.getSender());
   }
 
-  @CommandMethod("slow")
+  @Command("slow")
   @CommandDescription("Toggle chat slowmode")
-  @CommandPermission(CommunityPermissions.CHAT_MANAGEMENT)
+  @Permission(CommunityPermissions.CHAT_MANAGEMENT)
   public void toggleSlowmode(CommandAudience viewer) {
     chat.toggleSlowmode(viewer.getSender());
   }
 
-  @CommandMethod("clear")
+  @Command("clear")
   @CommandDescription("Clear the global chat")
-  @CommandPermission(CommunityPermissions.CHAT_MANAGEMENT)
+  @Permission(CommunityPermissions.CHAT_MANAGEMENT)
   public void clearChat(CommandAudience viewer) {
     for (int i = 0; i < 100; i++) {
       BroadcastUtils.sendGlobalMessage(Component.empty());

@@ -25,11 +25,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -42,22 +43,20 @@ public class RequestCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod("request|req <map>")
+  @Command("request|req <map>")
   @CommandDescription("Request a map")
   @Syntax("[map] - Name of map to request")
-  @CommandPermission(CommunityPermissions.REQUEST)
+  @Permission(CommunityPermissions.REQUEST)
   public void request(
       CommandAudience audience, Player sender, @Argument("map") @Greedy MapInfo map) {
     requests.request(sender, map);
   }
 
-  @CommandMethod("mapcooldowns|mapcd|mapcooldown [page]")
+  @Command("mapcooldowns|mapcd|mapcooldown [page]")
   @CommandDescription("View a list of current map cooldowns")
-  @CommandPermission(CommunityPermissions.VIEW_MAP_COOLDOWNS)
+  @Permission(CommunityPermissions.VIEW_MAP_COOLDOWNS)
   public void viewCooldowns(
-      CommandAudience audience,
-      Player sender,
-      @Argument(value = "page", defaultValue = "1") int page) {
+      CommandAudience audience, Player sender, @Argument("page") @Default("1") int page) {
     Map<MapInfo, MapCooldown> cooldowns = requests.getMapCooldowns();
 
     List<MapInfo> maps =
@@ -125,11 +124,10 @@ public class RequestCommands extends CommunityCommand {
     }.display(audience.getAudience(), maps, page);
   }
 
-  @CommandMethod("requests|reqs [page]")
+  @Command("requests|reqs [page]")
   @CommandDescription("View and manage map requests")
-  @CommandPermission(CommunityPermissions.REQUEST_STAFF)
-  public void listRequests(
-      CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
+  @Permission(CommunityPermissions.REQUEST_STAFF)
+  public void listRequests(CommandAudience audience, @Argument("page") @Default("1") int page) {
     Map<MapInfo, Integer> requestCounts = requests.getRequests();
 
     int resultsPerPage = 8;
@@ -197,9 +195,9 @@ public class RequestCommands extends CommunityCommand {
     }.display(audience.getAudience(), requestCounts.keySet(), page);
   }
 
-  @CommandMethod("requests|reqs clear [map]")
+  @Command("requests|reqs clear [map]")
   @CommandDescription("Clear map requests")
-  @CommandPermission(CommunityPermissions.REQUEST_STAFF)
+  @Permission(CommunityPermissions.REQUEST_STAFF)
   public void clearRequests(CommandAudience audience, @Argument("map") @Greedy MapInfo map) {
     if (map != null) {
       int removalCount = requests.clearRequests(map);
@@ -230,9 +228,9 @@ public class RequestCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("requests|reqs toggle")
+  @Command("requests|reqs toggle")
   @CommandDescription("Toggle map requests")
-  @CommandPermission(CommunityPermissions.REQUEST_STAFF)
+  @Permission(CommunityPermissions.REQUEST_STAFF)
   public void toggleRequests(CommandAudience audience) {
     requests.toggleAccepting();
     BroadcastUtils.sendAdminChatMessage(

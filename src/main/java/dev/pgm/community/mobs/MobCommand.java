@@ -16,16 +16,17 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandMethod("mobs|mob")
+@Command("mobs|mob")
 public class MobCommand extends CommunityCommand {
 
   private final MobFeature mobs;
@@ -34,8 +35,8 @@ public class MobCommand extends CommunityCommand {
     this.mobs = Community.get().getFeatures().getMobs();
   }
 
-  @CommandMethod("")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Command("")
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void viewMobs(CommandAudience audience, Player sender) {
     List<LivingEntity> ownedMobs = mobs.getOwnedMobs(sender);
     if (!ownedMobs.isEmpty()) {
@@ -114,14 +115,14 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod("spawn <mob> [amount]")
+  @Command("spawn <mob> [amount]")
   @CommandDescription("Spawn a mob that attack nearby targets")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void mob(
       CommandAudience audience,
       Player sender,
       @Argument("mob") EntityType type,
-      @Argument(value = "amount", defaultValue = "1") int amount,
+      @Argument("amount") @Default("1") int amount,
       @Flag("i") boolean canDie) {
     if (!type.isAlive() || !type.isSpawnable()) {
       audience.sendWarning(text("That entity type can't be spawned!"));
@@ -138,9 +139,9 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod("clear")
+  @Command("clear")
   @CommandDescription("Remove your spawned mobs from the world")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void clear(CommandAudience audience, Player sender) {
     int mobsRemoved = mobs.remove(audience.getPlayer());
     audience.sendMessage(
@@ -152,9 +153,9 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod("tphere|tph")
+  @Command("tphere|tph")
   @CommandDescription("Bring all of your spawned mobs to your location")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void tphere(CommandAudience audience, Player sender) {
     int mobsTeleported = mobs.tphere(audience.getPlayer());
     audience.sendMessage(
@@ -166,9 +167,9 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod("heal")
+  @Command("heal")
   @CommandDescription("Replenish all spawned mobs health to their max value")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void heal(CommandAudience audience, Player sender) {
     int mobsHealed = mobs.heal(audience.getPlayer());
     audience.sendMessage(
@@ -180,10 +181,10 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod("attack [target]")
+  @Command("attack [target]")
   @CommandDescription(
       "Toggle whether hostile targeting is enabled. When provided a player will set the target")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void attack(CommandAudience audience, Player sender, @Argument("target") Player target) {
     if (target != null) {
       mobs.attack(sender, target);
@@ -207,9 +208,9 @@ public class MobCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod("follow")
+  @Command("follow")
   @CommandDescription("Toggle whether your spawned mobs are in follow mode or not")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void follow(CommandAudience audience, Player sender) {
     boolean following = mobs.toggleFollow(audience.getPlayer());
     audience.sendMessage(
@@ -224,9 +225,9 @@ public class MobCommand extends CommunityCommand {
             .build());
   }
 
-  @CommandMethod("speed <speed>")
+  @Command("speed <speed>")
   @CommandDescription("Set the global speed at which followed mobs travel towards their target")
-  @CommandPermission(CommunityPermissions.MOB_SPAWN)
+  @Permission(CommunityPermissions.MOB_SPAWN)
   public void speed(CommandAudience audience, @Argument("speed") float speed) {
     mobs.setSpeed(speed);
     audience.sendMessage(

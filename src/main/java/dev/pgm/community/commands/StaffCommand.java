@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class StaffCommand extends CommunityCommand {
 
-  @CommandMethod("staff|mods|admins|ops")
+  @Command("staff|mods|admins|ops")
   @CommandDescription("View a list of online staff members")
   public void staff(CommandAudience viewer) {
     List<Component> onlineStaff =

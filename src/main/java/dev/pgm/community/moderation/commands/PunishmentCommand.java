@@ -35,11 +35,12 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
@@ -57,12 +58,12 @@ public class PunishmentCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod("punishmenthistory|ph [page]")
+  @Command("punishmenthistory|ph [page]")
   @CommandDescription("View a list of recent punishments")
-  @CommandPermission(CommunityPermissions.PUNISH)
+  @Permission(CommunityPermissions.PUNISH)
   public void viewRecentPunishments(
       CommandAudience audience,
-      @Argument(value = "page", defaultValue = "1") int page,
+      @Argument("page") @Default("1") int page,
       @Flag(value = "time", aliases = "l") Duration length) {
     moderation
         .getRecentPunishments(length != null ? length : Duration.ofHours(1))
@@ -72,9 +73,9 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("repeatpunishment|rp <target>")
+  @Command("repeatpunishment|rp <target>")
   @CommandDescription("Repeat the last punishment you performed for another player")
-  @CommandPermission(CommunityPermissions.PUNISH)
+  @Permission(CommunityPermissions.PUNISH)
   public void repeatPunishment(CommandAudience audience, @Argument("target") Player target) {
     audience
         .getId()
@@ -116,9 +117,9 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("unban|pardon|forgive <target>")
+  @Command("unban|pardon|forgive <target>")
   @CommandDescription("Pardon all active punishments for a player")
-  @CommandPermission(CommunityPermissions.UNBAN)
+  @Permission(CommunityPermissions.UNBAN)
   public void unbanPlayer(CommandAudience audience, @Argument("target") TargetPlayer target) {
     moderation
         .isBanned(target.getIdentifier())
@@ -153,23 +154,21 @@ public class PunishmentCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("record|infractions|mypunishments [page]")
+  @Command("record|infractions|mypunishments [page]")
   @CommandDescription("View your own punishment history")
-  @CommandPermission(CommunityPermissions.LOOKUP)
+  @Permission(CommunityPermissions.LOOKUP)
   public void viewOwnPunishmentHistory(
-      CommandAudience audience,
-      Player player,
-      @Argument(value = "page", defaultValue = "1") int page) {
+      CommandAudience audience, Player player, @Argument("page") @Default("1") int page) {
     viewPunishmentHistory(audience, new TargetPlayer(player), page);
   }
 
-  @CommandMethod("lookup|l <target> [page]")
+  @Command("lookup|l <target> [page]")
   @CommandDescription("View infraction history of a player")
-  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
+  @Permission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewPunishmentHistory(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
-      @Argument(value = "page", defaultValue = "1") int page) {
+      @Argument("page") @Default("1") int page) {
     moderation
         .query(target.getIdentifier())
         .thenAcceptAsync(

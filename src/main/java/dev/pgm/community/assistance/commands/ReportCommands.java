@@ -27,13 +27,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Range;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Range;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
@@ -51,7 +52,7 @@ public class ReportCommands extends CommunityCommand {
     this.moderation = Community.get().getFeatures().getModeration();
   }
 
-  @CommandMethod("report <username> [reason]")
+  @Command("report <username> [reason]")
   @CommandDescription("Report a player who is breaking the rules")
   public void report(
       CommandAudience viewer,
@@ -78,12 +79,12 @@ public class ReportCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("reports|reporthistory|reps [page]")
+  @Command("reports|reporthistory|reps [page]")
   @CommandDescription("View report history")
-  @CommandPermission(CommunityPermissions.REPORTS)
+  @Permission(CommunityPermissions.REPORTS)
   public void recentReports(
       CommandAudience audience,
-      @Argument(value = "page", defaultValue = "1") @Range(min = "1") int page,
+      @Argument("page") @Default("1") @Range(min = "1") int page,
       @Flag(value = "player", aliases = "p") String player) {
     checkEnabled();
 

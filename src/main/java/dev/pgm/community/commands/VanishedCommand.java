@@ -11,17 +11,17 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import tc.oc.pgm.api.integration.Integration;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class VanishedCommand extends CommunityCommand {
-  @CommandMethod("vanished")
+  @Command("vanished")
   @CommandDescription("View a list of online vanished players")
-  @CommandPermission(CommunityPermissions.VIEW_VANISHED)
+  @Permission(CommunityPermissions.VIEW_VANISHED)
   public void viewVanished(CommandAudience viewer) {
     List<Component> vanishedNames =
         Bukkit.getOnlinePlayers().stream()

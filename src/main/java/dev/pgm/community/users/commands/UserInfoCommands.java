@@ -43,10 +43,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -63,9 +64,9 @@ public class UserInfoCommands extends CommunityCommand {
     this.friends = Community.get().getFeatures().getFriendships();
   }
 
-  @CommandMethod("seen|lastseen|find <target>")
+  @Command("seen|lastseen|find <target>")
   @CommandDescription("View when a player was last online")
-  @CommandPermission(CommunityPermissions.FIND)
+  @Permission(CommunityPermissions.FIND)
   public void seenPlayer(CommandAudience audience, @Argument("target") TargetPlayer target) {
     boolean staff = audience.hasPermission(CommunityPermissions.STAFF);
     boolean findAnyone = audience.hasPermission(CommunityPermissions.FIND_ANYONE);
@@ -118,9 +119,9 @@ public class UserInfoCommands extends CommunityCommand {
         });
   }
 
-  @CommandMethod("alts|alternateaccounts [target]")
+  @Command("alts|alternateaccounts [target]")
   @CommandDescription("View a list of alternate accounts of a player")
-  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
+  @Permission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewAlts(CommandAudience audience, @Argument("target") TargetPlayer target) {
     if (target == null) {
       showOnlineAlts(audience, 1);
@@ -218,13 +219,13 @@ public class UserInfoCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("profile|user <target> [all]")
+  @Command("profile|user <target> [all]")
   @CommandDescription("View account info for a player")
-  @CommandPermission(CommunityPermissions.LOOKUP_OTHERS)
+  @Permission(CommunityPermissions.LOOKUP_OTHERS)
   public void viewUserProfile(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
-      @Argument(value = "all", defaultValue = "false") boolean viewAll) {
+      @Argument("all") @Default("false") boolean viewAll) {
     users.findUserWithSession(
         target.getIdentifier(),
         false,

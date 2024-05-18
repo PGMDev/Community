@@ -1,7 +1,5 @@
 package dev.pgm.community.commands.graph;
 
-import static net.kyori.adventure.text.Component.text;
-
 import dev.pgm.community.Community;
 import dev.pgm.community.assistance.commands.PlayerHelpCommand;
 import dev.pgm.community.assistance.commands.ReportCommands;
@@ -42,7 +40,6 @@ import dev.pgm.community.requests.commands.TokenCommands;
 import dev.pgm.community.teleports.TeleportCommand;
 import dev.pgm.community.users.commands.UserInfoCommands;
 import dev.pgm.community.utils.CommandAudience;
-import java.util.concurrent.TimeUnit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -59,10 +56,8 @@ import tc.oc.pgm.command.parsers.MapInfoParser;
 import tc.oc.pgm.command.parsers.PartyParser;
 import tc.oc.pgm.command.parsers.PlayerParser;
 import tc.oc.pgm.command.util.CommandGraph;
-import tc.oc.pgm.lib.cloud.commandframework.arguments.standard.StringArgument;
-import tc.oc.pgm.lib.cloud.commandframework.extra.confirmation.CommandConfirmationManager;
-import tc.oc.pgm.lib.cloud.commandframework.meta.CommandMeta;
-import tc.oc.pgm.lib.cloud.commandframework.minecraft.extras.MinecraftHelp;
+import tc.oc.pgm.lib.org.incendo.cloud.minecraft.extras.MinecraftHelp;
+import tc.oc.pgm.lib.org.incendo.cloud.parser.standard.StringParser;
 import tc.oc.pgm.util.Audience;
 
 public class CommunityCommandGraph extends CommandGraph<Community> {
@@ -73,22 +68,7 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
 
   @Override
   protected MinecraftHelp<CommandSender> createHelp() {
-    return new MinecraftHelp<>("/community help", Audience::get, manager);
-  }
-
-  @Override
-  protected CommandConfirmationManager<CommandSender> createConfirmationManager() {
-    CommandConfirmationManager<CommandSender> ccm =
-        new CommandConfirmationManager<>(
-            30L,
-            TimeUnit.SECONDS,
-            context ->
-                Audience.get(context.getCommandContext().getSender())
-                    .sendWarning(text("Confirmation required. Confirm using /community confirm.")),
-            sender ->
-                Audience.get(sender).sendWarning(text("You don't have any pending commands.")));
-    ccm.registerConfirmationProcessor(this.manager);
-    return ccm;
+    return MinecraftHelp.create("/community help", manager, Audience::get);
   }
 
   @Override
@@ -177,23 +157,15 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     // Community plugin command
     register(new CommunityPluginCommand());
 
-    // Confirm command
-    manager.command(
-        manager
-            .commandBuilder("community")
-            .literal("confirm")
-            .meta(CommandMeta.DESCRIPTION, "Confirm a pending command")
-            .handler(this.confirmationManager.createConfirmationExecutionHandler()));
-
     // Help command
     manager.command(
         manager
             .commandBuilder("community")
             .literal("help")
-            .argument(StringArgument.optional("query", StringArgument.StringMode.GREEDY))
+            .optional("query", StringParser.greedyStringParser())
             .handler(
                 context ->
                     minecraftHelp.queryCommands(
-                        context.<String>getOptional("query").orElse(""), context.getSender())));
+                        context.<String>optional("query").orElse(""), context.sender())));
   }
 }

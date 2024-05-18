@@ -18,13 +18,14 @@ import java.time.Duration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 
-@CommandMethod("event")
+@Command("event")
 public class MapPartyCommands extends CommunityCommand {
 
   private final MapPartyFeature party;
@@ -33,7 +34,7 @@ public class MapPartyCommands extends CommunityCommand {
     this.party = Community.get().getFeatures().getParty();
   }
 
-  @CommandMethod("")
+  @Command("")
   public void menu(CommandAudience viewer, Player sender) {
     if (viewer.hasPermission(CommunityPermissions.PARTY)) {
       new MapPartyMainMenu(party, sender);
@@ -43,16 +44,16 @@ public class MapPartyCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("create [type]")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("create [type]")
+  @Permission(CommunityPermissions.PARTY)
   public void create(CommandAudience viewer, Player sender, @Argument("type") MapPartyType type) {
     if (!party.create(viewer, sender, type)) {
       viewer.sendWarning(MapPartyMessages.CREATION_ERROR);
     }
   }
 
-  @CommandMethod("preset [name]")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("preset [name]")
+  @Permission(CommunityPermissions.PARTY)
   public void createPreset(
       CommandAudience viewer, Player sender, @Argument("name") @Greedy String presetName) {
     if (party.getParty() != null) {
@@ -68,12 +69,12 @@ public class MapPartyCommands extends CommunityCommand {
     party.create(viewer, sender, preset);
   }
 
-  @CommandMethod("start [delayed]")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("start [delayed]")
+  @Permission(CommunityPermissions.PARTY)
   public void start(
       CommandAudience viewer,
       Player sender,
-      @Argument(value = "delayed", defaultValue = "false") boolean delayed) {
+      @Argument("delayed") @Default("false") boolean delayed) {
     if (isPartyMissing(viewer)) return;
 
     if (!party.start(sender, delayed)) {
@@ -81,80 +82,80 @@ public class MapPartyCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("stop")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("stop")
+  @Permission(CommunityPermissions.PARTY)
   public void stop(CommandAudience viewer) {
     if (!party.stop(viewer.getSender())) {
       viewer.sendWarning(MapPartyMessages.MISSING_ERROR);
     }
   }
 
-  @CommandMethod("restart")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("restart")
+  @Permission(CommunityPermissions.PARTY)
   public void restart(CommandAudience viewer) {
     if (!party.restart(viewer.getSender())) {
       viewer.sendWarning(MapPartyMessages.RESTART_ERROR);
     }
   }
 
-  @CommandMethod("setpool <pool>")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("setpool <pool>")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void setMapPool(CommandAudience viewer, @Argument("pool") @Greedy String pool) {
     party.setMapPool(viewer, pool);
   }
 
-  @CommandMethod("setname <name>")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("setname <name>")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void setPartyName(CommandAudience viewer, @Argument("name") @Greedy String name) {
     party.setName(viewer, name);
   }
 
-  @CommandMethod("setdesc <desc>")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("setdesc <desc>")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void setPartyDesc(CommandAudience viewer, @Argument("desc") @Greedy String description) {
     party.setDescription(viewer, description);
   }
 
-  @CommandMethod("timelimit <duration>")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("timelimit <duration>")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void setTimeLimit(CommandAudience viewer, @Argument("duration") Duration timeLimit) {
     party.setTimelimit(viewer, timeLimit);
   }
 
-  @CommandMethod("mode")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("mode")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void toggleMapPoolMode(CommandAudience viewer) {
     party.toggleMode(viewer);
   }
 
-  @CommandMethod("addmap <map>")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("addmap <map>")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void addMap(CommandAudience viewer, @Argument("map") @Greedy MapInfo map) {
     party.addMap(viewer, map);
   }
 
-  @CommandMethod("removemap <map>")
-  @CommandPermission(CommunityPermissions.PARTY_HOST)
+  @Command("removemap <map>")
+  @Permission(CommunityPermissions.PARTY_HOST)
   public void removeMap(CommandAudience viewer, @Argument("map") @Greedy MapInfo map) {
     party.removeMap(viewer, map);
   }
 
-  @CommandMethod("maps")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("maps")
+  @Permission(CommunityPermissions.PARTY)
   public void maps(CommandAudience viewer, Player sender) {
     if (isPartyMissing(viewer)) return;
     new MapMenu(party, sender);
   }
 
-  @CommandMethod("hosts")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("hosts")
+  @Permission(CommunityPermissions.PARTY)
   public void viewHosts(CommandAudience viewer, Player sender) {
     if (isPartyMissing(viewer)) return;
     new HostMenu(party, sender);
   }
 
-  @CommandMethod("hosts add <targets>")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("hosts add <targets>")
+  @Permission(CommunityPermissions.PARTY)
   public void addHost(CommandAudience viewer, @Argument("targets") String targets) {
     if (isPartyMissing(viewer)) return;
     MapPartyHosts hosts = party.getParty().getHosts();
@@ -176,8 +177,8 @@ public class MapPartyCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("hosts remove <target>")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("hosts remove <target>")
+  @Permission(CommunityPermissions.PARTY)
   public void removeHost(CommandAudience viewer, @Argument("target") TargetPlayer target) {
     if (isPartyMissing(viewer)) return;
     MapPartyHosts hosts = party.getParty().getHosts();
@@ -190,8 +191,8 @@ public class MapPartyCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("hosts transfer <target>")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("hosts transfer <target>")
+  @Permission(CommunityPermissions.PARTY)
   public void transferHost(CommandAudience viewer, @Argument("target") Player target) {
     if (isPartyMissing(viewer)) return;
 
@@ -214,15 +215,15 @@ public class MapPartyCommands extends CommunityCommand {
     party.getParty().getHosts().setMainHost(target);
   }
 
-  @CommandMethod("raindrops")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("raindrops")
+  @Permission(CommunityPermissions.PARTY)
   public void raindropMultiplier(CommandAudience viewer) {
     if (isPartyMissing(viewer)) return;
     party.toggleMultiplier(viewer);
   }
 
-  @CommandMethod("autoscaling <autoscale>")
-  @CommandPermission(CommunityPermissions.PARTY)
+  @Command("autoscaling <autoscale>")
+  @Permission(CommunityPermissions.PARTY)
   public void toggleAutoScale(CommandAudience viewer, @Argument("autoscale") boolean autoscaling) {
     if (isPartyMissing(viewer)) return;
     party.setAutoScale(viewer, autoscaling);

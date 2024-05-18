@@ -11,9 +11,9 @@ import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import net.kyori.adventure.text.format.NamedTextColor;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class CommunityPluginCommand extends CommunityCommand {
@@ -28,17 +28,17 @@ public class CommunityPluginCommand extends CommunityCommand {
     this.reports = Community.get().getFeatures().getReports();
   }
 
-  @CommandMethod("community reload")
+  @Command("community reload")
   @CommandDescription("Reload the plugin")
-  @CommandPermission(CommunityPermissions.RELOAD)
+  @Permission(CommunityPermissions.RELOAD)
   public void reload(CommandAudience audience) {
     Community.get().reload();
     audience.sendWarning(text("Community has been reloaded")); // TODO: translate
   }
 
-  @CommandMethod("community stats")
+  @Command("community stats")
   @CommandDescription("View database stats")
-  @CommandPermission(CommunityPermissions.RELOAD)
+  @Permission(CommunityPermissions.RELOAD)
   public void stats(CommandAudience audience) {
     audience.sendMessage(
         TextFormatter.horizontalLineHeading(

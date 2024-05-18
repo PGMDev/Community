@@ -12,10 +12,10 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.party.Party;
 import tc.oc.pgm.api.player.MatchPlayer;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.text.TextException;
 
 public class TeleportCommand extends CommunityCommand {
@@ -26,17 +26,17 @@ public class TeleportCommand extends CommunityCommand {
     this.teleport = Community.get().getFeatures().getTeleports();
   }
 
-  @CommandMethod("tp|teleport <target>")
+  @Command("tp|teleport <target>")
   @CommandDescription("Teleport to another player")
-  @CommandPermission(CommunityPermissions.TELEPORT)
+  @Permission(CommunityPermissions.TELEPORT)
   public void teleportCommand(
       CommandAudience viewer, Player sender, @Argument("target") Player target) {
     teleport.teleport(viewer, sender, target);
   }
 
-  @CommandMethod("tpall|tpa <target>")
+  @Command("tpall|tpa <target>")
   @CommandDescription("Teleport all players to the target player")
-  @CommandPermission(CommunityPermissions.TELEPORT_ALL)
+  @Permission(CommunityPermissions.TELEPORT_ALL)
   public void teleportAll(CommandAudience viewer, @Argument("target") Player target) {
     PlayerSelection selection = getPlayers(viewer, "*");
 
@@ -48,9 +48,9 @@ public class TeleportCommand extends CommunityCommand {
     teleport.teleport(viewer, selection.getPlayers(), target, selection.getText());
   }
 
-  @CommandMethod("tpteam <team> <target>")
+  @Command("tpteam <team> <target>")
   @CommandDescription("Teleport all players on the given team to the target player")
-  @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
+  @Permission(CommunityPermissions.TELEPORT_OTHERS)
   public void teleportTeam(
       CommandAudience viewer, @Argument("team") Party team, @Argument("target") Player target) {
     Set<Player> players =
@@ -65,17 +65,17 @@ public class TeleportCommand extends CommunityCommand {
     teleport.teleport(viewer, players, target, team.getName());
   }
 
-  @CommandMethod("tphere|bring|tph <target>")
+  @Command("tphere|bring|tph <target>")
   @CommandDescription("Teleport players to you")
-  @CommandPermission(CommunityPermissions.TELEPORT_OTHERS)
+  @Permission(CommunityPermissions.TELEPORT_OTHERS)
   public void teleportHereCommand(
       CommandAudience viewer, Player sender, @Argument("target") Player target) {
     teleportCommand(viewer, target, sender);
   }
 
-  @CommandMethod("tplocation|tpl|tploc <coords> [target]")
+  @Command("tplocation|tpl|tploc <coords> [target]")
   @CommandDescription("Teleport to specific coordinates")
-  @CommandPermission(CommunityPermissions.TELEPORT_LOCATION)
+  @Permission(CommunityPermissions.TELEPORT_LOCATION)
   public void teleportLocation(
       CommandAudience viewer,
       @Argument("coords") Location location,

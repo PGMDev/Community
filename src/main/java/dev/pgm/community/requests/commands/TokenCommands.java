@@ -20,14 +20,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
-@CommandMethod("tokens|sponsortokens|token")
+@Command("tokens|sponsortokens|token")
 public class TokenCommands extends CommunityCommand {
 
   private final UsersFeature users;
@@ -38,9 +38,9 @@ public class TokenCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod("[target]")
+  @Command("[target]")
   @CommandDescription("Check your token balance")
-  public void tokens(CommandAudience audience, @Argument(value = "target") TargetPlayer target) {
+  public void tokens(CommandAudience audience, @Argument("target") TargetPlayer target) {
     if (target != null && audience.hasPermission(CommunityPermissions.TOKEN_BALANCE)) {
       getTarget(target.getIdentifier(), users)
           .thenAcceptAsync(
@@ -73,9 +73,9 @@ public class TokenCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("give <target> <amount>")
+  @Command("give <target> <amount>")
   @CommandDescription("Give the targeted player sponsor tokens")
-  @CommandPermission(CommunityPermissions.ADMIN)
+  @Permission(CommunityPermissions.ADMIN)
   public void give(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,

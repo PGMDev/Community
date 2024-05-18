@@ -10,12 +10,12 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
 import java.time.Duration;
 import org.bukkit.Bukkit;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.FlagYielding;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.FlagYielding;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 public class BanCommand extends CommunityCommand {
 
@@ -27,9 +27,9 @@ public class BanCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod("ban <target> <reason>")
+  @Command("ban <target> <reason>")
   @CommandDescription("Issue a ban punishment")
-  @CommandPermission(CommunityPermissions.BAN)
+  @Permission(CommunityPermissions.BAN)
   public void ban(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
@@ -43,9 +43,9 @@ public class BanCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod("permban|pb <target> <reason>")
+  @Command("permban|pb <target> <reason>")
   @CommandDescription("Permanently ban a player from the server")
-  @CommandPermission(CommunityPermissions.BAN)
+  @Permission(CommunityPermissions.BAN)
   public void permBan(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
@@ -69,9 +69,9 @@ public class BanCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("tempban|tb <target> <time> <reason>")
+  @Command("tempban|tb <target> <time> <reason>")
   @CommandDescription("Temporarily ban a player from the server")
-  @CommandPermission(CommunityPermissions.BAN)
+  @Permission(CommunityPermissions.BAN)
   public void tempBan(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
@@ -96,9 +96,9 @@ public class BanCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("nameban|nb <target>")
+  @Command("nameban|nb <target>")
   @CommandDescription("Ban a player based on their username. Auto unbans if name changes")
-  @CommandPermission(CommunityPermissions.BAN)
+  @Permission(CommunityPermissions.BAN)
   public void nameBan(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,

@@ -8,17 +8,17 @@ import dev.pgm.community.commands.player.TargetPlayer;
 import dev.pgm.community.utils.CommandAudience;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.Audience;
 
 public class FlightCommand extends CommunityCommand {
 
-  @CommandMethod("fly|flight [target]")
+  @Command("fly|flight [target]")
   @CommandDescription("Toggle flight mode for yourself or other players")
-  @CommandPermission(CommunityPermissions.FLIGHT)
+  @Permission(CommunityPermissions.FLIGHT)
   public void fly(CommandAudience sender, @Argument("target") TargetPlayer target) {
     if (sender.isPlayer() && target == null) {
       toggleFlight(sender.getPlayer());
@@ -38,9 +38,9 @@ public class FlightCommand extends CommunityCommand {
     }
   }
 
-  @CommandMethod("flyspeed [speed]")
+  @Command("flyspeed [speed]")
   @CommandDescription("Adjust your flight speed")
-  @CommandPermission(CommunityPermissions.FLIGHT_SPEED)
+  @Permission(CommunityPermissions.FLIGHT_SPEED)
   public void flySpeed(CommandAudience audience, Player player, @Argument("speed") Float speed) {
     if (speed == null) {
       audience.sendMessage(

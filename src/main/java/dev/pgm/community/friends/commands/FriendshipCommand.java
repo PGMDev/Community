@@ -40,16 +40,17 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandMethod("friend|friendship|fs|friends")
+@Command("friend|friendship|fs|friends")
 public class FriendshipCommand extends CommunityCommand {
 
   private final FriendshipFeature friends;
@@ -62,13 +63,11 @@ public class FriendshipCommand extends CommunityCommand {
     this.nicks = Community.get().getFeatures().getNick();
   }
 
-  @CommandMethod("[page]")
+  @Command("[page]")
   @CommandDescription("View a list of your friends")
-  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  @Permission(CommunityPermissions.FRIENDSHIP)
   public void list(
-      CommandAudience sender,
-      Player player,
-      @Argument(value = "page", defaultValue = "1") int page) {
+      CommandAudience sender, Player player, @Argument("page") @Default("1") int page) {
     friends
         .getFriends(sender.getPlayer().getUniqueId())
         .thenAcceptAsync(
@@ -77,13 +76,11 @@ public class FriendshipCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("requests [page]")
+  @Command("requests [page]")
   @CommandDescription("View a list of your pending friend requests")
-  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  @Permission(CommunityPermissions.FRIENDSHIP)
   public void requests(
-      CommandAudience sender,
-      Player player,
-      @Argument(value = "page", defaultValue = "1") int page) {
+      CommandAudience sender, Player player, @Argument("page") @Default("1") int page) {
     friends
         .getIncomingRequests(sender.getPlayer().getUniqueId())
         .thenAcceptAsync(
@@ -92,9 +89,9 @@ public class FriendshipCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("add <player>")
+  @Command("add <player>")
   @CommandDescription("Sends a friend request to another player")
-  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  @Permission(CommunityPermissions.FRIENDSHIP)
   public void add(CommandAudience sender, Player player, @Argument("player") TargetPlayer target) {
     // Handle disguised players with fake requests
     Player nicked = nicks.getPlayerFromNick(target.getIdentifier());
@@ -177,9 +174,9 @@ public class FriendshipCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("remove <player>")
+  @Command("remove <player>")
   @CommandDescription("Unfriend the input user")
-  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  @Permission(CommunityPermissions.FRIENDSHIP)
   public void remove(
       CommandAudience sender, Player player, @Argument("player") TargetPlayer target) {
     getTarget(target.getIdentifier(), users)
@@ -221,9 +218,9 @@ public class FriendshipCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("accept <username>")
+  @Command("accept <username>")
   @CommandDescription("Accept an incoming friend request")
-  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  @Permission(CommunityPermissions.FRIENDSHIP)
   public void acceptRequest(
       CommandAudience sender, Player player, @Argument("username") String target) {
     getTarget(target, users)
@@ -282,8 +279,8 @@ public class FriendshipCommand extends CommunityCommand {
             });
   }
 
-  @CommandMethod("reject <player>")
-  @CommandPermission(CommunityPermissions.FRIENDSHIP)
+  @Command("reject <player>")
+  @Permission(CommunityPermissions.FRIENDSHIP)
   public void rejectRequest(
       CommandAudience sender, Player player, @Argument("player") TargetPlayer target) {
     getTarget(target.getIdentifier(), users)

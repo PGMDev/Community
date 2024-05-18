@@ -8,12 +8,12 @@ import dev.pgm.community.moderation.feature.ModerationFeature;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.CommandAudience;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.FlagYielding;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.FlagYielding;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 public class KickCommand extends CommunityCommand {
 
@@ -25,9 +25,9 @@ public class KickCommand extends CommunityCommand {
     this.usernames = Community.get().getFeatures().getUsers();
   }
 
-  @CommandMethod("kick|k <target> <reason>")
+  @Command("kick|k <target> <reason>")
   @CommandDescription("Kick a player from the server")
-  @CommandPermission(CommunityPermissions.KICK)
+  @Permission(CommunityPermissions.KICK)
   public void kick(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,

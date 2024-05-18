@@ -44,20 +44,21 @@ import tc.oc.pgm.api.map.Contributor;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapTag;
 import tc.oc.pgm.api.map.Phase;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.specifier.Greedy;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.suggestions.Suggestions;
-import tc.oc.pgm.lib.cloud.commandframework.context.CommandContext;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.suggestion.Suggestions;
+import tc.oc.pgm.lib.org.incendo.cloud.context.CommandContext;
 import tc.oc.pgm.util.LiquidMetal;
 import tc.oc.pgm.util.StringUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 
-@CommandMethod("sponsor")
+@Command("sponsor")
 public class SponsorCommands extends CommunityCommand {
 
   private final RequestFeature requests;
@@ -66,7 +67,7 @@ public class SponsorCommands extends CommunityCommand {
     this.requests = Community.get().getFeatures().getRequests();
   }
 
-  @CommandMethod("")
+  @Command("")
   public void info(CommandAudience audience, Player player) {
     Component header =
         TextFormatter.horizontalLineHeading(
@@ -206,14 +207,14 @@ public class SponsorCommands extends CommunityCommand {
             });
   }
 
-  @CommandMethod("request <map>")
+  @Command("request <map>")
   @CommandDescription("Sponsor a map request")
   public void sponsor(
       CommandAudience audience, Player sender, @Argument("map") @Greedy MapInfo map) {
     requests.sponsor(sender, map);
   }
 
-  @CommandMethod("cancel")
+  @Command("cancel")
   public void cancel(CommandAudience audience, Player sender) {
     if (requests.cancelSponsorRequest(sender.getUniqueId())) {
       audience.sendMessage(text("Removed sponsor request!", NamedTextColor.GREEN));
@@ -222,16 +223,16 @@ public class SponsorCommands extends CommunityCommand {
     }
   }
 
-  @CommandMethod("menu")
+  @Command("menu")
   public void menu(CommandAudience audience, Player sender) {
     requests.openMenu(sender);
   }
 
-  @CommandMethod("maps [page]")
+  @Command("maps [page]")
   @CommandDescription("View a list of maps which can be sponsored")
   public void viewMapList(
       CommandAudience audience,
-      @Argument(value = "page", defaultValue = "1") int page,
+      @Argument("page") @Default("1") int page,
       @Flag(value = "tags", aliases = "t", repeatable = true, suggestions = "maptags")
           List<String> tags,
       @Flag(value = "author", aliases = "a") String author,
@@ -379,10 +380,9 @@ public class SponsorCommands extends CommunityCommand {
     return false;
   }
 
-  @CommandMethod("queue [page]")
+  @Command("queue [page]")
   @CommandDescription("View the sponsored maps queue")
-  public void viewQueue(
-      CommandAudience audience, @Argument(value = "page", defaultValue = "1") int page) {
+  public void viewQueue(CommandAudience audience, @Argument("page") @Default("1") int page) {
     Queue<SponsorRequest> queue = requests.getSponsorQueue();
 
     int resultsPerPage = ((RequestConfig) requests.getConfig()).getMaxQueue();

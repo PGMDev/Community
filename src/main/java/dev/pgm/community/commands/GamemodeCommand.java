@@ -10,17 +10,17 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Argument;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandDescription;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandMethod;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.CommandPermission;
-import tc.oc.pgm.lib.cloud.commandframework.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 public class GamemodeCommand extends CommunityCommand {
 
-  @CommandMethod("gamemode|gm [gamemode] [target]")
+  @Command("gamemode|gm [gamemode] [target]")
   @CommandDescription("Adjust your or another player's gamemode")
-  @CommandPermission(CommunityPermissions.GAMEMODE)
+  @Permission(CommunityPermissions.GAMEMODE)
   public void gamemode(
       CommandAudience viewer,
       @Argument("gamemode") GameMode gamemode,
