@@ -101,7 +101,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     this.sponsors = Lists.newLinkedList();
     this.currentSponsor = null;
     this.bookCreator = new SponsorVotingBookCreator(this);
-    this.accepting = true;
 
     if (getConfig().isEnabled() && PGMUtils.isPGMEnabled()) {
       enable();
