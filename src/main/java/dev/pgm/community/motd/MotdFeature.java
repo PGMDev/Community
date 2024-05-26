@@ -6,7 +6,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
-import tc.oc.pgm.util.bukkit.BukkitUtils;
+import tc.oc.pgm.util.Audience;
 
 /** MotdFeature - Displays a configurable message at login * */
 public class MotdFeature extends FeatureBase {
@@ -25,8 +25,7 @@ public class MotdFeature extends FeatureBase {
   @EventHandler(priority = EventPriority.LOW)
   public void onPlayerJoin(PlayerJoinEvent event) {
     if (getMotdConfig().getLines().isEmpty()) return;
-    for (String line : getMotdConfig().getLines()) {
-      event.getPlayer().sendMessage(BukkitUtils.colorize(line));
-    }
+    Audience audience = Audience.get(event.getPlayer());
+    getMotdConfig().getLines().forEach(audience::sendMessage);
   }
 }

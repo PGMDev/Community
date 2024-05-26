@@ -1,8 +1,13 @@
 package dev.pgm.community.broadcast;
 
+import static tc.oc.pgm.util.text.TextParser.parseComponent;
+
 import dev.pgm.community.feature.config.FeatureConfigImpl;
 import java.util.List;
+import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.Configuration;
+import tc.oc.pgm.util.text.TextParser;
 
 public class BroadcastConfig extends FeatureConfigImpl {
 
@@ -15,8 +20,8 @@ public class BroadcastConfig extends FeatureConfigImpl {
 
   private boolean announceEnabled;
   private int announceDelay;
-  private String announcePrefix;
-  private List<String> announceMessages;
+  private Component announcePrefix;
+  private List<Component> announceMessages;
 
   public BroadcastConfig(Configuration config) {
     super(KEY, config);
@@ -42,11 +47,11 @@ public class BroadcastConfig extends FeatureConfigImpl {
     return announceDelay;
   }
 
-  public String getAnnouncePrefix() {
+  public Component getAnnouncePrefix() {
     return announcePrefix;
   }
 
-  public List<String> getAnnounceMessages() {
+  public List<Component> getAnnounceMessages() {
     return announceMessages;
   }
 
@@ -63,7 +68,10 @@ public class BroadcastConfig extends FeatureConfigImpl {
 
     this.announceEnabled = config.getBoolean(getAnnounceKey() + ".enabled");
     this.announceDelay = config.getInt(getAnnounceKey() + ".delay-seconds");
-    this.announcePrefix = config.getString(getAnnounceKey() + ".prefix");
-    this.announceMessages = config.getStringList(getAnnounceKey() + ".messages");
+    this.announcePrefix = parseComponent(config.getString(getAnnounceKey() + ".prefix"));
+    this.announceMessages =
+        config.getStringList(getAnnounceKey() + ".messages").stream()
+            .map(TextParser::parseComponent)
+            .collect(Collectors.toList());
   }
 }

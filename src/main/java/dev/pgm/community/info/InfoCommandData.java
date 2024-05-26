@@ -3,10 +3,12 @@ package dev.pgm.community.info;
 import static net.kyori.adventure.text.Component.text;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import tc.oc.pgm.util.Audience;
-import tc.oc.pgm.util.bukkit.BukkitUtils;
+import tc.oc.pgm.util.text.TextParser;
 
 public class InfoCommandData {
 
@@ -14,10 +16,10 @@ public class InfoCommandData {
   private static final String PERMISSION_KEY = "permission";
 
   private String name;
-  private List<String> lines;
+  private List<Component> lines;
   private String permission;
 
-  public InfoCommandData(String name, List<String> lines, String permission) {
+  public InfoCommandData(String name, List<Component> lines, String permission) {
     this.name = name;
     this.lines = lines;
     this.permission = permission;
@@ -25,14 +27,18 @@ public class InfoCommandData {
 
   public static InfoCommandData of(ConfigurationSection section) {
     return new InfoCommandData(
-        section.getName(), section.getStringList(LINES_KEY), section.getString(PERMISSION_KEY));
+        section.getName(),
+        section.getStringList(LINES_KEY).stream()
+            .map(TextParser::parseComponent)
+            .collect(Collectors.toList()),
+        section.getString(PERMISSION_KEY));
   }
 
   public String getName() {
     return name;
   }
 
-  public List<String> getLines() {
+  public List<Component> getLines() {
     return lines;
   }
 
@@ -50,9 +56,6 @@ public class InfoCommandData {
       }
     }
 
-    getLines().stream()
-        .map(BukkitUtils::colorize)
-        .map(msg -> text(msg))
-        .forEach(viewer::sendMessage);
+    getLines().forEach(viewer::sendMessage);
   }
 }

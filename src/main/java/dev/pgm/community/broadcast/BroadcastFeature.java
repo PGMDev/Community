@@ -55,14 +55,13 @@ public class BroadcastFeature extends FeatureBase {
     if (!getBroadcastConfig().isAnnounceEnabled()) return;
     if (getBroadcastConfig().getAnnounceMessages().isEmpty()) return;
     Duration timeSince = Duration.between(lastAnnounce, Instant.now());
-    List<String> messages = getBroadcastConfig().getAnnounceMessages();
+    List<Component> messages = getBroadcastConfig().getAnnounceMessages();
 
     if (timeSince.getSeconds() > getBroadcastConfig().getAnnounceDelay()) {
       if (lastAnnounceIndex >= messages.size()) lastAnnounceIndex = 0;
-      String msg = messages.get(lastAnnounceIndex);
-      Component prefix = text(colorize(getBroadcastConfig().getAnnouncePrefix()));
-      Component message = text(colorize(msg));
-      BroadcastUtils.sendGlobalMessage(text().append(prefix).append(message).build());
+      Component prefix = getBroadcastConfig().getAnnouncePrefix();
+      BroadcastUtils.sendGlobalMessage(
+          text().append(prefix).append(messages.get(lastAnnounceIndex)).build());
       lastAnnounceIndex++;
       lastAnnounce = Instant.now();
     }
