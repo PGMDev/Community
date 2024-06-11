@@ -17,13 +17,6 @@
 
     <repositories>
         <repository>
-            <id>pgm-github</id>
-            <url>https://maven.pkg.github.com/PGMDev/PGM</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>pgm.fyi</id>
             <url>https://repo.pgm.fyi/snapshots</url>
         </repository>
