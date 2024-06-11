@@ -66,8 +66,7 @@ public class ArrowTrailMutation extends MutationBase {
               } else {
                 Color color =
                     projectile.hasMetadata(TRAIL_META)
-                        ? (Color)
-                            MetadataUtils.getMetadata(projectile, TRAIL_META, PGM.get()).value()
+                        ? (Color) MetadataUtils.getMetadataValue(projectile, TRAIL_META, PGM.get())
                         : null;
 
                 for (MatchPlayer player : match.getPlayers()) {
@@ -115,7 +114,7 @@ public class ArrowTrailMutation extends MutationBase {
     if (projectile instanceof Arrow) {
       final Arrow arrow = (Arrow) projectile;
       if (arrow.hasMetadata(CRITICAL_META)) {
-        return MetadataUtils.getMetadata(projectile, CRITICAL_META, PGM.get()).asBoolean();
+        return MetadataUtils.getMetadataValue(projectile, CRITICAL_META, PGM.get());
       }
     }
     return false;
@@ -153,7 +152,7 @@ public class ArrowTrailMutation extends MutationBase {
       if (projectile instanceof Arrow) {
         final Arrow arrow = (Arrow) projectile;
         if (arrow.hasMetadata(CRITICAL_META)) {
-          arrow.setCritical(MetadataUtils.getMetadata(arrow, CRITICAL_META, PGM.get()).asBoolean());
+          arrow.setCritical(MetadataUtils.getMetadataValue(arrow, CRITICAL_META, PGM.get()));
         }
       }
     }
