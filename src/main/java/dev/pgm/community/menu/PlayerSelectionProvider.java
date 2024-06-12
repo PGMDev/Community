@@ -1,6 +1,8 @@
 package dev.pgm.community.menu;
 
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
+import static tc.oc.pgm.util.nms.NMSHacks.NMS_HACKS;
+import static tc.oc.pgm.util.nms.PlayerUtils.PLAYER_UTILS;
 
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
@@ -20,7 +22,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import tc.oc.pgm.util.nms.NMSHacks;
 
 public abstract class PlayerSelectionProvider implements InventoryProvider {
 
@@ -111,8 +112,8 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
     SkullMeta meta = (SkullMeta) head.getItemMeta();
     meta.setDisplayName(player.getDisplayName());
     meta.setLore(getPlayerLore(viewer, player));
-    NMSHacks.setSkullMetaOwner(
-        meta, player.getName(), player.getUniqueId(), NMSHacks.getPlayerSkin(player));
+    NMS_HACKS.setSkullMetaOwner(
+        meta, player.getName(), player.getUniqueId(), PLAYER_UTILS.getPlayerSkin(player));
     head.setItemMeta(meta);
     return head;
   }

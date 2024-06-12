@@ -2,6 +2,7 @@ package dev.pgm.community.party.menu;
 
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
+import static tc.oc.pgm.util.nms.NMSHacks.NMS_HACKS;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
@@ -22,7 +23,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.inventory.ItemBuilder;
-import tc.oc.pgm.util.nms.NMSHacks;
 import tc.oc.pgm.util.skin.Skin;
 
 public abstract class MapPartyMenu implements InventoryProvider {
@@ -146,7 +146,7 @@ public abstract class MapPartyMenu implements InventoryProvider {
     SkullMeta meta = (SkullMeta) head.getItemMeta();
     meta.setDisplayName(displayName);
     meta.setLore(lore);
-    NMSHacks.setSkullMetaOwner(meta, name, playerId, skin);
+    NMS_HACKS.setSkullMetaOwner(meta, name, playerId, skin);
     head.setItemMeta(meta);
     return head;
   }

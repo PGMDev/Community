@@ -1,6 +1,7 @@
 package dev.pgm.community.party.hosts;
 
 import static net.kyori.adventure.text.Component.text;
+import static tc.oc.pgm.util.nms.PlayerUtils.PLAYER_UTILS;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -21,7 +22,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.nms.NMSHacks;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.skin.Skin;
 
@@ -145,7 +145,7 @@ public class MapPartyHosts {
 
   private void cachePlayerInfo(Player player) {
     this.nameCache.put(player.getUniqueId(), player.getName());
-    this.skinCache.put(player.getUniqueId(), NMSHacks.getPlayerSkin(player));
+    this.skinCache.put(player.getUniqueId(), PLAYER_UTILS.getPlayerSkin(player));
   }
 
   private void invalidatePlayer(UUID playerId) {
