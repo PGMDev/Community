@@ -26,7 +26,6 @@ public enum MutationType {
   GHOST("Ghost", "Everyone turns invisible", Material.GLASS),
   STORM("Storm", "Stormy weather with lots of lightning", Material.WATER_BUCKET),
   FRIENDLY("Friendly Fire", "Kill whoever you like", Material.ROTTEN_FLESH),
-  ARROW_TRAIL("Arrow Trail", "Particle effects follow projectiles", Material.ARROW),
   ENDERPEARL("Enderpearl", "All projectiles are enderpearls", Material.ENDER_PEARL),
   BLOCK_DECAY("Block Decay", "Blocks placed decay after some time", Material.SOUL_SAND),
   KNOCKBACK("Knockback", "Knockback applied to everything", Material.FISHING_ROD),

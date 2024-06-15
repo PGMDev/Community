@@ -12,7 +12,6 @@ import dev.pgm.community.mutations.MutationConfig;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.menu.MutationOptionsMenu;
 import dev.pgm.community.mutations.menu.MutationToggleMenu;
-import dev.pgm.community.mutations.types.arrows.ArrowTrailMutation;
 import dev.pgm.community.mutations.types.arrows.EnderpearlMutation;
 import dev.pgm.community.mutations.types.arrows.FireballBowMutation;
 import dev.pgm.community.mutations.types.arrows.TNTBowMutation;
@@ -185,8 +184,6 @@ public class MutationFeature extends FeatureBase {
         return new StormMutation(getMatch());
       case FRIENDLY:
         return new FriendlyFireMutation(getMatch());
-      case ARROW_TRAIL:
-        return new ArrowTrailMutation(getMatch());
       case ENDERPEARL:
         return new EnderpearlMutation(getMatch());
       case BLOCK_DECAY:
