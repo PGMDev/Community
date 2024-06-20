@@ -2,21 +2,20 @@ package dev.pgm.community.moderation.punishments.types;
 
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
-import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 public class KickPunishment extends Punishment {
 
   public KickPunishment(
       UUID id,
       UUID targetId,
-      Optional<UUID> issuerId,
+      @Nullable UUID issuerId,
       String reason,
-      Instant timeIssued,
+      long timeIssued,
       boolean active,
-      Instant lastUpdated,
-      Optional<UUID> lastUpdatedBy,
+      long lastUpdated,
+      @Nullable UUID lastUpdatedBy,
       String service) {
     super(
         PunishmentType.KICK,

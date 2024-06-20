@@ -138,11 +138,11 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
             target,
             getSenderId(issuer.getSender()),
             reason,
-            time,
+            time.toEpochMilli(),
             duration,
             type,
             active,
-            time,
+            time.toEpochMilli(),
             getSenderId(issuer.getSender()),
             getModerationConfig().getService());
     Bukkit.getPluginManager().callEvent(new PlayerPunishmentEvent(issuer, punishment, silent));
@@ -157,7 +157,7 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   @Override
   public Optional<Punishment> getLastPunishment(UUID issuer) {
     return recents.stream()
-        .filter(p -> p.getIssuerId().isPresent() && p.getIssuerId().get().equals(issuer))
+        .filter(p -> !p.isConsole() && p.getIssuerId().equals(issuer))
         .sorted()
         .findFirst();
   }
@@ -343,8 +343,12 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
   }
 
   // ETC.
-  private Optional<UUID> getSenderId(CommandSender sender) {
-    return Optional.ofNullable(sender instanceof Player ? ((Player) sender).getUniqueId() : null);
+  @Nullable
+  private UUID getSenderId(CommandSender sender) {
+    if (!(sender instanceof Player)) return null;
+
+    Player player = (Player) sender;
+    return player.getUniqueId();
   }
 
   private Optional<UUID> isBanEvasion(String address) {

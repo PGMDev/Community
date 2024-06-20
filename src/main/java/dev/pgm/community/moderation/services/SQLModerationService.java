@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 
 public class SQLModerationService extends SQLFeatureBase<Punishment, String>
     implements ModerationQuery {
@@ -85,12 +86,10 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
                     String type = row.getString("type");
                     long time = Long.parseLong(row.getString("time"));
                     long expires = Long.parseLong(row.getString("expires"));
-                    Instant timeIssued = Instant.ofEpochMilli(time);
                     Duration length =
                         Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
                     boolean active = row.get("active");
                     long lastUpdateTime = Long.parseLong(row.getString("last_updated"));
-                    Instant lastUpdate = Instant.ofEpochMilli(lastUpdateTime);
                     String lastUpdateBy = row.getString("updated_by");
                     String service = row.getString("service");
 
@@ -102,11 +101,11 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
                                 playerId,
                                 parseIssuer(issuer),
                                 reason,
-                                timeIssued,
+                                time,
                                 length,
                                 PunishmentType.valueOf(type.toUpperCase()),
                                 active,
-                                lastUpdate,
+                                lastUpdateTime,
                                 parseIssuer(lastUpdateBy),
                                 service));
                   }
@@ -143,16 +142,16 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
     return data.equalsIgnoreCase(CONSOLE_DB_NAME);
   }
 
-  private Optional<UUID> parseIssuer(String issuer) {
-    if (isConsole(issuer)) return Optional.empty();
-    return Optional.of(UUID.fromString(issuer));
+  private UUID parseIssuer(String issuer) {
+    if (isConsole(issuer)) return null;
+    return UUID.fromString(issuer);
   }
 
-  private String convertIssuer(Optional<UUID> issuer) {
-    return issuer.isPresent() ? issuer.get().toString() : CONSOLE_DB_NAME;
+  private String convertIssuer(@Nullable UUID issuer) {
+    return issuer != null ? issuer.toString() : CONSOLE_DB_NAME;
   }
 
-  public CompletableFuture<Boolean> pardon(UUID id, Optional<UUID> issuer) {
+  public CompletableFuture<Boolean> pardon(UUID id, @Nullable UUID issuer) {
     punishmentCache.invalidate(id);
     return DB.executeUpdateAsync(
             PARDON_QUERY + MULTI_PARDON_TYPE,
@@ -178,7 +177,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
         .thenApplyAsync(result -> result != 0);
   }
 
-  public CompletableFuture<Boolean> unmute(UUID id, Optional<UUID> issuer) {
+  public CompletableFuture<Boolean> unmute(UUID id, @Nullable UUID issuer) {
     punishmentCache.invalidate(id);
 
     return DB.executeUpdateAsync(
@@ -247,12 +246,10 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
                   String type = row.getString("type");
                   long time = Long.parseLong(row.getString("time"));
                   long expires = Long.parseLong(row.getString("expires"));
-                  Instant timeIssued = Instant.ofEpochMilli(time);
                   Duration length =
                       Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
                   boolean active = row.get("active");
                   long lastUpdateTime = Long.parseLong(row.getString("last_updated"));
-                  Instant lastUpdate = Instant.ofEpochMilli(lastUpdateTime);
                   String lastUpdateBy = row.getString("updated_by");
                   String service = row.getString("service");
                   punishments.add(
@@ -261,11 +258,11 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
                           UUID.fromString(target),
                           parseIssuer(issuer),
                           reason,
-                          timeIssued,
+                          time,
                           length,
                           PunishmentType.valueOf(type.toUpperCase()),
                           active,
-                          lastUpdate,
+                          lastUpdateTime,
                           parseIssuer(lastUpdateBy),
                           service));
                 }

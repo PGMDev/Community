@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
@@ -96,7 +97,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
-  public CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer) {
+  public CompletableFuture<Boolean> pardon(String target, @Nullable UUID issuer) {
     CompletableFuture<Optional<UUID>> playerId =
         NameUtils.isMinecraftName(target)
             ? getUsers().getStoredId(target)
@@ -179,7 +180,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
         if (punishment.getType() == PunishmentType.NAME_BAN) {
           String bannedName = punishment.getReason();
           if (!event.getName().equalsIgnoreCase(bannedName)) {
-            pardon(punishment.getTargetId().toString(), Optional.empty());
+            pardon(punishment.getTargetId().toString(), null);
             event.setLoginResult(Result.ALLOWED);
             logger.info(
                 String.format(
@@ -305,7 +306,7 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   }
 
   @Override
-  public CompletableFuture<Boolean> unmute(UUID id, Optional<UUID> issuer) {
+  public CompletableFuture<Boolean> unmute(UUID id, @Nullable UUID issuer) {
     return service
         .unmute(id, issuer)
         .thenApplyAsync(

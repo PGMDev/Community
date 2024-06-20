@@ -127,7 +127,7 @@ public class PunishmentCommand extends CommunityCommand {
             isBanned -> {
               if (isBanned) {
                 moderation
-                    .pardon(target.getIdentifier(), audience.getId())
+                    .pardon(target.getIdentifier(), audience.getId().orElse(null))
                     .thenAcceptAsync(
                         pardon -> {
                           if (!pardon) {

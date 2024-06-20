@@ -1,6 +1,7 @@
 package dev.pgm.community.network.updates;
 
 import com.google.gson.Gson;
+import dev.pgm.community.utils.gson.GsonProvider;
 
 public abstract class NetworkUpdateBase<T> implements NetworkUpdate {
 
@@ -11,7 +12,7 @@ public abstract class NetworkUpdateBase<T> implements NetworkUpdate {
   public NetworkUpdateBase(T item, String channel) {
     this.item = item;
     this.channel = channel;
-    this.gson = new Gson();
+    this.gson = GsonProvider.get();
   }
 
   @Override

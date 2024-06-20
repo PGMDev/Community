@@ -86,7 +86,7 @@ public class MuteCommand extends CommunityCommand {
                                   name -> {
                                     if (isMuted.isPresent()) {
                                       moderation
-                                          .unmute(id.get(), audience.getId())
+                                          .unmute(id.get(), audience.getId().orElse(null))
                                           .thenAcceptAsync(
                                               pardon -> {
                                                 if (!pardon) {

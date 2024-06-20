@@ -49,14 +49,14 @@ public class Punishment implements Comparable<Punishment> {
 
   private UUID punishmentId;
   private UUID targetId;
-  private Optional<UUID> issuerId;
+  private @Nullable UUID issuerId;
   private String reason;
-  private Instant timeIssued;
+  private long timeIssued;
   private boolean active;
   private @Nullable Duration duration;
 
-  private Instant lastUpdated;
-  private Optional<UUID> lastUpdatedBy;
+  private long lastUpdated;
+  private @Nullable UUID lastUpdatedBy;
 
   private String service;
 
@@ -66,13 +66,13 @@ public class Punishment implements Comparable<Punishment> {
       PunishmentType type,
       UUID punishmentId,
       UUID targetId,
-      Optional<UUID> issuerId,
+      @Nullable UUID issuerId,
       String reason,
       Duration duration,
-      Instant timeIssued,
+      long timeIssued,
       boolean active,
-      Instant lastUpdated,
-      Optional<UUID> lastUpdatedBy,
+      long lastUpdated,
+      @Nullable UUID lastUpdatedBy,
       String service) {
     this.type = type;
     this.punishmentId = punishmentId;
@@ -103,8 +103,13 @@ public class Punishment implements Comparable<Punishment> {
     return targetId;
   }
 
-  public Optional<UUID> getIssuerId() {
+  @Nullable
+  public UUID getIssuerId() {
     return issuerId;
+  }
+
+  public boolean isConsole() {
+    return getIssuerId() == null;
   }
 
   public String getReason() {
@@ -112,7 +117,7 @@ public class Punishment implements Comparable<Punishment> {
   }
 
   public Instant getTimeIssued() {
-    return timeIssued;
+    return Instant.ofEpochMilli(timeIssued);
   }
 
   public boolean isActive() {
@@ -124,10 +129,10 @@ public class Punishment implements Comparable<Punishment> {
   }
 
   public Instant getLastUpdated() {
-    return lastUpdated;
+    return Instant.ofEpochMilli(lastUpdated);
   }
 
-  public Optional<UUID> getLastUpdatedBy() {
+  public @Nullable UUID getLastUpdatedBy() {
     return lastUpdatedBy;
   }
 
@@ -169,9 +174,9 @@ public class Punishment implements Comparable<Punishment> {
           .kickPlayer(
               formatPunishmentScreen(
                   getConfig(),
-                  getIssuerId().isPresent()
-                      ? PlayerComponent.player(getIssuerId().get(), NameStyle.FANCY)
-                      : UsernameFormatUtils.CONSOLE_NAME,
+                  isConsole()
+                      ? UsernameFormatUtils.CONSOLE_NAME
+                      : PlayerComponent.player(getIssuerId(), NameStyle.FANCY),
                   silent));
       return true;
     }
@@ -187,11 +192,11 @@ public class Punishment implements Comparable<Punishment> {
     Component titleWord = translatable("misc.warning", NamedTextColor.DARK_RED);
     Component title = text().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
     Component subtitle;
-    if (Duration.between(timeIssued, Instant.now()).getSeconds() >= 60) {
+    if (Duration.between(getTimeIssued(), Instant.now()).getSeconds() >= 60) {
       subtitle =
           text()
               .append(
-                  TemporalComponent.relativePastApproximate(timeIssued)
+                  TemporalComponent.relativePastApproximate(getTimeIssued())
                       .color(NamedTextColor.YELLOW)
                       .append(text(": ", NamedTextColor.YELLOW)))
               .append(text(reason, NamedTextColor.GOLD))
@@ -265,10 +270,10 @@ public class Punishment implements Comparable<Punishment> {
     lines.add(
         getType()
             .getScreenComponent(
-                Duration.between(timeIssued, Instant.now()).getSeconds() >= 60
+                Duration.between(getTimeIssued(), Instant.now()).getSeconds() >= 60
                     ? text()
                         .append(
-                            TemporalComponent.relativePastApproximate(timeIssued)
+                            TemporalComponent.relativePastApproximate(getTimeIssued())
                                 .color(NamedTextColor.YELLOW)
                                 .append(text(": ", NamedTextColor.YELLOW)))
                         .append(text(reason, NamedTextColor.RED))
@@ -331,11 +336,11 @@ public class Punishment implements Comparable<Punishment> {
         punishment.getTargetId(),
         punishment.getIssuerId(),
         punishment.getReason(),
-        punishment.getTimeIssued(),
+        punishment.getTimeIssued().toEpochMilli(),
         punishment.getDuration(),
         punishment.getType(),
         punishment.isActive(),
-        punishment.getLastUpdated(),
+        punishment.getLastUpdated().toEpochMilli(),
         punishment.getLastUpdatedBy(),
         punishment.getService());
   }
@@ -343,14 +348,14 @@ public class Punishment implements Comparable<Punishment> {
   public static Punishment of(
       UUID id,
       UUID target,
-      Optional<UUID> issuer,
+      @Nullable UUID issuer,
       String reason,
-      Instant time,
+      long time,
       @Nullable Duration length,
       PunishmentType type,
       boolean active,
-      Instant lastUpdated,
-      Optional<UUID> lastUpdatedBy,
+      long lastUpdated,
+      @Nullable UUID lastUpdatedBy,
       String service) {
     switch (type) {
       case WARN:

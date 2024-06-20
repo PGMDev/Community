@@ -1,6 +1,7 @@
 package dev.pgm.community.network.subs;
 
 import com.google.gson.Gson;
+import dev.pgm.community.utils.gson.GsonProvider;
 import java.util.logging.Logger;
 import redis.clients.jedis.JedisPubSub;
 
@@ -15,7 +16,7 @@ public abstract class NetworkSubscriber extends JedisPubSub {
     this.channel = channel;
     this.networkId = networkId;
     this.logger = logger;
-    this.gson = new Gson();
+    this.gson = GsonProvider.get();
   }
 
   public String getNetworkId() {

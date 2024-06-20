@@ -8,6 +8,7 @@ import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.users.feature.UsersFeature;
+import dev.pgm.community.utils.gson.GsonProvider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
@@ -18,14 +19,13 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import tc.oc.pgm.util.text.TextException;
 
 public class ImportUtils {
 
-  private static final Gson GSON = new Gson();
+  private static final Gson GSON = GsonProvider.get();
 
   public static List<BukkitBanEntry> getBukkitBans() throws TextException {
     File file = new File("banned-players.json");
@@ -105,14 +105,14 @@ public class ImportUtils {
       return Punishment.of(
           UUID.randomUUID(),
           getUUID(),
-          Optional.empty(),
+          null,
           getReason(),
-          getCreated(),
+          getCreated().toEpochMilli(),
           getDuration(),
           getDuration() != null ? PunishmentType.TEMP_BAN : PunishmentType.BAN,
           true,
-          getCreated(),
-          Optional.empty(),
+          getCreated().toEpochMilli(),
+          null,
           config.getService());
     }
   }

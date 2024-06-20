@@ -7,8 +7,8 @@ import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import tc.oc.pgm.util.Audience;
@@ -18,13 +18,13 @@ public class MutePunishment extends ExpirablePunishment {
   public MutePunishment(
       UUID id,
       UUID targetId,
-      Optional<UUID> issuerId,
+      @Nullable UUID issuerId,
       String reason,
-      Instant timeIssued,
+      long timeIssued,
       Duration length,
       boolean active,
-      Instant lastUpdated,
-      Optional<UUID> lastUpdatedBy,
+      long lastUpdated,
+      @Nullable UUID lastUpdatedBy,
       String service) {
     super(
         PunishmentType.MUTE,

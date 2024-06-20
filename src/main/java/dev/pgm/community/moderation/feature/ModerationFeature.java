@@ -55,10 +55,10 @@ public interface ModerationFeature extends Feature {
    * Pardon target for past punishments (Ban/Tempban)
    *
    * @param target A username or UUID string
-   * @param issuer An optional UUID of the command sender (console is empty)
+   * @param issuer A UUID of the command sender (null for console)
    * @return True if any ban infractions were lifted, false if none
    */
-  CompletableFuture<Boolean> pardon(String target, Optional<UUID> issuer);
+  CompletableFuture<Boolean> pardon(String target, @Nullable UUID issuer);
 
   /**
    * Deactivate an active punishment
@@ -97,10 +97,10 @@ public interface ModerationFeature extends Feature {
    * Unmutes any active mutes for the provided target
    *
    * @param target A player UUID
-   * @param issuer The person lifting the infraction
+   * @param issuer The UUID of the player lifting the mute (null for console)
    * @return true if unmute was removed, false if no mute existed
    */
-  CompletableFuture<Boolean> unmute(UUID target, Optional<UUID> issuer);
+  CompletableFuture<Boolean> unmute(UUID target, @Nullable UUID issuer);
 
   /**
    * Gets a set of online players who are muted

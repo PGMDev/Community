@@ -4,7 +4,6 @@ import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
@@ -15,13 +14,13 @@ public abstract class ExpirablePunishment extends Punishment {
       PunishmentType type,
       UUID id,
       UUID targetId,
-      Optional<UUID> issuerId,
+      @Nullable UUID issuerId,
       String reason,
-      Instant timeIssued,
+      long timeIssued,
       Duration length,
       boolean active,
-      Instant lastUpdated,
-      Optional<UUID> lastUpdatedBy,
+      long lastUpdated,
+      @Nullable UUID lastUpdatedBy,
       String service) {
     super(
         type,
