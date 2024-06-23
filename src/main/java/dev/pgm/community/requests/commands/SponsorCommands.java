@@ -69,142 +69,111 @@ public class SponsorCommands extends CommunityCommand {
 
   @Command("")
   public void info(CommandAudience audience, Player player) {
-    Component header =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(),
-            text("Sponsor", NamedTextColor.YELLOW, TextDecoration.BOLD),
-            NamedTextColor.GOLD,
-            TextFormatter.MAX_CHAT_WIDTH);
+    Component header = TextFormatter.horizontalLineHeading(
+        audience.getSender(),
+        text("Sponsor", NamedTextColor.YELLOW, TextDecoration.BOLD),
+        NamedTextColor.GOLD,
+        TextFormatter.MAX_CHAT_WIDTH);
 
     Component footer =
         TextFormatter.horizontalLine(NamedTextColor.GOLD, TextFormatter.MAX_CHAT_WIDTH);
 
     RequestConfig config = ((RequestConfig) requests.getConfig());
 
-    requests
-        .getRequestProfile(player.getUniqueId())
-        .thenAcceptAsync(
-            profile -> {
-              Component tokenBalance =
-                  text()
-                      .append(RequestFeature.TOKEN)
-                      .append(text(" Token balance: "))
-                      .append(text(profile.getSponsorTokens(), NamedTextColor.YELLOW))
-                      .append(text(" / "))
-                      .append(text(config.getMaxTokens(), NamedTextColor.GOLD))
-                      .append(renderExtraInfo(player, profile))
-                      .color(NamedTextColor.GRAY)
-                      .clickEvent(ClickEvent.runCommand("/tokens"))
-                      .hoverEvent(
-                          HoverEvent.showText(text("Click to view tokens", NamedTextColor.GRAY)))
-                      .build();
+    requests.getRequestProfile(player.getUniqueId()).thenAcceptAsync(profile -> {
+      Component tokenBalance = text()
+          .append(RequestFeature.TOKEN)
+          .append(text(" Token balance: "))
+          .append(text(profile.getSponsorTokens(), NamedTextColor.YELLOW))
+          .append(text(" / "))
+          .append(text(config.getMaxTokens(), NamedTextColor.GOLD))
+          .append(renderExtraInfo(player, profile))
+          .color(NamedTextColor.GRAY)
+          .clickEvent(ClickEvent.runCommand("/tokens"))
+          .hoverEvent(HoverEvent.showText(text("Click to view tokens", NamedTextColor.GRAY)))
+          .build();
 
-              Component buttons =
-                  text()
-                      .append(text("     "))
-                      .append(
-                          button(
-                              "Map List",
-                              NamedTextColor.DARK_AQUA,
-                              "/sponsor maps 1",
-                              "Click to view available maps as a chat list"))
-                      .append(text("       "))
-                      .append(
-                          button(
-                              "Map Menu",
-                              NamedTextColor.GREEN,
-                              "/sponsor menu",
-                              "Click to view available maps as a GUI menu"))
-                      .append(text("       "))
-                      .append(
-                          button(
-                              "Queue",
-                              NamedTextColor.DARK_GREEN,
-                              "/sponsor queue",
-                              "View a list of waiting sponsor requests ("
-                                  + ChatColor.YELLOW
-                                  + requests.getSponsorQueue().size()
-                                  + ChatColor.GRAY
-                                  + ")"))
-                      .build();
+      Component buttons = text()
+          .append(text("     "))
+          .append(button(
+              "Map List",
+              NamedTextColor.DARK_AQUA,
+              "/sponsor maps 1",
+              "Click to view available maps as a chat list"))
+          .append(text("       "))
+          .append(button(
+              "Map Menu",
+              NamedTextColor.GREEN,
+              "/sponsor menu",
+              "Click to view available maps as a GUI menu"))
+          .append(text("       "))
+          .append(button(
+              "Queue",
+              NamedTextColor.DARK_GREEN,
+              "/sponsor queue",
+              "View a list of waiting sponsor requests ("
+                  + ChatColor.YELLOW
+                  + requests.getSponsorQueue().size()
+                  + ChatColor.GRAY
+                  + ")"))
+          .build();
 
-              audience.sendMessage(header);
+      audience.sendMessage(header);
 
-              // TOKEN BALANCE
-              audience.sendMessage(tokenBalance);
+      // TOKEN BALANCE
+      audience.sendMessage(tokenBalance);
 
-              // Existing request status
-              requests
-                  .getPendingSponsor(player.getUniqueId())
-                  .ifPresent(
-                      sponsor -> {
-                        int queueIndex = requests.queueIndex(sponsor);
-                        boolean next = queueIndex == 0;
+      // Existing request status
+      requests.getPendingSponsor(player.getUniqueId()).ifPresent(sponsor -> {
+        int queueIndex = requests.queueIndex(sponsor);
+        boolean next = queueIndex == 0;
 
-                        Component current =
-                            text("Current Request: ", NamedTextColor.GRAY, TextDecoration.BOLD)
-                                .append(
-                                    button(
-                                        "Cancel",
-                                        NamedTextColor.RED,
-                                        "/sponsor cancel",
-                                        "Click to cancel this request"));
-                        Component queue =
-                            next
-                                ? text(
-                                    "(Will be added to the next vote)",
-                                    NamedTextColor.GRAY,
-                                    TextDecoration.ITALIC)
-                                : text()
-                                    .append(text("(Queue location: "))
-                                    .append(text("#" + queueIndex, NamedTextColor.YELLOW))
-                                    .append(text(")"))
-                                    .color(NamedTextColor.GRAY)
-                                    .hoverEvent(
-                                        HoverEvent.showText(
-                                            text(
-                                                "Your request's location in the queue",
-                                                NamedTextColor.GRAY)))
-                                    .build();
+        Component current = text("Current Request: ", NamedTextColor.GRAY, TextDecoration.BOLD)
+            .append(button(
+                "Cancel", NamedTextColor.RED, "/sponsor cancel", "Click to cancel this request"));
+        Component queue = next
+            ? text("(Will be added to the next vote)", NamedTextColor.GRAY, TextDecoration.ITALIC)
+            : text()
+                .append(text("(Queue location: "))
+                .append(text("#" + queueIndex, NamedTextColor.YELLOW))
+                .append(text(")"))
+                .color(NamedTextColor.GRAY)
+                .hoverEvent(HoverEvent.showText(
+                    text("Your request's location in the queue", NamedTextColor.GRAY)))
+                .build();
 
-                        audience.sendMessage(empty());
-                        audience.sendMessage(current);
-                        audience.sendMessage(
-                            text()
-                                .append(text(" - ", NamedTextColor.YELLOW))
-                                .append(
-                                    sponsor.getMap().getStyledName(MapNameStyle.COLOR_WITH_AUTHORS))
-                                .build());
-                        audience.sendMessage(queue);
-                      });
+        audience.sendMessage(empty());
+        audience.sendMessage(current);
+        audience.sendMessage(text()
+            .append(text(" - ", NamedTextColor.YELLOW))
+            .append(sponsor.getMap().getStyledName(MapNameStyle.COLOR_WITH_AUTHORS))
+            .build());
+        audience.sendMessage(queue);
+      });
 
-              audience.sendMessage(empty());
+      audience.sendMessage(empty());
 
-              // Cooldown message
-              if (!requests.canSponsor(player)) {
-                audience.sendMessage(
-                    text()
-                        .append(text("Cooldown", NamedTextColor.GOLD, TextDecoration.BOLD))
-                        .append(text(": ", NamedTextColor.GRAY))
-                        .append(
-                            MessageUtils.formatTimeLeft(
-                                ((RequestConfig) requests.getConfig()).getSponsorCooldown(player),
-                                profile.getLastSponsorTime(),
-                                NamedTextColor.RED))
-                        .color(NamedTextColor.GRAY)
-                        .hoverEvent(
-                            HoverEvent.showText(
-                                text(
-                                    "Time until you can sponsor another map", NamedTextColor.GRAY)))
-                        .build());
-                audience.sendMessage(empty());
-              }
+      // Cooldown message
+      if (!requests.canSponsor(player)) {
+        audience.sendMessage(text()
+            .append(text("Cooldown", NamedTextColor.GOLD, TextDecoration.BOLD))
+            .append(text(": ", NamedTextColor.GRAY))
+            .append(MessageUtils.formatTimeLeft(
+                ((RequestConfig) requests.getConfig()).getSponsorCooldown(player),
+                profile.getLastSponsorTime(),
+                NamedTextColor.RED))
+            .color(NamedTextColor.GRAY)
+            .hoverEvent(HoverEvent.showText(
+                text("Time until you can sponsor another map", NamedTextColor.GRAY)))
+            .build());
+        audience.sendMessage(empty());
+      }
 
-              // [Maps] [Queue]
-              audience.sendMessage(buttons);
+      // [Maps] [Queue]
+      audience.sendMessage(buttons);
 
-              audience.sendMessage(footer);
-            });
+      audience.sendMessage(footer);
+    });
   }
 
   @Command("request <map>")
@@ -237,26 +206,22 @@ public class SponsorCommands extends CommunityCommand {
           List<String> tags,
       @Flag(value = "author", aliases = "a") String author,
       @Flag(value = "name", aliases = "n") String name) {
-    Stream<MapInfo> search =
-        PGM.get()
-            .getMapLibrary()
-            .getMaps(name)
-            .filter(PGMUtils::isMapSizeAllowed)
-            .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
-            .filter(m -> !requests.hasMapCooldown(m));
+    Stream<MapInfo> search = PGM.get()
+        .getMapLibrary()
+        .getMaps(name)
+        .filter(PGMUtils::isMapSizeAllowed)
+        .filter(m -> m.getPhase() == Phase.PRODUCTION)
+        .filter(m -> !requests.hasMapCooldown(m));
 
     if (!tags.isEmpty()) {
-      final Map<Boolean, Set<String>> tagSet =
-          tags.stream()
-              .flatMap(t -> Arrays.stream(t.split(",")))
-              .map(String::toLowerCase)
-              .map(String::trim)
-              .collect(
-                  Collectors.partitioningBy(
-                      s -> s.startsWith("!"),
-                      Collectors.mapping(
-                          (String s) -> s.startsWith("!") ? s.substring(1) : s,
-                          Collectors.toSet())));
+      final Map<Boolean, Set<String>> tagSet = tags.stream()
+          .flatMap(t -> Arrays.stream(t.split(",")))
+          .map(String::toLowerCase)
+          .map(String::trim)
+          .collect(Collectors.partitioningBy(
+              s -> s.startsWith("!"),
+              Collectors.mapping(
+                  (String s) -> s.startsWith("!") ? s.substring(1) : s, Collectors.toSet())));
       search = search.filter(map -> matchesTags(map, tagSet.get(false), tagSet.get(true)));
     }
 
@@ -270,31 +235,19 @@ public class SponsorCommands extends CommunityCommand {
     int resultsPerPage = 8;
     int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
 
-    Component paginated =
-        TextFormatter.paginate(
-            text("Available Maps"),
-            page,
-            pages,
-            NamedTextColor.DARK_AQUA,
-            NamedTextColor.AQUA,
-            true);
+    Component paginated = TextFormatter.paginate(
+        text("Available Maps"), page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
 
-    Component formattedTitle =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+    Component formattedTitle = TextFormatter.horizontalLineHeading(
+        audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
 
     new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
       @Override
       public Component format(MapInfo map, int index) {
-        Component mapName =
-            map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
-                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        translatable(
-                            "command.maps.hover",
-                            NamedTextColor.GRAY,
-                            map.getStyledName(MapNameStyle.COLOR))));
+        Component mapName = map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
+            .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+            .hoverEvent(HoverEvent.showText(translatable(
+                "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))));
 
         return text()
             .append(text((index + 1) + ". "))
@@ -315,13 +268,12 @@ public class SponsorCommands extends CommunityCommand {
       TextComponent.Builder buttons = text();
 
       if (page > 1) {
-        buttons.append(
-            text()
-                .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
-                .append(text(" Previous Page", NamedTextColor.BLUE))
-                .hoverEvent(
-                    HoverEvent.showText(text("Click to view previous page", NamedTextColor.GRAY)))
-                .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page - 1))));
+        buttons.append(text()
+            .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
+            .append(text(" Previous Page", NamedTextColor.BLUE))
+            .hoverEvent(
+                HoverEvent.showText(text("Click to view previous page", NamedTextColor.GRAY)))
+            .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page - 1))));
       }
 
       if (page > 1 && page < pages) {
@@ -329,17 +281,14 @@ public class SponsorCommands extends CommunityCommand {
       }
 
       if (page < pages) {
-        buttons.append(
-            text()
-                .append(text("Next Page ", NamedTextColor.BLUE))
-                .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
-                .hoverEvent(
-                    HoverEvent.showText(text("Click to view next page", NamedTextColor.GRAY)))
-                .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page + 1))));
+        buttons.append(text()
+            .append(text("Next Page ", NamedTextColor.BLUE))
+            .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
+            .hoverEvent(HoverEvent.showText(text("Click to view next page", NamedTextColor.GRAY)))
+            .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page + 1))));
       }
-      audience.sendMessage(
-          TextFormatter.horizontalLineHeading(
-              audience.getSender(), buttons.build(), NamedTextColor.DARK_PURPLE, 250));
+      audience.sendMessage(TextFormatter.horizontalLineHeading(
+          audience.getSender(), buttons.build(), NamedTextColor.DARK_PURPLE, 250));
     }
   }
 
@@ -388,40 +337,27 @@ public class SponsorCommands extends CommunityCommand {
     int resultsPerPage = ((RequestConfig) requests.getConfig()).getMaxQueue();
     int pages = (queue.size() + resultsPerPage - 1) / resultsPerPage;
 
-    Component paginated =
-        TextFormatter.paginate(
-            text("Sponsor Queue"),
-            page,
-            pages,
-            NamedTextColor.DARK_AQUA,
-            NamedTextColor.AQUA,
-            true);
+    Component paginated = TextFormatter.paginate(
+        text("Sponsor Queue"), page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
 
-    Component formattedTitle =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+    Component formattedTitle = TextFormatter.horizontalLineHeading(
+        audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
 
     new PaginatedComponentResults<SponsorRequest>(formattedTitle, resultsPerPage) {
       @Override
       public Component format(SponsorRequest sponsor, int index) {
         MapInfo map = sponsor.getMap();
-        Component mapName =
-            map.getStyledName(MapNameStyle.COLOR)
-                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        translatable(
-                            "command.maps.hover",
-                            NamedTextColor.GRAY,
-                            map.getStyledName(MapNameStyle.COLOR))));
+        Component mapName = map.getStyledName(MapNameStyle.COLOR)
+            .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+            .hoverEvent(HoverEvent.showText(translatable(
+                "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))));
 
-        Component playerName =
-            VisibilityUtils.isDisguised(sponsor.getPlayerId())
-                ? empty()
-                : text()
-                    .append(BroadcastUtils.BROADCAST_DIV)
-                    .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
-                    .build();
+        Component playerName = VisibilityUtils.isDisguised(sponsor.getPlayerId())
+            ? empty()
+            : text()
+                .append(BroadcastUtils.BROADCAST_DIV)
+                .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
+                .build();
 
         return text()
             .append(text((index + 1) + ". "))
@@ -449,9 +385,8 @@ public class SponsorCommands extends CommunityCommand {
           .append(text(" | "))
           .append(text("Cooldown: "))
           .append(duration(config.getSponsorCooldown(player), NamedTextColor.GOLD))
-          .hoverEvent(
-              HoverEvent.showText(
-                  text("This is your cooldown time between sponsor requests", NamedTextColor.GRAY)))
+          .hoverEvent(HoverEvent.showText(
+              text("This is your cooldown time between sponsor requests", NamedTextColor.GRAY)))
           .color(NamedTextColor.GRAY)
           .build();
     }
@@ -473,11 +408,9 @@ public class SponsorCommands extends CommunityCommand {
       } else {
         return text()
             .append(text(" | No tokens to claim"))
-            .hoverEvent(
-                HoverEvent.showText(
-                    text(
-                        "You have the max amount of sponsor tokens! To claim more you need to spend some first.",
-                        NamedTextColor.RED)))
+            .hoverEvent(HoverEvent.showText(text(
+                "You have the max amount of sponsor tokens! To claim more you need to spend some first.",
+                NamedTextColor.RED)))
             .build();
       }
     }
@@ -496,10 +429,8 @@ public class SponsorCommands extends CommunityCommand {
               .append(text("["))
               .append(RequestFeature.SPONSOR)
               .append(text("]"))
-              .hoverEvent(
-                  HoverEvent.showText(
-                      text("Click to sponsor ", NamedTextColor.GRAY)
-                          .append(map.getStyledName(MapNameStyle.COLOR))))
+              .hoverEvent(HoverEvent.showText(text("Click to sponsor ", NamedTextColor.GRAY)
+                  .append(map.getStyledName(MapNameStyle.COLOR))))
               .clickEvent(ClickEvent.runCommand("/sponsor request " + map.getName()))
               .color(NamedTextColor.GRAY)
               .build();

@@ -92,11 +92,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   public RequestFeatureBase(
       RequestConfig config, Logger logger, String featureName, UsersFeature users) {
     super(config, logger, "Requests (" + featureName + ")");
-    this.requests = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
-    this.cooldown =
-        CacheBuilder.newBuilder()
-            .expireAfterWrite(config.getCooldown().getSeconds(), TimeUnit.SECONDS)
-            .build();
+    this.requests =
+        CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
+    this.cooldown = CacheBuilder.newBuilder()
+        .expireAfterWrite(config.getCooldown().getSeconds(), TimeUnit.SECONDS)
+        .build();
     this.mapCooldown = Maps.newHashMap();
     this.sponsors = Lists.newLinkedList();
     this.currentSponsor = null;
@@ -122,7 +122,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   public List<MapInfo> getAvailableSponsorMaps() {
     return Lists.newArrayList(PGM.get().getMapLibrary().getMaps()).stream()
         .filter(PGMUtils::isMapSizeAllowed)
-        .filter(m -> m.getPhase() != Phase.DEVELOPMENT)
+        .filter(m -> m.getPhase() == Phase.PRODUCTION)
         .filter(m -> !hasMapCooldown(m))
         .collect(Collectors.toList());
   }
@@ -149,36 +149,34 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   @EventHandler
   public void onPlayerJoin(PlayerJoinEvent event) {
-    onLogin(event)
-        .thenAcceptAsync(
-            profile -> {
-              if (event.getPlayer().hasPermission(CommunityPermissions.REQUEST_SPONSOR)) {
-                int refresh = 0;
-                boolean daily = false;
+    onLogin(event).thenAcceptAsync(profile -> {
+      if (event.getPlayer().hasPermission(CommunityPermissions.REQUEST_SPONSOR)) {
+        int refresh = 0;
+        boolean daily = false;
 
-                // Check permission to determine what amount to refresh
-                // Always prefer the daily compared to the weekly (e.g sponsor inherits donor perms,
-                // only give daily not weekly)
-                if (event.getPlayer().hasPermission(CommunityPermissions.TOKEN_DAILY)) {
-                  if (profile.hasDayElapsed()) {
-                    refresh = getRequestConfig().getDailyTokenAmount();
-                    daily = true;
-                  }
-                } else if (event.getPlayer().hasPermission(CommunityPermissions.TOKEN_WEEKLY)) {
-                  if (profile.hasWeekElapsed()) {
-                    refresh = getRequestConfig().getWeeklyTokenAmount();
-                  }
-                }
+        // Check permission to determine what amount to refresh
+        // Always prefer the daily compared to the weekly (e.g sponsor inherits donor perms,
+        // only give daily not weekly)
+        if (event.getPlayer().hasPermission(CommunityPermissions.TOKEN_DAILY)) {
+          if (profile.hasDayElapsed()) {
+            refresh = getRequestConfig().getDailyTokenAmount();
+            daily = true;
+          }
+        } else if (event.getPlayer().hasPermission(CommunityPermissions.TOKEN_WEEKLY)) {
+          if (profile.hasWeekElapsed()) {
+            refresh = getRequestConfig().getWeeklyTokenAmount();
+          }
+        }
 
-                // Refresh token amount as long as they have less than the max
-                if (refresh > 0 && profile.getSponsorTokens() < getRequestConfig().getMaxTokens()) {
-                  profile.refreshTokens(refresh); // Set new token amount
-                  update(profile); // Save new token balance to database
-                  sendDelayedTokenRefreshMessage(
-                      event.getPlayer(), refresh, daily, profile.getSponsorTokens());
-                }
-              }
-            });
+        // Refresh token amount as long as they have less than the max
+        if (refresh > 0 && profile.getSponsorTokens() < getRequestConfig().getMaxTokens()) {
+          profile.refreshTokens(refresh); // Set new token amount
+          update(profile); // Save new token balance to database
+          sendDelayedTokenRefreshMessage(
+              event.getPlayer(), refresh, daily, profile.getSponsorTokens());
+        }
+      }
+    });
   }
 
   @EventHandler
@@ -206,30 +204,26 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         this.currentSponsor = nextRequest;
 
         // Update profile
-        getRequestProfile(nextRequest.getPlayerId())
-            .thenAcceptAsync(
-                profile -> {
-                  // Update RequestProfile with sponsor map info
-                  profile.sponsor(nextRequest.getMap());
-                  update(profile);
-                });
+        getRequestProfile(nextRequest.getPlayerId()).thenAcceptAsync(profile -> {
+          // Update RequestProfile with sponsor map info
+          profile.sponsor(nextRequest.getMap());
+          update(profile);
+        });
 
         // Alert online player if their sponsor request has been processed
         Player requester = Bukkit.getPlayer(nextRequest.getPlayerId());
         if (requester != null) {
           Audience player = Audience.get(requester);
-          player.sendMessage(
-              formatTokenTransaction(
-                  -1,
-                  text(
-                      "Your sponsored map has been added to the vote!",
-                      NamedTextColor.GREEN,
-                      TextDecoration.BOLD),
-                  canRefund(requester)
-                      ? text(
-                          "If your map wins the vote, you'll get your token back",
-                          NamedTextColor.GRAY)
-                      : null));
+          player.sendMessage(formatTokenTransaction(
+              -1,
+              text(
+                  "Your sponsored map has been added to the vote!",
+                  NamedTextColor.GREEN,
+                  TextDecoration.BOLD),
+              canRefund(requester)
+                  ? text(
+                      "If your map wins the vote, you'll get your token back", NamedTextColor.GRAY)
+                  : null));
           player.playSound(Sounds.SPEND_TOKENS);
         }
       }
@@ -243,24 +237,21 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
       // Same map = winner, refund the token even if offline
       if (currentSponsor.getMap().equals(event.getPickedMap()) && currentSponsor.canRefund()) {
-        getRequestProfile(currentSponsor.getPlayerId())
-            .thenAcceptAsync(
-                profile -> {
-                  profile.award(1);
-                  update(profile);
+        getRequestProfile(currentSponsor.getPlayerId()).thenAcceptAsync(profile -> {
+          profile.award(1);
+          update(profile);
 
-                  if (player != null) {
-                    Audience viewer = Audience.get(player);
-                    viewer.sendMessage(
-                        formatTokenTransaction(
-                            1,
-                            text(
-                                "Your sponsored map won the vote!",
-                                NamedTextColor.GREEN,
-                                TextDecoration.BOLD)));
-                    viewer.playSound(Sounds.GET_TOKENS);
-                  }
-                });
+          if (player != null) {
+            Audience viewer = Audience.get(player);
+            viewer.sendMessage(formatTokenTransaction(
+                1,
+                text(
+                    "Your sponsored map won the vote!",
+                    NamedTextColor.GREEN,
+                    TextDecoration.BOLD)));
+            viewer.playSound(Sounds.GET_TOKENS);
+          }
+        });
       }
     }
   }
@@ -276,12 +267,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     event.getExtraLines().add(empty());
     event
         .getExtraLines()
-        .add(
-            text()
-                .append(text(" Sponsored by "))
-                .append(player(getCurrentSponsor().getPlayerId(), NameStyle.FANCY))
-                .color(NamedTextColor.GRAY)
-                .build());
+        .add(text()
+            .append(text(" Sponsored by "))
+            .append(player(getCurrentSponsor().getPlayerId(), NameStyle.FANCY))
+            .color(NamedTextColor.GRAY)
+            .build());
   }
 
   private Cache<UUID, String> voteConfirm =
@@ -297,16 +287,13 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     voteConfirm.put(event.getPlayer().getUniqueId(), "");
     Audience viewer = Audience.get(event.getPlayer());
     viewer.sendWarning(text("A sponsor map has already been added to the vote!"));
-    viewer.sendWarning(
-        text("If you still want to adjust the vote, click ", NamedTextColor.GRAY)
-            .append(
-                text()
-                    .append(text("[", NamedTextColor.GRAY))
-                    .append(text("here", NamedTextColor.YELLOW))
-                    .append(text("]", NamedTextColor.GRAY)))
-            .clickEvent(ClickEvent.runCommand(event.getMessage()))
-            .hoverEvent(
-                HoverEvent.showText(text("Click to run command again", NamedTextColor.GRAY))));
+    viewer.sendWarning(text("If you still want to adjust the vote, click ", NamedTextColor.GRAY)
+        .append(text()
+            .append(text("[", NamedTextColor.GRAY))
+            .append(text("here", NamedTextColor.YELLOW))
+            .append(text("]", NamedTextColor.GRAY)))
+        .clickEvent(ClickEvent.runCommand(event.getMessage()))
+        .hoverEvent(HoverEvent.showText(text("Click to run command again", NamedTextColor.GRAY))));
   }
 
   @Override
@@ -316,6 +303,15 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     // Check if enabled
     if (!isAccepting()) {
       viewer.sendWarning(text("Sorry, map requests are not being accepted at this time"));
+      return;
+    }
+
+    // Don't allow developmental maps
+    if (map.getPhase() == Phase.DEVELOPMENT) {
+      viewer.sendWarning(text()
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" may not be requested"))
+          .build());
       return;
     }
 
@@ -345,12 +341,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     cooldown.put(player.getUniqueId(), Instant.now());
 
     // Update profile
-    getRequestProfile(player.getUniqueId())
-        .thenAcceptAsync(
-            profile -> {
-              profile.request(map);
-              update(profile);
-            });
+    getRequestProfile(player.getUniqueId()).thenAcceptAsync(profile -> {
+      profile.request(map);
+      update(profile);
+    });
 
     // Alert the staff
     alertStaff(player, map, false);
@@ -382,58 +376,52 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     // Ensure match is RUNNING and OVER one minute
     if (!compareMatchLength(Duration.ofSeconds(30))) {
-      viewer.sendWarning(
-          text()
-              .append(text("The match just started!"))
-              .append(newline())
-              .append(text("Please try again after "))
-              .append(text("30 seconds", NamedTextColor.AQUA))
-              .append(text(" of the match has passed"))
-              .build());
+      viewer.sendWarning(text()
+          .append(text("The match just started!"))
+          .append(newline())
+          .append(text("Please try again after "))
+          .append(text("30 seconds", NamedTextColor.AQUA))
+          .append(text(" of the match has passed"))
+          .build());
       return;
     }
 
     // Don't allow developmental maps
-    if (map.getPhase() == Phase.DEVELOPMENT) {
-      viewer.sendWarning(
-          text()
-              .append(map.getStyledName(MapNameStyle.COLOR))
-              .append(text(" may not be selected"))
-              .build());
+    if (map.getPhase() != Phase.PRODUCTION) {
+      viewer.sendWarning(text()
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" may not be selected"))
+          .build());
       return;
     }
 
     // Check if map is already queued
     if (isMapQueued(map)) {
-      viewer.sendWarning(
-          text()
-              .append(map.getStyledName(MapNameStyle.COLOR))
-              .append(text(" is already in the queue!"))
-              .build());
+      viewer.sendWarning(text()
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" is already in the queue!"))
+          .build());
       return;
     }
 
     // Check if map has a cooldown
     if (hasMapCooldown(map)) {
       MapCooldown cooldown = mapCooldown.get(map);
-      viewer.sendWarning(
-          text()
-              .append(text("This map can be sponsored in ", NamedTextColor.RED))
-              .append(
-                  TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
-              .build());
+      viewer.sendWarning(text()
+          .append(text("This map can be sponsored in ", NamedTextColor.RED))
+          .append(TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
+          .build());
       return;
     }
 
     // Check map size
     if (!isMapSizeAllowed(map)) {
-      viewer.sendWarning(
-          text()
-              .append(map.getStyledName(MapNameStyle.COLOR))
-              .append(text(" does not fit the online player count"))
-              .append(newline())
-              .append(text("Please request a different map"))
-              .build());
+      viewer.sendWarning(text()
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" does not fit the online player count"))
+          .append(newline())
+          .append(text("Please request a different map"))
+          .build());
       return;
     }
 
@@ -449,51 +437,43 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       return;
     }
 
-    getRequestProfile(player.getUniqueId())
-        .thenAcceptAsync(
-            profile -> {
-              if (!canSponsor(player)) {
-                viewer.sendWarning(
-                    getCooldownMessage(
-                        profile.getLastSponsorTime(),
-                        getRequestConfig().getSponsorCooldown(player)));
-                return;
-              }
+    getRequestProfile(player.getUniqueId()).thenAcceptAsync(profile -> {
+      if (!canSponsor(player)) {
+        viewer.sendWarning(getCooldownMessage(
+            profile.getLastSponsorTime(), getRequestConfig().getSponsorCooldown(player)));
+        return;
+      }
 
-              // Check tokens
-              if (profile.getSponsorTokens() < 1) {
-                viewer.sendWarning(text("You don't have enough sponsor tokens"));
-                return;
-              }
+      // Check tokens
+      if (profile.getSponsorTokens() < 1) {
+        viewer.sendWarning(text("You don't have enough sponsor tokens"));
+        return;
+      }
 
-              // Sponsor Queue
-              // -> Add to queue, don't charge token until sponsor is processed
-              queueRequest(player, map);
+      // Sponsor Queue
+      // -> Add to queue, don't charge token until sponsor is processed
+      queueRequest(player, map);
 
-              // Send confirmation, including map queue position
-              viewer.sendMessage(
-                  text()
-                      .append(SPONSOR)
-                      .append(text(" You've sponsored ", NamedTextColor.YELLOW))
-                      .append(map.getStyledName(MapNameStyle.COLOR)));
-              if (sponsors.size() > 1) {
-                viewer.sendMessage(
-                    text()
-                        .append(text("Queue position "))
-                        .append(text("#" + sponsors.size(), NamedTextColor.YELLOW))
-                        .append(text(" Use "))
-                        .append(text("/queue", NamedTextColor.AQUA))
-                        .append(text(" to track status"))
-                        .color(NamedTextColor.GRAY)
-                        .clickEvent(ClickEvent.runCommand("/sponsor queue"))
-                        .hoverEvent(
-                            showText(text("Click to view queue status", NamedTextColor.GRAY)))
-                        .build());
-              } else {
-                viewer.sendMessage(
-                    text("Request will be added to the next map vote", NamedTextColor.GRAY));
-              }
-            });
+      // Send confirmation, including map queue position
+      viewer.sendMessage(text()
+          .append(SPONSOR)
+          .append(text(" You've sponsored ", NamedTextColor.YELLOW))
+          .append(map.getStyledName(MapNameStyle.COLOR)));
+      if (sponsors.size() > 1) {
+        viewer.sendMessage(text()
+            .append(text("Queue position "))
+            .append(text("#" + sponsors.size(), NamedTextColor.YELLOW))
+            .append(text(" Use "))
+            .append(text("/queue", NamedTextColor.AQUA))
+            .append(text(" to track status"))
+            .color(NamedTextColor.GRAY)
+            .clickEvent(ClickEvent.runCommand("/sponsor queue"))
+            .hoverEvent(showText(text("Click to view queue status", NamedTextColor.GRAY)))
+            .build());
+      } else {
+        viewer.sendMessage(text("Request will be added to the next map vote", NamedTextColor.GRAY));
+      }
+    });
   }
 
   @Override
@@ -549,7 +529,9 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   @Override
   public Optional<SponsorRequest> getPendingSponsor(UUID playerId) {
-    return this.sponsors.stream().filter(sr -> sr.getPlayerId().equals(playerId)).findAny();
+    return this.sponsors.stream()
+        .filter(sr -> sr.getPlayerId().equals(playerId))
+        .findAny();
   }
 
   @Override
@@ -591,7 +573,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     if (!canRequest) {
       Instant lastRequestTime = cooldown.getIfPresent(player.getUniqueId());
       if (lastRequestTime != null) {
-        viewer.sendWarning(getCooldownMessage(lastRequestTime, getRequestConfig().getCooldown()));
+        viewer.sendWarning(
+            getCooldownMessage(lastRequestTime, getRequestConfig().getCooldown()));
       }
     }
     return !canRequest;
@@ -609,20 +592,16 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     if (player.hasPermission(CommunityPermissions.REQUEST_SPONSOR)
         && canSponsor(player)
         && isMapSizeAllowed(map)) {
-      message.append(
-          text()
-              .append(space())
-              .append(SPONSOR)
-              .clickEvent(ClickEvent.runCommand("/sponsor request" + map.getName()))
-              .hoverEvent(
-                  HoverEvent.showText(
-                      text()
-                          .append(text("Click to sponsor this request", NamedTextColor.GRAY))
-                          .append(newline())
-                          .append(
-                              text(
-                                  "Map will queue and be auto-added to the vote when avaiable",
-                                  NamedTextColor.YELLOW)))));
+      message.append(text()
+          .append(space())
+          .append(SPONSOR)
+          .clickEvent(ClickEvent.runCommand("/sponsor request" + map.getName()))
+          .hoverEvent(HoverEvent.showText(text()
+              .append(text("Click to sponsor this request", NamedTextColor.GRAY))
+              .append(newline())
+              .append(text(
+                  "Map will queue and be auto-added to the vote when avaiable",
+                  NamedTextColor.YELLOW)))));
     }
 
     return message.color(NamedTextColor.GRAY).build();
@@ -649,10 +628,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         .append(text(total, NamedTextColor.YELLOW, TextDecoration.BOLD))
         .append(text(")"))
         .color(NamedTextColor.GOLD)
-        .hoverEvent(
-            HoverEvent.showText(
-                text("Next token refresh will be in ", NamedTextColor.GRAY)
-                    .append(duration(Duration.ofDays(daily ? 1 : 7), NamedTextColor.YELLOW))))
+        .hoverEvent(HoverEvent.showText(text("Next token refresh will be in ", NamedTextColor.GRAY)
+            .append(duration(Duration.ofDays(daily ? 1 : 7), NamedTextColor.YELLOW))))
         .build();
   }
 
@@ -665,24 +642,22 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
             () -> {
               Audience viewer = Audience.get(player);
               viewer.sendMessage(getTokenRefreshMessage(amount, total, daily));
-              viewer.sendMessage(
-                  text()
-                      .append(text("Spend tokens by using ", NamedTextColor.GRAY))
-                      .append(text("/sponsor", NamedTextColor.YELLOW)));
+              viewer.sendMessage(text()
+                  .append(text("Spend tokens by using ", NamedTextColor.GRAY))
+                  .append(text("/sponsor", NamedTextColor.YELLOW)));
               viewer.playSound(Sounds.GET_TOKENS);
             },
             20L * 3);
   }
 
   private void alertStaff(Player player, MapInfo map, boolean sponsor) {
-    Component alert =
-        text()
-            .append(player(player, NameStyle.FANCY))
-            .append(text(" has "))
-            .append(text(sponsor ? "sponsored " : "requested "))
-            .append(map.getStyledName(MapNameStyle.COLOR))
-            .color(NamedTextColor.YELLOW)
-            .build();
+    Component alert = text()
+        .append(player(player, NameStyle.FANCY))
+        .append(text(" has "))
+        .append(text(sponsor ? "sponsored " : "requested "))
+        .append(map.getStyledName(MapNameStyle.COLOR))
+        .color(NamedTextColor.YELLOW)
+        .build();
 
     BroadcastUtils.sendAdminChatMessage(alert, CommunityPermissions.REQUEST_STAFF);
   }
@@ -730,11 +705,10 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       if (!isMapSizeAllowed(request.getMap())) {
         Player player = Bukkit.getPlayer(request.getPlayerId());
         Audience viewer = Audience.get(player);
-        viewer.sendWarning(
-            text()
-                .append(request.getMap().getStyledName(MapNameStyle.COLOR))
-                .append(text(" no longer fits the online player count.", NamedTextColor.RED))
-                .build());
+        viewer.sendWarning(text()
+            .append(request.getMap().getStyledName(MapNameStyle.COLOR))
+            .append(text(" no longer fits the online player count.", NamedTextColor.RED))
+            .build());
         queue.remove();
       }
     }
