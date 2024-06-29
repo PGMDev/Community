@@ -12,6 +12,7 @@ import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -24,26 +25,26 @@ public class HostAddMenu extends PlayerSelectionProvider {
 
   public HostAddMenu(MapPartyHosts hosts) {
     this.hosts = hosts;
-    this.inventory =
-        SmartInventory.builder()
-            .size(6, 9)
-            .manager(Community.get().getInventory())
-            .provider(this)
-            .title(colorize("&a&lAdd New Host&7:"))
-            .build();
+    this.inventory = SmartInventory.builder()
+        .size(6, 9)
+        .manager(Community.get().getInventory())
+        .provider(this)
+        .title(colorize("&a&lAdd New Host&7:"))
+        .build();
   }
 
   @Override
   public void init(Player player, InventoryContents contents) {
     super.init(player, contents);
     contents.set(
-        5,
-        4,
-        ClickableItem.of(
-            getNamedItem("&7Return to &aEvent Hosts", Material.CAKE, 1),
-            c -> {
-              Bukkit.dispatchCommand(player, "event hosts");
-            }));
+        5, 4, ClickableItem.of(getNamedItem("&7Return to &aEvent Hosts", Material.CAKE, 1), c -> {
+          Bukkit.dispatchCommand(player, "event hosts");
+        }));
+  }
+
+  @Override
+  public Predicate<Player> relevantPlayerFilter() {
+    return player -> player.hasPermission(CommunityPermissions.STAFF);
   }
 
   @Override
@@ -65,10 +66,7 @@ public class HostAddMenu extends PlayerSelectionProvider {
   @Override
   public List<String> getPlayerLore(Player viewer, Player player) {
     boolean isHost = hosts.isHost(player.getUniqueId());
-    return Lists.newArrayList(
-        colorize(
-            isHost
-                ? "&cAlready a host"
-                : "&aClick to make " + player.getDisplayName() + " &aa host"));
+    return Lists.newArrayList(colorize(
+        isHost ? "&cAlready a host" : "&aClick to make " + player.getDisplayName() + " &aa host"));
   }
 }

@@ -13,6 +13,7 @@ import fr.minuskube.inv.content.SlotIterator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -40,7 +41,7 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
   @Override
   public void init(Player player, InventoryContents contents) {
     Pagination page = contents.pagination();
-    page.setItems(getAllPlayers(player));
+    page.setItems(getFilteredPlayers(player));
     page.setItemsPerPage(45);
 
     page.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 0, 0));
@@ -84,16 +85,18 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
     return stack;
   }
 
-  private Comparator<Player> COMPARE =
-      Comparator.comparing(
-          Player::getName,
-          (p1, p2) -> {
-            return p1.compareToIgnoreCase(p2);
-          });
+  private final Comparator<Player> COMPARE =
+      Comparator.comparing(Player::getName, String::compareToIgnoreCase);
 
-  private ClickableItem[] getAllPlayers(Player viewer) {
-    List<Player> online =
-        Bukkit.getOnlinePlayers().stream().sorted(COMPARE).collect(Collectors.toList());
+  public Predicate<Player> relevantPlayerFilter() {
+    return (player) -> true;
+  }
+
+  private ClickableItem[] getFilteredPlayers(Player viewer) {
+    List<Player> online = Bukkit.getOnlinePlayers().stream()
+        .filter(relevantPlayerFilter())
+        .sorted(COMPARE)
+        .collect(Collectors.toList());
     ClickableItem[] items = new ClickableItem[online.size()];
     for (int i = 0; i < online.size(); i++) {
       Player player = online.get(i);
