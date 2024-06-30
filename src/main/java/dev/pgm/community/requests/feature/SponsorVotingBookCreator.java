@@ -31,7 +31,7 @@ public class SponsorVotingBookCreator extends VotingBookCreatorImpl {
       return text()
           .append(originalHover)
           .append(newline())
-          .append(text("+ ", NamedTextColor.GREEN, TextDecoration.BOLD))
+          .append(text("+ ", NamedTextColor.YELLOW, TextDecoration.BOLD))
           .append(text("Sponsored by ", NamedTextColor.GRAY))
           .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
           .build();

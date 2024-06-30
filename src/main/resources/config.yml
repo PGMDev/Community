@@ -208,7 +208,11 @@ requests:
     weekly-tokens: 1   # Amount of tokens given on a weekly basis (community.token.weekly perm)
     max-tokens: 7      # Maximum amount of tokens an account can collect
     refund: true       # Tokens are refunded when map vote is successful
-
+    
+    # Sponsor bound offset used to modify avaiable maps at the end of each match
+    lower-limit-offset: 4   # Subtracted from the current minimum
+    upper-limit-offset: 8   # Added to the current maximum
+    
 # Mobs - Spawn creatures that will attack players ;)
 mobs:
   enabled: true

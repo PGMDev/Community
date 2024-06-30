@@ -17,7 +17,7 @@ import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.MessageUtils;
-import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
 import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.util.Arrays;
@@ -39,11 +39,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.Contributor;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapTag;
-import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
@@ -206,12 +204,7 @@ public class SponsorCommands extends CommunityCommand {
           List<String> tags,
       @Flag(value = "author", aliases = "a") String author,
       @Flag(value = "name", aliases = "n") String name) {
-    Stream<MapInfo> search = PGM.get()
-        .getMapLibrary()
-        .getMaps(name)
-        .filter(PGMUtils::isMapSizeAllowed)
-        .filter(m -> m.getPhase() == Phase.PRODUCTION)
-        .filter(m -> !requests.hasMapCooldown(m));
+    Stream<MapInfo> search = requests.getAvailableSponsorMaps().stream();
 
     if (!tags.isEmpty()) {
       final Map<Boolean, Set<String>> tagSet = tags.stream()
@@ -235,8 +228,23 @@ public class SponsorCommands extends CommunityCommand {
     int resultsPerPage = 8;
     int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
 
+    MapSizeBounds bounds = requests.getCurrentMapSizeBounds();
+    Component hover = text()
+        .append(text("Current online player range", NamedTextColor.DARK_AQUA))
+        .appendSpace()
+        .append(text("(", NamedTextColor.GRAY))
+        .append(text(bounds.getLowerBound(), NamedTextColor.GOLD))
+        .append(text("-", NamedTextColor.GRAY))
+        .append(text(bounds.getUpperBound(), NamedTextColor.GOLD))
+        .append(text(")", NamedTextColor.GRAY))
+        .build();
+    Component title = text()
+        .append(text("Available Maps"))
+        .hoverEvent(HoverEvent.showText(hover))
+        .build();
+
     Component paginated = TextFormatter.paginate(
-        text("Available Maps"), page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
+        title, page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
 
     Component formattedTitle = TextFormatter.horizontalLineHeading(
         audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);

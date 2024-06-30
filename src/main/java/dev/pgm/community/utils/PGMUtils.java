@@ -13,6 +13,7 @@ import org.bukkit.plugin.Plugin;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.api.match.MatchPhase;
 import tc.oc.pgm.blitz.BlitzMatchModule;
 import tc.oc.pgm.rotation.MapPoolManager;
 import tc.oc.pgm.rotation.pools.MapPool;
@@ -36,27 +37,16 @@ public class PGMUtils {
   public static List<String> convertMapNames(List<MapInfo> maps) {
     List<String> names = Lists.newArrayList();
     if (isPGMEnabled()) {
-      names =
-          maps.stream()
-              .map(MapInfo::getName)
-              .map(name -> name.replace(" ", SPACE))
-              .collect(Collectors.toList());
+      names = maps.stream()
+          .map(MapInfo::getName)
+          .map(name -> name.replace(" ", SPACE))
+          .collect(Collectors.toList());
     }
     return names;
   }
 
   public static List<String> getMapNames() {
     return convertMapNames(Lists.newArrayList(PGM.get().getMapLibrary().getMaps()));
-  }
-
-  public static List<String> getAllowedMapNames() {
-    if (isPGMEnabled()) {
-      return convertMapNames(
-          Lists.newArrayList(PGM.get().getMapLibrary().getMaps()).stream()
-              .filter(PGMUtils::isMapSizeAllowed)
-              .collect(Collectors.toList()));
-    }
-    return Lists.newArrayList();
   }
 
   public static boolean compareMatchLength(Duration time) {
@@ -76,21 +66,58 @@ public class PGMUtils {
     return isPGMEnabled() && getMatch() != null ? getMatch().getMap() : null;
   }
 
-  public static boolean isMapSizeAllowed(MapInfo map) {
+  public static class MapSizeBounds {
+    private int lowerBound;
+    private int upperBound;
+
+    public MapSizeBounds(int lowerBound, int upperBound) {
+      this.lowerBound = lowerBound;
+      this.upperBound = upperBound;
+    }
+
+    public int getLowerBound() {
+      return lowerBound;
+    }
+
+    public int getUpperBound() {
+      return upperBound;
+    }
+  }
+
+  public static boolean isMapSizeAllowed(MapInfo map, int lowerBoundOffset, int upperBoundOffset) {
     if (isPGMEnabled()) {
-      Match match = getMatch();
-      int participants = match.getParticipants().size();
-      int observers = match.getObservers().size();
-      int total = participants + (observers / 4);
+      MapSizeBounds bounds = getMapSizeBounds(lowerBoundOffset, upperBoundOffset);
 
-      int max = map.getMaxPlayers().stream().reduce(0, Integer::sum);
-      int lowerBound = participants;
-      int upperBound = Math.max(5, total + (int) (total * 0.35));
+      int max = getMapMaxSize(map);
 
-      return max >= lowerBound && max <= upperBound;
+      return max >= bounds.getLowerBound() && max <= bounds.getUpperBound();
     }
 
     return true;
+  }
+
+  public static int getMapMaxSize(MapInfo map) {
+    return map.getMaxPlayers().stream().reduce(0, Integer::sum);
+  }
+
+  public static MapSizeBounds getMapSizeBounds(int lowerBoundOffset, int upperBoundOffset) {
+    if (!isPGMEnabled()) return new MapSizeBounds(0, 150);
+
+    Match match = getMatch();
+    boolean isFinished = match.getPhase() == MatchPhase.FINISHED;
+    int participants = match.getParticipants().size();
+    int observers = match.getObservers().size();
+    int total = participants + (observers / 4);
+
+    int lowerBound = participants;
+    int upperBound = Math.max(5, total + (int) (total * 0.35));
+
+    if (isFinished) {
+      lowerBound = Math.max(0, lowerBound - lowerBoundOffset);
+      upperBound += upperBoundOffset;
+    }
+
+    return new MapSizeBounds(lowerBound, upperBound);
   }
 
   public static MapInfo parseMapText(String input) throws TextException {

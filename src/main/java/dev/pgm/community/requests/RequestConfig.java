@@ -23,6 +23,8 @@ public class RequestConfig extends FeatureConfigImpl {
   private static final String MAX_TOKENS = SPONSORS + ".max-tokens";
   private static final String REFUND = SPONSORS + ".refund";
   private static final String MAP_COOLDOWN_MULTIPLY = SPONSORS + ".map-cooldown";
+  private static final String LOWER_LIMIT_OFFSET = SPONSORS + ".lower-limit-offset";
+  private static final String UPPER_LIMIT_OFFSET = SPONSORS + ".upper-limit-offset";
 
   private Duration cooldown; // Cooldown for using /request
   private Duration sponsorCooldown; // Default cooldown for sponsor requests
@@ -39,6 +41,9 @@ public class RequestConfig extends FeatureConfigImpl {
   private boolean refund; // If token should be refunded when vote is successful
 
   private int mapCooldownMultiply; // # to multiply match length by to determine cooldown
+
+  private int lowerLimitOffset; // Offset to apply on match end to lower map size bound
+  private int upperLimitOffset; // Offset to apply on match end to upper map size bound
 
   public RequestConfig(Configuration config) {
     super(KEY, config);
@@ -92,6 +97,14 @@ public class RequestConfig extends FeatureConfigImpl {
     return mapCooldownMultiply;
   }
 
+  public int getLowerLimitOffset() {
+    return lowerLimitOffset;
+  }
+
+  public int getUpperLimitOffset() {
+    return upperLimitOffset;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -104,5 +117,7 @@ public class RequestConfig extends FeatureConfigImpl {
     this.maxQueue = config.getInt(SPONSORS_LIMIT);
     this.refund = config.getBoolean(REFUND);
     this.mapCooldownMultiply = config.getInt(MAP_COOLDOWN_MULTIPLY);
+    this.lowerLimitOffset = config.getInt(LOWER_LIMIT_OFFSET);
+    this.upperLimitOffset = config.getInt(UPPER_LIMIT_OFFSET);
   }
 }

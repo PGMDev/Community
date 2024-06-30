@@ -1,11 +1,8 @@
 package dev.pgm.community.requests.feature;
 
 import static dev.pgm.community.utils.MessageUtils.formatTokenTransaction;
-import static dev.pgm.community.utils.PGMUtils.compareMatchLength;
 import static dev.pgm.community.utils.PGMUtils.getCurrentMap;
 import static dev.pgm.community.utils.PGMUtils.isBlitz;
-import static dev.pgm.community.utils.PGMUtils.isMapSizeAllowed;
-import static dev.pgm.community.utils.PGMUtils.isMatchRunning;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
@@ -30,11 +27,11 @@ import dev.pgm.community.requests.menu.SponsorMenu;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
+import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
 import dev.pgm.community.utils.Sounds;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +58,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.api.map.MapInfo.VariantInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
@@ -121,7 +119,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   @Override
   public List<MapInfo> getAvailableSponsorMaps() {
     return Lists.newArrayList(PGM.get().getMapLibrary().getMaps()).stream()
-        .filter(PGMUtils::isMapSizeAllowed)
+        .filter(this::isMapSizeAllowed)
         .filter(m -> m.getPhase() == Phase.PRODUCTION)
         .filter(m -> !hasMapCooldown(m))
         .collect(Collectors.toList());
@@ -179,15 +177,36 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     });
   }
 
+  private SponsorRequest getNextSponsor() {
+    Queue<SponsorRequest> requests = new LinkedList<>();
+    SponsorRequest validRequest = null;
+
+    while (!sponsors.isEmpty()) {
+      SponsorRequest request = sponsors.poll();
+      if (isMapSizeAllowed(request.getMap())) {
+        validRequest = request;
+        break;
+      } else {
+        requests.offer(request);
+        sendWrongSizeMapError(request);
+      }
+    }
+
+    while (!requests.isEmpty()) {
+      sponsors.offer(requests.poll());
+    }
+
+    return validRequest;
+  }
+
   @EventHandler
   public void onMatchEnd(MatchFinishEvent event) {
     if (currentSponsor != null) { // Reset current sponsor after match ends
       currentSponsor = null;
     }
 
+    // Add cooldown for existing map and all variants
     startNewMapCooldown(event.getMatch().getMap(), event.getMatch().getDuration());
-
-    checkQueuedMaps(); // Check if any sponsor requests should be removed
 
     MapPoolManager poolManager = getPoolManager();
     if (poolManager == null) return; // Cancel if pool manager not found
@@ -195,7 +214,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     VotePoolOptions options = poolManager.getVoteOptions();
 
     if (!sponsors.isEmpty() && options.canAddMap()) {
-      SponsorRequest nextRequest = sponsors.poll();
+      SponsorRequest nextRequest = getNextSponsor();
+
       if (nextRequest != null) {
         // Notify PGM of sponsored map
         options.addMap(nextRequest.getMap(), nextRequest.getPlayerId());
@@ -354,35 +374,15 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   public void sponsor(Player player, MapInfo map) {
     Audience viewer = Audience.get(player);
 
-    if (!isMatchRunning()) {
-      viewer.sendWarning(text("Please wait until 30 seconds after the next match starts"));
-      return;
-    }
-
+    // Disallow current map from being selected
     if (getCurrentMap() != null && getCurrentMap().equals(map)) {
       viewer.sendWarning(text("Please select a different map"));
       return;
     }
 
-    if (isBlitz()) {
-      viewer.sendWarning(text("Sorry, sponsoring is disabled during blitz"));
-      return;
-    }
-
+    // Disallow Sponsor during map party
     if (isPartyActive()) {
       viewer.sendWarning(text("Sorry, sponsoring is disabled during the party"));
-      return;
-    }
-
-    // Ensure match is RUNNING and OVER one minute
-    if (!compareMatchLength(Duration.ofSeconds(30))) {
-      viewer.sendWarning(text()
-          .append(text("The match just started!"))
-          .append(newline())
-          .append(text("Please try again after "))
-          .append(text("30 seconds", NamedTextColor.AQUA))
-          .append(text(" of the match has passed"))
-          .build());
       return;
     }
 
@@ -406,7 +406,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     // Check if map has a cooldown
     if (hasMapCooldown(map)) {
-      MapCooldown cooldown = mapCooldown.get(map);
+      MapCooldown cooldown = getMapCooldown(map);
       viewer.sendWarning(text()
           .append(text("This map can be sponsored in ", NamedTextColor.RED))
           .append(TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
@@ -417,10 +417,14 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     // Check map size
     if (!isMapSizeAllowed(map)) {
       viewer.sendWarning(text()
-          .append(map.getStyledName(MapNameStyle.COLOR))
-          .append(text(" does not fit the online player count"))
+          .append(map.getStyledName(MapNameStyle.COLOR)
+              .hoverEvent(HoverEvent.showText(text()
+                  .append(text("Max of ", NamedTextColor.GRAY))
+                  .append(text(PGMUtils.getMapMaxSize(map), NamedTextColor.RED)))))
+          .append(text(" does not fit the online player count "))
+          .append(getMapSizeBoundsComponent())
           .append(newline())
-          .append(text("Please request a different map"))
+          .append(text("Please request a different map!"))
           .build());
       return;
     }
@@ -471,7 +475,13 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
             .hoverEvent(showText(text("Click to view queue status", NamedTextColor.GRAY)))
             .build());
       } else {
-        viewer.sendMessage(text("Request will be added to the next map vote", NamedTextColor.GRAY));
+        if (isBlitz()) {
+          viewer.sendMessage(
+              text("Request will be added to the next non-blitz map vote", NamedTextColor.GRAY));
+        } else {
+          viewer.sendMessage(
+              text("Request will be added to the next map vote", NamedTextColor.GRAY));
+        }
       }
     });
   }
@@ -540,8 +550,52 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   @Override
+  public MapSizeBounds getCurrentMapSizeBounds() {
+    return PGMUtils.getMapSizeBounds(
+        getRequestConfig().getLowerLimitOffset(), getRequestConfig().getUpperLimitOffset());
+  }
+
+  private boolean isACooldownVariant(MapInfo map) {
+    return mapCooldown.entrySet().stream().anyMatch((entry) -> {
+      MapInfo otherMap = entry.getKey();
+      MapCooldown cooldown = entry.getValue();
+
+      if (cooldown.hasExpired()) return false;
+
+      for (VariantInfo variant : otherMap.getVariants().values()) {
+        if (variant.getMapId().equalsIgnoreCase(map.getId())) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+  }
+
+  private MapCooldown getMapCooldown(MapInfo map) {
+    if (mapCooldown.containsKey(map)) {
+      return mapCooldown.get(map);
+    }
+
+    for (Map.Entry<MapInfo, MapCooldown> entry : mapCooldown.entrySet()) {
+      MapInfo otherMap = entry.getKey();
+      MapCooldown cooldown = entry.getValue();
+
+      for (VariantInfo variant : otherMap.getVariants().values()) {
+        if (variant.getMapId().equalsIgnoreCase(map.getId())) {
+          return cooldown;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  @Override
   public boolean hasMapCooldown(MapInfo map) {
-    MapCooldown cooldown = mapCooldown.get(map);
+    if (isACooldownVariant(map)) return true;
+
+    MapCooldown cooldown = getMapCooldown(map);
     if (cooldown == null) return false;
 
     if (cooldown.hasExpired()) {
@@ -698,25 +752,50 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
             Instant.now(), matchLength.multipliedBy(getRequestConfig().getMapCooldownMultiply())));
   }
 
-  private void checkQueuedMaps() {
-    Iterator<SponsorRequest> queue = this.sponsors.iterator();
-    while (queue.hasNext()) {
-      SponsorRequest request = queue.next();
-      if (!isMapSizeAllowed(request.getMap())) {
-        Player player = Bukkit.getPlayer(request.getPlayerId());
-        Audience viewer = Audience.get(player);
-        viewer.sendWarning(text()
-            .append(request.getMap().getStyledName(MapNameStyle.COLOR))
-            .append(text(" no longer fits the online player count.", NamedTextColor.RED))
-            .build());
-        queue.remove();
-      }
-    }
-  }
-
   private boolean isPartyActive() {
     if (!Community.get().getFeatures().getParty().isEnabled()) return false;
     MapParty party = Community.get().getFeatures().getParty().getParty();
     return party != null && party.isSetup() && party.isRunning();
+  }
+
+  private boolean isMapSizeAllowed(MapInfo map) {
+    return PGMUtils.isMapSizeAllowed(
+        map, getRequestConfig().getLowerLimitOffset(), getRequestConfig().getUpperLimitOffset());
+  }
+
+  private void sendWrongSizeMapError(SponsorRequest request) {
+    Player player = Bukkit.getPlayer(request.getPlayerId());
+    if (player == null || !player.isOnline()) return;
+    Audience viewer = Audience.get(player);
+
+    Component remove = text()
+        .append(text("[", NamedTextColor.GRAY))
+        .append(text("Remove", NamedTextColor.YELLOW))
+        .append(text("]", NamedTextColor.GRAY))
+        .hoverEvent(HoverEvent.showText(
+            text("Click to remove map from sponsor queue", NamedTextColor.GRAY)))
+        .clickEvent(ClickEvent.runCommand("/sponsor cancel"))
+        .build();
+
+    viewer.sendWarning(text()
+        .append(request.getMap().getStyledName(MapNameStyle.COLOR))
+        .append(text(" no longer fits the online player count "))
+        .append(getMapSizeBoundsComponent())
+        .append(text(". We'll try again after the next match, or you can "))
+        .append(remove)
+        .append(text(" and select a new map to sponsor.")));
+  }
+
+  private Component getMapSizeBoundsComponent() {
+    MapSizeBounds bounds = getCurrentMapSizeBounds();
+    int min = bounds.getLowerBound();
+    int max = bounds.getUpperBound();
+    return text()
+        .append(text("(", NamedTextColor.GRAY))
+        .append(text(min, NamedTextColor.GOLD))
+        .append(text("-", NamedTextColor.GRAY))
+        .append(text(max, NamedTextColor.GOLD))
+        .append(text(")", NamedTextColor.GRAY))
+        .build();
   }
 }

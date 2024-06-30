@@ -6,6 +6,7 @@ import dev.pgm.community.feature.Feature;
 import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
+import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -149,4 +150,6 @@ public interface RequestFeature extends Feature {
   void openMenu(Player player);
 
   List<MapInfo> getAvailableSponsorMaps();
+
+  MapSizeBounds getCurrentMapSizeBounds();
 }
