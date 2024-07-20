@@ -8,6 +8,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
+import dev.pgm.community.utils.DatabaseUtils;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -21,15 +22,13 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
 
   public SQLSessionService() {
     super(TABLE_NAME, TABLE_FIELDS);
-    this.sessionCache =
-        CacheBuilder.newBuilder()
-            .build(
-                new CacheLoader<SessionQuery, SessionData>() {
-                  @Override
-                  public SessionData load(@Nonnull SessionQuery key) {
-                    return new SessionData(key.getPlayerId(), key.ignoreDisguised());
-                  }
-                });
+    this.sessionCache = CacheBuilder.newBuilder()
+        .build(new CacheLoader<SessionQuery, SessionData>() {
+          @Override
+          public SessionData load(@Nonnull SessionQuery key) {
+            return new SessionData(key.getPlayerId(), key.ignoreDisguised());
+          }
+        });
   }
 
   @Override
@@ -79,30 +78,28 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
       return DB.getFirstRowAsync(
               target.ignoreDisguised() ? SELECT_DISGUISED_SESSION_QUERY : SELECT_SESSION_QUERY,
               target.getPlayerId().toString())
-          .thenApplyAsync(
-              result -> {
-                if (result != null) {
-                  String id = result.getString("id");
+          .thenApplyAsync(result -> {
+            if (result != null) {
+              String id = result.getString("id");
 
-                  String player = result.getString("player");
-                  boolean disguised = result.get("disguised");
+              String player = result.getString("player");
+              boolean disguised = DatabaseUtils.parseBoolean(result, "disguised");
 
-                  String server = result.getString("server");
+              String server = result.getString("server");
 
-                  Object startTime = result.get("start_time");
-                  Object endTime = result.get("end_time");
+              Object startTime = result.get("start_time");
+              Object endTime = result.get("end_time");
 
-                  data.setSession(
-                      new Session(
-                          UUID.fromString(id),
-                          UUID.fromString(player),
-                          disguised,
-                          server,
-                          Instant.ofEpochMilli((Long) startTime),
-                          endTime == null ? null : Instant.ofEpochMilli((Long) endTime)));
-                }
-                return data.getSession();
-              });
+              data.setSession(new Session(
+                  UUID.fromString(id),
+                  UUID.fromString(player),
+                  disguised,
+                  server,
+                  Instant.ofEpochMilli((Long) startTime),
+                  endTime == null ? null : Instant.ofEpochMilli((Long) endTime)));
+            }
+            return data.getSession();
+          });
     }
   }
 

@@ -11,6 +11,7 @@ public class DatabaseConfig {
   private String databaseName;
   private String timezone;
   private int maxConnections;
+  private String sqliteFileName;
 
   public DatabaseConfig(Configuration config) {
     reload(config);
@@ -24,6 +25,7 @@ public class DatabaseConfig {
     this.databaseName = config.getString("database.databaseName");
     this.timezone = config.getString("database.timezone");
     this.maxConnections = config.getInt("database.max-connections");
+    this.sqliteFileName = config.getString("database.sqlite-file");
   }
 
   public boolean isEnabled() {
@@ -51,6 +53,10 @@ public class DatabaseConfig {
   }
 
   public int getMaxDatabaseConnections() {
-    return maxConnections;
+    return isEnabled() ? maxConnections : 1;
+  }
+
+  public String getSQLiteFileName() {
+    return sqliteFileName;
   }
 }

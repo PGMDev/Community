@@ -7,6 +7,7 @@ import com.google.common.cache.LoadingCache;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.UserProfileImpl;
+import dev.pgm.community.utils.DatabaseUtils;
 import dev.pgm.community.utils.NameUtils;
 import java.time.Instant;
 import java.util.List;
@@ -21,15 +22,12 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
   public SQLUserService() {
     super(TABLE_NAME, TABLE_FIELDS);
 
-    this.profileCache =
-        CacheBuilder.newBuilder()
-            .build(
-                new CacheLoader<UUID, UserData>() {
-                  @Override
-                  public UserData load(UUID key) throws Exception {
-                    return new UserData(key);
-                  }
-                });
+    this.profileCache = CacheBuilder.newBuilder().build(new CacheLoader<UUID, UserData>() {
+      @Override
+      public UserData load(UUID key) throws Exception {
+        return new UserData(key);
+      }
+    });
   }
 
   @Override
@@ -54,11 +52,10 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
 
     // If Username, search through looking for existing usernames in profiles
     if (NameUtils.isMinecraftName(target)) {
-      Optional<UserData> uQuery =
-          profileCache.asMap().values().stream()
-              .filter(u -> u.getUsername() != null)
-              .filter(u -> u.getUsername().equalsIgnoreCase(target))
-              .findAny();
+      Optional<UserData> uQuery = profileCache.asMap().values().stream()
+          .filter(u -> u.getUsername() != null)
+          .filter(u -> u.getUsername().equalsIgnoreCase(target))
+          .findAny();
       // If profile is cached with matching username
       if (uQuery.isPresent()) {
         data = uQuery.get();
@@ -72,22 +69,21 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
     }
 
     return DB.getFirstRowAsync(data == null ? USERNAME_QUERY : PLAYERID_QUERY, target)
-        .thenApplyAsync(
-            result -> {
-              if (result != null) {
-                final UUID id = UUID.fromString(result.getString("id"));
-                final String username = result.getString("name");
-                final long firstJoin = Long.parseLong(result.getString("first_join"));
-                final int joinCount = result.getInt("join_count");
+        .thenApplyAsync(result -> {
+          if (result != null) {
+            final UUID id = UUID.fromString(result.getString("id"));
+            final String username = result.getString("name");
+            final long firstJoin = DatabaseUtils.parseLong(result, "first_join");
+            final int joinCount = result.getInt("join_count");
 
-                UserData loadedData = new UserData(id);
-                loadedData.setProfile(
-                    new UserProfileImpl(id, username, Instant.ofEpochMilli(firstJoin), joinCount));
-                profileCache.put(id, loadedData);
-                return loadedData.getProfile();
-              }
-              return null;
-            });
+            UserData loadedData = new UserData(id);
+            loadedData.setProfile(
+                new UserProfileImpl(id, username, Instant.ofEpochMilli(firstJoin), joinCount));
+            profileCache.put(id, loadedData);
+            return loadedData.getProfile();
+          }
+          return null;
+        });
   }
 
   private void update(UserProfile profile) {
@@ -100,21 +96,19 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
 
   // Increase join count, set last login, check for username change
   public CompletableFuture<UserProfile> login(UUID id, String username, String address) {
-    return query(id.toString())
-        .thenApplyAsync(
-            profile -> {
-              if (profile == null) {
-                // No profile? Save a new one
-                profile = new UserProfileImpl(id, username);
-                save(profile);
-              } else {
-                // Existing profile - Update name, login, joins
-                profile.setUsername(username);
-                profile.incJoinCount();
-                update(profile);
-              }
-              return profile;
-            });
+    return query(id.toString()).thenApplyAsync(profile -> {
+      if (profile == null) {
+        // No profile? Save a new one
+        profile = new UserProfileImpl(id, username);
+        save(profile);
+      } else {
+        // Existing profile - Update name, login, joins
+        profile.setUsername(username);
+        profile.incJoinCount();
+        update(profile);
+      }
+      return profile;
+    });
   }
 
   private class UserData {

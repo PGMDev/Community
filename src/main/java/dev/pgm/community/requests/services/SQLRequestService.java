@@ -7,6 +7,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.requests.RequestProfile;
+import dev.pgm.community.utils.DatabaseUtils;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -96,14 +97,14 @@ public class SQLRequestService extends SQLFeatureBase<RequestProfile, String>
           .thenApplyAsync(result -> {
             if (result != null) {
               final UUID id = UUID.fromString(result.getString("id"));
-              final long lastRequest = Long.parseLong(result.getString("last_request_time"));
+              final long lastRequest = DatabaseUtils.parseLong(result, "last_request_time");
               final String lastRequestMap = result.getString("last_request_map");
-              final long lastSponsor = Long.parseLong(result.getString("last_sponsor_time"));
+              final long lastSponsor = DatabaseUtils.parseLong(result, "last_sponsor_time");
               final String lastSponsorMap = result.getString("last_sponsor_map");
               final int tokens = result.getInt("tokens");
-              final long lastToken = Long.parseLong(result.getString("last_token_refresh"));
+              final long lastToken = DatabaseUtils.parseLong(result, "last_token_refresh");
               final int superVotes = result.getInt("super_votes");
-              final long lastSuperVote = Long.parseLong(result.getString("last_super_vote"));
+              final long lastSuperVote = DatabaseUtils.parseLong(result, "last_super_vote");
 
               final Instant lastRequestTime =
                   lastRequest == -1 ? null : Instant.ofEpochMilli(lastRequest);

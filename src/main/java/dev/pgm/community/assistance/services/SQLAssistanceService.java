@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import dev.pgm.community.Community;
 import dev.pgm.community.assistance.Report;
 import dev.pgm.community.feature.SQLFeatureBase;
+import dev.pgm.community.utils.DatabaseUtils;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -59,7 +60,7 @@ public class SQLAssistanceService extends SQLFeatureBase<Report, String>
             String id = row.getString("id");
             String sender = row.getString("sender");
             String reason = row.getString("reason");
-            long time = Long.parseLong(row.getString("time"));
+            long time = DatabaseUtils.parseLong(row, "time");
             reports
                 .getReports()
                 .add(new Report(

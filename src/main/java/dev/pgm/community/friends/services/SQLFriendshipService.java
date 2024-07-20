@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.friends.Friendship;
 import dev.pgm.community.friends.Friendship.FriendshipStatus;
+import dev.pgm.community.utils.DatabaseUtils;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,15 +24,13 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
 
   public SQLFriendshipService() {
     super(TABLE_NAME, TABLE_FIELDS);
-    this.friendshipCache =
-        CacheBuilder.newBuilder()
-            .build(
-                new CacheLoader<UUID, PlayerFriendships>() {
-                  @Override
-                  public PlayerFriendships load(UUID key) throws Exception {
-                    return new PlayerFriendships(key);
-                  }
-                });
+    this.friendshipCache = CacheBuilder.newBuilder()
+        .build(new CacheLoader<UUID, PlayerFriendships>() {
+          @Override
+          public PlayerFriendships load(UUID key) throws Exception {
+            return new PlayerFriendships(key);
+          }
+        });
   }
 
   @Override
@@ -97,35 +96,33 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
       return CompletableFuture.completedFuture(new ArrayList<>(playerFriendships.getFriendships()));
     } else {
       return DB.getResultsAsync(SELECT_FRIENDSHIPS_QUERY, playerId.toString(), playerId.toString())
-          .thenApplyAsync(
-              results -> {
-                if (results != null) {
-                  for (DbRow row : results) {
-                    String id = row.getString("id");
-                    String requester = row.getString("requester");
-                    String requested = row.getString("requested");
-                    String status = row.getString("status");
-                    long requestDate = Long.parseLong(row.getString("requestDate"));
-                    long updateDate = Long.parseLong(row.getString("updateDate"));
+          .thenApplyAsync(results -> {
+            if (results != null) {
+              for (DbRow row : results) {
+                String id = row.getString("id");
+                String requester = row.getString("requester");
+                String requested = row.getString("requested");
+                String status = row.getString("status");
+                long requestDate = DatabaseUtils.parseLong(row, "requestDate");
+                long updateDate = DatabaseUtils.parseLong(row, "updateDate");
 
-                    Instant requestInstant = Instant.ofEpochMilli(requestDate);
-                    Instant updateInstant = Instant.ofEpochMilli(updateDate);
+                Instant requestInstant = Instant.ofEpochMilli(requestDate);
+                Instant updateInstant = Instant.ofEpochMilli(updateDate);
 
-                    playerFriendships
-                        .getFriendships()
-                        .add(
-                            new Friendship(
-                                UUID.fromString(id),
-                                UUID.fromString(requester),
-                                UUID.fromString(requested),
-                                FriendshipStatus.valueOf(status.toUpperCase()),
-                                requestInstant,
-                                updateInstant));
-                  }
-                }
-                playerFriendships.setLoaded(true);
-                return new ArrayList<>(playerFriendships.getFriendships());
-              });
+                playerFriendships
+                    .getFriendships()
+                    .add(new Friendship(
+                        UUID.fromString(id),
+                        UUID.fromString(requester),
+                        UUID.fromString(requested),
+                        FriendshipStatus.valueOf(status.toUpperCase()),
+                        requestInstant,
+                        updateInstant));
+              }
+            }
+            playerFriendships.setLoaded(true);
+            return new ArrayList<>(playerFriendships.getFriendships());
+          });
     }
   }
 

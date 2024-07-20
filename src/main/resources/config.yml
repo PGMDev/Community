@@ -1,6 +1,6 @@
 # 
 # Community
-# A plugin for managing a Minecraft community
+# A plugin for managing a Minecraft PGM community
 #
 general:
   # Display name for the network used in various locations.
@@ -346,12 +346,16 @@ network:
 #      message: false
   
   
-# Database connection info 
 database:
-  enabled: true # True for mysql, false for sqlite
-  username: "username"
+  enabled: false # True for MySQL, false for SQLite
+  
+  # SQLite settings (used if enabled is false)
+  sqlite-file: "community.sql"
+  
+  # MySQL settings (used if enabled is true)
+  username: "username" 
   password: "password"
   databaseName: "minecraft"
-  host: "localhost:3306"
-  timezone: "America/Los_Angeles"  
-  max-connections: 2
+  host: "localhost:3306" # host and port
+  timezone: "America/Los_Angeles" # Database timezone
+  max-connections: 2 # Maximum simultaneous connections (does not impact SQLite)

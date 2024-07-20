@@ -11,6 +11,7 @@ import dev.pgm.community.moderation.ModerationConfig;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
+import dev.pgm.community.utils.DatabaseUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -34,15 +35,13 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
   public SQLModerationService(ModerationConfig config) {
     super(TABLE_NAME, TABLE_FIELDS);
     this.config = config;
-    this.punishmentCache =
-        CacheBuilder.newBuilder()
-            .build(
-                new CacheLoader<UUID, PlayerPunishments>() {
-                  @Override
-                  public PlayerPunishments load(UUID key) throws Exception {
-                    return new PlayerPunishments(key);
-                  }
-                });
+    this.punishmentCache = CacheBuilder.newBuilder()
+        .build(new CacheLoader<UUID, PlayerPunishments>() {
+          @Override
+          public PlayerPunishments load(UUID key) throws Exception {
+            return new PlayerPunishments(key);
+          }
+        });
   }
 
   @Override
@@ -76,45 +75,43 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
       return CompletableFuture.completedFuture(punishments.getPunishments());
     } else {
       return DB.getResultsAsync(SELECT_PUNISHMENTS_QUERY, playerId.toString())
-          .thenApplyAsync(
-              results -> {
-                if (results != null && !results.isEmpty()) {
-                  for (DbRow row : results) {
-                    String id = row.getString("id");
-                    String issuer = row.getString("issuer");
-                    String reason = row.getString("reason");
-                    String type = row.getString("type");
-                    long time = Long.parseLong(row.getString("time"));
-                    long expires = Long.parseLong(row.getString("expires"));
-                    Duration length =
-                        Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
-                    boolean active = row.get("active");
-                    long lastUpdateTime = Long.parseLong(row.getString("last_updated"));
-                    String lastUpdateBy = row.getString("updated_by");
-                    String service = row.getString("service");
+          .thenApplyAsync(results -> {
+            if (results != null && !results.isEmpty()) {
+              for (DbRow row : results) {
+                String id = row.getString("id");
+                String issuer = row.getString("issuer");
+                String reason = row.getString("reason");
+                String type = row.getString("type");
+                long time = DatabaseUtils.parseLong(row, "time");
+                long expires = DatabaseUtils.parseLong(row, "expires");
+                Duration length =
+                    Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
+                boolean active = row.get("active");
+                long lastUpdateTime = DatabaseUtils.parseLong(row, "last_updated");
+                String lastUpdateBy = row.getString("updated_by");
+                String service = row.getString("service");
 
-                    punishments
-                        .getPunishments()
-                        .add(
-                            Punishment.of(
-                                UUID.fromString(id),
-                                playerId,
-                                parseIssuer(issuer),
-                                reason,
-                                time,
-                                length,
-                                PunishmentType.valueOf(type.toUpperCase()),
-                                active,
-                                lastUpdateTime,
-                                parseIssuer(lastUpdateBy),
-                                service));
-                  }
-                }
+                punishments
+                    .getPunishments()
+                    .add(Punishment.of(
+                        UUID.fromString(id),
+                        playerId,
+                        parseIssuer(issuer),
+                        reason,
+                        time,
+                        length,
+                        PunishmentType.valueOf(type.toUpperCase()),
+                        active,
+                        lastUpdateTime,
+                        parseIssuer(lastUpdateBy),
+                        service));
+              }
+            }
 
-                punishments.setLoaded(true);
+            punishments.setLoaded(true);
 
-                return punishments.getPunishments();
-              });
+            return punishments.getPunishments();
+          });
     }
   }
 
@@ -192,84 +189,76 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
   }
 
   public CompletableFuture<Boolean> isBanned(String id) {
-    return queryList(id)
-        .thenApplyAsync(
-            punishments -> {
-              boolean banned = false;
-              for (Punishment p : punishments) {
-                if (p.getType().isLoginPrevented() && p.isActive()) {
-                  banned = true;
-                  break;
-                }
-              }
-              return banned;
-            });
+    return queryList(id).thenApplyAsync(punishments -> {
+      boolean banned = false;
+      for (Punishment p : punishments) {
+        if (p.getType().isLoginPrevented() && p.isActive()) {
+          banned = true;
+          break;
+        }
+      }
+      return banned;
+    });
   }
 
   public CompletableFuture<Optional<Punishment>> isMuted(UUID target) {
-    return queryList(target.toString())
-        .thenApplyAsync(
-            punishments -> {
-              if (punishments.isEmpty()) return Optional.empty();
-              return punishments.stream()
-                  .filter(p -> p.getType() == PunishmentType.MUTE && p.isActive())
-                  .findFirst();
-            });
+    return queryList(target.toString()).thenApplyAsync(punishments -> {
+      if (punishments.isEmpty()) return Optional.empty();
+      return punishments.stream()
+          .filter(p -> p.getType() == PunishmentType.MUTE && p.isActive())
+          .findFirst();
+    });
   }
 
   public CompletableFuture<Optional<Punishment>> getActiveBan(String id) {
-    return queryList(id)
-        .thenApplyAsync(
-            punishments -> {
-              for (Punishment p : punishments) {
-                if (p.getType().isLoginPrevented() && p.isActive()) {
-                  return Optional.of(p);
-                }
-              }
-              return Optional.empty();
-            });
+    return queryList(id).thenApplyAsync(punishments -> {
+      for (Punishment p : punishments) {
+        if (p.getType().isLoginPrevented() && p.isActive()) {
+          return Optional.of(p);
+        }
+      }
+      return Optional.empty();
+    });
   }
 
   public CompletableFuture<List<Punishment>> getRecentPunishments(Duration period) {
     return DB.getResultsAsync(
             SELECT_RECENT_QUERY, Instant.now().toEpochMilli() - period.toMillis(), RECENT_LIMIT)
-        .thenApplyAsync(
-            results -> {
-              List<Punishment> punishments = Lists.newArrayList();
+        .thenApplyAsync(results -> {
+          List<Punishment> punishments = Lists.newArrayList();
 
-              if (results != null && !results.isEmpty()) {
-                for (DbRow row : results) {
-                  String id = row.getString("id");
-                  String target = row.getString("punished");
-                  String issuer = row.getString("issuer");
-                  String reason = row.getString("reason");
-                  String type = row.getString("type");
-                  long time = Long.parseLong(row.getString("time"));
-                  long expires = Long.parseLong(row.getString("expires"));
-                  Duration length =
-                      Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
-                  boolean active = row.get("active");
-                  long lastUpdateTime = Long.parseLong(row.getString("last_updated"));
-                  String lastUpdateBy = row.getString("updated_by");
-                  String service = row.getString("service");
-                  punishments.add(
-                      Punishment.of(
-                          UUID.fromString(id),
-                          UUID.fromString(target),
-                          parseIssuer(issuer),
-                          reason,
-                          time,
-                          length,
-                          PunishmentType.valueOf(type.toUpperCase()),
-                          active,
-                          lastUpdateTime,
-                          parseIssuer(lastUpdateBy),
-                          service));
-                }
-              }
+          if (results != null && !results.isEmpty()) {
+            for (DbRow row : results) {
+              String id = row.getString("id");
+              String target = row.getString("punished");
+              String issuer = row.getString("issuer");
+              String reason = row.getString("reason");
+              String type = row.getString("type");
+              long time = Long.parseLong(row.getString("time"));
+              long expires = Long.parseLong(row.getString("expires"));
+              Duration length =
+                  Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
+              boolean active = row.get("active");
+              long lastUpdateTime = Long.parseLong(row.getString("last_updated"));
+              String lastUpdateBy = row.getString("updated_by");
+              String service = row.getString("service");
+              punishments.add(Punishment.of(
+                  UUID.fromString(id),
+                  UUID.fromString(target),
+                  parseIssuer(issuer),
+                  reason,
+                  time,
+                  length,
+                  PunishmentType.valueOf(type.toUpperCase()),
+                  active,
+                  lastUpdateTime,
+                  parseIssuer(lastUpdateBy),
+                  service));
+            }
+          }
 
-              return punishments;
-            });
+          return punishments;
+        });
   }
 
   public void invalidate(UUID playerId) {
