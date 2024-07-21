@@ -13,6 +13,8 @@ Community offers an all-in-one solution for managing Minecraft PGM server commun
 - Nickname System
 - Map Party System
 - Match Mutations
+- Player Party/Squad System
+- Polls
 - Cross-Server Chat & Report Functionality
 - Utility Commands
 

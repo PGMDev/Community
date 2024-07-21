@@ -4,6 +4,7 @@ import dev.pgm.community.commands.graph.CommunityCommandGraph;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
+import dev.pgm.community.text.TextTranslations;
 import dev.pgm.community.utils.PGMUtils;
 import fr.minuskube.inv.InventoryManager;
 import java.util.Random;
@@ -77,11 +78,16 @@ public class Community extends JavaPlugin {
     this.inventory.init();
   }
 
+  private void setupTranslations() {
+    TextTranslations.load();
+  }
+
   public void registerListener(Listener listener) {
     getServer().getPluginManager().registerEvents(listener, this);
   }
 
   private void setupFeatures() {
+    this.setupTranslations();
     this.setupInventory();
     this.features = new FeatureManager(getConfig(), getLogger(), database, inventory);
     this.setupCommands();
@@ -126,8 +132,7 @@ public class Community extends JavaPlugin {
   // REMOVE WHEN NOT IN DEV
   public static void log(String format, Object... objects) {
     Bukkit.getConsoleSender()
-        .sendMessage(
-            ChatColor.translateAlternateColorCodes(
-                '&', String.format("&7[&4Community&7]&r " + format, objects)));
+        .sendMessage(ChatColor.translateAlternateColorCodes(
+            '&', String.format("&7[&4Community&7]&r " + format, objects)));
   }
 }

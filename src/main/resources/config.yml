@@ -322,6 +322,11 @@ polls:
   # The default threshold required for a poll to pass.
   # Options: "CLEAR_MINORITY", "SIMPLE", "TWO_THIRDS", "STRONG_MAJORITY"
   threshold: "simple" 
+  
+# Squads - Feature that allows players to form parties and play together in a coordinated manner.
+squads:
+  # Set to true to enable squads, false to disable.
+  enabled: true
 
 # Network - Features which assist in running Community on multiple servers  
 network:

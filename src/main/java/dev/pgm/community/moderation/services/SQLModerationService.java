@@ -86,7 +86,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
                 long expires = DatabaseUtils.parseLong(row, "expires");
                 Duration length =
                     Duration.between(Instant.ofEpochMilli(time), Instant.ofEpochMilli(expires));
-                boolean active = row.get("active");
+                boolean active = DatabaseUtils.parseBoolean(row, "active");
                 long lastUpdateTime = DatabaseUtils.parseLong(row, "last_updated");
                 String lastUpdateBy = row.getString("updated_by");
                 String service = row.getString("service");

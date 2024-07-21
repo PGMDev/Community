@@ -39,10 +39,12 @@ import dev.pgm.community.requests.commands.sponsor.SponsorCommands;
 import dev.pgm.community.requests.commands.sponsor.TokenCommands;
 import dev.pgm.community.requests.commands.supervotes.SuperVoteAdminCommands;
 import dev.pgm.community.requests.commands.supervotes.SuperVoteCommand;
+import dev.pgm.community.squads.SquadCommands;
 import dev.pgm.community.teleports.TeleportCommand;
 import dev.pgm.community.users.commands.UserInfoCommands;
 import dev.pgm.community.utils.CommandAudience;
 import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.PGM;
@@ -55,6 +57,8 @@ import tc.oc.pgm.command.injectors.MatchProvider;
 import tc.oc.pgm.command.injectors.PlayerProvider;
 import tc.oc.pgm.command.parsers.EnumParser;
 import tc.oc.pgm.command.parsers.MapInfoParser;
+import tc.oc.pgm.command.parsers.MatchPlayerParser;
+import tc.oc.pgm.command.parsers.OfflinePlayerParser;
 import tc.oc.pgm.command.parsers.PartyParser;
 import tc.oc.pgm.command.parsers.PlayerParser;
 import tc.oc.pgm.command.util.CommandGraph;
@@ -92,6 +96,8 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     registerParser(Player.class, new PlayerParser());
     registerParser(Party.class, PartyParser::new);
     registerParser(GameMode.class, new GameModeParser());
+    registerParser(OfflinePlayer.class, new OfflinePlayerParser());
+    registerParser(MatchPlayer.class, new MatchPlayerParser());
   }
 
   @Override
@@ -142,6 +148,9 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     register(new TokenCommands());
     register(new SuperVoteCommand());
     register(new SuperVoteAdminCommands());
+
+    // Squads
+    register(new SquadCommands());
 
     // Teleport
     register(new TeleportCommand());

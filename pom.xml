@@ -99,6 +99,15 @@
             <artifactId>Environment</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        
+        <!-- AFK Detection -->
+        <dependency>
+            <groupId>tc.oc.occ</groupId>
+            <artifactId>AFK</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        
       </dependencies>
 
     <build>

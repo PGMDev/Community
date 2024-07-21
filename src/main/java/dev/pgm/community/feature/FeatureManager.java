@@ -25,6 +25,7 @@ import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.requests.feature.types.SQLRequestFeature;
 import dev.pgm.community.sessions.feature.SessionFeature;
 import dev.pgm.community.sessions.feature.types.SQLSessionFeature;
+import dev.pgm.community.squads.SquadFeature;
 import dev.pgm.community.teleports.TeleportFeature;
 import dev.pgm.community.teleports.TeleportFeatureBase;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -56,6 +57,7 @@ public class FeatureManager {
   private final MobFeature mob;
   private final MapPartyFeature party;
   private final PollFeature polls;
+  private final SquadFeature squads;
 
   public FeatureManager(
       Configuration config,
@@ -91,6 +93,7 @@ public class FeatureManager {
     this.mob = new MobFeature(config, logger);
     this.party = new MapPartyFeature(config, logger);
     this.polls = new PollFeature(config, logger);
+    this.squads = new SquadFeature(config, logger);
   }
 
   public AssistanceFeature getReports() {
@@ -165,6 +168,10 @@ public class FeatureManager {
     return polls;
   }
 
+  public SquadFeature getSquads() {
+    return squads;
+  }
+
   public void reloadConfig(Configuration config) {
     // Reload all config values here
     getReports().getConfig().reload(config);
@@ -184,6 +191,7 @@ public class FeatureManager {
     getMobs().getConfig().reload(config);
     getParty().getConfig().reload(config);
     getPolls().getConfig().reload(config);
+    getSquads().getConfig().reload(config);
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
     // Will need to check isEnabled
@@ -207,5 +215,6 @@ public class FeatureManager {
     if (getMobs().isEnabled()) getMobs().disable();
     if (getParty().isEnabled()) getParty().disable();
     if (getPolls().isEnabled()) getPolls().disable();
+    if (getSquads().isEnabled()) getSquads().disable();
   }
 }
