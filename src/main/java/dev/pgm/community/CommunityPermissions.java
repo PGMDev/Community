@@ -107,7 +107,7 @@ public interface CommunityPermissions {
   String POLL = ROOT + ".poll";
 
   // Squads
-  String SQUAD = "squads.squad"; // Root command for squads
+  String SQUAD = ROOT + ".squad"; // Access to squad commands
   String SQUAD_CREATE = SQUAD + ".create"; // Can create a squad
 
   // General Commands

@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 public final class TextTranslations {
   private TextTranslations() {}
 
-  private static final Key NAMESPACE = key("squads", "translations");
+  private static final Key NAMESPACE = key("community", "translations");
 
   // Locale of the source code .properties files
   private static final Locale SOURCE_LOCALE = Locale.US;
