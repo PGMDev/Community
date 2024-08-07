@@ -60,9 +60,9 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
-import tc.oc.pgm.api.map.MapInfo.VariantInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
+import tc.oc.pgm.api.map.VariantInfo;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
 import tc.oc.pgm.api.match.event.MatchVoteFinishEvent;
 import tc.oc.pgm.events.PlayerJoinMatchEvent;
@@ -642,7 +642,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       if (cooldown.hasExpired()) return false;
 
       for (VariantInfo variant : otherMap.getVariants().values()) {
-        if (variant.getMapId().equalsIgnoreCase(map.getId())) {
+        if (variant.getId().equalsIgnoreCase(map.getId())) {
           return true;
         }
       }
@@ -661,7 +661,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
       MapCooldown cooldown = entry.getValue();
 
       for (VariantInfo variant : otherMap.getVariants().values()) {
-        if (variant.getMapId().equalsIgnoreCase(map.getId())) {
+        if (variant.getId().equalsIgnoreCase(map.getId())) {
           return cooldown;
         }
       }
