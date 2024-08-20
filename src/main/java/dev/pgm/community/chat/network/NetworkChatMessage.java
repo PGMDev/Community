@@ -5,6 +5,7 @@ import static tc.oc.pgm.util.player.PlayerComponent.player;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.channels.Channel;
 import tc.oc.pgm.util.event.ChannelMessageEvent;
 import tc.oc.pgm.util.named.NameStyle;
@@ -18,9 +19,8 @@ public class NetworkChatMessage {
   private Channel channel;
 
   public NetworkChatMessage(ChannelMessageEvent event, String server) {
-    this.message = TextTranslations.toMinecraftGson(text(event.getMessage()), null);
-    this.sender =
-        TextTranslations.toMinecraftGson(player(event.getSender(), NameStyle.FANCY), null);
+    this.message = toMinecraftGson(text(event.getMessage()));
+    this.sender = toMinecraftGson(player(event.getSender(), NameStyle.FANCY));
     this.channel = event.getChannel();
     this.server = server;
   }
@@ -39,5 +39,10 @@ public class NetworkChatMessage {
 
   public Channel getChannel() {
     return channel;
+  }
+
+  private static String toMinecraftGson(Component component) {
+    Component translated = TextTranslations.translate(component, Audience.empty());
+    return GsonComponentSerializer.colorDownsamplingGson().serialize(translated);
   }
 }
