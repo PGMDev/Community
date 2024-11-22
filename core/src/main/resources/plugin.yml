@@ -1,7 +1,7 @@
 name: Community
-description: ${project.description}
-main: ${project.mainClass}
-version: ${project.version} (git-${git.commit.id.abbrev})
-website: ${project.url}
-author: ${project.author}
+description: ${description}
+main: ${mainClass}
+version: ${version} (git-${commitHash})
+website: ${url}
+author: ${author}
 softdepend: [PGM, Environment, AFK]

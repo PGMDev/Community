@@ -1,6 +1,7 @@
-name: build
+name: Build
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches:
       - dev
@@ -17,13 +18,18 @@ jobs:
         with:
           java-version: 21
           distribution: temurin
-          cache: maven
-      - name: build
-        run: mvn install
+      # Configures gradle with caching
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      # Run "gradlew publish" for origin/dev and "gradlew build" for PRs or elsewhere
+      - name: Execute Gradle ${{ (github.repository == 'PGMDev/Community' && github.ref == 'refs/heads/dev') && 'Publish' || 'Build' }}
+        run: ./gradlew ${{ (github.repository == 'PGMDev/Community' && github.ref == 'refs/heads/dev') && 'publish' || 'build' }}
+        env:
+          GITHUB_TOKEN: ${{ (github.repository == 'PGMDev/Community' && github.ref == 'refs/heads/dev') && secrets.GITHUB_TOKEN || '' }}
       - name: artifact
         uses: actions/upload-artifact@v4
         with:
           name: Community.jar
-          path: target/Community.jar
+          path: build/libs/Community.jar
           if-no-files-found: error
 
