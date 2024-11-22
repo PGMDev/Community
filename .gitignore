@@ -13,7 +13,6 @@ bin/
 *.class
 *.log
 *.ctxt
-*.jar
 *.war
 *.nar
 *.ear
@@ -29,3 +28,6 @@ hs_err_pid*
 .classpath
 .project
 .settings
+build
+.gradle
+.DS_Store

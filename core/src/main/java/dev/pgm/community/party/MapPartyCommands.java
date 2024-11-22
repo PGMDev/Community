@@ -40,6 +40,7 @@ public class MapPartyCommands extends CommunityCommand {
       new MapPartyMainMenu(party, sender);
     } else {
       if (isPartyMissing(viewer)) return;
+
       party.sendPartyWelcome(sender);
     }
   }
@@ -160,21 +161,18 @@ public class MapPartyCommands extends CommunityCommand {
     if (isPartyMissing(viewer)) return;
     MapPartyHosts hosts = party.getParty().getHosts();
     PlayerSelection selection = getPlayers(viewer, targets);
-    selection
-        .getPlayers()
-        .forEach(
-            player -> {
-              if (!party.canHost(player)) {
-                viewer.sendWarning(MapPartyMessages.getAddHostError(player));
-                return;
-              }
+    selection.getPlayers().forEach(player -> {
+      if (!party.canHost(player)) {
+        viewer.sendWarning(MapPartyMessages.getAddHostError(player));
+        return;
+      }
 
-              if (hosts.isHost(player.getUniqueId())) {
-                viewer.sendWarning(MapPartyMessages.getExistingHostError(player));
-                return;
-              }
-              hosts.addSubHost(player);
-            });
+      if (hosts.isHost(player.getUniqueId())) {
+        viewer.sendWarning(MapPartyMessages.getExistingHostError(player));
+        return;
+      }
+      hosts.addSubHost(player);
+    });
   }
 
   @Command("hosts remove <target>")
@@ -183,11 +181,10 @@ public class MapPartyCommands extends CommunityCommand {
     if (isPartyMissing(viewer)) return;
     MapPartyHosts hosts = party.getParty().getHosts();
     if (!hosts.removeSubHost(target.getIdentifier())) {
-      viewer.sendWarning(
-          text()
-              .append(text(target.getIdentifier(), NamedTextColor.DARK_AQUA))
-              .append(text(" is not a party host"))
-              .build());
+      viewer.sendWarning(text()
+          .append(text(target.getIdentifier(), NamedTextColor.DARK_AQUA))
+          .append(text(" is not a party host"))
+          .build());
     }
   }
 
@@ -204,11 +201,10 @@ public class MapPartyCommands extends CommunityCommand {
     }
 
     if (hosts.isMainHost(target.getUniqueId())) {
-      viewer.sendWarning(
-          text()
-              .append(player(target, NameStyle.FANCY))
-              .append(text(" is already the main party host"))
-              .build());
+      viewer.sendWarning(text()
+          .append(player(target, NameStyle.FANCY))
+          .append(text(" is already the main party host"))
+          .build());
       return;
     }
 
