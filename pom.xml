@@ -6,6 +6,7 @@
     <name>Community</name>
     <description>A plugin for managing a Minecraft community</description>
     <url>https://pgm.dev</url>
+    <packaging>pom</packaging>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -14,6 +15,10 @@
         <project.mainClass>dev.pgm.community.Community</project.mainClass>
         <project.author>applenick</project.author>
     </properties>
+
+    <modules>
+        <module>core</module>
+    </modules>
 
     <repositories>
         <repository>
@@ -99,7 +104,7 @@
             <artifactId>Environment</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-        
+
         <!-- AFK Detection -->
         <dependency>
             <groupId>tc.oc.occ</groupId>
@@ -107,77 +112,21 @@
             <version>1.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        
-      </dependencies>
+    </dependencies>
 
     <build>
-        <finalName>Community</finalName>
-        <resources>
-            <!-- Include the required plugin.yml and config.yml for Bukkit -->
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.incendo</groupId>
-                            <artifactId>cloud-annotations</artifactId>
-                            <version>2.0.0-rc.2</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <minimizeJar>true</minimizeJar>
-                    <artifactSet>
-                        <includes>
-                            <include>net.kyori:*:*</include>
-                            <include>co.aikar:*</include>
-                            <include>tc.oc.pgm:util</include>
-                            <include>redis.clients:jedis</include>
-                            <include>org.apache.commons:commons-pool2</include>
-                            <include>fr.minuskube.inv:smart-invs</include>
-                            <include>com.zaxxer:HikariCP</include>
-                            <include>org.slf4j:*</include>
-                        </includes>
-                    </artifactSet>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/**</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.11.0</version>
             </plugin>
 
             <!-- Exposes git information to the build environment -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.9.10</version>
                 <executions>
                     <execution>
                         <goals>
@@ -192,39 +141,45 @@
             </plugin>
 
             <!-- Validates that code is properly formatted with Google's code style -->
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.43.0</version>
-                <configuration>
-                    <ratchetFrom>origin/dev</ratchetFrom>
-                    <java>
-                        <removeUnusedImports/>
-                        <palantirJavaFormat>
-                            <version>2.47.0</version>
-                            <style>GOOGLE</style>
-                            <formatJavadoc>true</formatJavadoc>
-                        </palantirJavaFormat>
-                    </java>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            Disable spotless until the next PR-->
+<!--            <plugin>-->
+<!--                <groupId>com.diffplug.spotless</groupId>-->
+<!--                <artifactId>spotless-maven-plugin</artifactId>-->
+<!--                <version>2.43.0</version>-->
+<!--                <configuration>-->
+<!--                    <ratchetFrom>origin/dev</ratchetFrom>-->
+<!--                    <java>-->
+<!--                        <removeUnusedImports/>-->
+<!--                        <palantirJavaFormat>-->
+<!--                            <version>2.47.0</version>-->
+<!--                            <style>GOOGLE</style>-->
+<!--                            <formatJavadoc>true</formatJavadoc>-->
+<!--                        </palantirJavaFormat>-->
+<!--                    </java>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>check</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
             <!-- Allows for building of java docs, although not used yet -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.5.0</version>
                 <configuration>
                     <failOnError>false</failOnError>
                     <includeDependencySources>true</includeDependencySources>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
             </plugin>
         </plugins>
     </build>
