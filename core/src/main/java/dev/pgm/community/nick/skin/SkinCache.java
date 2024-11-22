@@ -1,5 +1,7 @@
 package dev.pgm.community.nick.skin;
 
+import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
@@ -12,7 +14,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
-import org.bukkit.Skin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,11 +25,14 @@ import tc.oc.pgm.api.Permissions;
 import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.util.skin.Skin;
 
 public class SkinCache implements Listener {
 
-  private final Cache<UUID, Skin> offlineSkins =
-      CacheBuilder.newBuilder().maximumSize(500).expireAfterWrite(6, TimeUnit.HOURS).build();
+  private final Cache<UUID, Skin> offlineSkins = CacheBuilder.newBuilder()
+      .maximumSize(500)
+      .expireAfterWrite(6, TimeUnit.HOURS)
+      .build();
   private final Random random = new Random();
 
   private final Map<UUID, Skin> customSkins = Maps.newHashMap();
@@ -58,7 +62,7 @@ public class SkinCache implements Listener {
   public void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
     if (canUseSkin(player)) {
-      offlineSkins.put(player.getUniqueId(), player.getSkin());
+      offlineSkins.put(player.getUniqueId(), PLAYER_UTILS.getPlayerSkin(player));
     }
   }
 
@@ -84,10 +88,9 @@ public class SkinCache implements Listener {
     if (matchPlayer == null) return;
 
     // Update displayname
-    player.setDisplayName(
-        PGM.get()
-            .getNameDecorationRegistry()
-            .getDecoratedName(player, matchPlayer.getParty().getColor()));
+    player.setDisplayName(PGM.get()
+        .getNameDecorationRegistry()
+        .getDecoratedName(player, matchPlayer.getParty().getColor()));
 
     // for all other online players, refresh their views
     refreshAllViewers(player);
@@ -107,24 +110,20 @@ public class SkinCache implements Listener {
   private void refreshFakeName(Player player, Player viewer) {
     boolean nicked = Integration.getNick(player) != null;
     boolean areFriends = Integration.isFriend(player, viewer);
-    boolean canOverride =
-        viewer.hasPermission(Permissions.STAFF)
-            || viewer.hasPermission(CommunityPermissions.NICKNAME_VIEW);
+    boolean canOverride = viewer.hasPermission(Permissions.STAFF)
+        || viewer.hasPermission(CommunityPermissions.NICKNAME_VIEW);
 
     boolean canSeeRealName = (canOverride || player == viewer || areFriends);
 
     if (nicked && !canSeeRealName) {
       String nick = Integration.getNick(player);
       MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
-      String displayName =
-          PGM.get()
-              .getNameDecorationRegistry()
-              .getDecoratedName(player, matchPlayer.getParty().getColor());
-      player.setFakeDisplayName(viewer, displayName);
-      player.setFakeNameAndSkin(viewer, nick, getSkin(player));
+      String displayName = PGM.get()
+          .getNameDecorationRegistry()
+          .getDecoratedName(player, matchPlayer.getParty().getColor());
+      PLAYER_UTILS.setFakeNameAndSkin(player, viewer, displayName, nick, getSkin(player));
     } else {
-      player.setFakeDisplayName(viewer, null);
-      player.setFakeNameAndSkin(viewer, null, null);
+      PLAYER_UTILS.setFakeNameAndSkin(player, viewer, null, null, null);
     }
   }
 

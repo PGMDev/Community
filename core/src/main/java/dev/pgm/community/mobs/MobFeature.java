@@ -1,5 +1,7 @@
 package dev.pgm.community.mobs;
 
+import static dev.pgm.community.util.EntityUtils.ENTITY_UTILS;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
@@ -11,11 +13,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import net.minecraft.server.v1_8_R3.EntityInsentient;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -50,11 +49,10 @@ public class MobFeature extends FeatureBase {
   @Override
   public void enable() {
     super.enable();
-    this.task =
-        Community.get()
-            .getServer()
-            .getScheduler()
-            .runTaskTimer(Community.get(), this::updateFollows, 0L, 10L);
+    this.task = Community.get()
+        .getServer()
+        .getScheduler()
+        .runTaskTimer(Community.get(), this::updateFollows, 0L, 10L);
   }
 
   @Override
@@ -81,24 +79,19 @@ public class MobFeature extends FeatureBase {
   }
 
   public void updateFollows() {
-    this.followTargets
-        .entrySet()
-        .forEach(
-            entry -> {
-              Player owner = Bukkit.getPlayer(entry.getKey());
-              Player target = Bukkit.getPlayer(entry.getValue());
-              if (owner != null && target != null) {
-                this.getOwnedMobs(owner)
-                    .forEach(
-                        mob -> {
-                          follow(mob, target.getLocation());
-                          if (mob instanceof Creature && attackers.contains(owner.getUniqueId())) {
-                            Creature creature = (Creature) mob;
-                            creature.setTarget(target);
-                          }
-                        });
-              }
-            });
+    this.followTargets.entrySet().forEach(entry -> {
+      Player owner = Bukkit.getPlayer(entry.getKey());
+      Player target = Bukkit.getPlayer(entry.getValue());
+      if (owner != null && target != null) {
+        this.getOwnedMobs(owner).forEach(mob -> {
+          ENTITY_UTILS.follow(mob, target.getLocation(), speed);
+          if (mob instanceof Creature && attackers.contains(owner.getUniqueId())) {
+            Creature creature = (Creature) mob;
+            creature.setTarget(target);
+          }
+        });
+      }
+    });
   }
 
   public boolean isFollower(UUID playerId) {
@@ -119,11 +112,6 @@ public class MobFeature extends FeatureBase {
     } else {
       this.followTargets.put(player.getUniqueId(), target.getUniqueId());
     }
-  }
-
-  private void follow(LivingEntity mob, Location location) {
-    EntityInsentient nmsMob = ((EntityInsentient) ((CraftEntity) mob).getHandle());
-    nmsMob.getNavigation().a(location.getX(), location.getY(), location.getZ(), speed);
   }
 
   public MobConfig getMobConfig() {
@@ -152,15 +140,13 @@ public class MobFeature extends FeatureBase {
   public List<LivingEntity> getOwnedMobs(Player sender) {
     return sender.getWorld().getLivingEntities().stream()
         .filter(le -> le.hasMetadata("owner"))
-        .filter(
-            le -> {
-              List<MetadataValue> values = le.getMetadata("owner");
-              Optional<MetadataValue> value =
-                  values.stream()
-                      .filter(mv -> mv.getOwningPlugin().equals(Community.get()))
-                      .findAny();
-              return value.isPresent() && value.get().asString().equalsIgnoreCase(sender.getName());
-            })
+        .filter(le -> {
+          List<MetadataValue> values = le.getMetadata("owner");
+          Optional<MetadataValue> value = values.stream()
+              .filter(mv -> mv.getOwningPlugin().equals(Community.get()))
+              .findAny();
+          return value.isPresent() && value.get().asString().equalsIgnoreCase(sender.getName());
+        })
         .collect(Collectors.toList());
   }
 

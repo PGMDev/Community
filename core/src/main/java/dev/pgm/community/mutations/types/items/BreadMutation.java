@@ -1,5 +1,7 @@
 package dev.pgm.community.mutations.types.items;
 
+import static dev.pgm.community.util.InventoryUtils.INVENTORY_UTILS;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -7,6 +9,8 @@ import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import dev.pgm.community.util.Attributes;
+import dev.pgm.community.utils.compatibility.Enchantments;
 import dev.pgm.community.utils.compatibility.PotionEffects;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +22,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -103,30 +106,31 @@ public class BreadMutation extends KitMutationBase {
     ItemStack ironBread = preventSharing(
         new ItemBuilder(new ItemStack(Material.BREAD)).name("Iron Bread").build());
     ItemMeta ironBreadMeta = ironBread.getItemMeta();
-    ironBreadMeta.addAttributeModifier(
-        Attribute.GENERIC_KNOCKBACK_RESISTANCE,
+    INVENTORY_UTILS.addAttributeModifier(
+        ironBreadMeta,
+        Attributes.KNOCKBACK_RESISTANCE,
         new AttributeModifier(
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE.name(),
-            1,
-            AttributeModifier.Operation.ADD_NUMBER));
+            Attributes.KNOCKBACK_RESISTANCE.name(), 1, AttributeModifier.Operation.ADD_NUMBER));
     ironBread.setItemMeta(ironBreadMeta);
 
     ItemStack fastBread = preventSharing(
         new ItemBuilder(new ItemStack(Material.BREAD)).name("Fast Bread").build());
     ItemMeta speedBreadMeta = fastBread.getItemMeta();
-    speedBreadMeta.addAttributeModifier(
-        Attribute.GENERIC_MOVEMENT_SPEED,
+    INVENTORY_UTILS.addAttributeModifier(
+        speedBreadMeta,
+        Attributes.MOVEMENT_SPEED,
         new AttributeModifier(
-            Attribute.GENERIC_MOVEMENT_SPEED.name(), 0.3, AttributeModifier.Operation.ADD_SCALAR));
+            Attributes.MOVEMENT_SPEED.name(), 0.3, AttributeModifier.Operation.ADD_SCALAR));
     fastBread.setItemMeta(speedBreadMeta);
 
     ItemStack veryFastBread = preventSharing(
         new ItemBuilder(new ItemStack(Material.BREAD)).name("Very Fast Bread").build());
     ItemMeta veryFastBreadMeta = veryFastBread.getItemMeta();
-    veryFastBreadMeta.addAttributeModifier(
-        Attribute.GENERIC_MOVEMENT_SPEED,
+    INVENTORY_UTILS.addAttributeModifier(
+        veryFastBreadMeta,
+        Attributes.MOVEMENT_SPEED,
         new AttributeModifier(
-            Attribute.GENERIC_MOVEMENT_SPEED.name(), 1, AttributeModifier.Operation.ADD_SCALAR));
+            Attributes.MOVEMENT_SPEED.name(), 1, AttributeModifier.Operation.ADD_SCALAR));
     veryFastBread.setItemMeta(veryFastBreadMeta);
 
     return new ImmutableMap.Builder<ItemStack, Double>()
@@ -138,7 +142,7 @@ public class BreadMutation extends KitMutationBase {
             20.0)
         .put(
             preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
-                .enchant(Enchantment.DAMAGE_ALL, 5)
+                .enchant(Enchantments.SHARPNESS, 5)
                 .name("Sharp Bread")
                 .build()),
             20.0)
@@ -156,7 +160,7 @@ public class BreadMutation extends KitMutationBase {
         .put(veryFastBread, 3.0)
         .put(
             preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
-                .enchant(Enchantment.DAMAGE_ALL, 10)
+                .enchant(Enchantments.SHARPNESS, 10)
                 .name("Very Sharp Bread")
                 .build()),
             3.0)
@@ -174,7 +178,7 @@ public class BreadMutation extends KitMutationBase {
             1.0)
         .put(
             preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
-                .enchant(Enchantment.DAMAGE_ALL, 20)
+                .enchant(Enchantments.SHARPNESS, 20)
                 .name("Insanely Sharp Bread")
                 .build()),
             1.0)
@@ -203,7 +207,7 @@ public class BreadMutation extends KitMutationBase {
             20.0)
         .put(
             preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
-                .enchant(Enchantment.DAMAGE_ALL, 5)
+                .enchant(Enchantments.SHARPNESS, 5)
                 .name("Sharp Bread")
                 .build()),
             20.0)

@@ -1,5 +1,7 @@
 package dev.pgm.community.mutations.types.mechanics;
 
+import static dev.pgm.community.util.Effects.EFFECTS;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
@@ -14,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -150,7 +151,7 @@ public class MobMutation extends ScheduledMutationBase {
     for (int total = getTotalSpawned(); total < TOTAL_MOBS.getValue(); total++) {
       Location loc = provider.getPoint(match, null);
       if (loc != null) {
-        loc.getWorld().spigot().playEffect(loc, Effect.FLAME, 0, 0, 0, 0, 0, 0, 5, 100);
+        EFFECTS.mobSpawnEffect(loc);
         spawnMob(loc, getRandomType());
       }
     }

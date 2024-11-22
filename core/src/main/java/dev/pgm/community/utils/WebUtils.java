@@ -14,7 +14,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import org.bukkit.Skin;
+import tc.oc.pgm.util.skin.Skin;
 
 public class WebUtils {
 

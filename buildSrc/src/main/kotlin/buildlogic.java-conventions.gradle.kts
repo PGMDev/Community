@@ -16,10 +16,10 @@ repositories {
     maven("https://repo.pgm.fyi/snapshots") // Sportpaper & other pgm-specific stuff
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") // Spigot repo
     maven("https://repo.aikar.co/content/groups/aikar/") // aikar repo
+    maven("https://jitpack.io") // Backup: jitpack
 }
 
 dependencies {
-    implementation("tc.oc.pgm:util:0.16-SNAPSHOT") { isTransitive = false }
     implementation("com.zaxxer:HikariCP:2.4.1") { isTransitive = false }
     implementation("fr.minuskube.inv:smart-invs:1.2.7") { isTransitive = false }
 
@@ -29,13 +29,22 @@ dependencies {
     implementation("net.kyori:adventure-api:4.24.0")
     implementation("net.kyori:adventure-text-serializer-plain:4.24.0")
     implementation("net.kyori:adventure-platform-bukkit:4.4.1")
+    implementation("org.reflections:reflections:0.10.2")
 
-    compileOnly("app.ashcon:sportpaper:1.8.8-R0.1-SNAPSHOT")
     compileOnly("tc.oc.pgm:core:0.16-SNAPSHOT")
+    compileOnly("tc.oc.pgm:util:0.16-SNAPSHOT")
     compileOnly("tc.oc.occ:AFK:1.0.0-SNAPSHOT")
     compileOnly("tc.oc.occ:Environment:1.0.0-SNAPSHOT")
     compileOnly("org.incendo:cloud-annotations:2.0.0")
     compileOnly("org.jetbrains:annotations:22.0.0")
+    compileOnly("com.github.dmulloy2:ProtocolLib:5.3.0")
+
+    // Minecraft includes these (or equivalents)
+    compileOnly("com.mojang:authlib:6.0.54")
+    compileOnly("it.unimi.dsi:fastutil:8.1.0")
+    compileOnly("com.google.guava:guava:17.0")
+    compileOnly("com.google.code.gson:gson:2.10.1")
+    compileOnly("commons-lang:commons-lang:2.6")
 }
 
 group = "dev.pgm.community"

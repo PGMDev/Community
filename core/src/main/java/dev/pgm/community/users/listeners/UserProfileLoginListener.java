@@ -11,6 +11,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.text.TextParser;
 
 public class UserProfileLoginListener implements Listener {
 
@@ -33,24 +35,20 @@ public class UserProfileLoginListener implements Listener {
 
     // Custom messages / commands executed when joins server for the first time
     if (event.getUser().getJoinCount() <= 1) {
-      config
-          .getFirstJoinCommands()
-          .forEach(
-              command -> {
-                command =
-                    command
-                        .replace("%uuid%", player.getUniqueId().toString())
-                        .replace("%name%", player.getName());
-                boolean message = command.startsWith("!send");
-                if (message) {
-                  String msg = command.substring(5, command.length());
-                  player.sendMessage(MessageUtils.format(msg));
-                } else {
-                  Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-                  Community.log(
-                      "&7First join command (&6%s&7) executed for &b%s", command, player.getName());
-                }
-              });
+      config.getFirstJoinCommands().forEach(command -> {
+        command = command
+            .replace("%uuid%", player.getUniqueId().toString())
+            .replace("%name%", player.getName());
+        boolean message = command.startsWith("!send");
+        if (message) {
+          String msg = command.substring(5, command.length());
+          Audience.get(player).sendMessage(TextParser.parseComponent(MessageUtils.format(msg)));
+        } else {
+          Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+          Community.log(
+              "&7First join command (&6%s&7) executed for &b%s", command, player.getName());
+        }
+      });
     }
   }
 }

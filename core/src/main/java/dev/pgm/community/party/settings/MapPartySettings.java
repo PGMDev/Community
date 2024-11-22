@@ -15,7 +15,7 @@ public class MapPartySettings {
         "Login Message",
         "Display a login welcome when party is active",
         config.showLoginMessage(),
-        Material.SIGN,
+        Materials.SIGN,
         Material.BARRIER);
     this.showPartyNotifications = new PartyBooleanSetting(
         "Notification",

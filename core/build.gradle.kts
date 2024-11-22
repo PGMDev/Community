@@ -6,13 +6,26 @@ plugins {
     id("com.gradleup.shadow")
 }
 
+dependencies {
+    compileOnly("dev.pgm.paper:paper-api:1.8_1.21.10-SNAPSHOT")
+
+    implementation(project(":util"))
+
+    runtimeOnly(project(":platform-sportpaper")) { exclude("*") }
+    runtimeOnly(project(":platform-modern")) { exclude("*") }
+}
+
 tasks.named<ShadowJar>("shadowJar") {
     archiveFileName = "Community.jar"
     archiveClassifier.set("")
     destinationDirectory = rootProject.projectDir.resolve("build/libs")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    minimize()
+    minimize {
+        // Exclude from minimization as they're required at runtime
+        exclude(project(":platform-sportpaper"))
+        exclude(project(":platform-modern"))
+    }
 
     dependencies {
         exclude(dependency("org.jetbrains:annotations"))

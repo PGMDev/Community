@@ -1,8 +1,8 @@
 package dev.pgm.community.nick.skin;
 
 import dev.pgm.community.Community;
-import org.bukkit.Skin;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.util.skin.Skin;
 
 public class SkinManager {
 

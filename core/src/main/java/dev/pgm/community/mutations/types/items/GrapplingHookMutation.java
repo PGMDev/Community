@@ -1,5 +1,8 @@
 package dev.pgm.community.mutations.types.items;
 
+import static dev.pgm.community.util.Effects.EFFECTS;
+import static dev.pgm.community.util.EventUtils.EVENT_UTILS;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -16,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -43,10 +45,9 @@ public class GrapplingHookMutation extends KitMutationBase {
 
   public GrapplingHookMutation(Match match) {
     super(match, MutationType.GRAPPLING_HOOK);
-    cooldowns =
-        CacheBuilder.newBuilder()
-            .expireAfterWrite(COOLDOWN_MILISECONDS, TimeUnit.MILLISECONDS)
-            .build();
+    cooldowns = CacheBuilder.newBuilder()
+        .expireAfterWrite(COOLDOWN_MILISECONDS, TimeUnit.MILLISECONDS)
+        .build();
   }
 
   @Override
@@ -60,14 +61,13 @@ public class GrapplingHookMutation extends KitMutationBase {
   }
 
   public ItemStack getGrappleHook() {
-    ItemStack grapple =
-        new ItemBuilder()
-            .material(Material.FISHING_ROD)
-            .name(ChatColor.GREEN + "Grappling Hook")
-            .lore(ChatColor.GRAY + "Launch, anchor, conquer!")
-            .flags(ItemFlag.values())
-            .unbreakable(true)
-            .build();
+    ItemStack grapple = new ItemBuilder()
+        .material(Material.FISHING_ROD)
+        .name(ChatColor.GREEN + "Grappling Hook")
+        .lore(ChatColor.GRAY + "Launch, anchor, conquer!")
+        .flags(ItemFlag.values())
+        .unbreakable(true)
+        .build();
 
     ItemTags.PREVENT_SHARING.set(grapple, true);
     GRAPPLE_META_TAG.set(grapple, true);
@@ -77,29 +77,32 @@ public class GrapplingHookMutation extends KitMutationBase {
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerFishEvent(PlayerFishEvent event) {
-    if (!GRAPPLE_META_TAG.has(event.getPlayer().getItemInHand())) return;
+    Player player = event.getPlayer();
+    if (!GRAPPLE_META_TAG.has(player.getItemInHand())) return;
 
     // Set the hooks meta if the player has thrown the line
     if (event.getState() == PlayerFishEvent.State.FISHING) {
-      event.getHook().setMetadata(GRAPPLE_META, new FixedMetadataValue(Community.get(), true));
+      EVENT_UTILS
+          .getFishHook(event)
+          .setMetadata(GRAPPLE_META, new FixedMetadataValue(Community.get(), true));
     }
 
     // Only pull the player when reeling back in
     if (!(event.getState() == PlayerFishEvent.State.IN_GROUND
         || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT)) return;
 
-    if (isPlayerOnCooldown(event.getPlayer())) return;
+    if (isPlayerOnCooldown(player)) return;
 
     // Calculate velocity to apply to player
-    Location hookLocation = event.getHook().getLocation();
-    Location playerLocation = event.getPlayer().getLocation();
+    Location hookLocation = EVENT_UTILS.getFishHook(event).getLocation();
+    Location playerLocation = player.getLocation();
     Vector direction = hookLocation.toVector().subtract(playerLocation.toVector());
     direction.multiply(0.5).setY(1);
 
-    event.getPlayer().setVelocity(direction);
-    event.getPlayer().playSound(playerLocation, Sound.BAT_TAKEOFF, 2, 1.2f);
+    player.setVelocity(direction);
+    EFFECTS.batTakeoffSound(player);
 
-    cooldowns.put(event.getPlayer().getUniqueId(), Instant.now());
+    cooldowns.put(player.getUniqueId(), Instant.now());
   }
 
   @EventHandler(ignoreCancelled = true)

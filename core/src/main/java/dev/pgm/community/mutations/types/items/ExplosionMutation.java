@@ -1,5 +1,6 @@
 package dev.pgm.community.mutations.types.items;
 
+import static dev.pgm.community.util.Effects.EFFECTS;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import com.google.common.collect.Lists;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -217,8 +217,7 @@ public class ExplosionMutation extends KitMutationBase {
 
     world.createExplosion(loc, 3.3f);
 
-    for (int i = 0; i < 5; i++)
-      world.spigot().playEffect(loc, Effect.LAVA_POP, 0, 0, 0, 0, 0, 0, 15, 50);
+    for (int i = 0; i < 5; i++) EFFECTS.explosionEffect(loc);
   }
 
   private static Kit getRandomKit() {

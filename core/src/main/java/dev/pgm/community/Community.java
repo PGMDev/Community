@@ -6,10 +6,12 @@ import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
 import dev.pgm.community.squads.SquadChannel;
 import dev.pgm.community.text.TextTranslations;
+import dev.pgm.community.util.Platform;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.WebUtils;
 import fr.minuskube.inv.InventoryManager;
 import java.util.Random;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
@@ -45,6 +47,14 @@ public class Community extends JavaPlugin {
     // If PGM is not enabled on running server, we need this to ensure things work :)
     if (!PGMUtils.isPGMEnabled()) {
       BukkitUtils.PLUGIN.set(this);
+    }
+
+    // Sanity test PGM is running on a supported version before doing any work
+    try {
+      Platform.init();
+    } catch (Throwable t) {
+      getLogger().log(Level.SEVERE, "Failed to initialize Community platform", t);
+      getServer().getPluginManager().disablePlugin(this);
     }
 
     this.setupConfig();
@@ -94,6 +104,7 @@ public class Community extends JavaPlugin {
   }
 
   public void registerListener(Listener listener) {
+    Platform.MANIFEST.onEnable(this);
     getServer().getPluginManager().registerEvents(listener, this);
   }
 
@@ -143,7 +154,7 @@ public class Community extends JavaPlugin {
   // REMOVE WHEN NOT IN DEV
   public static void log(String format, Object... objects) {
     Bukkit.getConsoleSender()
-        .sendMessage(ChatColor.translateAlternateColorCodes(
+        .sendRawMessage(ChatColor.translateAlternateColorCodes(
             '&', String.format("&7[&4Community&7]&r " + format, objects)));
   }
 }
