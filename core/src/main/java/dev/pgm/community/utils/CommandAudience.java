@@ -2,11 +2,11 @@ package dev.pgm.community.utils;
 
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;

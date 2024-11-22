@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class SQLRequestService extends SQLFeatureBase<RequestProfile, String>
     implements RequestQuery {

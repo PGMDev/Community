@@ -9,7 +9,6 @@ import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -21,11 +20,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 
 public abstract class FriendshipFeatureBase extends FeatureBase implements FriendshipFeature {
 
-  @Nullable protected PGMFriendIntegration integration;
+  @Nullable
+  protected PGMFriendIntegration integration;
 
   public FriendshipFeatureBase(Configuration config, Logger logger, String featureName) {
     super(new FriendshipConfig(config), logger, featureName);
@@ -48,19 +49,17 @@ public abstract class FriendshipFeatureBase extends FeatureBase implements Frien
   }
 
   public void sendFriendRequestLoginMessage(Player player, int requestCount) {
-    Component requestsMessage =
-        text()
-            .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
-            .append(text(" You have "))
-            .append(text(requestCount, NamedTextColor.DARK_AQUA, TextDecoration.BOLD))
-            .append(text(" pending friend request" + (requestCount != 1 ? "s " : " ")))
-            .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
-            .color(NamedTextColor.DARK_GREEN)
-            .hoverEvent(
-                HoverEvent.showText(
-                    text("Click to view pending friend requests", NamedTextColor.GRAY)))
-            .clickEvent(ClickEvent.runCommand("/friend requests"))
-            .build();
+    Component requestsMessage = text()
+        .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
+        .append(text(" You have "))
+        .append(text(requestCount, NamedTextColor.DARK_AQUA, TextDecoration.BOLD))
+        .append(text(" pending friend request" + (requestCount != 1 ? "s " : " ")))
+        .append(BroadcastUtils.LEFT_DIV.color(NamedTextColor.GOLD))
+        .color(NamedTextColor.DARK_GREEN)
+        .hoverEvent(
+            HoverEvent.showText(text("Click to view pending friend requests", NamedTextColor.GRAY)))
+        .clickEvent(ClickEvent.runCommand("/friend requests"))
+        .build();
 
     Audience.get(player).sendMessage(requestsMessage);
     Audience.get(player).playSound(Sounds.FRIEND_REQUEST_LOGIN);

@@ -4,11 +4,11 @@ import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.polls.ending.EndAction;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class NullEndAction implements EndAction {
 
@@ -63,9 +63,8 @@ public class NullEndAction implements EndAction {
   public Component getDefaultQuestion() {
     return text()
         .append(text("No question defined!", NamedTextColor.RED))
-        .hoverEvent(
-            HoverEvent.showText(
-                text("Change the end action or define a custom question", NamedTextColor.GRAY)))
+        .hoverEvent(HoverEvent.showText(
+            text("Change the end action or define a custom question", NamedTextColor.GRAY)))
         .build();
   }
 

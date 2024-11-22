@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -25,6 +24,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.teams.Team;
@@ -69,11 +69,10 @@ public abstract class CommunityCommand {
     }
 
     public Component getText() {
-      List<Component> names =
-          players.stream()
-              .map(p -> player(p, NameStyle.FANCY))
-              .limit(Math.min(players.size(), 10))
-              .collect(Collectors.toList());
+      List<Component> names = players.stream()
+          .map(p -> player(p, NameStyle.FANCY))
+          .limit(Math.min(players.size(), 10))
+          .collect(Collectors.toList());
 
       Component hover = TextFormatter.list(names, NamedTextColor.GRAY);
       if (getPlayers().size() > names.size()) {
@@ -101,10 +100,9 @@ public abstract class CommunityCommand {
         input.equalsIgnoreCase("*") && viewer.hasPermission(CommunityPermissions.ALL_SELECTOR);
     boolean isRandom =
         input.startsWith("?") && viewer.hasPermission(CommunityPermissions.RANDOM_SELECTOR);
-    boolean isTeam =
-        input.startsWith("team=")
-            && PGMUtils.isPGMEnabled()
-            && viewer.hasPermission(CommunityPermissions.TEAM_SELECTOR);
+    boolean isTeam = input.startsWith("team=")
+        && PGMUtils.isPGMEnabled()
+        && viewer.hasPermission(CommunityPermissions.TEAM_SELECTOR);
 
     String[] parts = input.split("=");
 
@@ -114,25 +112,23 @@ public abstract class CommunityCommand {
     Component text;
     if (isAll) {
       targets.addAll(allOnline);
-      text =
-          text()
-              .append(text("everyone "))
-              .append(text("("))
-              .append(text(targets.size(), NamedTextColor.GREEN))
-              .append(text(")"))
-              .color(NamedTextColor.GRAY)
-              .build();
+      text = text()
+          .append(text("everyone "))
+          .append(text("("))
+          .append(text(targets.size(), NamedTextColor.GREEN))
+          .append(text(")"))
+          .color(NamedTextColor.GRAY)
+          .build();
     } else if (isRandom) {
       int randomCount = parts.length == 2 ? parseInputInt(input, 1) : 1;
       for (int i = 0; i < randomCount; i++) {
         targets.add(allOnline.get(Community.get().getRandom().nextInt(allOnline.size())));
       }
       String rdTxt = " randomly chosen player" + (targets.size() != 1 ? "s" : "");
-      text =
-          text()
-              .append(text(targets.size(), NamedTextColor.GREEN))
-              .append(text(rdTxt, NamedTextColor.GRAY))
-              .build();
+      text = text()
+          .append(text(targets.size(), NamedTextColor.GREEN))
+          .append(text(rdTxt, NamedTextColor.GRAY))
+          .build();
     } else if (isTeam) {
       Match match = PGMUtils.getMatch();
       if (match.getModule(TeamMatchModule.class) != null) {
@@ -145,10 +141,9 @@ public abstract class CommunityCommand {
         // Allow Observers to be selected
         if (teamName.toLowerCase().startsWith("obs")) {
           text = text("Observers", NamedTextColor.AQUA);
-          targets.addAll(
-              match.getObservers().stream()
-                  .map(MatchPlayer::getBukkit)
-                  .collect(Collectors.toList()));
+          targets.addAll(match.getObservers().stream()
+              .map(MatchPlayer::getBukkit)
+              .collect(Collectors.toList()));
         } else {
           Team team = teams.bestFuzzyMatch(teamName);
           if (team == null) {
@@ -156,10 +151,9 @@ public abstract class CommunityCommand {
           }
           targets.addAll(
               team.getPlayers().stream().map(MatchPlayer::getBukkit).collect(Collectors.toList()));
-          text =
-              text()
-                  .append(text(team.getNameLegacy(), TextFormatter.convert(team.getColor())))
-                  .build();
+          text = text()
+              .append(text(team.getNameLegacy(), TextFormatter.convert(team.getColor())))
+              .build();
         }
       } else {
         throw TextException.exception("There are no teams in this match to select");
@@ -172,12 +166,11 @@ public abstract class CommunityCommand {
           targets.add(player);
         }
       }
-      text =
-          text()
-              .append(text(targets.size(), NamedTextColor.GREEN))
-              .append(text(" player" + (targets.size() != 1 ? "s" : "")))
-              .color(NamedTextColor.GRAY)
-              .build();
+      text = text()
+          .append(text(targets.size(), NamedTextColor.GREEN))
+          .append(text(" player" + (targets.size() != 1 ? "s" : "")))
+          .color(NamedTextColor.GRAY)
+          .build();
 
       if (targets.size() > 1 && !viewer.hasPermission(CommunityPermissions.SELECTOR)) {
         // If no permission for multiple, get a random single entry
@@ -239,9 +232,8 @@ public abstract class CommunityCommand {
     if (id == null) {
       // TODO: Maybe use getStoredID and listen, that way we can account for EVERYONE. But not a
       // priority now
-      Optional<UUID> cachedId =
-          service.getId(
-              target); // If user is online or was online recently, we will have their UUID.
+      Optional<UUID> cachedId = service.getId(
+          target); // If user is online or was online recently, we will have their UUID.
       if (!cachedId.isPresent()) {
         throw TextException.exception(formatNotFoundMsg(target));
       } else {

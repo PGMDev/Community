@@ -5,7 +5,7 @@ import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /** A punishment that can expire * */
 public abstract class ExpirablePunishment extends Punishment {

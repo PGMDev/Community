@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
@@ -35,6 +34,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.MatchScope;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -66,10 +66,9 @@ public class FireworkMutation extends KitMutationBase {
   @Override
   public void enable() {
     super.enable();
-    task =
-        match
-            .getExecutor(MatchScope.RUNNING)
-            .scheduleAtFixedRate(this::task, 0, 250, TimeUnit.MILLISECONDS);
+    task = match
+        .getExecutor(MatchScope.RUNNING)
+        .scheduleAtFixedRate(this::task, 0, 250, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -156,16 +155,15 @@ public class FireworkMutation extends KitMutationBase {
     Random random = Community.get().getRandom();
     ItemStack firework = new ItemStack(Material.FIREWORK);
     FireworkMeta meta = (FireworkMeta) firework.getItemMeta();
-    meta.addEffect(
-        FireworkEffect.builder()
-            .withColor(
-                color != null
-                    ? color
-                    : Color.fromBGR(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
-            .flicker(false)
-            .trail(false)
-            .with(type)
-            .build());
+    meta.addEffect(FireworkEffect.builder()
+        .withColor(
+            color != null
+                ? color
+                : Color.fromBGR(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
+        .flicker(false)
+        .trail(false)
+        .with(type)
+        .build());
     meta.setDisplayName(ChatColor.GREEN + "Mutation Firework");
     meta.setLore(Lists.newArrayList(ChatColor.GRAY + "Launch to make a quick getaway"));
     meta.addItemFlags(ItemFlag.values());

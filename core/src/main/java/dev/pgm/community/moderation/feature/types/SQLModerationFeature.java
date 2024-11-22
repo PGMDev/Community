@@ -22,13 +22,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.named.NameStyle;
 
 public class SQLModerationFeature extends ModerationFeatureBase {
@@ -49,30 +49,26 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       switch (punishment.getType()) {
         case TEMP_BAN:
         case BAN:
-          isBanned(punishment.getTargetId().toString())
-              .thenAcceptAsync(
-                  banned -> {
-                    if (banned) {
-                      service
-                          .pardon(punishment.getTargetId(), punishment.getIssuerId())
-                          .thenAcceptAsync(x -> service.save(punishment));
-                    } else {
-                      service.save(punishment);
-                    }
-                  });
+          isBanned(punishment.getTargetId().toString()).thenAcceptAsync(banned -> {
+            if (banned) {
+              service
+                  .pardon(punishment.getTargetId(), punishment.getIssuerId())
+                  .thenAcceptAsync(x -> service.save(punishment));
+            } else {
+              service.save(punishment);
+            }
+          });
           break;
         case MUTE:
-          isMuted(punishment.getTargetId())
-              .thenAcceptAsync(
-                  mute -> {
-                    if (mute.isPresent()) {
-                      service
-                          .unmute(punishment.getTargetId(), punishment.getIssuerId())
-                          .thenAcceptAsync(x -> service.save(punishment));
-                    } else {
-                      service.save(punishment);
-                    }
-                  });
+          isMuted(punishment.getTargetId()).thenAcceptAsync(mute -> {
+            if (mute.isPresent()) {
+              service
+                  .unmute(punishment.getTargetId(), punishment.getIssuerId())
+                  .thenAcceptAsync(x -> service.save(punishment));
+            } else {
+              service.save(punishment);
+            }
+          });
           break;
         default:
           service.save(punishment);
@@ -87,50 +83,44 @@ public class SQLModerationFeature extends ModerationFeatureBase {
       // CONVERT TO UUID if username
       return getUsers()
           .getStoredId(target)
-          .thenApplyAsync(
-              uuid ->
-                  uuid != null && uuid.isPresent()
-                      ? service.queryList(uuid.get().toString()).join()
-                      : Lists.newArrayList());
+          .thenApplyAsync(uuid -> uuid != null && uuid.isPresent()
+              ? service.queryList(uuid.get().toString()).join()
+              : Lists.newArrayList());
     }
     return service.queryList(target);
   }
 
   @Override
   public CompletableFuture<Boolean> pardon(String target, @Nullable UUID issuer) {
-    CompletableFuture<Optional<UUID>> playerId =
-        NameUtils.isMinecraftName(target)
-            ? getUsers().getStoredId(target)
-            : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
-    return playerId.thenApplyAsync(
-        uuid -> {
-          if (uuid.isPresent()) {
-            if (service.pardon(uuid.get(), issuer).join()) {
-              sendRefresh(uuid.get());
-              removeCachedBan(uuid.get());
-              return true;
-            }
-          }
-          return false;
-        });
+    CompletableFuture<Optional<UUID>> playerId = NameUtils.isMinecraftName(target)
+        ? getUsers().getStoredId(target)
+        : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
+    return playerId.thenApplyAsync(uuid -> {
+      if (uuid.isPresent()) {
+        if (service.pardon(uuid.get(), issuer).join()) {
+          sendRefresh(uuid.get());
+          removeCachedBan(uuid.get());
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   @Override
   public CompletableFuture<Boolean> deactivate(String target, PunishmentType punishmentType) {
-    CompletableFuture<Optional<UUID>> playerId =
-        NameUtils.isMinecraftName(target)
-            ? getUsers().getStoredId(target)
-            : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
-    return playerId.thenApplyAsync(
-        uuid -> {
-          if (uuid.isPresent()) {
-            if (service.deactivate(uuid.get(), punishmentType).join()) {
-              sendRefresh(uuid.get());
-              return true;
-            }
-          }
-          return false;
-        });
+    CompletableFuture<Optional<UUID>> playerId = NameUtils.isMinecraftName(target)
+        ? getUsers().getStoredId(target)
+        : CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
+    return playerId.thenApplyAsync(uuid -> {
+      if (uuid.isPresent()) {
+        if (service.deactivate(uuid.get(), punishmentType).join()) {
+          sendRefresh(uuid.get());
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   @Override
@@ -149,11 +139,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
     if (NameUtils.isMinecraftName(target)) {
       return getUsers()
           .getStoredId(target)
-          .thenApplyAsync(
-              uuid ->
-                  uuid.isPresent()
-                      ? service.getActiveBan(uuid.get().toString()).join()
-                      : Optional.empty());
+          .thenApplyAsync(uuid -> uuid.isPresent()
+              ? service.getActiveBan(uuid.get().toString()).join()
+              : Optional.empty());
     }
     return service.getActiveBan(target);
   }
@@ -162,19 +150,17 @@ public class SQLModerationFeature extends ModerationFeatureBase {
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
     List<Punishment> punishments;
     try {
-      punishments =
-          service
-              .queryList(event.getUniqueId().toString())
-              .get(getModerationConfig().getLoginTimeout(), TimeUnit.SECONDS);
+      punishments = service
+          .queryList(event.getUniqueId().toString())
+          .get(getModerationConfig().getLoginTimeout(), TimeUnit.SECONDS);
 
       Optional<Punishment> ban = hasActiveBan(punishments);
       if (ban.isPresent()) {
         Punishment punishment = ban.get();
-        event.setKickMessage(
-            punishment.formatPunishmentScreen(
-                getModerationConfig(),
-                getUsers().renderUsername(punishment.getIssuerId(), NameStyle.FANCY).join(),
-                false));
+        event.setKickMessage(punishment.formatPunishmentScreen(
+            getModerationConfig(),
+            getUsers().renderUsername(punishment.getIssuerId(), NameStyle.FANCY).join(),
+            false));
         event.setLoginResult(Result.KICK_BANNED);
 
         if (punishment.getType() == PunishmentType.NAME_BAN) {
@@ -182,10 +168,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
           if (!event.getName().equalsIgnoreCase(bannedName)) {
             pardon(punishment.getTargetId().toString(), null);
             event.setLoginResult(Result.ALLOWED);
-            logger.info(
-                String.format(
-                    "Name change detected for (%s) | %s -> %s | Account unbanned",
-                    punishment.getTargetId().toString(), punishment.getReason(), event.getName()));
+            logger.info(String.format(
+                "Name change detected for (%s) | %s -> %s | Account unbanned",
+                punishment.getTargetId().toString(), punishment.getReason(), event.getName()));
           }
         }
       }
@@ -211,10 +196,9 @@ public class SQLModerationFeature extends ModerationFeatureBase {
                 20 * 5);
       }
 
-      logger.info(
-          punishments.size()
-              + " Punishments have been fetched for "
-              + event.getUniqueId().toString());
+      logger.info(punishments.size()
+          + " Punishments have been fetched for "
+          + event.getUniqueId().toString());
     } catch (InterruptedException | ExecutionException e) {
       event.setLoginResult(Result.KICK_OTHER);
       event.setKickMessage(
@@ -229,74 +213,60 @@ public class SQLModerationFeature extends ModerationFeatureBase {
     Community.get()
         .getServer()
         .getScheduler()
-        .scheduleSyncDelayedTask(
-            Community.get(),
-            new Runnable() {
-              @Override
-              public void run() {
-                Player player = Bukkit.getPlayer(playerId);
-                if (player != null) {
-                  service
-                      .queryList(playerId.toString())
-                      .thenAcceptAsync(
-                          punishments -> {
-                            Optional<Punishment> ban = hasActiveBan(punishments);
-                            if (ban.isPresent()) {
-                              Punishment punishment = ban.get();
+        .scheduleSyncDelayedTask(Community.get(), new Runnable() {
+          @Override
+          public void run() {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+              service.queryList(playerId.toString()).thenAcceptAsync(punishments -> {
+                Optional<Punishment> ban = hasActiveBan(punishments);
+                if (ban.isPresent()) {
+                  Punishment punishment = ban.get();
 
-                              player.kickPlayer(
-                                  punishment.formatPunishmentScreen(
-                                      getModerationConfig(),
-                                      getUsers()
-                                          .renderUsername(punishment.getIssuerId(), NameStyle.FANCY)
-                                          .join(),
-                                      false));
-                            }
-
-                            Optional<MutePunishment> mute = hasActiveMute(punishments);
-                            if (mute.isPresent()) {
-                              addMute(playerId, mute.get());
-                            }
-
-                            logger.info(
-                                "[Delayed]: "
-                                    + punishments.size()
-                                    + " Punishments have been fetched for "
-                                    + playerId.toString());
-                          });
+                  player.kickPlayer(punishment.formatPunishmentScreen(
+                      getModerationConfig(),
+                      getUsers()
+                          .renderUsername(punishment.getIssuerId(), NameStyle.FANCY)
+                          .join(),
+                      false));
                 }
-              }
-            });
+
+                Optional<MutePunishment> mute = hasActiveMute(punishments);
+                if (mute.isPresent()) {
+                  addMute(playerId, mute.get());
+                }
+
+                logger.info("[Delayed]: "
+                    + punishments.size()
+                    + " Punishments have been fetched for "
+                    + playerId.toString());
+              });
+            }
+          }
+        });
   }
 
   private Optional<MutePunishment> hasActiveMute(List<Punishment> punishments) {
     return punishments.stream()
-        .filter(
-            p ->
-                p.isActive()
-                    && p.getType().equals(PunishmentType.MUTE)
-                    && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
+        .filter(p -> p.isActive()
+            && p.getType().equals(PunishmentType.MUTE)
+            && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
         .map(MutePunishment.class::cast)
         .findAny();
   }
 
   private Optional<Punishment> hasActiveBan(List<Punishment> punishments) {
     return punishments.stream()
-        .filter(
-            p ->
-                p.isActive()
-                    && p.getType().isLoginPrevented()
-                    && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
+        .filter(p -> p.isActive()
+            && p.getType().isLoginPrevented()
+            && p.getService().equalsIgnoreCase(getModerationConfig().getService()))
         .findAny();
   }
 
   private Set<Punishment> getDeferredPunishments(List<Punishment> punishments) {
     return punishments.stream()
-        .filter(
-            p ->
-                p.isActive()
-                    && (PunishmentType.WARN.equals(p.getType())
-                        || PunishmentType.KICK.equals(p.getType())))
+        .filter(p -> p.isActive()
+            && (PunishmentType.WARN.equals(p.getType()) || PunishmentType.KICK.equals(p.getType())))
         .collect(Collectors.toSet());
   }
 
@@ -307,16 +277,13 @@ public class SQLModerationFeature extends ModerationFeatureBase {
 
   @Override
   public CompletableFuture<Boolean> unmute(UUID id, @Nullable UUID issuer) {
-    return service
-        .unmute(id, issuer)
-        .thenApplyAsync(
-            success -> {
-              if (success) {
-                removeMute(id);
-                sendRefresh(id); // Successful unmute will update other servers
-              }
-              return success;
-            });
+    return service.unmute(id, issuer).thenApplyAsync(success -> {
+      if (success) {
+        removeMute(id);
+        sendRefresh(id); // Successful unmute will update other servers
+      }
+      return success;
+    });
   }
 
   @Override

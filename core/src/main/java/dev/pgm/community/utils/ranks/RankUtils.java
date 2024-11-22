@@ -2,8 +2,8 @@ package dev.pgm.community.utils.ranks;
 
 import dev.pgm.community.Community;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class RankUtils {
 

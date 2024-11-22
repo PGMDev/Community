@@ -4,11 +4,11 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.Community;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.Nullable;
 
 public class NetworkUtils {
 
@@ -19,13 +19,11 @@ public class NetworkUtils {
   public static Component formatServer(String server) {
     return text()
         .append(text(server, NamedTextColor.GREEN))
-        .hoverEvent(
-            HoverEvent.showText(
-                text()
-                    .append(text("Click to join "))
-                    .append(text(server, NamedTextColor.AQUA))
-                    .color(NamedTextColor.GRAY)
-                    .build()))
+        .hoverEvent(HoverEvent.showText(text()
+            .append(text("Click to join "))
+            .append(text(server, NamedTextColor.AQUA))
+            .color(NamedTextColor.GRAY)
+            .build()))
         .clickEvent(ClickEvent.runCommand("/server " + server))
         .build();
   }

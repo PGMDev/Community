@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.text.TextException;
 
 public class ImportUtils {

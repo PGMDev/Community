@@ -10,7 +10,7 @@ import dev.pgm.community.users.listeners.UserProfileLoginListener;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class UsersFeatureBase extends FeatureBase implements UsersFeature {
 

@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -23,6 +22,7 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.party.Party;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -39,13 +39,12 @@ public class MobMutation extends ScheduledMutationBase {
   private static final int RANDOM_DISTANCE = 45;
   private static final String MOB_METADATA = "mob-mutation";
 
-  private static MutationListOption<Integer> TOTAL_MOBS =
-      new MutationListOption(
-          "Total Mobs",
-          "Total number of mobs spawned",
-          MutationType.MOBS.getMaterial(),
-          false,
-          Lists.newArrayList(25, 50, 100, 125, 200, 250, 300));
+  private static MutationListOption<Integer> TOTAL_MOBS = new MutationListOption(
+      "Total Mobs",
+      "Total number of mobs spawned",
+      MutationType.MOBS.getMaterial(),
+      false,
+      Lists.newArrayList(25, 50, 100, 125, 200, 250, 300));
 
   public MobMutation(Match match) {
     super(match, MutationType.MOBS, UPDATE_DELAY);
@@ -93,10 +92,8 @@ public class MobMutation extends ScheduledMutationBase {
     }
 
     if (loc1 != null && loc2 != null) {
-      return new RandomPointProvider(
-          Collections.singleton(
-              new RegionPointProvider(
-                  new CuboidRegion(loc1, loc2), new PointProviderAttributes())));
+      return new RandomPointProvider(Collections.singleton(
+          new RegionPointProvider(new CuboidRegion(loc1, loc2), new PointProviderAttributes())));
     }
 
     return null;

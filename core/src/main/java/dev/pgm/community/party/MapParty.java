@@ -6,11 +6,11 @@ import dev.pgm.community.party.settings.MapPartySettings;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.map.MapInfo;
 
 public interface MapParty {

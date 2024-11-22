@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -36,6 +35,7 @@ import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.UsernameFormatUtils;
 import tc.oc.pgm.util.named.NameStyle;
@@ -171,13 +171,12 @@ public class Punishment implements Comparable<Punishment> {
       player
           .get()
           .getPlayer()
-          .kickPlayer(
-              formatPunishmentScreen(
-                  getConfig(),
-                  isConsole()
-                      ? UsernameFormatUtils.CONSOLE_NAME
-                      : PlayerComponent.player(getIssuerId(), NameStyle.FANCY),
-                  silent));
+          .kickPlayer(formatPunishmentScreen(
+              getConfig(),
+              isConsole()
+                  ? UsernameFormatUtils.CONSOLE_NAME
+                  : PlayerComponent.player(getIssuerId(), NameStyle.FANCY),
+              silent));
       return true;
     }
     return false;
@@ -190,24 +189,22 @@ public class Punishment implements Comparable<Punishment> {
    */
   public void sendWarning(Audience target, String reason) {
     Component titleWord = translatable("misc.warning", NamedTextColor.DARK_RED);
-    Component title = text().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
+    Component title =
+        text().append(WARN_SYMBOL).append(titleWord).append(WARN_SYMBOL).build();
     Component subtitle;
     if (Duration.between(getTimeIssued(), Instant.now()).getSeconds() >= 60) {
-      subtitle =
-          text()
-              .append(
-                  TemporalComponent.relativePastApproximate(getTimeIssued())
-                      .color(NamedTextColor.YELLOW)
-                      .append(text(": ", NamedTextColor.YELLOW)))
-              .append(text(reason, NamedTextColor.GOLD))
-              .build();
+      subtitle = text()
+          .append(TemporalComponent.relativePastApproximate(getTimeIssued())
+              .color(NamedTextColor.YELLOW)
+              .append(text(": ", NamedTextColor.YELLOW)))
+          .append(text(reason, NamedTextColor.GOLD))
+          .build();
     } else {
       subtitle = text(reason, NamedTextColor.GOLD);
     }
 
-    target.showTitle(
-        title(
-            title, subtitle, Times.of(Ticks.duration(5), Ticks.duration(200), Ticks.duration(10))));
+    target.showTitle(title(
+        title, subtitle, Times.of(Ticks.duration(5), Ticks.duration(200), Ticks.duration(10))));
     target.playSound(Sounds.WARN_SOUND);
   }
 
@@ -267,18 +264,16 @@ public class Punishment implements Comparable<Punishment> {
     List<Component> lines = Lists.newArrayList();
 
     lines.add(empty());
-    lines.add(
-        getType()
-            .getScreenComponent(
-                Duration.between(getTimeIssued(), Instant.now()).getSeconds() >= 60
-                    ? text()
-                        .append(
-                            TemporalComponent.relativePastApproximate(getTimeIssued())
-                                .color(NamedTextColor.YELLOW)
-                                .append(text(": ", NamedTextColor.YELLOW)))
-                        .append(text(reason, NamedTextColor.RED))
-                        .build()
-                    : text(reason, NamedTextColor.RED)));
+    lines.add(getType()
+        .getScreenComponent(
+            Duration.between(getTimeIssued(), Instant.now()).getSeconds() >= 60
+                ? text()
+                    .append(TemporalComponent.relativePastApproximate(getTimeIssued())
+                        .color(NamedTextColor.YELLOW)
+                        .append(text(": ", NamedTextColor.YELLOW)))
+                    .append(text(reason, NamedTextColor.RED))
+                    .build()
+                : text(reason, NamedTextColor.RED)));
 
     // If punishment expires, display when
     if (this instanceof ExpirablePunishment) {
@@ -295,10 +290,9 @@ public class Punishment implements Comparable<Punishment> {
     // Alert match banned players they won't be able to participate
     if (getType() == PunishmentType.KICK && config.getMatchBanDuration() != null) {
       lines.add(empty());
-      lines.add(
-          text("You may rejoin, but will be unable to participate for ")
-              .append(duration(config.getMatchBanDuration(), NamedTextColor.YELLOW))
-              .color(NamedTextColor.GRAY));
+      lines.add(text("You may rejoin, but will be unable to participate for ")
+          .append(duration(config.getMatchBanDuration(), NamedTextColor.YELLOW))
+          .color(NamedTextColor.GRAY));
     }
 
     // Alert name banned players when their ban will be lifted

@@ -1,18 +1,18 @@
 package dev.pgm.community.database;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static tc.oc.pgm.util.Assert.assertNotNull;
 
 public class Query {
 
   public static String createTable(String tableName, String fields) {
-    checkNotNull(tableName);
-    checkNotNull(fields);
+    assertNotNull(tableName);
+    assertNotNull(fields);
 
     return String.format("CREATE TABLE IF NOT EXISTS %s %s", tableName, fields);
   }
 
   public static String countTable(String tableName) {
-    checkNotNull(tableName);
+    assertNotNull(tableName);
     return String.format("SELECT count(*) from %s", tableName);
   }
 }

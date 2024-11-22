@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class SQLModerationService extends SQLFeatureBase<Punishment, String>
     implements ModerationQuery {

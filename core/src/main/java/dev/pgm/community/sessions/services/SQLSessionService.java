@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     implements SessionDataQuery {
@@ -25,7 +25,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     this.sessionCache = CacheBuilder.newBuilder()
         .build(new CacheLoader<SessionQuery, SessionData>() {
           @Override
-          public SessionData load(@Nonnull SessionQuery key) {
+          public SessionData load(@NotNull SessionQuery key) {
             return new SessionData(key.getPlayerId(), key.ignoreDisguised());
           }
         });

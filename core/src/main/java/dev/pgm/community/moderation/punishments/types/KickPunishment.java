@@ -3,7 +3,7 @@ package dev.pgm.community.moderation.punishments.types;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class KickPunishment extends Punishment {
 

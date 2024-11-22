@@ -1,6 +1,6 @@
 package dev.pgm.community.utils;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static tc.oc.pgm.util.Assert.assertNotNull;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -17,8 +17,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import org.bukkit.Skin;
+import org.jetbrains.annotations.Nullable;
 
 public class WebUtils {
 
@@ -28,56 +28,51 @@ public class WebUtils {
 
   /** Fetch a list of random minecraft usernames */
   public static CompletableFuture<List<String>> getRandomNameList(int size) {
-    return CompletableFuture.supplyAsync(
-        () -> {
-          List<String> names = Lists.newArrayList();
-          for (int i = 0; i < size; i++) {
-            names.add(getRandomName().join());
-          }
-          return names;
-        });
+    return CompletableFuture.supplyAsync(() -> {
+      List<String> names = Lists.newArrayList();
+      for (int i = 0; i < size; i++) {
+        names.add(getRandomName().join());
+      }
+      return names;
+    });
   }
 
   /** Fetch a random minecraft username */
   public static CompletableFuture<String> getRandomName() {
-    return CompletableFuture.supplyAsync(
-        () -> {
-          String response = "ERROR_404";
-          HttpURLConnection url;
-          try {
-            url = (HttpURLConnection) new URL(RANDOM_NAME_API).openConnection();
+    return CompletableFuture.supplyAsync(() -> {
+      String response = "ERROR_404";
+      HttpURLConnection url;
+      try {
+        url = (HttpURLConnection) new URL(RANDOM_NAME_API).openConnection();
 
-            url.setRequestMethod("GET");
-            url.setRequestProperty("User-Agent", "Community");
-            url.setInstanceFollowRedirects(true);
-            url.setConnectTimeout(10000);
-            url.setReadTimeout(10000);
+        url.setRequestMethod("GET");
+        url.setRequestProperty("User-Agent", "Community");
+        url.setInstanceFollowRedirects(true);
+        url.setConnectTimeout(10000);
+        url.setReadTimeout(10000);
 
-            try (final BufferedReader br =
-                new BufferedReader(
-                    new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
-              response = br.readLine().trim();
-            }
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
+        try (final BufferedReader br = new BufferedReader(
+            new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
+          response = br.readLine().trim();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
 
-          return response;
-        });
+      return response;
+    });
   }
 
   public static CompletableFuture<Skin> getSkin(String input) {
-    return getProfile(input)
-        .thenApplyAsync(
-            profile -> {
-              if (profile == null || !profile.get("textures").isJsonObject()) {
-                return null;
-              }
-              JsonObject texture = profile.get("textures").getAsJsonObject();
-              String data = texture.get("raw").getAsJsonObject().get("value").getAsString();
-              String sign = texture.get("raw").getAsJsonObject().get("signature").getAsString();
-              return new Skin(data, sign);
-            });
+    return getProfile(input).thenApplyAsync(profile -> {
+      if (profile == null || !profile.get("textures").isJsonObject()) {
+        return null;
+      }
+      JsonObject texture = profile.get("textures").getAsJsonObject();
+      String data = texture.get("raw").getAsJsonObject().get("value").getAsString();
+      String sign = texture.get("raw").getAsJsonObject().get("signature").getAsString();
+      return new Skin(data, sign);
+    });
   }
 
   public static CompletableFuture<UsernameHistory> getUsernameHistory(String input) {
@@ -95,12 +90,11 @@ public class WebUtils {
 
       List<NameEntry> history = Lists.newArrayList();
       JsonArray names = profile.get("username_history").getAsJsonArray();
-      names.forEach(
-          name -> {
-            if (name.isJsonObject() && name.getAsJsonObject().entrySet().size() > 1) {
-              history.add(new NameEntry(name.getAsJsonObject()));
-            }
-          });
+      names.forEach(name -> {
+        if (name.isJsonObject() && name.getAsJsonObject().entrySet().size() > 1) {
+          history.add(new NameEntry(name.getAsJsonObject()));
+        }
+      });
       return new UsernameHistory(current, UUID.fromString(uuid), history);
     }
 
@@ -150,34 +144,32 @@ public class WebUtils {
 
   /** Get profile data of provided username/uuid * */
   private static CompletableFuture<JsonObject> getProfile(String input) {
-    return CompletableFuture.supplyAsync(
-        () -> {
-          JsonObject obj = null;
-          HttpURLConnection url;
-          try {
-            url = (HttpURLConnection) new URL(USERNAME_API + checkNotNull(input)).openConnection();
+    return CompletableFuture.supplyAsync(() -> {
+      JsonObject obj = null;
+      HttpURLConnection url;
+      try {
+        url = (HttpURLConnection) new URL(USERNAME_API + assertNotNull(input)).openConnection();
 
-            url.setRequestMethod("GET");
-            url.setRequestProperty("User-Agent", "Community");
-            url.setRequestProperty("Accept", "application/json");
-            url.setInstanceFollowRedirects(true);
-            url.setConnectTimeout(10000);
-            url.setReadTimeout(10000);
+        url.setRequestMethod("GET");
+        url.setRequestProperty("User-Agent", "Community");
+        url.setRequestProperty("Accept", "application/json");
+        url.setInstanceFollowRedirects(true);
+        url.setConnectTimeout(10000);
+        url.setReadTimeout(10000);
 
-            StringBuilder data = new StringBuilder();
-            try (final BufferedReader br =
-                new BufferedReader(
-                    new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
-              String line;
-              while ((line = br.readLine()) != null) {
-                data.append(line.trim());
-              }
-              obj = new Gson().fromJson(data.toString(), JsonObject.class);
-            }
-          } catch (IOException e) {
-            Community.log("%s", e.getMessage());
+        StringBuilder data = new StringBuilder();
+        try (final BufferedReader br = new BufferedReader(
+            new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
+          String line;
+          while ((line = br.readLine()) != null) {
+            data.append(line.trim());
           }
-          return obj;
-        });
+          obj = new Gson().fromJson(data.toString(), JsonObject.class);
+        }
+      } catch (IOException e) {
+        Community.log("%s", e.getMessage());
+      }
+      return obj;
+    });
   }
 }

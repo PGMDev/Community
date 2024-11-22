@@ -20,9 +20,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.map.MapInfo;
 
 public class PollBuilder {
@@ -129,12 +129,11 @@ public class PollBuilder {
     EndAction action = getAction(option);
 
     if (action == null) {
-      sender.sendWarning(
-          text()
-              .append(text("No option called '"))
-              .append(text(option, NamedTextColor.AQUA))
-              .append(text("' found."))
-              .build());
+      sender.sendWarning(text()
+          .append(text("No option called '"))
+          .append(text(option, NamedTextColor.AQUA))
+          .append(text("' found."))
+          .build());
       return false;
     }
 
@@ -162,8 +161,8 @@ public class PollBuilder {
     }
 
     if (actions.size() == 1) {
-      poll =
-          new SingleChoicePoll(question, creator, threshold, duration, actions.iterator().next());
+      poll = new SingleChoicePoll(
+          question, creator, threshold, duration, actions.iterator().next());
     } else if (endActions.size() > 1) {
       threshold = PollThreshold.SIMPLE;
       poll = new MultiChoicePoll(question, creator, threshold, duration, actions);

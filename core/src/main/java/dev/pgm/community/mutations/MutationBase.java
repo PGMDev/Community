@@ -4,10 +4,10 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.mutations.options.MutationOption;
 import java.util.Collection;
-import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 
 /** MutationBase - Foundation of all mutations */

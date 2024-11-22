@@ -11,10 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 
@@ -154,12 +154,11 @@ public interface UsersFeature extends Feature {
       String target, boolean ignoreDisguised, UserProfileWithSessionCallback callback) {
     CompletableFuture<UserProfile> profileFuture = getStoredProfile(target);
     profileFuture.thenAcceptBothAsync(
-        profileFuture.thenApplyAsync(
-            profile -> {
-              if (profile == null) return null;
+        profileFuture.thenApplyAsync(profile -> {
+          if (profile == null) return null;
 
-              return profile.getLatestSession(ignoreDisguised).join();
-            }),
+          return profile.getLatestSession(ignoreDisguised).join();
+        }),
         (profile, session) -> callback.run(profile, session));
   }
 
@@ -175,12 +174,11 @@ public interface UsersFeature extends Feature {
       UUID id, boolean ignoreDisguised, UserProfileWithSessionCallback callback) {
     CompletableFuture<UserProfile> profileFuture = getStoredProfile(id);
     profileFuture.thenAcceptBothAsync(
-        profileFuture.thenApplyAsync(
-            profile -> {
-              if (profile == null) return null;
+        profileFuture.thenApplyAsync(profile -> {
+          if (profile == null) return null;
 
-              return profile.getLatestSession(ignoreDisguised).join();
-            }),
+          return profile.getLatestSession(ignoreDisguised).join();
+        }),
         (profile, session) -> callback.run(profile, session));
   }
 }

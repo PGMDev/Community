@@ -13,9 +13,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.jetbrains.annotations.Nullable;
 
 /** A feature that can handles moderation * */
 public interface ModerationFeature extends Feature {

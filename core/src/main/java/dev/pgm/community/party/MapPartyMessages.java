@@ -13,7 +13,6 @@ import dev.pgm.community.utils.MessageUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -21,6 +20,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 import tc.oc.pgm.util.text.TextTranslations;
@@ -51,26 +51,22 @@ public class MapPartyMessages {
   public static final Component REQUIRE_ONE_MAP_ERROR =
       text("At least one map is required for the map party to function", NamedTextColor.RED);
 
-  public static final Component SET_DESCRIPTION_REMINDER =
-      text()
-          .append(text("Don't forget to set a map party description. Click "))
-          .append(text("["))
-          .append(text("here", NamedTextColor.AQUA))
-          .append(text("]"))
-          .color(NamedTextColor.GRAY)
-          .clickEvent(ClickEvent.suggestCommand("/event setdesc"))
-          .hoverEvent(
-              HoverEvent.showText(text("Click to set event description", NamedTextColor.GRAY)))
-          .build();
+  public static final Component SET_DESCRIPTION_REMINDER = text()
+      .append(text("Don't forget to set a map party description. Click "))
+      .append(text("["))
+      .append(text("here", NamedTextColor.AQUA))
+      .append(text("]"))
+      .color(NamedTextColor.GRAY)
+      .clickEvent(ClickEvent.suggestCommand("/event setdesc"))
+      .hoverEvent(HoverEvent.showText(text("Click to set event description", NamedTextColor.GRAY)))
+      .build();
 
-  public static final Component CREATE_PARTY_BROADCAST =
-      text()
-          .append(text("created a new map party"))
-          .hoverEvent(
-              HoverEvent.showText(text("Click to view map party info", NamedTextColor.GRAY)))
-          .clickEvent(ClickEvent.runCommand("/event"))
-          .color(NamedTextColor.GRAY)
-          .build();
+  public static final Component CREATE_PARTY_BROADCAST = text()
+      .append(text("created a new map party"))
+      .hoverEvent(HoverEvent.showText(text("Click to view map party info", NamedTextColor.GRAY)))
+      .clickEvent(ClickEvent.runCommand("/event"))
+      .color(NamedTextColor.GRAY)
+      .build();
 
   public static Component getAddHostError(Player player) {
     return text()

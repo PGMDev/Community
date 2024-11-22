@@ -14,12 +14,12 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.map.MapInfo;
 
 public interface RequestFeature extends Feature {

@@ -17,7 +17,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.Syntax;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -45,7 +44,6 @@ public class RequestCommands extends CommunityCommand {
 
   @Command("request|req <map>")
   @CommandDescription("Request a map")
-  @Syntax("[map] - Name of map to request")
   @Permission(CommunityPermissions.REQUEST)
   public void request(
       CommandAudience audience, Player sender, @Argument("map") @Greedy MapInfo map) {
@@ -59,54 +57,40 @@ public class RequestCommands extends CommunityCommand {
       CommandAudience audience, Player sender, @Argument("page") @Default("1") int page) {
     Map<MapInfo, MapCooldown> cooldowns = requests.getMapCooldowns();
 
-    List<MapInfo> maps =
-        cooldowns.entrySet().stream()
-            .filter(e -> !e.getValue().hasExpired())
-            .map(e -> e.getKey())
-            .collect(Collectors.toList());
+    List<MapInfo> maps = cooldowns.entrySet().stream()
+        .filter(e -> !e.getValue().hasExpired())
+        .map(e -> e.getKey())
+        .collect(Collectors.toList());
 
-    Comparator<MapInfo> compare =
-        (m1, m2) -> {
-          MapCooldown m1C = cooldowns.get(m1);
-          MapCooldown m2C = cooldowns.get(m2);
-          Instant m1D = m1C.getEndTime();
-          Instant m2D = m2C.getEndTime();
+    Comparator<MapInfo> compare = (m1, m2) -> {
+      MapCooldown m1C = cooldowns.get(m1);
+      MapCooldown m2C = cooldowns.get(m2);
+      Instant m1D = m1C.getEndTime();
+      Instant m2D = m2C.getEndTime();
 
-          return m2D.compareTo(m1D);
-        };
+      return m2D.compareTo(m1D);
+    };
 
     maps.sort(compare);
 
     int resultsPerPage = 10;
     int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
 
-    Component paginated =
-        TextFormatter.paginate(
-            text("Active Cooldowns"),
-            page,
-            pages,
-            NamedTextColor.DARK_AQUA,
-            NamedTextColor.AQUA,
-            true);
+    Component paginated = TextFormatter.paginate(
+        text("Active Cooldowns"), page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
 
-    Component formattedTitle =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+    Component formattedTitle = TextFormatter.horizontalLineHeading(
+        audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
 
     new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
       @Override
       public Component format(MapInfo map, int index) {
         MapCooldown cooldown = cooldowns.get(map);
 
-        Component mapName =
-            map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
-                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        translatable(
-                            "command.maps.hover",
-                            NamedTextColor.GRAY,
-                            map.getStyledName(MapNameStyle.COLOR))));
+        Component mapName = map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
+            .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+            .hoverEvent(HoverEvent.showText(translatable(
+                "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))));
 
         return text()
             .append(mapName)
@@ -133,45 +117,35 @@ public class RequestCommands extends CommunityCommand {
     int resultsPerPage = 8;
     int pages = (requestCounts.size() + resultsPerPage - 1) / resultsPerPage;
 
-    Component paginated =
-        TextFormatter.paginate(
-            text("Map Requests"), page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
+    Component paginated = TextFormatter.paginate(
+        text("Map Requests"), page, pages, NamedTextColor.DARK_AQUA, NamedTextColor.AQUA, true);
 
-    Component formattedTitle =
-        TextFormatter.horizontalLineHeading(
-            audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
+    Component formattedTitle = TextFormatter.horizontalLineHeading(
+        audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
 
     new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
       @Override
       public Component format(MapInfo map, int index) {
-        Component mapName =
-            map.getStyledName(MapNameStyle.COLOR)
-                .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
-                .hoverEvent(
-                    HoverEvent.showText(
-                        translatable(
-                            "command.maps.hover",
-                            NamedTextColor.GRAY,
-                            map.getStyledName(MapNameStyle.COLOR))));
+        Component mapName = map.getStyledName(MapNameStyle.COLOR)
+            .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
+            .hoverEvent(HoverEvent.showText(translatable(
+                "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))));
 
         int requestCount = requestCounts.get(map);
         Component count = text(requestCount, NamedTextColor.DARK_AQUA, TextDecoration.BOLD);
 
-        Component setButton =
-            getRequestsButton(
-                "Set", "Click to setnext", NamedTextColor.GREEN, "/sn " + map.getName());
-        Component voteButton =
-            getRequestsButton(
-                "Vote",
-                "Click to add to the next vote",
-                NamedTextColor.LIGHT_PURPLE,
-                "/vote add " + map.getName());
-        Component removeButton =
-            getRequestsButton(
-                "\u2715",
-                "Click to remove all requests",
-                NamedTextColor.RED,
-                "/reqs clear " + map.getName());
+        Component setButton = getRequestsButton(
+            "Set", "Click to setnext", NamedTextColor.GREEN, "/sn " + map.getName());
+        Component voteButton = getRequestsButton(
+            "Vote",
+            "Click to add to the next vote",
+            NamedTextColor.LIGHT_PURPLE,
+            "/vote add " + map.getName());
+        Component removeButton = getRequestsButton(
+            "\u2715",
+            "Click to remove all requests",
+            NamedTextColor.RED,
+            "/reqs clear " + map.getName());
 
         return text()
             .append(text((index + 1) + ". "))
@@ -201,13 +175,12 @@ public class RequestCommands extends CommunityCommand {
   public void clearRequests(CommandAudience audience, @Argument("map") @Greedy MapInfo map) {
     if (map != null) {
       int removalCount = requests.clearRequests(map);
-      Component removed =
-          text()
-              .append(text(" ("))
-              .append(text(removalCount, NamedTextColor.RED))
-              .append(text(")"))
-              .color(NamedTextColor.GRAY)
-              .build();
+      Component removed = text()
+          .append(text(" ("))
+          .append(text(removalCount, NamedTextColor.RED))
+          .append(text(")"))
+          .color(NamedTextColor.GRAY)
+          .build();
       BroadcastUtils.sendAdminChatMessage(
           text()
               .append(audience.getStyledName())
@@ -237,11 +210,10 @@ public class RequestCommands extends CommunityCommand {
         text()
             .append(audience.getStyledName())
             .append(text(" has ", NamedTextColor.GRAY))
-            .append(
-                text(
-                    requests.isAccepting() ? "enabled" : "disabled",
-                    requests.isAccepting() ? NamedTextColor.GREEN : NamedTextColor.RED,
-                    TextDecoration.BOLD))
+            .append(text(
+                requests.isAccepting() ? "enabled" : "disabled",
+                requests.isAccepting() ? NamedTextColor.GREEN : NamedTextColor.RED,
+                TextDecoration.BOLD))
             .append(text(" map requests", NamedTextColor.GRAY))
             .build(),
         CommunityPermissions.REQUEST_STAFF);
