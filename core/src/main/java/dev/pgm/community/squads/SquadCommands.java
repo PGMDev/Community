@@ -6,6 +6,7 @@ import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 import static net.kyori.adventure.text.event.HoverEvent.showText;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TextException.exception;
+import static tc.oc.pgm.util.text.TextFormatter.horizontalLineHeading;
 
 import co.aikar.commands.annotation.CommandPermission;
 import com.google.common.collect.ImmutableList;
@@ -19,11 +20,14 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.context.CommandContext;
 import tc.oc.pgm.util.Players;
 import tc.oc.pgm.util.PrettyPaginatedComponentResults;
 import tc.oc.pgm.util.named.NameStyle;
@@ -43,7 +47,7 @@ public class SquadCommands {
   @CommandPermission(CommunityPermissions.SQUAD)
   public void listDefault(MatchPlayer sender) {
     checkEnabled();
-    list(sender);
+    list(sender, false);
   }
 
   @Command("<player>")
@@ -123,14 +127,40 @@ public class SquadCommands {
   @Command("list")
   @CommandDescription("List party members")
   @CommandPermission(CommunityPermissions.SQUAD)
-  public void list(MatchPlayer sender) {
+  public void list(MatchPlayer sender, @Flag(value = "all", aliases = "a") boolean all) {
     checkEnabled();
+
+    if (all && sender.getBukkit().hasPermission(CommunityPermissions.SQUAD_ADMIN)) {
+      Component header = horizontalLineHeading(
+          sender.getBukkit(), translatable("squad.list.all"), NamedTextColor.BLUE);
+
+      new PrettyPaginatedComponentResults<Squad>(header, manager.getSquads().size()) {
+        @Override
+        public Component format(Squad squad, int index) {
+          return text()
+              .append(text(index + 1))
+              .append(text(". "))
+              .append(player(squad.getLeader(), NameStyle.VERBOSE))
+              .append(text(": "))
+              .append(TextFormatter.list(
+                  squad.getPlayers().stream()
+                      .skip(1)
+                      .map(uuid -> player(uuid, NameStyle.VERBOSE))
+                      .toList(),
+                  NamedTextColor.GRAY))
+              .build();
+        }
+      }.display(sender, ImmutableList.copyOf(manager.getSquads()), 1);
+
+      return;
+    }
+
     Squad squad = manager.getSquadByPlayer(sender);
     if (squad == null) throw exception("squad.err.memberOnly");
 
     boolean isLeader = Objects.equals(sender.getId(), squad.getLeader());
 
-    Component header = TextFormatter.horizontalLineHeading(
+    Component header = horizontalLineHeading(
         sender.getBukkit(),
         translatable("squad.list.header", player(squad.getLeader(), NameStyle.VERBOSE)),
         NamedTextColor.BLUE);
@@ -166,6 +196,21 @@ public class SquadCommands {
         return builder.build();
       }
     }.display(sender, ImmutableList.copyOf(squad.getAllPlayers()), 1);
+  }
+
+  @Command("chat [message]")
+  @CommandDescription("Sends a message to your party")
+  @CommandPermission(CommunityPermissions.SQUAD)
+  public void chat(
+      CommandContext<CommandSender> context,
+      MatchPlayer sender,
+      @Argument(value = "message", suggestions = "players") String message) {
+    checkEnabled();
+    if (message == null) {
+      PGM.get().getChatManager().setChannel(sender, SquadChannel.INSTANCE);
+    } else {
+      PGM.get().getChatManager().process(SquadChannel.INSTANCE, sender, context);
+    }
   }
 
   @Command("kick <player>")

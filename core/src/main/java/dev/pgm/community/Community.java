@@ -4,6 +4,7 @@ import dev.pgm.community.commands.graph.CommunityCommandGraph;
 import dev.pgm.community.database.DatabaseConnection;
 import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
+import dev.pgm.community.squads.SquadChannel;
 import dev.pgm.community.text.TextTranslations;
 import dev.pgm.community.utils.PGMUtils;
 import fr.minuskube.inv.InventoryManager;
@@ -12,6 +13,7 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 
 public class Community extends JavaPlugin {
@@ -28,6 +30,11 @@ public class Community extends JavaPlugin {
   private InventoryManager inventory;
 
   private Random random;
+
+  @Override
+  public void onLoad() {
+    Integration.registerChannel(SquadChannel.INSTANCE);
+  }
 
   @Override
   public void onEnable() {

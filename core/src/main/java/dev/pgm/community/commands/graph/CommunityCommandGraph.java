@@ -65,7 +65,9 @@ import tc.oc.pgm.command.parsers.PlayerParser;
 import tc.oc.pgm.command.util.CommandGraph;
 import tc.oc.pgm.lib.org.incendo.cloud.minecraft.extras.MinecraftHelp;
 import tc.oc.pgm.lib.org.incendo.cloud.parser.standard.StringParser;
+import tc.oc.pgm.lib.org.incendo.cloud.suggestion.SuggestionProvider;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.Players;
 
 public class CommunityCommandGraph extends CommandGraph<Community> {
 
@@ -99,6 +101,9 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     registerParser(GameMode.class, new GameModeParser());
     registerParser(OfflinePlayer.class, new OfflinePlayerParser());
     registerParser(MatchPlayer.class, new MatchPlayerParser());
+
+    parsers.registerSuggestionProvider(
+        "players", SuggestionProvider.blockingStrings(Players::suggestPlayers));
   }
 
   @Override

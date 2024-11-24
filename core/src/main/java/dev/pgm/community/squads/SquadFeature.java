@@ -58,7 +58,12 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
     if (getConfig().isEnabled() && isPGMEnabled()) {
       enable();
       Integration.setSquadIntegration(this);
+      SquadChannel.INSTANCE.init(this);
     }
+  }
+
+  public List<Squad> getSquads() {
+    return squads;
   }
 
   @Override

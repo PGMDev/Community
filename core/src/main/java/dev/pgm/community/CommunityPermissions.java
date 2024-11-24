@@ -115,6 +115,7 @@ public interface CommunityPermissions {
   // Squads
   String SQUAD = ROOT + ".squad"; // Access to squad commands
   String SQUAD_CREATE = SQUAD + ".create"; // Can create a squad
+  String SQUAD_ADMIN = SQUAD + ".admin"; // Administrative squad permission
 
   // General Commands
   String FLIGHT = ROOT + ".fly";
