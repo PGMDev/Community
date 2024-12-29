@@ -37,7 +37,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
-import tc.oc.pgm.util.UsernameFormatUtils;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TemporalComponent;
@@ -174,7 +173,7 @@ public class Punishment implements Comparable<Punishment> {
           .kickPlayer(formatPunishmentScreen(
               getConfig(),
               isConsole()
-                  ? UsernameFormatUtils.CONSOLE_NAME
+                  ? PlayerComponent.CONSOLE
                   : PlayerComponent.player(getIssuerId(), NameStyle.FANCY),
               silent));
       return true;
