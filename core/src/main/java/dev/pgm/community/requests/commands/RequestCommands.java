@@ -23,6 +23,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
@@ -55,16 +56,17 @@ public class RequestCommands extends CommunityCommand {
   @Permission(CommunityPermissions.VIEW_MAP_COOLDOWNS)
   public void viewCooldowns(
       CommandAudience audience, Player sender, @Argument("page") @Default("1") int page) {
-    Map<MapInfo, MapCooldown> cooldowns = requests.getMapCooldowns();
+    Map<String, MapCooldown> cooldowns = requests.getMapCooldowns();
+    var library = PGM.get().getMapLibrary();
 
     List<MapInfo> maps = cooldowns.entrySet().stream()
         .filter(e -> !e.getValue().hasExpired())
-        .map(e -> e.getKey())
+        .map(e -> library.getMapById(e.getKey()))
         .collect(Collectors.toList());
 
     Comparator<MapInfo> compare = (m1, m2) -> {
-      MapCooldown m1C = cooldowns.get(m1);
-      MapCooldown m2C = cooldowns.get(m2);
+      MapCooldown m1C = cooldowns.get(m1.getId());
+      MapCooldown m2C = cooldowns.get(m2.getId());
       Instant m1D = m1C.getEndTime();
       Instant m2D = m2C.getEndTime();
 
@@ -85,7 +87,7 @@ public class RequestCommands extends CommunityCommand {
     new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
       @Override
       public Component format(MapInfo map, int index) {
-        MapCooldown cooldown = cooldowns.get(map);
+        MapCooldown cooldown = cooldowns.get(map.getId());
 
         Component mapName = map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
             .clickEvent(ClickEvent.runCommand("/map " + map.getName()))

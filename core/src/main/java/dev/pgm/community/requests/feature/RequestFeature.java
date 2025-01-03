@@ -7,6 +7,7 @@ import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -168,7 +169,9 @@ public interface RequestFeature extends Feature {
 
   boolean hasMapCooldown(MapInfo map);
 
-  Map<MapInfo, MapCooldown> getMapCooldowns();
+  Duration getApproximateCooldown(MapInfo map);
+
+  Map<String, MapCooldown> getMapCooldowns();
 
   void openMenu(Player player);
 

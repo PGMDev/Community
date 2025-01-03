@@ -34,6 +34,7 @@ import dev.pgm.community.utils.Sounds;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -62,20 +64,18 @@ import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapOrder;
 import tc.oc.pgm.api.map.Phase;
-import tc.oc.pgm.api.map.VariantInfo;
 import tc.oc.pgm.api.match.event.MatchFinishEvent;
 import tc.oc.pgm.api.match.event.MatchVoteFinishEvent;
 import tc.oc.pgm.events.PlayerJoinMatchEvent;
 import tc.oc.pgm.restart.RestartManager;
 import tc.oc.pgm.rotation.MapPoolManager;
-import tc.oc.pgm.rotation.pools.MapPool;
 import tc.oc.pgm.rotation.pools.VotingPool;
 import tc.oc.pgm.rotation.vote.MapPoll;
 import tc.oc.pgm.rotation.vote.VotePoolOptions;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.TimeUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.named.NameStyle;
-import tc.oc.pgm.util.text.TemporalComponent;
 
 public abstract class RequestFeatureBase extends FeatureBase implements RequestFeature {
 
@@ -83,7 +83,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   private Cache<UUID, Instant> cooldown;
 
-  private Map<MapInfo, MapCooldown> mapCooldown;
+  private final Map<String, MapCooldown> mapCooldown;
 
   private LinkedList<SponsorRequest> sponsors;
 
@@ -439,15 +439,11 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     }
 
     // Check if map has a cooldown
-    if (hasMapCooldown(map)) {
-      MapCooldown cooldown = getMapCooldown(map);
-      Component cooldownWarning = cooldown != null
-          ? text()
-              .append(text("This map can be sponsored in ", NamedTextColor.RED))
-              .append(
-                  TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
-              .build()
-          : text("This map is on cooldown! Please select another.", NamedTextColor.RED);
+    var cd = getApproximateCooldown(map);
+    if (cd.isPositive()) {
+      Component cooldownWarning = cd.toSeconds() > 0
+          ? text("This map can be sponsored in ").append(duration(cd, NamedTextColor.YELLOW))
+          : text("This map played or lost a vote too recently!");
       viewer.sendWarning(cooldownWarning);
       return;
     }
@@ -455,15 +451,14 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     // Check map size
     if (!isMapSizeAllowed(map)) {
       viewer.sendWarning(text()
-          .append(map.getStyledName(MapNameStyle.COLOR)
-              .hoverEvent(HoverEvent.showText(text()
-                  .append(text("Max of ", NamedTextColor.GRAY))
-                  .append(text(PGMUtils.getMapMaxSize(map), NamedTextColor.RED)))))
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" (Max of ", NamedTextColor.YELLOW)
+              .append(text(PGMUtils.getMapMaxSize(map), NamedTextColor.RED))
+              .append(text(")")))
           .append(text(" does not fit the online player count "))
           .append(getMapSizeBoundsComponent())
           .append(newline())
-          .append(text("Please request a different map!"))
-          .build());
+          .append(text("Please request a different map!")));
       return;
     }
 
@@ -645,78 +640,53 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         getRequestConfig().getScaleFactor());
   }
 
-  private boolean isACooldownVariant(MapInfo map) {
-    return mapCooldown.entrySet().stream().anyMatch((entry) -> {
-      MapInfo otherMap = entry.getKey();
-      MapCooldown cooldown = entry.getValue();
-
-      if (cooldown.hasExpired()) return false;
-
-      for (VariantInfo variant : otherMap.getVariants().values()) {
-        if (variant.getId().equalsIgnoreCase(map.getId())) {
-          return true;
-        }
-      }
-
-      return false;
-    });
+  @Override
+  public boolean hasMapCooldown(MapInfo map) {
+    return getApproximateCooldown(map).isPositive();
   }
 
-  private MapCooldown getMapCooldown(MapInfo map) {
-    if (mapCooldown.containsKey(map)) {
-      return mapCooldown.get(map);
-    }
-
-    for (Map.Entry<MapInfo, MapCooldown> entry : mapCooldown.entrySet()) {
-      MapInfo otherMap = entry.getKey();
-      MapCooldown cooldown = entry.getValue();
-
-      for (VariantInfo variant : otherMap.getVariants().values()) {
-        if (variant.getId().equalsIgnoreCase(map.getId())) {
-          return cooldown;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  public boolean isOnLongtermCooldown(MapInfo map) {
-    if (!getRequestConfig().isPGMCooldownsUsed()) return false;
-
-    MapPool activePool = PGMUtils.getActiveMapPool();
-    if (!(activePool instanceof VotingPool)) return false;
-
-    VotingPool pool = (VotingPool) activePool;
-    VotingPool.VoteConstants constants = pool.constants;
+  /**
+   * How long until the map (or any of its variants) is off cooldown.
+   *
+   * @param map the map to check
+   * @return zero for no cooldown. 1ms for undetermined (ie: score-based cooldown), otherwise the
+   *     full cd duration
+   */
+  @Override
+  public Duration getApproximateCooldown(MapInfo map) {
     var mapLibrary = PGM.get().getMapLibrary();
-
     return map.getVariants().values().stream()
         .map(variant -> mapLibrary.getMapById(variant.getId()))
         .filter(Objects::nonNull)
-        .map(pool::getVoteData)
-        .allMatch(data ->
-            !data.isOnCooldown(constants) && data.getScore() > (constants.defaultScore() / 2));
+        .map(m -> TimeUtils.max(getSponsorCooldown(map), getPgmCooldown(map)))
+        .max(Comparator.naturalOrder())
+        .orElse(Duration.ZERO);
   }
 
-  @Override
-  public boolean hasMapCooldown(MapInfo map) {
-    if (isOnLongtermCooldown(map)) return true;
-    if (isACooldownVariant(map)) return true;
-
-    MapCooldown cooldown = getMapCooldown(map);
-    if (cooldown == null) return false;
-
-    if (cooldown.hasExpired()) {
-      mapCooldown.remove(map);
-      return false;
+  private Duration getSponsorCooldown(MapInfo map) {
+    var cd = mapCooldown.get(map.getId());
+    if (cd == null) return Duration.ZERO;
+    var remaining = cd.getTimeRemaining();
+    if (remaining.isNegative()) {
+      mapCooldown.remove(map.getId());
+      return Duration.ZERO;
     }
+    return remaining;
+  }
 
-    return true;
+  private Duration getPgmCooldown(MapInfo map) {
+    if (!getRequestConfig().isPGMCooldownsUsed()) return Duration.ZERO;
+    if (!(PGMUtils.getActiveMapPool() instanceof VotingPool pool)) return Duration.ZERO;
+    var data = pool.getVoteData(map);
+    Duration cd = data.remainingCooldown(pool.constants);
+    if (cd.isPositive()) return cd;
+    return data.getScore() < (pool.constants.defaultScore() / 2)
+        ? Duration.ofMillis(1L)
+        : Duration.ZERO;
   }
 
   @Override
-  public Map<MapInfo, MapCooldown> getMapCooldowns() {
+  public Map<String, MapCooldown> getMapCooldowns() {
     return mapCooldown;
   }
 
@@ -865,7 +835,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
   private void startNewMapCooldown(MapInfo map, Duration matchLength) {
     this.mapCooldown.putIfAbsent(
-        map,
+        map.getId(),
         new MapCooldown(
             Instant.now(), matchLength.multipliedBy(getRequestConfig().getMapCooldownMultiply())));
   }
@@ -907,17 +877,13 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
         .append(text(" and select a new map to sponsor.")));
   }
 
-  private Component getMapSizeBoundsComponent() {
+  private ComponentLike getMapSizeBoundsComponent() {
     MapSizeBounds bounds = getCurrentMapSizeBounds();
-    int min = bounds.getLowerBound();
-    int max = bounds.getUpperBound();
-    return text()
-        .append(text("(", NamedTextColor.GRAY))
-        .append(text(min, NamedTextColor.GOLD))
-        .append(text("-", NamedTextColor.GRAY))
-        .append(text(max, NamedTextColor.GOLD))
-        .append(text(")", NamedTextColor.GRAY))
-        .build();
+    return text("(", NamedTextColor.YELLOW)
+        .append(text(bounds.getLowerBound(), NamedTextColor.GOLD))
+        .append(text("-"))
+        .append(text(bounds.getUpperBound(), NamedTextColor.GOLD))
+        .append(text(")"));
   }
 
   private boolean isRestartQueued() {
