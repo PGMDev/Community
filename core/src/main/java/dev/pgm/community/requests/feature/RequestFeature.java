@@ -3,7 +3,6 @@ package dev.pgm.community.requests.feature;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.feature.Feature;
-import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.RequestProfile;
 import dev.pgm.community.requests.SponsorRequest;
 import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
@@ -170,8 +169,6 @@ public interface RequestFeature extends Feature {
   boolean hasMapCooldown(MapInfo map);
 
   Duration getApproximateCooldown(MapInfo map);
-
-  Map<String, MapCooldown> getMapCooldowns();
 
   void openMenu(Player player);
 

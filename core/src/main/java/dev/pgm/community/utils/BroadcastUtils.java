@@ -27,8 +27,7 @@ public class BroadcastUtils {
   public static final Component RIGHT_DIV = text("\u00BB");
   public static final Component LEFT_DIV = text("\u00AB");
 
-  public static final Component BROADCAST_DIV =
-      text().append(space()).append(RIGHT_DIV).append(space()).build();
+  public static final Component BROADCAST_DIV = text(" \u00BB ");
 
   private static final Component ADMIN_CHAT_PREFIX = text()
       .append(text("[", NamedTextColor.WHITE))

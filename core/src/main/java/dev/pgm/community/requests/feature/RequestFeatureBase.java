@@ -686,11 +686,6 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
   }
 
   @Override
-  public Map<String, MapCooldown> getMapCooldowns() {
-    return mapCooldown;
-  }
-
-  @Override
   public int getStandardExtraVoteLevel(Player player) {
     return superVotes.getVoteLevel(player);
   }

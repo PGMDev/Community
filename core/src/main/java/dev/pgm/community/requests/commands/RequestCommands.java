@@ -3,20 +3,18 @@ package dev.pgm.community.requests.commands;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.requests.MapCooldown;
 import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PaginatedComponentResults;
-import java.time.Instant;
+import java.time.Duration;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -31,8 +29,8 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
+import tc.oc.pgm.util.StreamUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
-import tc.oc.pgm.util.text.TemporalComponent;
 import tc.oc.pgm.util.text.TextFormatter;
 
 public class RequestCommands extends CommunityCommand {
@@ -56,24 +54,14 @@ public class RequestCommands extends CommunityCommand {
   @Permission(CommunityPermissions.VIEW_MAP_COOLDOWNS)
   public void viewCooldowns(
       CommandAudience audience, Player sender, @Argument("page") @Default("1") int page) {
-    Map<String, MapCooldown> cooldowns = requests.getMapCooldowns();
     var library = PGM.get().getMapLibrary();
+    record MapWithCooldown(MapInfo map, Duration cooldown) {}
 
-    List<MapInfo> maps = cooldowns.entrySet().stream()
-        .filter(e -> !e.getValue().hasExpired())
-        .map(e -> library.getMapById(e.getKey()))
-        .collect(Collectors.toList());
-
-    Comparator<MapInfo> compare = (m1, m2) -> {
-      MapCooldown m1C = cooldowns.get(m1.getId());
-      MapCooldown m2C = cooldowns.get(m2.getId());
-      Instant m1D = m1C.getEndTime();
-      Instant m2D = m2C.getEndTime();
-
-      return m2D.compareTo(m1D);
-    };
-
-    maps.sort(compare);
+    var maps = StreamUtils.of(library.getMaps())
+        .map(map -> new MapWithCooldown(map, requests.getApproximateCooldown(map)))
+        .filter(mcd -> mcd.cooldown.isPositive())
+        .sorted(Comparator.comparing(MapWithCooldown::cooldown))
+        .toList();
 
     int resultsPerPage = 10;
     int pages = (maps.size() + resultsPerPage - 1) / resultsPerPage;
@@ -84,23 +72,20 @@ public class RequestCommands extends CommunityCommand {
     Component formattedTitle = TextFormatter.horizontalLineHeading(
         audience.getSender(), paginated, NamedTextColor.DARK_PURPLE, 250);
 
-    new PaginatedComponentResults<MapInfo>(formattedTitle, resultsPerPage) {
+    new PaginatedComponentResults<MapWithCooldown>(formattedTitle, resultsPerPage) {
       @Override
-      public Component format(MapInfo map, int index) {
-        MapCooldown cooldown = cooldowns.get(map.getId());
+      public Component format(MapWithCooldown mcd, int index) {
+        var map = mcd.map;
 
-        Component mapName = map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
+        return map.getStyledName(MapNameStyle.COLOR_WITH_AUTHORS)
             .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
             .hoverEvent(HoverEvent.showText(translatable(
-                "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))));
-
-        return text()
-            .append(mapName)
+                "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))))
             .append(BroadcastUtils.BROADCAST_DIV.color(NamedTextColor.GOLD))
-            .append(TemporalComponent.duration(cooldown.getTimeRemaining(), NamedTextColor.YELLOW))
-            .append(text(" remaining"))
-            .color(NamedTextColor.GRAY)
-            .build();
+            .append((mcd.cooldown().toSeconds() > 0
+                    ? duration(mcd.cooldown(), NamedTextColor.YELLOW).append(text(" remaining"))
+                    : text("available soon"))
+                .color(NamedTextColor.GRAY));
       }
 
       @Override
