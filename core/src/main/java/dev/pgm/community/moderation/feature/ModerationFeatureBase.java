@@ -28,7 +28,6 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -417,26 +416,62 @@ public abstract class ModerationFeatureBase extends FeatureBase implements Moder
         });
   }
 
+  private boolean hasText(String string) {
+    for (int i = 0; i < string.length(); i++) {
+      if (Character.isLetterOrDigit(string.charAt(i))) return true;
+    }
+    return false;
+  }
+
+  private boolean isAllText(String string) {
+    for (int i = 0; i < string.length(); i++) {
+      char ch = string.charAt(i);
+      if (!(Character.isLetterOrDigit(ch) || ch == ' ')) return false;
+    }
+    return true;
+  }
+
+  private void compactDuplicates(StringBuilder builder, String base) {
+    if (base.isEmpty()) return;
+    char last = base.charAt(0);
+    builder.append(last);
+    for (int i = 1; i < base.length(); i++) {
+      char next = base.charAt(i);
+      if (last == next) continue;
+      builder.append(next);
+      last = next;
+    }
+  }
+
   private void logSign(Player player, String[] lines, Location location) {
     if (!getModerationConfig().isSignLoggerEnabled()) return;
 
-    int totalChars =
-        Arrays.stream(lines).mapToInt(line -> line.replace(" ", "").length()).sum();
+    StringBuilder compactBuilder = new StringBuilder(), fullBuilder = new StringBuilder();
+    for (String line : lines) {
+      if ((line = line.trim()).isEmpty()) continue;
+      fullBuilder.append(line).append('\n');
 
-    if (totalChars < 4) return; // Don't track signs with barely any text
+      if (hasText(line)) compactBuilder.append(line);
+      else compactDuplicates(compactBuilder, line);
+      compactBuilder.append(' ');
+    }
+    if (!fullBuilder.isEmpty()) {
+      compactBuilder.deleteCharAt(compactBuilder.length() - 1);
+      fullBuilder.deleteCharAt(fullBuilder.length() - 1);
+    }
+
+    String oneLineSign = compactBuilder.toString();
+    if (oneLineSign.length() < 4 && isAllText(oneLineSign))
+      return; // Don't track signs with barely any text
 
     String locString =
         String.format("%d %d %d", location.getBlockX(), location.getBlockY(), location.getBlockZ());
 
-    String oneLineSign = Arrays.stream(lines)
-        .map(line -> line.trim())
-        .filter(line -> !line.isBlank() && !line.isEmpty())
-        .collect(Collectors.joining(" "));
-
     Component alert = text()
         .append(player(player, NameStyle.FANCY))
         .append(text(" placed a sign: \"", NamedTextColor.GRAY))
-        .append(text(oneLineSign, NamedTextColor.YELLOW))
+        .append(text(oneLineSign, NamedTextColor.YELLOW)
+            .hoverEvent(HoverEvent.showText(text(fullBuilder.toString(), NamedTextColor.YELLOW))))
         .append(text("\"", NamedTextColor.GRAY))
         .clickEvent(ClickEvent.runCommand("/tploc " + locString))
         .hoverEvent(HoverEvent.showText(text("Click to teleport to sign", NamedTextColor.GRAY)))
