@@ -34,9 +34,11 @@ dependencies {
     compileOnly("tc.oc.pgm:core:0.16-SNAPSHOT")
     compileOnly("tc.oc.occ:AFK:1.0.0-SNAPSHOT")
     compileOnly("tc.oc.occ:Environment:1.0.0-SNAPSHOT")
+    compileOnly("org.incendo:cloud-annotations:2.0.0")
+    compileOnly("org.jetbrains:annotations:22.0.0")
 }
 
-group = "dev.pgm"
+group = "dev.pgm.community"
 version = "0.2-SNAPSHOT"
 description = "A plugin for managing a Minecraft community"
 

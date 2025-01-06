@@ -30,8 +30,8 @@ publishing {
     }
     repositories {
         maven {
-            name = "pgm-repo-snapshots"
-            url = uri("https://repo.pgm.fyi/snapshots")
+            name = "ghPackages"
+            url = uri("https://maven.pkg.github.com/PGMDev/Community")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
