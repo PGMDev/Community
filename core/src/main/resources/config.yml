@@ -81,7 +81,11 @@ moderation:
   # Sign Logging
   sign-logger:
     enabled: true
-      
+
+  # BlockGlitch Logging
+  block-glitch-logger:
+    enabled: true
+
   #Logins
   login-timeout: 30
   

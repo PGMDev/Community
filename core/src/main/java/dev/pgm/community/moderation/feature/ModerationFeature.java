@@ -1,6 +1,7 @@
 package dev.pgm.community.moderation.feature;
 
 import dev.pgm.community.feature.Feature;
+import dev.pgm.community.moderation.feature.loggers.BlockGlitchLogger;
 import dev.pgm.community.moderation.punishments.NetworkPunishment;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
@@ -145,4 +146,6 @@ public interface ModerationFeature extends Feature {
   String getStaffFormat();
 
   ModerationTools getTools();
+
+  BlockGlitchLogger getBlockGlitchLogger();
 }

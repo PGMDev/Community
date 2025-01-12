@@ -22,6 +22,7 @@ import dev.pgm.community.friends.commands.FriendshipCommand;
 import dev.pgm.community.history.MatchHistoryCommand;
 import dev.pgm.community.mobs.MobCommand;
 import dev.pgm.community.moderation.commands.BanCommand;
+import dev.pgm.community.moderation.commands.BlockGlitchCommand;
 import dev.pgm.community.moderation.commands.KickCommand;
 import dev.pgm.community.moderation.commands.MuteCommand;
 import dev.pgm.community.moderation.commands.PunishmentCommand;
@@ -137,6 +138,7 @@ public class CommunityCommandGraph extends CommandGraph<Community> {
     register(new PunishmentCommand());
     register(new ToolCommand());
     register(new WarnCommand());
+    register(new BlockGlitchCommand());
 
     // Mutations
     register(new MutationCommands());

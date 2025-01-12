@@ -43,6 +43,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   private static final String LOOKUP_SIGN_KEY = TOOLS_KEY + ".lookup-sign";
 
   private static final String SIGN_LOGGER_KEY = KEY + ".sign-logger";
+  private static final String BLOCK_GLITCH_LOGGER_KEY = KEY + ".block-glitch-logger";
 
   // General options
   private boolean persist;
@@ -92,6 +93,8 @@ public class ModerationConfig extends FeatureConfigImpl {
 
   // Sign Logger
   private boolean signLoggerEnabled;
+  // BlockGlitch Logger
+  private boolean blockGlitchLoggerEnabled;
 
   /**
    * Config options related to {@link ModerationFeature}
@@ -260,6 +263,10 @@ public class ModerationConfig extends FeatureConfigImpl {
     return signLoggerEnabled;
   }
 
+  public boolean isBlockGlitchLoggerEnabled() {
+    return blockGlitchLoggerEnabled;
+  }
+
   @Override
   public void reload(Configuration config) {
     super.reload(config);
@@ -311,5 +318,7 @@ public class ModerationConfig extends FeatureConfigImpl {
 
     // Sign Logger
     this.signLoggerEnabled = config.getBoolean(getEnabledKey(SIGN_LOGGER_KEY));
+    // BlockGlitch logger
+    this.blockGlitchLoggerEnabled = config.getBoolean(getEnabledKey(BLOCK_GLITCH_LOGGER_KEY));
   }
 }
