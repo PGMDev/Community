@@ -30,7 +30,7 @@ public interface CommunityPermissions {
   // Sign Logger
   String SIGN_LOG_BROADCASTS = ROOT + ".view-sign-logs"; // Access to view when signs are placed
   String BLOCK_GLITCH_BROADCASTS =
-      ROOT + ".view-block-glitch"; // Access to view when signs are placed
+      ROOT + ".view-block-glitch"; // Access to view blockglitch alerts and replays
 
   // Reports
   String REPORTS = ROOT + ".reports"; // Access to view report broadcast & report history
