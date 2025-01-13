@@ -11,6 +11,7 @@ import static tc.oc.pgm.util.nms.Packets.ENTITIES;
 import static tc.oc.pgm.util.text.NumberComponent.number;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
+import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import java.time.Duration;
@@ -69,6 +70,7 @@ public class BlockGlitchLogger implements Listener {
             0,
             50L,
             TimeUnit.MILLISECONDS);
+    Community.get().registerListener(this);
   }
 
   public List<Incident> getIncidents() {
