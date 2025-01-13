@@ -8,10 +8,10 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.loggers.BlockGlitchLogger;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
-import org.incendo.cloud.annotations.Argument;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 public class BlockGlitchCommand {
   private static final int TP_DISTANCE = 15;
