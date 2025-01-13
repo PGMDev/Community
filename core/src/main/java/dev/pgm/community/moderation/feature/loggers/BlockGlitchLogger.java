@@ -78,10 +78,10 @@ public class BlockGlitchLogger implements Listener {
   }
 
   public Incident getIncident(int id) {
-    if (pastIncidents.isEmpty()) return null;
-    int idx = id - pastIncidents.getFirst().id;
-    if (idx < 0 || idx >= pastIncidents.size()) return null;
-    return pastIncidents.get(idx);
+    for (Incident i : pastIncidents) {
+      if (i.id == id) return i;
+    }
+    return null;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -92,7 +92,7 @@ public class BlockGlitchLogger implements Listener {
     Player pl = bpe.getPlayer();
 
     boolean isBlockglitch = event.isCancelled()
-        && playerState.getLocation().getY() > event.getBlock().getY()
+        && (playerState.getLocation().getY() - 0.75) > event.getBlock().getY()
         && pl != null
         && !pl.isOnGround()
         && !pl.isFlying();
