@@ -14,7 +14,7 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 public class BlockGlitchCommand {
-  private static final int TP_DISTANCE = 15;
+  private static final int TP_DISTANCE = 10;
   private static final int MAX_NO_OBS_DISTANCE = 40;
 
   private final BlockGlitchLogger blockGlitch;

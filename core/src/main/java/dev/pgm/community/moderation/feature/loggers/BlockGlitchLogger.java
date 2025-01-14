@@ -7,6 +7,9 @@ import static net.kyori.adventure.text.JoinConfiguration.newlines;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 import static net.kyori.adventure.text.event.HoverEvent.showText;
 import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
+import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
+import static tc.oc.pgm.util.material.MaterialUtils.MATERIAL_UTILS;
 import static tc.oc.pgm.util.nms.Packets.ENTITIES;
 import static tc.oc.pgm.util.text.NumberComponent.number;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
@@ -27,22 +30,24 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Color;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.util.BlockVector;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent;
 import tc.oc.pgm.api.party.Party;
 import tc.oc.pgm.api.player.MatchPlayerState;
 import tc.oc.pgm.events.ParticipantBlockTransformEvent;
+import tc.oc.pgm.spawns.events.ParticipantDespawnEvent;
 import tc.oc.pgm.util.TimeUtils;
 import tc.oc.pgm.util.block.BlockVectors;
 import tc.oc.pgm.util.material.BlockMaterialData;
@@ -56,20 +61,7 @@ public class BlockGlitchLogger implements Listener {
   private final List<Incident> pastIncidents = new ArrayList<>();
 
   public BlockGlitchLogger() {
-    PGM.get()
-        .getExecutor()
-        .scheduleAtFixedRate(
-            () -> activeIncidents.values().removeIf(incident -> {
-              if (!incident.isOver()) return false;
-              if (pastIncidents.size() > 30) pastIncidents.removeFirst();
-              pastIncidents.add(incident);
-              BroadcastUtils.sendAdminChatMessage(
-                  incident.getDescription(), CommunityPermissions.BLOCK_GLITCH_BROADCASTS);
-              return true;
-            }),
-            0,
-            50L,
-            TimeUnit.MILLISECONDS);
+    PGM.get().getExecutor().scheduleAtFixedRate(this::tickIncidents, 0, 50L, TimeUnit.MILLISECONDS);
     Community.get().registerListener(this);
   }
 
@@ -84,31 +76,59 @@ public class BlockGlitchLogger implements Listener {
     return null;
   }
 
+  private void tickIncidents() {
+    activeIncidents.values().removeIf(incident -> {
+      if (!incident.isOver()) return false;
+      archiveIncident(incident);
+      return true;
+    });
+  }
+
+  private void archiveIncident(Incident incident) {
+    if (incident == null || incident.isInsignificant()) return;
+
+    if (pastIncidents.size() > 30) pastIncidents.removeFirst();
+    pastIncidents.add(incident);
+    BroadcastUtils.sendAdminChatMessage(
+        incident.getDescription(), CommunityPermissions.BLOCK_GLITCH_BROADCASTS);
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
   public void onBlockTransform(ParticipantBlockTransformEvent event) {
     if (!(event.getCause() instanceof BlockPlaceEvent bpe)) return;
     MatchPlayerState playerState = event.getPlayerState();
     if (!playerState.canInteract()) return;
-    Player pl = bpe.getPlayer();
-
-    boolean isBlockglitch = event.isCancelled()
-        && (playerState.getLocation().getY() - 0.75) > event.getBlock().getY()
-        && pl != null
-        && !pl.isOnGround()
-        && !pl.isFlying();
 
     Incident active = activeIncidents.get(event.getPlayerState().getId());
     if (active != null) {
-      active.placed(BlockVectors.position(event.getBlock()), isBlockglitch);
-    } else if (isBlockglitch) {
-      activeIncidents.put(
-          pl.getUniqueId(),
-          new Incident(
-              pl,
-              playerState.getName(),
-              playerState.getParty(),
-              BlockVectors.position(event.getBlock())));
+      active.placed(event.getBlock(), event.isCancelled());
+      return;
     }
+
+    Player pl = bpe.getPlayer();
+    if (!event.isCancelled() || pl == null) return;
+
+    // Block has to be under you or in your head
+    Block block = event.getBlock();
+    Location loc = block.getLocation();
+    double heightDiff = block.getY() - loc.getY();
+    boolean isBelow = !pl.isOnGround() && heightDiff < -1;
+    boolean isAbove = pl.isSprinting() && heightDiff > 1.8 && heightDiff < 2.2;
+
+    // Block is within your height, should be of no use
+    if (!isAbove && !isBelow) return;
+
+    double distance =
+        Math.abs(block.getX() - loc.getX() + 0.5d) + Math.abs(block.getZ() - loc.getZ() + 0.5d);
+    // Block is too far away to be relevant
+    if (distance > 1.75) return;
+
+    activeIncidents.put(pl.getUniqueId(), new Incident(pl, playerState, event.getBlock()));
+  }
+
+  @EventHandler
+  public void onPlayerDespawn(ParticipantDespawnEvent event) {
+    archiveIncident(activeIncidents.remove(event.getPlayer().getId()));
   }
 
   @EventHandler
@@ -117,13 +137,9 @@ public class BlockGlitchLogger implements Listener {
     pastIncidents.clear();
   }
 
-  @EventHandler
-  public void onQuit(PlayerQuitEvent event) {
-    activeIncidents.remove(event.getPlayer().getUniqueId());
-  }
-
   public static class Incident {
     private static final long CANCEL_AFTER_PLACE = TimeUtils.toTicks(2, TimeUnit.SECONDS);
+    private static final long MAX_LENGTH = TimeUtils.toTicks(30, TimeUnit.SECONDS);
     private static int MAX_ID = 0;
 
     private final int id = ++MAX_ID;
@@ -135,39 +151,59 @@ public class BlockGlitchLogger implements Listener {
 
     private int currTick = 0;
     private int lastPlace = 0;
-    private int glitchBlocks = 1;
+    private int glitchBlocks = 0;
     private double maxHeight = 0;
 
-    public Incident(Player player, Component name, Party party, BlockVector initial) {
+    public Incident(Player player, MatchPlayerState pl, Block initial) {
       this.player = player;
-      this.name = name;
-      this.party = party;
+      this.name = pl.getName();
+      this.party = pl.getParty();
 
       this.queue.add(new MoveAction(player.getLocation()));
-      this.queue.add(new PlaceAction(initial));
+      placed(initial, true);
     }
 
     public void play(Player viewer) {
       new BlockGlitchReplay(viewer, this);
     }
 
-    public void placed(BlockVector vector, boolean isGlitching) {
+    public void placed(Block block, boolean isGlitching) {
       if (isGlitching) {
         lastPlace = currTick;
         glitchBlocks++;
       }
-      queue.add(new PlaceAction(vector));
+      queue.add(new PlaceAction(BlockVectors.encodePos(block), isGlitching));
     }
 
     public boolean isOver() {
-      if (!player.isOnline()) return true;
       Location loc = player.getLocation();
       if (!(queue.getLast() instanceof MoveAction move) || !move.to.equals(loc)) {
         maxHeight = Math.max(maxHeight, loc.getY());
         queue.add(new MoveAction(loc));
       }
       return loc.getY() < -64
+          || currTick > MAX_LENGTH
           || (currTick++ - lastPlace >= CANCEL_AFTER_PLACE && player.isOnGround());
+    }
+
+    public boolean isInsignificant() {
+      // Any glitch over 3 blocks will always be reported
+      if (glitchBlocks > 3) return false;
+
+      // BG above void where you end up in the void are ignored
+      if (isAboveVoid()) return getEnd().getY() < -1;
+
+      // BG elsewhere if they don't gain height is also ignored
+      return maxHeight - getStart().getY() < 0.4;
+    }
+
+    private boolean isAboveVoid() {
+      Block block = BlockVectors.blockAt(player.getWorld(), ((PlaceAction) queue.get(1)).place());
+      while (block.getY() > 0) {
+        block = block.getRelative(BlockFace.DOWN);
+        if (!block.isEmpty()) return false;
+      }
+      return true;
     }
 
     public Location getStart() {
@@ -190,11 +226,13 @@ public class BlockGlitchLogger implements Listener {
     public Component getDescription() {
       return text()
           .append(getPlayerName())
-          .append(text(" blockglitched for ", NamedTextColor.GRAY)
-              .append(duration(TimeUtils.fromTicks(lastPlace + 10)).color(NamedTextColor.YELLOW))
+          .append(text(" blockglitched for ", GRAY)
+              .append(duration(TimeUtils.fromTicks(lastPlace + 10)).color(YELLOW))
               .hoverEvent(showText(getStatistics())))
-          .append(text(" [View]", NamedTextColor.GREEN, TextDecoration.BOLD)
-              .clickEvent(runCommand("/blockglitch replay " + id)))
+          .appendSpace()
+          .append(text("[View]", NamedTextColor.GREEN, TextDecoration.BOLD)
+              .clickEvent(runCommand("/blockglitch replay " + id))
+              .hoverEvent(showText(text("Click to view replay #" + id, YELLOW))))
           .build();
     }
 
@@ -211,7 +249,7 @@ public class BlockGlitchLogger implements Listener {
                   .append(text(" ("))
                   .append(number(maxHeight - from, GOLD))
                   .append(text(" blocks)")))
-          .color(NamedTextColor.YELLOW);
+          .color(YELLOW);
     }
 
     record MoveAction(Location to) implements Action {
@@ -221,18 +259,25 @@ public class BlockGlitchLogger implements Listener {
       }
     }
 
-    record PlaceAction(BlockVector place) implements Action {
-      private static final BlockMaterialData BLOCK =
-          MaterialData.block(Materials.parse("STAINED_GLASS", "WHITE_STAINED_GLASS"));
+    @SuppressWarnings("deprecation")
+    record PlaceAction(long place, boolean isGlitch) implements Action {
+      private static final Material STAINED_GLASS =
+          Materials.parse("STAINED_GLASS", "LEGACY_STAINED_GLASS");
+      private static final BlockMaterialData BAD_BLOCK =
+          MATERIAL_UTILS.fromLegacyBlock(STAINED_GLASS, DyeColor.WHITE.getWoolData());
+      private static final BlockMaterialData GOOD_BLOCK =
+          MATERIAL_UTILS.fromLegacyBlock(STAINED_GLASS, DyeColor.BROWN.getWoolData());
 
       @Override
       public void play(BlockGlitchReplay replay) {
-        BLOCK.sendBlockChange(replay.viewer, place.toLocation(replay.viewer.getWorld()));
+        (isGlitch ? BAD_BLOCK : GOOD_BLOCK)
+            .sendBlockChange(
+                replay.viewer, BlockVectors.decodePos(place).toLocation(replay.viewer.getWorld()));
       }
 
       @Override
       public void clear(Player viewer) {
-        Location loc = place.toLocation(viewer.getWorld());
+        Location loc = BlockVectors.decodePos(place).toLocation(viewer.getWorld());
         MaterialData.block(loc.getBlock()).sendBlockChange(viewer, loc);
       }
     }
