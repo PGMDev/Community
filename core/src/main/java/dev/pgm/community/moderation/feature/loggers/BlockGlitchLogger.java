@@ -110,7 +110,7 @@ public class BlockGlitchLogger implements Listener {
 
     // Block has to be under you or in your head
     Block block = event.getBlock();
-    Location loc = block.getLocation();
+    Location loc = playerState.getLocation();
     double heightDiff = block.getY() - loc.getY();
     boolean isBelow = !pl.isOnGround() && heightDiff < -1;
     boolean isAbove = pl.isSprinting() && heightDiff > 1.8 && heightDiff < 2.2;
@@ -207,11 +207,11 @@ public class BlockGlitchLogger implements Listener {
     }
 
     public Location getStart() {
-      return ((MoveAction) queue.getFirst()).to;
+      return ((MoveAction) queue.getFirst()).to.clone();
     }
 
     public Location getEnd() {
-      return ((MoveAction) queue.getLast()).to;
+      return ((MoveAction) queue.getLast()).to.clone();
     }
 
     public Component getPlayerName() {

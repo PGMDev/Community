@@ -8,14 +8,15 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.moderation.feature.loggers.BlockGlitchLogger;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 public class BlockGlitchCommand {
-  private static final int TP_DISTANCE = 10;
-  private static final int MAX_NO_OBS_DISTANCE = 40;
+  private static final int OBS_ROTATE_DISTANCE = 15;
+  private static final int PLAY_ROTATE_DISTANCE = 40;
 
   private final BlockGlitchLogger blockGlitch;
 
@@ -39,13 +40,15 @@ public class BlockGlitchCommand {
   public void replayIncident(MatchPlayer player, @Argument("id") int id) {
     var incident = blockGlitch.getIncident(id);
     if (incident == null) throw exception("Sorry, the block glitch happened too long ago to view");
-    Location curr = player.getLocation();
-    int distance =
-        (int) Math.min(curr.distance(incident.getStart()), curr.distance(incident.getEnd()));
 
-    if (player.isObserving()) {
-      if (distance > TP_DISTANCE) player.getBukkit().teleport(incident.getStart());
-    } else if (distance > MAX_NO_OBS_DISTANCE) {
+    Location curr = player.getLocation(), start = incident.getStart();
+    int distance = (int) Math.min(curr.distance(start), curr.distance(incident.getEnd()));
+
+    if (distance < (player.isObserving() ? OBS_ROTATE_DISTANCE : PLAY_ROTATE_DISTANCE)) {
+      player.getBukkit().teleport(setFacing(curr, start));
+    } else if (player.isObserving()) {
+      player.getBukkit().teleport(moveAway(start));
+    } else {
       throw exception("Join observers or get closer to watch this replay");
     }
 
@@ -54,5 +57,30 @@ public class BlockGlitchCommand {
         .append(text(" blockglitching "))
         .append(incident.getWhen().color(NamedTextColor.YELLOW)));
     incident.play(player.getBukkit());
+  }
+
+  private static Location setFacing(Location base, Location target) {
+    double dx = target.getX() - base.getX();
+    double dy = target.getY() - base.getY();
+    double dz = target.getZ() - base.getZ();
+    double horizDist = Math.sqrt(dx * dx + dz * dz);
+
+    base.setPitch((float) Math.toDegrees(Math.atan2(-dy, horizDist)));
+    base.setYaw((float) Math.toDegrees(Math.atan2(-dx, dz)));
+    return base;
+  }
+
+  private static Location moveAway(Location base) {
+    Vector direction = base.getDirection();
+    base.setY(base.getY() + 1.63); // Add eye height
+    for (int i = 0; i < 3; i++) {
+      base.subtract(direction);
+      if (!base.getBlock().isEmpty()) {
+        base.add(direction);
+        break;
+      }
+    }
+    base.setY(base.getY() - 1.63);
+    return base;
   }
 }
