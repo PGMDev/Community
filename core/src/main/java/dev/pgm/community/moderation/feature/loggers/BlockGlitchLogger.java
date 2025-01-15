@@ -149,6 +149,7 @@ public class BlockGlitchLogger implements Listener {
     private final Component name;
     private final Party party;
 
+    private Location last;
     private int currTick = 0;
     private int lastPlace = 0;
     private int glitchBlocks = 0;
@@ -159,7 +160,7 @@ public class BlockGlitchLogger implements Listener {
       this.name = pl.getName();
       this.party = pl.getParty();
 
-      this.queue.add(new MoveAction(player.getLocation()));
+      this.queue.add(new MoveAction(last = player.getLocation()));
       placed(initial, true);
     }
 
@@ -177,9 +178,9 @@ public class BlockGlitchLogger implements Listener {
 
     public boolean isOver() {
       Location loc = player.getLocation();
-      if (!(queue.getLast() instanceof MoveAction move) || !move.to.equals(loc)) {
+      if (!last.equals(loc)) {
         maxHeight = Math.max(maxHeight, loc.getY());
-        queue.add(new MoveAction(loc));
+        queue.add(new MoveAction(last = loc));
       }
       return loc.getY() < -64
           || currTick > MAX_LENGTH
@@ -211,7 +212,7 @@ public class BlockGlitchLogger implements Listener {
     }
 
     public Location getEnd() {
-      return ((MoveAction) queue.getLast()).to.clone();
+      return last.clone();
     }
 
     public Component getPlayerName() {
