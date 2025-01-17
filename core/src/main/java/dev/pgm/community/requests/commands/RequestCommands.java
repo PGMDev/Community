@@ -59,7 +59,7 @@ public class RequestCommands extends CommunityCommand {
 
     var maps = StreamUtils.of(library.getMaps())
         .map(map -> new MapWithCooldown(map, requests.getApproximateCooldown(map)))
-        .filter(mcd -> mcd.cooldown.isPositive())
+        .filter(mcd -> mcd.cooldown.toSeconds() > 0)
         .sorted(Comparator.comparing(MapWithCooldown::cooldown))
         .toList();
 

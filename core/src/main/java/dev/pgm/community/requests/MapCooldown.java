@@ -2,26 +2,20 @@ package dev.pgm.community.requests;
 
 import java.time.Duration;
 import java.time.Instant;
+import tc.oc.pgm.util.TimeUtils;
 
 public class MapCooldown {
-  private Instant endTime;
-  private Duration matchLength;
+  private final Instant endsAt;
 
-  public MapCooldown(Instant endTime, Duration matchLength) {
-    this.endTime = endTime;
-    this.matchLength = matchLength;
-  }
-
-  public Instant getEndTime() {
-    return endTime;
+  public MapCooldown(Duration cooldown) {
+    this.endsAt = Instant.now().plus(cooldown);
   }
 
   public boolean hasExpired() {
-    return getTimeRemaining().isNegative();
+    return !getTimeRemaining().isPositive();
   }
 
   public Duration getTimeRemaining() {
-    Duration timeSince = Duration.between(endTime, Instant.now());
-    return matchLength.minus(timeSince);
+    return TimeUtils.max(Duration.ZERO, Duration.between(Instant.now(), endsAt));
   }
 }

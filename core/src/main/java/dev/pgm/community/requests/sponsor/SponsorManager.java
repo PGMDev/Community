@@ -17,7 +17,6 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -90,8 +89,7 @@ public class SponsorManager {
 
   public void startNewMapCooldown(MapInfo map, Duration matchLength) {
     this.mapCooldown.putIfAbsent(
-        map.getId(),
-        new MapCooldown(Instant.now(), matchLength.multipliedBy(config.getMapCooldownMultiply())));
+        map.getId(), new MapCooldown(matchLength.multipliedBy(config.getMapCooldownMultiply())));
   }
 
   public MapSizeBounds getCurrentMapSizeBounds() {

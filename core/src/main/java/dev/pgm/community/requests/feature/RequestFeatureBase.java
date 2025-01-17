@@ -75,6 +75,9 @@ import tc.oc.pgm.util.named.NameStyle;
 
 public abstract class RequestFeatureBase extends FeatureBase implements RequestFeature {
 
+  // Multiplier for minimum score to allow sponsoring
+  private static final double MIN_SCORE_MUL = 0.35;
+
   private Cache<UUID, MapInfo> requests;
 
   private Cache<UUID, Instant> cooldown;
@@ -641,7 +644,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     return map.getVariants().values().stream()
         .map(variant -> mapLibrary.getMapById(variant.getId()))
         .filter(Objects::nonNull)
-        .map(m -> TimeUtils.max(sponsor.getSponsorCooldown(map), getPgmCooldown(map)))
+        .map(m -> TimeUtils.max(sponsor.getSponsorCooldown(m), getPgmCooldown(m)))
         .max(Comparator.naturalOrder())
         .orElse(Duration.ZERO);
   }
@@ -652,7 +655,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     var data = pool.getVoteData(map);
     Duration cd = data.remainingCooldown(pool.constants);
     if (cd.isPositive()) return cd;
-    return data.getScore() < (pool.constants.defaultScore() / 2)
+    return data.getScore() < (pool.constants.defaultScore() * MIN_SCORE_MUL)
         ? Duration.ofMillis(1L)
         : Duration.ZERO;
   }
