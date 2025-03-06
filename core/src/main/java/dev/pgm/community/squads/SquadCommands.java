@@ -37,6 +37,32 @@ import tc.oc.pgm.util.text.TextFormatter;
 @Command("party|squad|p")
 public class SquadCommands {
 
+  private static final Component LEADER_ICON = text("✦", NamedTextColor.YELLOW)
+      .hoverEvent(showText(translatable("squad.list.leader", NamedTextColor.YELLOW)));
+  private static final Component PENDING_ICON = text("➤", NamedTextColor.GOLD)
+      .hoverEvent(showText(translatable("squad.list.pending", NamedTextColor.GOLD)));
+
+  private static final ClickEvent TOGGLE_AUTOJOIN = runCommand("/party autojoin");
+  private static final Component AUTOJOIN_ENABLED = translatable(
+          "squad.autojoin",
+          NamedTextColor.YELLOW,
+          translatable("squad.autojoin.enabled", NamedTextColor.GREEN))
+      .clickEvent(TOGGLE_AUTOJOIN);
+
+  private static final Component AUTOJOIN_DISABLED = translatable(
+          "squad.autojoin",
+          NamedTextColor.YELLOW,
+          translatable("squad.autojoin.disabled", NamedTextColor.RED))
+      .clickEvent(TOGGLE_AUTOJOIN);
+
+  private static final Component AUTOJOIN_ENABLED_ICON =
+      text("▶", NamedTextColor.GREEN).hoverEvent(AUTOJOIN_ENABLED).clickEvent(TOGGLE_AUTOJOIN);
+  private static final Component AUTOJOIN_DISABLED_ICON =
+      text("■", NamedTextColor.RED).hoverEvent(AUTOJOIN_DISABLED).clickEvent(TOGGLE_AUTOJOIN);
+
+  private static final Component KICK_ICON = text("✕", NamedTextColor.DARK_RED)
+      .hoverEvent(showText(translatable("squad.list.removeHover", NamedTextColor.RED)));
+
   private final SquadFeature manager;
 
   public SquadCommands() {
@@ -125,6 +151,17 @@ public class SquadCommands {
     sender.sendMessage(translatable("squad.leave.success", NamedTextColor.YELLOW));
   }
 
+  @Command("autojoin")
+  @CommandDescription("Toggle auto-join in your current party")
+  @CommandPermission(CommunityPermissions.SQUAD)
+  public void autojoin(MatchPlayer sender) {
+    checkEnabled();
+    Squad squad = manager.getSquadByPlayer(sender);
+    if (squad == null) throw exception("squad.err.memberOnly");
+    boolean enabled = squad.toggleAutojoin(sender.getId());
+    sender.sendMessage(enabled ? AUTOJOIN_ENABLED : AUTOJOIN_DISABLED);
+  }
+
   @Command("list")
   @CommandDescription("List party members")
   @CommandPermission(CommunityPermissions.SQUAD)
@@ -159,7 +196,7 @@ public class SquadCommands {
     Squad squad = manager.getSquadByPlayer(sender);
     if (squad == null) throw exception("squad.err.memberOnly");
 
-    boolean isLeader = Objects.equals(sender.getId(), squad.getLeader());
+    boolean canKick = Objects.equals(sender.getId(), squad.getLeader());
 
     Component header = horizontalLineHeading(
         sender.getBukkit(),
@@ -172,28 +209,17 @@ public class SquadCommands {
         TextComponent.Builder builder = text()
             .append(text(index + 1))
             .append(text(". "))
-            .append(player(player, NameStyle.VERBOSE));
-        if (squad.getLeader().equals(player)) {
-          builder
-              .append(text(" "))
-              .append(
-                  translatable("squad.list.leader", NamedTextColor.GRAY, TextDecoration.ITALIC));
-        } else {
-          if (index >= squad.size()) {
-            builder
-                .append(text(" "))
-                .append(
-                    translatable("squad.list.pending", NamedTextColor.GRAY, TextDecoration.ITALIC));
-          }
-          if (isLeader) {
-            builder
-                .append(text(" "))
-                .append(text("\u2715", NamedTextColor.DARK_RED)
-                    .hoverEvent(
-                        showText(translatable("squad.list.removeHover", NamedTextColor.RED)))
-                    .clickEvent(runCommand("/party kick " + player)));
-          }
-        }
+            .append(player(player, NameStyle.VERBOSE))
+            .appendSpace();
+        boolean isLeader = squad.getLeader().equals(player);
+
+        if (index >= squad.size()) builder.append(PENDING_ICON);
+        else
+          builder.append(squad.autojoin(player) ? AUTOJOIN_ENABLED_ICON : AUTOJOIN_DISABLED_ICON);
+
+        if (isLeader) builder.appendSpace().append(LEADER_ICON);
+        else if (canKick)
+          builder.appendSpace().append(KICK_ICON.clickEvent(runCommand("/party kick " + player)));
         return builder.build();
       }
     }.display(sender, ImmutableList.copyOf(squad.getAllPlayers()), 1);

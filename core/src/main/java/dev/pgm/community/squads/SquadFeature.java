@@ -2,27 +2,29 @@ package dev.pgm.community.squads;
 
 import static dev.pgm.community.utils.PGMUtils.isPGMEnabled;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TextException.exception;
 import static tc.oc.pgm.util.text.TextException.noPermission;
 
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
-import dev.pgm.community.utils.AFKDetection;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,22 +37,23 @@ import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.SquadIntegration;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.event.MatchAfterLoadEvent;
+import tc.oc.pgm.api.match.event.MatchLoadEvent;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.events.PlayerParticipationStartEvent;
 import tc.oc.pgm.join.JoinMatchModule;
 import tc.oc.pgm.join.JoinRequest;
 import tc.oc.pgm.join.JoinResult;
-import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.util.named.NameStyle;
 
 public class SquadFeature extends FeatureBase implements SquadIntegration {
 
-  private final List<Squad> squads = new ArrayList<>();
-
-  private final Map<UUID, ScheduledFuture<?>> playerLeave = new HashMap<>();
-
+  private final Duration AFK_TIME = Duration.ofSeconds(120);
   private final ScheduledExecutorService executor = PGM.get().getExecutor();
-  private final AFKDetection afk = new AFKDetection();
+
+  private final List<Squad> squads = new ArrayList<>();
+  private final Map<UUID, ScheduledFuture<?>> playerLeave = new HashMap<>();
+  private final Set<UUID> preventJoins = new HashSet<>();
 
   public SquadFeature(Configuration config, Logger logger) {
     super(new SquadConfig(config), logger, "Squads (PGM)");
@@ -220,35 +223,47 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
   }
 
   @EventHandler
-  public void onPlayerJoinMatch(MatchAfterLoadEvent event) {
+  public void onMatchLoad(MatchLoadEvent event) {
+    this.squads.forEach(s -> preventJoins.addAll(s.getPlayers()));
+  }
+
+  @EventHandler
+  public void onPlayerJoinTeam(PlayerParticipationStartEvent event) {
+    if (preventJoins.contains(event.getPlayer().getId()))
+      event.cancel(text("squad.warn.manualJoin"));
+  }
+
+  @EventHandler
+  public void onAfterMatchLoad(MatchAfterLoadEvent event) {
+    this.preventJoins.clear();
     JoinMatchModule jmm = event.getMatch().needModule(JoinMatchModule.class);
-    squads.stream().sorted(Comparator.comparingInt(s -> -s.size())).forEach(s -> {
-      List<MatchPlayer> players = s.getPlayers().stream()
-          .map(uuid -> event.getMatch().getPlayer(uuid))
-          .filter(Objects::nonNull)
-          .filter(mp -> !afk.isAFK(mp.getBukkit()))
-          .collect(Collectors.toList());
-      if (players.isEmpty()) return;
-      MatchPlayer leader = event.getMatch().getPlayer(s.getLeader());
-      if (leader == null) leader = players.get(0);
+    squads.stream()
+        .map(s -> s.getPlayers().stream()
+            .map(uuid -> event.getMatch().getPlayer(uuid))
+            .filter(mp -> {
+              if (mp == null) return false;
+              boolean j = s.autojoin(mp.getId());
+              if (!j) mp.sendWarning(translatable("squad.warn.autoJoin"));
+              if (j && !(j = mp.isActive(AFK_TIME))) mp.sendWarning(translatable("squad.warn.afk"));
+              return j;
+            })
+            .toList())
+        .filter(l -> !l.isEmpty())
+        .sorted(Comparator.comparingInt(s -> -s.size()))
+        .forEach(players -> {
+          MatchPlayer leader = players.getFirst();
+          EnumSet<JoinRequest.Flag> flags = JoinRequest.playerFlags(leader, JoinRequest.Flag.SQUAD);
 
-      EnumSet<JoinRequest.Flag> flags = JoinRequest.playerFlags(leader, JoinRequest.Flag.SQUAD);
+          JoinRequest request = JoinRequest.group(null, players.size(), flags);
+          JoinResult result = jmm.queryJoin(leader, request);
 
-      JoinRequest request = JoinRequest.group(null, players.size(), flags);
-      JoinResult result = jmm.queryJoin(leader, request);
-
-      // If a team is picked, re-build the request to include it. This will prevent pgm from
-      // assuming it's able to re-balance the squad to a diff team.
-      final JoinRequest finalRequest;
-      if (result instanceof TeamMatchModule.TeamJoinResult) {
-        Team team = ((TeamMatchModule.TeamJoinResult) result).getTeam();
-        finalRequest = JoinRequest.group(team, players.size(), flags);
-      } else {
-        finalRequest = request;
-      }
-
-      players.forEach(p -> jmm.join(p, finalRequest, result));
-    });
+          // If a team is picked, re-build the request to include it. This will prevent pgm from
+          // assuming it's able to re-balance the squad to a diff team.
+          JoinRequest finalRequest = result instanceof TeamMatchModule.TeamJoinResult tjr
+              ? JoinRequest.group(tjr.getTeam(), players.size(), flags)
+              : request;
+          players.forEach(p -> jmm.join(p, finalRequest, result));
+        });
   }
 
   private int getMaxSquadSize(MatchPlayer leader) {

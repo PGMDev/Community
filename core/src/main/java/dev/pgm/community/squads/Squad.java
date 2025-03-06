@@ -5,14 +5,14 @@ import java.util.*;
 
 public class Squad {
   private UUID leader;
-  private final Set<UUID> players;
+  private final SequencedMap<UUID, Boolean> players;
   private final Set<UUID> invites;
 
   public Squad(UUID leader) {
     this.leader = leader;
-    this.players = new LinkedHashSet<>();
+    this.players = new LinkedHashMap<>();
     this.invites = new HashSet<>();
-    players.add(leader);
+    this.players.put(leader, true);
   }
 
   public UUID getLeader() {
@@ -21,7 +21,15 @@ public class Squad {
 
   public Set<UUID> getPlayers() {
     // This is READ ONLY. to modify members use the appropriate methods
-    return Collections.unmodifiableSet(players);
+    return Collections.unmodifiableSet(players.keySet());
+  }
+
+  public boolean autojoin(UUID player) {
+    return players.getOrDefault(player, false);
+  }
+
+  public boolean toggleAutojoin(UUID player) {
+    return Boolean.TRUE.equals(players.computeIfPresent(player, (k, v) -> !v));
   }
 
   public Set<UUID> getInvites() {
@@ -36,18 +44,18 @@ public class Squad {
   public boolean removePlayer(UUID player) {
     boolean result = players.remove(player);
     if (result && Objects.equals(leader, player) && !players.isEmpty()) {
-      leader = players.iterator().next();
+      leader = players.sequencedKeySet().getFirst();
     }
     return result;
   }
 
   public boolean addPlayer(UUID player) {
     if (leader == null) leader = player;
-    return players.add(player);
+    return players.put(player, true) == null;
   }
 
   public boolean containsPlayer(UUID player) {
-    return players.contains(player);
+    return players.containsKey(player);
   }
 
   public boolean containsInvite(UUID player) {
@@ -55,7 +63,7 @@ public class Squad {
   }
 
   public boolean addInvite(UUID player) {
-    return !players.contains(player) && invites.add(player);
+    return !players.containsKey(player) && invites.add(player);
   }
 
   public boolean acceptInvite(UUID player) {
