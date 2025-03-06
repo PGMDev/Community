@@ -2,7 +2,6 @@ package dev.pgm.community.history;
 
 import static tc.oc.pgm.util.text.TextException.exception;
 
-import co.aikar.commands.annotation.CommandPermission;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.CommandAudience;
@@ -11,6 +10,7 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 
 @Command("matchhistory|mh")
 public class MatchHistoryCommand {
@@ -23,7 +23,7 @@ public class MatchHistoryCommand {
 
   @Command("[page]")
   @CommandDescription("Display match history")
-  @CommandPermission(CommunityPermissions.MATCH_HISTORY)
+  @Permission(CommunityPermissions.MATCH_HISTORY)
   public void sendHistory(
       CommandAudience sender,
       @Argument("page") @Default("1") int page,
