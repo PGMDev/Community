@@ -2,9 +2,15 @@ package dev.pgm.community.squads;
 
 import com.google.common.collect.Iterables;
 import java.util.*;
+import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
+import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.util.Audience;
 
-public class Squad {
+public class Squad implements Audience {
   private UUID leader;
+  private final Audience audience;
   private final SequencedMap<UUID, Boolean> players;
   private final Set<UUID> invites;
 
@@ -13,6 +19,8 @@ public class Squad {
     this.players = new LinkedHashMap<>();
     this.invites = new HashSet<>();
     this.players.put(leader, true);
+    this.audience =
+        Audience.get((Iterable<MatchPlayer>) () -> this.getMatchPlayers().iterator());
   }
 
   public UUID getLeader() {
@@ -20,8 +28,18 @@ public class Squad {
   }
 
   public Set<UUID> getPlayers() {
-    // This is READ ONLY. to modify members use the appropriate methods
+    // This is READ-ONLY. To modify members use the appropriate methods
     return Collections.unmodifiableSet(players.keySet());
+  }
+
+  @Override
+  public net.kyori.adventure.audience.@NotNull Audience audience() {
+    return audience;
+  }
+
+  public Stream<MatchPlayer> getMatchPlayers() {
+    var mm = PGM.get().getMatchManager();
+    return players.keySet().stream().map(mm::getPlayer).filter(Objects::nonNull);
   }
 
   public boolean autojoin(UUID player) {
@@ -37,7 +55,7 @@ public class Squad {
   }
 
   public Iterable<UUID> getAllPlayers() {
-    // This is READ ONLY. to modify members use the appropriate methods
+    // This is READ-ONLY. To modify members use the appropriate methods
     return Iterables.concat(getPlayers(), getInvites());
   }
 

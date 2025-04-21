@@ -117,7 +117,10 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
   }
 
   private void updateSquad(@Nullable MatchPlayer player, Squad squad) {
-    if (squad.isEmpty()) squads.remove(squad);
+    // Auto-disband solo squads with no invites
+    if (squad.totalSize() <= 1 && squads.remove(squad)) {
+      squad.sendWarning(translatable("squad.disband.empty"));
+    }
     if (player != null) {
       Match match = player.getMatch();
       boolean isPresent = false;
@@ -146,7 +149,11 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
   public void leaveSquad(MatchPlayer player) {
     Squad squad = getSquadByPlayer(player);
     if (squad == null) throw exception("squad.err.memberOnly");
-    if (squad.getLeader().equals(player.getId())) throw exception("squad.err.leaderCannotLeave");
+    if (squad.getLeader().equals(player.getId())) {
+      if (squad.size() > 2) throw exception("squad.err.leaderCannotLeave");
+      disband(player);
+      return;
+    }
     leaveSquad(player, player.getId(), squad);
   }
 
@@ -177,11 +184,11 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
 
   /** Invite command handlers * */
   public void createInvite(MatchPlayer invited, MatchPlayer leader) {
-    Squad squad = getOrCreateSquadByLeader(leader);
-
+    if (leader.getId().equals(invited.getId())) throw exception("squad.err.noSelfInvite");
     if (getSquadByPlayer(invited) != null)
       throw exception("squad.err.alreadyInSquad", invited.getName(NameStyle.VERBOSE));
 
+    Squad squad = getOrCreateSquadByLeader(leader);
     int maxSize = getMaxSquadSize(leader);
     if (maxSize <= 0) throw noPermission();
     if (squad.totalSize() >= maxSize)
@@ -230,7 +237,7 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
   @EventHandler
   public void onPlayerJoinTeam(PlayerParticipationStartEvent event) {
     if (preventJoins.contains(event.getPlayer().getId()))
-      event.cancel(text("squad.warn.manualJoin"));
+      event.cancel(translatable("squad.warn.manualJoin"));
   }
 
   @EventHandler

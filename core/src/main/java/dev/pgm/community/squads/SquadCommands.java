@@ -85,15 +85,6 @@ public class SquadCommands {
     invite(sender, invited);
   }
 
-  @Command("create")
-  @CommandDescription("Create a squad")
-  @Permission(CommunityPermissions.SQUAD_CREATE)
-  public void create(MatchPlayer sender) {
-    checkEnabled();
-    manager.createSquad(sender);
-    sender.sendMessage(translatable("squad.create.success", NamedTextColor.YELLOW));
-  }
-
   @Command("invite <player>")
   @CommandDescription("Send a squad invitation")
   @Permission(CommunityPermissions.SQUAD_CREATE)
