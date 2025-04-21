@@ -230,6 +230,7 @@ requests:
   sponsors: 
     enabled: true           # Whether /sponsor is enabled
     cooldown: "30m"         # Duration of cooldown between /sponsor requests
+    map-cooldown-min: 30m   # Minimum map cooldown after it is sponsored
     map-cooldown: 10        # How much to multiply match duration by for map cooldown
     use-pgm-cooldowns: true # Whether to hook into PGMs persistent map cooldown storage
     limit: 10               # Maximum number of sponsor requests allowed at one time

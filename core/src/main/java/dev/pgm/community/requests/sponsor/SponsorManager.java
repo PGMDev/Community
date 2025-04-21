@@ -17,10 +17,10 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
 import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -31,6 +31,7 @@ import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.Phase;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.TimeUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
 
 public class SponsorManager {
@@ -40,7 +41,7 @@ public class SponsorManager {
 
   private final Map<String, MapCooldown> mapCooldown;
 
-  private LinkedList<SponsorRequest> sponsors;
+  private final LinkedList<SponsorRequest> sponsors;
 
   private SponsorRequest currentSponsor;
 
@@ -80,7 +81,7 @@ public class SponsorManager {
     var cd = mapCooldown.get(map.getId());
     if (cd == null) return Duration.ZERO;
     var remaining = cd.getTimeRemaining();
-    if (remaining.isNegative()) {
+    if (!remaining.isPositive()) {
       mapCooldown.remove(map.getId());
       return Duration.ZERO;
     }
@@ -88,8 +89,11 @@ public class SponsorManager {
   }
 
   public void startNewMapCooldown(MapInfo map, Duration matchLength) {
-    this.mapCooldown.putIfAbsent(
-        map.getId(), new MapCooldown(matchLength.multipliedBy(config.getMapCooldownMultiply())));
+    this.mapCooldown.compute(map.getId(), (k, currCd) -> {
+      Duration newWait = matchLength.multipliedBy(config.getMapCooldownMultiply());
+      if (currCd != null) newWait = newWait.plus(currCd.getTimeRemaining());
+      return new MapCooldown(TimeUtils.max(config.getMapCooldownMin(), newWait));
+    });
   }
 
   public MapSizeBounds getCurrentMapSizeBounds() {
@@ -98,25 +102,16 @@ public class SponsorManager {
   }
 
   public SponsorRequest getNextSponsor() {
-    Queue<SponsorRequest> requests = new LinkedList<>();
-    SponsorRequest validRequest = null;
-
-    while (!sponsors.isEmpty()) {
-      SponsorRequest request = sponsors.poll();
-      if (isMapSizeAllowed(request.getMap())) {
-        validRequest = request;
-        break;
-      } else {
-        requests.offer(request);
+    for (Iterator<SponsorRequest> it = sponsors.iterator(); it.hasNext(); ) {
+      SponsorRequest request = it.next();
+      if (!isMapSizeAllowed(request.getMap())) {
         sendWrongSizeMapError(request);
+        continue;
       }
+      it.remove();
+      return request;
     }
-
-    while (!requests.isEmpty()) {
-      sponsors.offer(requests.poll());
-    }
-
-    return validRequest;
+    return null;
   }
 
   public void queueSponsorRequest(Player player, MapInfo map) {
@@ -136,8 +131,7 @@ public class SponsorManager {
 
     // Check permission to determine what amount to refresh
     // Always prefer the daily compared to the weekly (e.g sponsor inherits donor
-    // perms,
-    // only give daily not weekly)
+    // perms, only give daily not weekly)
     if (player.hasPermission(CommunityPermissions.TOKEN_DAILY)) {
       if (profile.hasDayElapsed()) {
         refresh = config.getDailyTokenAmount();

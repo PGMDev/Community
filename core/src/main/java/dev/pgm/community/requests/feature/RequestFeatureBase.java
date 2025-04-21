@@ -134,8 +134,8 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     // Cooldown
     if (hasCooldown(player, viewer)) return;
 
-    if (requests.getIfPresent(player.getUniqueId()) != null) {
-      MapInfo oldMap = requests.getIfPresent(player.getUniqueId());
+    MapInfo oldMap;
+    if ((oldMap = requests.getIfPresent(player.getUniqueId())) != null) {
 
       // Same map error
       if (map.equals(oldMap)) {
@@ -330,7 +330,7 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
     });
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onMatchEnd(MatchFinishEvent event) {
     superVotes.onVoteStart();
 
@@ -340,36 +340,48 @@ public abstract class RequestFeatureBase extends FeatureBase implements RequestF
 
     // Add cooldown for existing map and all variants
     sponsor.startNewMapCooldown(event.getMatch().getMap(), event.getMatch().getDuration());
+    if (sponsor.getSponsorQueue().isEmpty()) return;
 
     MapPoolManager poolManager = getPoolManager();
     if (poolManager == null) return; // Cancel if pool manager not found
 
-    VotePoolOptions options = poolManager.getVoteOptions();
+    // Schedule the actual sponsoring for slightly after match end
+    // This ensures if a restart, party start, or other sponsor-altering event is queued, it will
+    // prevent
+    PGM.get()
+        .getExecutor()
+        .schedule(
+            () -> {
+              VotePoolOptions options = poolManager.getVoteOptions();
 
-    if (sponsor.getSponsorQueue().isEmpty()) return;
-    if (!options.canAddMap()) return;
-    if (poolManager.getOverriderMap() != null) return;
-    if (isBlitz()) return; // Prevent sponsor after blitz map
+              if (!options.getCustomVoteMaps().isEmpty()) return; // Already some vote-added map(s)
+              if (poolManager.getOverriderMap() != null) return; // Set-nexted map
+              if (isBlitz()) return; // Prevent sponsor after blitz map
+              if (RestartManager.isQueued()) return; // No sponsor when restarting
+              if (isPartyActive()) return; // No sponsor during parties
 
-    SponsorRequest nextRequest = sponsor.getNextSponsor();
+              SponsorRequest nextRequest = sponsor.getNextSponsor();
 
-    if (nextRequest != null) {
-      // Notify PGM of sponsored map
-      options.addMap(nextRequest.getMap(), nextRequest.getPlayerId());
+              if (nextRequest == null) return;
+              // Notify PGM of the sponsored map and minimum cooldown
+              options.addMap(nextRequest.getMap(), nextRequest.getPlayerId());
+              sponsor.startNewMapCooldown(nextRequest.getMap(), Duration.ZERO);
 
-      // Track the current sponsor
-      sponsor.setCurrentSponsor(nextRequest);
+              // Track the current sponsor
+              sponsor.setCurrentSponsor(nextRequest);
 
-      // Update profile
-      getRequestProfile(nextRequest.getPlayerId()).thenAcceptAsync(profile -> {
-        // Update RequestProfile with sponsor map info
-        profile.sponsor(nextRequest.getMap());
-        update(profile);
-      });
+              // Update profile
+              getRequestProfile(nextRequest.getPlayerId()).thenAcceptAsync(profile -> {
+                // Update RequestProfile with sponsor map info
+                profile.sponsor(nextRequest.getMap());
+                update(profile);
+              });
 
-      // Alert online player if their sponsor request has been processed
-      sponsor.alertRequesterToConfirmation(nextRequest.getPlayerId());
-    }
+              // Alert online player if their sponsor request has been processed
+              sponsor.alertRequesterToConfirmation(nextRequest.getPlayerId());
+            },
+            1,
+            TimeUnit.SECONDS);
   }
 
   @EventHandler

@@ -22,6 +22,7 @@ public class RequestConfig extends FeatureConfigImpl {
   private static final String WEEKLY_TOKENS = SPONSORS + ".weekly-tokens";
   private static final String MAX_TOKENS = SPONSORS + ".max-tokens";
   private static final String REFUND = SPONSORS + ".refund";
+  private static final String MAP_COOLDOWN_MIN = SPONSORS + ".map-cooldown-min";
   private static final String MAP_COOLDOWN_MULTIPLY = SPONSORS + ".map-cooldown";
   private static final String USE_PGM_COOLDOWNS = SPONSORS + ".use-pgm-cooldowns";
   private static final String SCALE_FACTOR = SPONSORS + ".scale-factor";
@@ -47,9 +48,9 @@ public class RequestConfig extends FeatureConfigImpl {
 
   private boolean refund; // If token should be refunded when vote is successful
 
+  private Duration mapCooldownMin; // Minimum cooldown after a map is sponsored
   private int mapCooldownMultiply; // # to multiply match length by to determine cooldown
-  private boolean
-      usePGMCooldowns; // Whether to use PGM's map cooldown storage for additional lookup
+  private boolean usePGMCooldowns; // Whether to also use PGM's map cooldown storage
 
   private double scaleFactor; // Scaling factor for adjusting the upper bound of map size selection
 
@@ -107,6 +108,10 @@ public class RequestConfig extends FeatureConfigImpl {
     return refund;
   }
 
+  public Duration getMapCooldownMin() {
+    return mapCooldownMin;
+  }
+
   public int getMapCooldownMultiply() {
     return mapCooldownMultiply;
   }
@@ -150,6 +155,7 @@ public class RequestConfig extends FeatureConfigImpl {
     this.maxTokens = config.getInt(MAX_TOKENS);
     this.maxQueue = config.getInt(SPONSORS_LIMIT);
     this.refund = config.getBoolean(REFUND);
+    this.mapCooldownMin = parseDuration(config.getString(MAP_COOLDOWN_MIN, "30m"));
     this.mapCooldownMultiply = config.getInt(MAP_COOLDOWN_MULTIPLY);
     this.usePGMCooldowns = config.getBoolean(USE_PGM_COOLDOWNS);
     this.scaleFactor = config.getDouble(SCALE_FACTOR);
