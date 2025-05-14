@@ -51,22 +51,20 @@ public class BanCommand extends CommunityCommand {
       @Argument("target") TargetPlayer target,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "silent", aliases = "s") boolean silent) {
-    getTarget(target.getIdentifier(), usernames)
-        .thenAccept(
-            id -> {
-              if (id.isPresent()) {
-                moderation.punish(
-                    PunishmentType.BAN,
-                    id.get(),
-                    audience,
-                    reason,
-                    null,
-                    true,
-                    isDisguised(audience) || silent);
-              } else {
-                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
-              }
-            });
+    getTarget(target.getIdentifier(), usernames).thenAccept(id -> {
+      if (id.isPresent()) {
+        moderation.punish(
+            PunishmentType.BAN,
+            id.get(),
+            audience,
+            reason,
+            null,
+            true,
+            isDisguised(audience) || silent);
+      } else {
+        audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
+      }
+    });
   }
 
   @Command("tempban|tb <target> <time> <reason>")
@@ -78,53 +76,45 @@ public class BanCommand extends CommunityCommand {
       @Argument("time") Duration time,
       @Argument("reason") @FlagYielding String reason,
       @Flag(value = "silent", aliases = "s") boolean silent) {
-    getTarget(target.getIdentifier(), usernames)
-        .thenAccept(
-            id -> {
-              if (id.isPresent()) {
-                moderation.punish(
-                    PunishmentType.TEMP_BAN,
-                    id.get(),
-                    audience,
-                    reason,
-                    time,
-                    true,
-                    isDisguised(audience) || silent);
-              } else {
-                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
-              }
-            });
+    getTarget(target.getIdentifier(), usernames).thenAccept(id -> {
+      if (id.isPresent()) {
+        moderation.punish(
+            PunishmentType.TEMP_BAN,
+            id.get(),
+            audience,
+            reason,
+            time,
+            true,
+            isDisguised(audience) || silent);
+      } else {
+        audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
+      }
+    });
   }
 
-  @Command("nameban|nb <target>")
+  @Command("nameban|nb|usernameban|ub <target>")
   @CommandDescription("Ban a player based on their username. Auto unbans if name changes")
   @Permission(CommunityPermissions.BAN)
   public void nameBan(
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
       @Flag(value = "silent", aliases = "s") boolean silent) {
-    usernames
-        .getStoredProfile(target.getIdentifier())
-        .thenAccept(
-            profile -> {
-              if (profile != null) {
-                Bukkit.getScheduler()
-                    .runTask(
-                        Community.get(),
-                        () -> {
-                          // Due to async username lookup, must run task sync to avoid async kick
-                          moderation.punish(
-                              PunishmentType.NAME_BAN,
-                              profile.getId(),
-                              audience,
-                              profile.getUsername(),
-                              null,
-                              true,
-                              isDisguised(audience) || silent);
-                        });
-              } else {
-                audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
-              }
-            });
+    usernames.getStoredProfile(target.getIdentifier()).thenAccept(profile -> {
+      if (profile != null) {
+        Bukkit.getScheduler().runTask(Community.get(), () -> {
+          // Due to async username lookup, must run task sync to avoid async kick
+          moderation.punish(
+              PunishmentType.NAME_BAN,
+              profile.getId(),
+              audience,
+              profile.getUsername(),
+              null,
+              true,
+              isDisguised(audience) || silent);
+        });
+      } else {
+        audience.sendWarning(formatNotFoundComponent(target.getIdentifier()));
+      }
+    });
   }
 }
