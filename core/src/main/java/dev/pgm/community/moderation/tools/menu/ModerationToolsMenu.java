@@ -7,6 +7,7 @@ import dev.pgm.community.moderation.tools.buttons.types.GamemodeButton;
 import dev.pgm.community.moderation.tools.buttons.types.NightVisionButton;
 import dev.pgm.community.moderation.tools.buttons.types.ObserverVisibilityButton;
 import dev.pgm.community.moderation.tools.buttons.types.SpeedButton;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -14,7 +15,6 @@ import fr.minuskube.inv.content.InventoryProvider;
 import java.util.Random;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -27,13 +27,12 @@ public class ModerationToolsMenu implements InventoryProvider {
   private Random random;
 
   public ModerationToolsMenu() {
-    this.inventory =
-        SmartInventory.builder()
-            .manager(Community.get().getInventory())
-            .size(4, 9)
-            .title(colorize("&aModeration Tools"))
-            .provider(this)
-            .build();
+    this.inventory = SmartInventory.builder()
+        .manager(Community.get().getInventory())
+        .size(4, 9)
+        .title(colorize("&aModeration Tools"))
+        .provider(this)
+        .build();
     this.random = new Random();
   }
 
@@ -50,13 +49,12 @@ public class ModerationToolsMenu implements InventoryProvider {
 
     contents.fillRow(
         1,
-        ClickableItem.empty(
-            new ItemBuilder()
-                .material(Material.STAINED_GLASS_PANE)
-                .color(DyeColor.BLACK)
-                .name(colorize("&4 Coming Soon"))
-                .flags(ItemFlag.values())
-                .build()));
+        ClickableItem.empty(new ItemBuilder()
+            .material(Materials.STAINED_GLASS_PANE)
+            .color(DyeColor.BLACK)
+            .name(colorize("&4 Coming Soon"))
+            .flags(ItemFlag.values())
+            .build()));
   }
 
   private void addItem(Player player, ItemStack item) {
@@ -76,12 +74,11 @@ public class ModerationToolsMenu implements InventoryProvider {
 
     contents.fillRow(
         1,
-        ClickableItem.empty(
-            new ItemBuilder()
-                .material(Material.STAINED_GLASS_PANE)
-                .color(DyeColor.values()[color])
-                .name(colorize(cColor + "&lMore tools coming soon!"))
-                .flags(ItemFlag.values())
-                .build()));
+        ClickableItem.empty(new ItemBuilder()
+            .material(Materials.STAINED_GLASS_PANE)
+            .color(DyeColor.values()[color])
+            .name(colorize(cColor + "&lMore tools coming soon!"))
+            .flags(ItemFlag.values())
+            .build()));
   }
 }

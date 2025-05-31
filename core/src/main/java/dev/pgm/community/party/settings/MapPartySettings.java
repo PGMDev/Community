@@ -1,6 +1,7 @@
 package dev.pgm.community.party.settings;
 
 import dev.pgm.community.party.MapPartyConfig;
+import dev.pgm.community.utils.compatibility.Materials;
 import org.bukkit.Material;
 
 public class MapPartySettings {
@@ -10,27 +11,24 @@ public class MapPartySettings {
   private PartyBooleanSetting autoscalingTeams;
 
   public MapPartySettings(MapPartyConfig config) {
-    this.showLoginMessage =
-        new PartyBooleanSetting(
-            "Login Message",
-            "Display a login welcome when party is active",
-            config.showLoginMessage(),
-            Material.SIGN,
-            Material.BARRIER);
-    this.showPartyNotifications =
-        new PartyBooleanSetting(
-            "Notification",
-            "Broadcast announcements related to party",
-            config.showPartyNotifications(),
-            Material.BOOK_AND_QUILL,
-            Material.BARRIER);
-    this.autoscalingTeams =
-        new PartyBooleanSetting(
-            "Autoscaling Teams",
-            "Automatically resize teams on match cycle",
-            true,
-            Material.GOLD_PLATE,
-            Material.WOOD_PLATE);
+    this.showLoginMessage = new PartyBooleanSetting(
+        "Login Message",
+        "Display a login welcome when party is active",
+        config.showLoginMessage(),
+        Material.SIGN,
+        Material.BARRIER);
+    this.showPartyNotifications = new PartyBooleanSetting(
+        "Notification",
+        "Broadcast announcements related to party",
+        config.showPartyNotifications(),
+        Materials.BOOK_AND_QUILL,
+        Material.BARRIER);
+    this.autoscalingTeams = new PartyBooleanSetting(
+        "Autoscaling Teams",
+        "Automatically resize teams on match cycle",
+        true,
+        Materials.GOLD_PLATE,
+        Materials.WOOD_PLATE);
   }
 
   public PartyBooleanSetting getShowLoginMessage() {

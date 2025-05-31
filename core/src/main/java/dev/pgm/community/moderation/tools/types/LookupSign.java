@@ -2,6 +2,7 @@ package dev.pgm.community.moderation.tools.types;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.moderation.tools.ToolBase;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.util.List;
 import org.bukkit.Material;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -9,7 +10,7 @@ import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 
 public class LookupSign extends ToolBase {
 
-  private static final Material MATERIAL = Material.SIGN;
+  private static final Material MATERIAL = Materials.SIGN;
 
   private static final String NAME = "&c&lLookup Sign";
   private static final List<String> LORE =

@@ -9,7 +9,7 @@ import dev.pgm.community.moderation.tools.buttons.TranslatableToolButton;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -39,10 +39,8 @@ public class GamemodeButton extends TranslatableToolButton {
     // TODO: This is broken for some reason? Investigate later
     // String gamemode = TextTranslations.translate("gameMode." +
     // getViewer().getGameMode().name().toLowerCase(), getViewer());
-    Component gamemode =
-        text(
-            WordUtils.capitalize(getViewer().getGameMode().name().toLowerCase()),
-            NamedTextColor.AQUA);
+    Component gamemode = text(
+        WordUtils.capitalize(getViewer().getGameMode().name().toLowerCase()), NamedTextColor.AQUA);
     return translatable("setting.gamemode.lore", NamedTextColor.GRAY, gamemode);
   }
 
@@ -70,10 +68,9 @@ public class GamemodeButton extends TranslatableToolButton {
   }
 
   private Component getToggleMessage() {
-    Component command =
-        text("/tools", NamedTextColor.AQUA)
-            .hoverEvent(showText(translatable("setting.gamemode.hover", NamedTextColor.GRAY)))
-            .clickEvent(runCommand("/tools"));
+    Component command = text("/tools", NamedTextColor.AQUA)
+        .hoverEvent(showText(translatable("setting.gamemode.hover", NamedTextColor.GRAY)))
+        .clickEvent(runCommand("/tools"));
     return translatable("setting.gamemode.warning", NamedTextColor.GRAY, command);
   }
 

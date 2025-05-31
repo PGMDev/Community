@@ -4,7 +4,7 @@ import dev.pgm.community.assistance.feature.AssistanceFeature;
 import dev.pgm.community.menu.CommunityInventoryProvider;
 import fr.minuskube.inv.content.InventoryContents;
 import java.util.function.Consumer;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

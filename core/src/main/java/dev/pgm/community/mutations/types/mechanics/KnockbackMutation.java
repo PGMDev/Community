@@ -7,10 +7,10 @@ import java.util.Set;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.PlayerAttackEntityEvent;
 import org.bukkit.util.Vector;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.util.event.player.PlayerAttackEntityEvent;
 
 public class KnockbackMutation extends MutationBase {
 

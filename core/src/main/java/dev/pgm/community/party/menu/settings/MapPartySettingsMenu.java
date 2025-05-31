@@ -11,6 +11,7 @@ import dev.pgm.community.party.menu.MapPartyMenu;
 import dev.pgm.community.party.settings.MapPartySettings;
 import dev.pgm.community.party.settings.PartyBooleanSetting;
 import dev.pgm.community.party.types.CustomPoolParty;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import java.time.Duration;
@@ -75,61 +76,52 @@ public class MapPartySettingsMenu extends MapPartyMenu {
 
   private ClickableItem getTimelimitItem(MapParty party) {
     boolean hasLimit = party.getLength() != null;
-    Component limitRender =
-        !hasLimit
-            ? text("No limit", NamedTextColor.YELLOW)
-            : duration(party.getLength(), NamedTextColor.YELLOW);
+    Component limitRender = !hasLimit
+        ? text("No limit", NamedTextColor.YELLOW)
+        : duration(party.getLength(), NamedTextColor.YELLOW);
 
-    ItemStack item =
-        new ItemBuilder()
-            .material(Material.WATCH)
-            .name(colorize("&2&lTimelimit"))
-            .lore(
-                colorize(
-                    "&7Current: "
-                        + TextTranslations.translateLegacy(
-                            limitRender.color(NamedTextColor.GRAY), getViewer())),
-                colorize("&7Click to edit"))
-            .flags(ItemFlag.values())
-            .build();
+    ItemStack item = new ItemBuilder()
+        .material(Materials.WATCH)
+        .name(colorize("&2&lTimelimit"))
+        .lore(
+            colorize("&7Current: "
+                + TextTranslations.translateLegacy(
+                    limitRender.color(NamedTextColor.GRAY), getViewer())),
+            colorize("&7Click to edit"))
+        .flags(ItemFlag.values())
+        .build();
 
-    return ClickableItem.of(
-        item,
-        c -> {
-          close();
-          Audience viewer = Audience.get(getViewer());
-          viewer.sendMessage(
-              text()
-                  .append(text("Current party timelimit: "))
-                  .append(limitRender)
-                  .color(NamedTextColor.GRAY));
+    return ClickableItem.of(item, c -> {
+      close();
+      Audience viewer = Audience.get(getViewer());
+      viewer.sendMessage(text()
+          .append(text("Current party timelimit: "))
+          .append(limitRender)
+          .color(NamedTextColor.GRAY));
 
-          // TODO: make presets customizable via config?
-          // [30 minutes] [1 hour] [3 hours] [Custom]
-          Component preset1 = renderTimePreset(Duration.ofMinutes(30));
-          Component preset2 = renderTimePreset(Duration.ofHours(1));
-          Component preset3 = renderTimePreset(Duration.ofHours(3));
-          Component custom =
-              text()
-                  .append(text("["))
-                  .append(text("Custom", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                  .append(text("]"))
-                  .color(NamedTextColor.GRAY)
-                  .hoverEvent(
-                      HoverEvent.showText(
-                          text("Click to set a custom timelimit", NamedTextColor.GRAY)))
-                  .clickEvent(ClickEvent.suggestCommand("/event timelimit "))
-                  .build();
-          viewer.sendMessage(
-              text()
-                  .append(preset1)
-                  .append(space())
-                  .append(preset2)
-                  .append(space())
-                  .append(preset3)
-                  .append(space())
-                  .append(custom));
-        });
+      // TODO: make presets customizable via config?
+      // [30 minutes] [1 hour] [3 hours] [Custom]
+      Component preset1 = renderTimePreset(Duration.ofMinutes(30));
+      Component preset2 = renderTimePreset(Duration.ofHours(1));
+      Component preset3 = renderTimePreset(Duration.ofHours(3));
+      Component custom = text()
+          .append(text("["))
+          .append(text("Custom", NamedTextColor.YELLOW, TextDecoration.BOLD))
+          .append(text("]"))
+          .color(NamedTextColor.GRAY)
+          .hoverEvent(
+              HoverEvent.showText(text("Click to set a custom timelimit", NamedTextColor.GRAY)))
+          .clickEvent(ClickEvent.suggestCommand("/event timelimit "))
+          .build();
+      viewer.sendMessage(text()
+          .append(preset1)
+          .append(space())
+          .append(preset2)
+          .append(space())
+          .append(preset3)
+          .append(space())
+          .append(custom));
+    });
   }
 
   private Component renderTimePreset(Duration time) {
@@ -145,53 +137,44 @@ public class MapPartySettingsMenu extends MapPartyMenu {
   }
 
   private ClickableItem getNameItem(MapParty party) {
-    ItemStack item =
-        new ItemBuilder()
-            .material(Material.NAME_TAG)
-            .name(colorize("&3&lParty Name"))
-            .lore(colorize("&7Current: " + party.getName()), colorize("&7Click to edit"))
-            .flags(ItemFlag.values())
-            .build();
+    ItemStack item = new ItemBuilder()
+        .material(Material.NAME_TAG)
+        .name(colorize("&3&lParty Name"))
+        .lore(colorize("&7Current: " + party.getName()), colorize("&7Click to edit"))
+        .flags(ItemFlag.values())
+        .build();
 
-    return ClickableItem.of(
-        item,
-        c -> {
-          close();
-          Audience viewer = Audience.get(getViewer());
-          Component edit =
-              text()
-                  .append(text(" ["))
-                  .append(text("Edit", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                  .append(text("]"))
-                  .color(NamedTextColor.GRAY)
-                  .hoverEvent(
-                      HoverEvent.showText(text("Click to edit party name", NamedTextColor.GRAY)))
-                  .clickEvent(ClickEvent.suggestCommand("/event setname "))
-                  .build();
-          viewer.sendMessage(
-              text()
-                  .append(text("Current party name: ", NamedTextColor.GRAY))
-                  .append(party.getStyledName())
-                  .append(edit)
-                  .build());
-        });
+    return ClickableItem.of(item, c -> {
+      close();
+      Audience viewer = Audience.get(getViewer());
+      Component edit = text()
+          .append(text(" ["))
+          .append(text("Edit", NamedTextColor.YELLOW, TextDecoration.BOLD))
+          .append(text("]"))
+          .color(NamedTextColor.GRAY)
+          .hoverEvent(HoverEvent.showText(text("Click to edit party name", NamedTextColor.GRAY)))
+          .clickEvent(ClickEvent.suggestCommand("/event setname "))
+          .build();
+      viewer.sendMessage(text()
+          .append(text("Current party name: ", NamedTextColor.GRAY))
+          .append(party.getStyledName())
+          .append(edit)
+          .build());
+    });
   }
 
   private ClickableItem getPoolModeItem(CustomPoolParty party) {
-    ItemBuilder builder =
-        new ItemBuilder()
-            .material(party.isVoted() ? Material.PAPER : Material.RAILS)
-            .name(colorize("&d&lPool Mode"))
-            .lore(
-                colorize("&7Current: &6" + (party.isVoted() ? "Voted" : "Rotation")),
-                colorize("&7Click to toggle mode"))
-            .flags(ItemFlag.values());
+    ItemBuilder builder = new ItemBuilder()
+        .material(party.isVoted() ? Material.PAPER : Materials.RAILS)
+        .name(colorize("&d&lPool Mode"))
+        .lore(
+            colorize("&7Current: &6" + (party.isVoted() ? "Voted" : "Rotation")),
+            colorize("&7Click to toggle mode"))
+        .flags(ItemFlag.values());
 
-    return ClickableItem.of(
-        builder.build(),
-        c -> {
-          Bukkit.dispatchCommand(getViewer(), "event mode");
-        });
+    return ClickableItem.of(builder.build(), c -> {
+      Bukkit.dispatchCommand(getViewer(), "event mode");
+    });
   }
 
   private ClickableItem getSettingItem(PartyBooleanSetting setting) {
@@ -199,12 +182,10 @@ public class MapPartySettingsMenu extends MapPartyMenu {
   }
 
   private ClickableItem getAutoScalingItem(PartyBooleanSetting setting) {
-    return ClickableItem.of(
-        settingItemBuilder(setting),
-        c -> {
-          setting.toggle();
-          Bukkit.dispatchCommand(getViewer(), "event autoscaling " + setting.getValue());
-        });
+    return ClickableItem.of(settingItemBuilder(setting), c -> {
+      setting.toggle();
+      Bukkit.dispatchCommand(getViewer(), "event autoscaling " + setting.getValue());
+    });
   }
 
   private static ItemStack settingItemBuilder(PartyBooleanSetting setting) {

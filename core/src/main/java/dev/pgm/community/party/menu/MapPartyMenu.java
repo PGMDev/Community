@@ -7,6 +7,7 @@ import static tc.oc.pgm.util.nms.NMSHacks.NMS_HACKS;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.party.feature.MapPartyFeature;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -27,7 +28,7 @@ import tc.oc.pgm.util.skin.Skin;
 
 public abstract class MapPartyMenu implements InventoryProvider {
 
-  protected static final Material BORDER_MATERIAL = Material.STAINED_GLASS_PANE;
+  protected static final Material BORDER_MATERIAL = Materials.STAINED_GLASS_PANE;
 
   private final String title;
   private final int rows;
@@ -99,12 +100,11 @@ public abstract class MapPartyMenu implements InventoryProvider {
   }
 
   public SmartInventory getInventory(SmartInventory parent) {
-    SmartInventory.Builder builder =
-        SmartInventory.builder()
-            .title(colorize(title))
-            .provider(this)
-            .manager(Community.get().getInventory())
-            .size(rows, 9);
+    SmartInventory.Builder builder = SmartInventory.builder()
+        .title(colorize(title))
+        .provider(this)
+        .manager(Community.get().getInventory())
+        .size(rows, 9);
 
     if (parent != null) {
       builder.parent(parent);
@@ -114,13 +114,12 @@ public abstract class MapPartyMenu implements InventoryProvider {
   }
 
   protected ClickableItem getBorderItem() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(BORDER_MATERIAL)
-            .color(getBorderColor())
-            .name(" ")
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(BORDER_MATERIAL)
+        .color(getBorderColor())
+        .name(" ")
+        .flags(ItemFlag.values())
+        .build());
   }
 
   protected static final String ADD_SKIN =
@@ -134,15 +133,14 @@ public abstract class MapPartyMenu implements InventoryProvider {
 
   protected ClickableItem getMainMenuIcon() {
     return ClickableItem.of(
-        getNamedItem("&7Return to &dMap Party Manager", Material.CAKE, 1),
-        c -> {
+        getNamedItem("&7Return to &dMap Party Manager", Material.CAKE, 1), c -> {
           Bukkit.dispatchCommand(getViewer(), "event");
         });
   }
 
   protected ItemStack getPlayerHead(
       String displayName, String name, List<String> lore, UUID playerId, Skin skin) {
-    ItemStack head = new ItemStack(Material.SKULL_ITEM, 1, (byte) 3);
+    ItemStack head = new ItemStack(Materials.SKULL_ITEM, 1, (byte) 3);
     SkullMeta meta = (SkullMeta) head.getItemMeta();
     meta.setDisplayName(displayName);
     meta.setLore(lore);

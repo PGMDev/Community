@@ -8,6 +8,7 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
+import dev.pgm.community.utils.compatibility.EntityTypes;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -104,7 +105,7 @@ public class MobMutation extends ScheduledMutationBase {
     EntityType.SKELETON,
     EntityType.SPIDER,
     EntityType.ENDERMAN,
-    EntityType.PIG_ZOMBIE,
+    EntityTypes.PIG_ZOMBIE,
     EntityType.CREEPER,
     EntityType.WITCH
   };

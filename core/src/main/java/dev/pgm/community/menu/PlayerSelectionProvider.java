@@ -4,6 +4,7 @@ import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 import static tc.oc.pgm.util.nms.NMSHacks.NMS_HACKS;
 import static tc.oc.pgm.util.nms.PlayerUtils.PLAYER_UTILS;
 
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -111,7 +112,7 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
   }
 
   private ItemStack getPlayerHead(Player viewer, Player player) {
-    ItemStack head = new ItemStack(Material.SKULL_ITEM, 1, (byte) 3);
+    ItemStack head = new ItemStack(Materials.SKULL_ITEM, 1, (byte) 3);
     SkullMeta meta = (SkullMeta) head.getItemMeta();
     meta.setDisplayName(player.getDisplayName());
     meta.setLore(getPlayerLore(viewer, player));

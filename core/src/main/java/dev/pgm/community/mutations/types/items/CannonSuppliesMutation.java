@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Material;
@@ -27,25 +28,22 @@ public class CannonSuppliesMutation extends KitMutationBase {
 
   // Order is to allow partial kits to build functional cannons. The more items the player receives
   // the more complicated the cannons they can build
-  static List<Kit> spawnKit =
-      Lists.newArrayList(
-          new ItemKit(
-              Maps.newHashMap(),
-              preventSharing(
-                  Lists.newArrayList(
-                      new ItemStack(Material.TNT, 64),
-                      new ItemStack(Material.WATER_BUCKET),
-                      new ItemStack(Material.STONE_BUTTON, 32),
-                      new ItemStack(Material.LADDER, 32),
-                      new ItemStack(Material.TNT, 64),
-                      new ItemStack(Material.REDSTONE, 64),
-                      new ItemStack(Material.WATER_BUCKET),
-                      new ItemStack(Material.FENCE, 32),
-                      new ItemStack(Material.WOOD_STEP, 64),
-                      new ItemStack(Material.TNT, 64),
-                      new ItemStack(Material.WOOD, 64),
-                      new ItemStack(Material.TNT, 64),
-                      new ItemStack(Material.DIODE, 64)))));
+  static List<Kit> spawnKit = Lists.newArrayList(new ItemKit(
+      Maps.newHashMap(),
+      preventSharing(Lists.newArrayList(
+          new ItemStack(Material.TNT, 64),
+          new ItemStack(Material.WATER_BUCKET),
+          new ItemStack(Material.STONE_BUTTON, 32),
+          new ItemStack(Material.LADDER, 32),
+          new ItemStack(Material.TNT, 64),
+          new ItemStack(Material.REDSTONE, 64),
+          new ItemStack(Material.WATER_BUCKET),
+          new ItemStack(Materials.FENCE, 32),
+          new ItemStack(Materials.WOOD_STEP, 64),
+          new ItemStack(Material.TNT, 64),
+          new ItemStack(Materials.WOOD, 64),
+          new ItemStack(Material.TNT, 64),
+          new ItemStack(Materials.DIODE, 64)))));
 
   @Override
   public List<Kit> getKits() {

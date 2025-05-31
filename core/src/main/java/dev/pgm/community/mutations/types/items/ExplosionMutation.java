@@ -12,6 +12,7 @@ import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,55 +50,50 @@ import tc.oc.pgm.util.inventory.tag.ItemTag;
 /** ExplosionMutation - TNT, Fireballs, and random explosions when mining blocks * */
 public class ExplosionMutation extends KitMutationBase {
 
-  private static MutationRangeOption FIREBALL_POWER =
-      new MutationRangeOption(
-          "Fireball Power",
-          "Power of fireball explosion",
-          MutationType.EXPLOSION.getMaterial(),
-          false,
-          0,
-          0,
-          10);
+  private static MutationRangeOption FIREBALL_POWER = new MutationRangeOption(
+      "Fireball Power",
+      "Power of fireball explosion",
+      MutationType.EXPLOSION.getMaterial(),
+      false,
+      0,
+      0,
+      10);
 
-  private static MutationBooleanOption FIREBALL_FIRE =
-      new MutationBooleanOption(
-          "Fireball Fire",
-          "Whether fireballs are incendiary",
-          MutationType.EXPLOSION.getMaterial(),
-          true,
-          false);
+  private static MutationBooleanOption FIREBALL_FIRE = new MutationBooleanOption(
+      "Fireball Fire",
+      "Whether fireballs are incendiary",
+      MutationType.EXPLOSION.getMaterial(),
+      true,
+      false);
 
-  private static MutationRangeOption LAUNCH_COOLDOWN =
-      new MutationRangeOption(
-          "Explosive Cooldown",
-          "Delay between fireball or TNT shots",
-          MutationType.EXPLOSION.getMaterial(),
-          false,
-          4,
-          0,
-          60);
+  private static MutationRangeOption LAUNCH_COOLDOWN = new MutationRangeOption(
+      "Explosive Cooldown",
+      "Delay between fireball or TNT shots",
+      MutationType.EXPLOSION.getMaterial(),
+      false,
+      4,
+      0,
+      60);
 
-  private static MutationBooleanOption MYSTERY_TNT =
-      new MutationBooleanOption(
-          "Mystery TNT",
-          "Whether TNT should have a random effect",
-          MutationType.EXPLOSION.getMaterial(),
-          true,
-          false);
+  private static MutationBooleanOption MYSTERY_TNT = new MutationBooleanOption(
+      "Mystery TNT",
+      "Whether TNT should have a random effect",
+      MutationType.EXPLOSION.getMaterial(),
+      true,
+      false);
 
-  private static MutationRangeOption TNT_SIZE =
-      new MutationRangeOption(
-          "TNT Amount",
-          "Amount of TNT given per player",
-          MutationType.EXPLOSION.getMaterial(),
-          false,
-          6,
-          1,
-          64);
+  private static MutationRangeOption TNT_SIZE = new MutationRangeOption(
+      "TNT Amount",
+      "Amount of TNT given per player",
+      MutationType.EXPLOSION.getMaterial(),
+      false,
+      6,
+      1,
+      64);
 
   private static final double EXPLODE_CHANCE = 0.05;
   private static final int FIREBALL_COUNT = 5;
-  private static final Material TNT_LAUNCHER_MATERIAL = Material.NETHER_BRICK_ITEM;
+  private static final Material TNT_LAUNCHER_MATERIAL = Materials.NETHER_BRICK_ITEM;
 
   private static final String EXPLOSION_METADATA = "mutation_explosion";
   private static final ItemTag<String> EXPLOSION_KIT = ItemTag.newString(EXPLOSION_METADATA);
@@ -191,7 +187,7 @@ public class ExplosionMutation extends KitMutationBase {
     if (!isParticipant(player)) return;
     if (item == null || item.getType() == Material.AIR) return;
 
-    if (item.getType() != Material.FIREBALL && item.getType() != TNT_LAUNCHER_MATERIAL) return;
+    if (item.getType() != Materials.FIREBALL && item.getType() != TNT_LAUNCHER_MATERIAL) return;
     if (item.getType() == TNT_LAUNCHER_MATERIAL && !isFromKit(item)) return;
     if (!launchExplosive(event.getPlayer(), item.getType())) return;
 
@@ -257,19 +253,17 @@ public class ExplosionMutation extends KitMutationBase {
   }
 
   private static List<ItemStack> getTNTItems() {
-    List<ItemStack> items =
-        Lists.newArrayList(
-            getTNTItem(), new ItemStack(Material.REDSTONE_TORCH_ON, TNT_SIZE.getValue()));
+    List<ItemStack> items = Lists.newArrayList(
+        getTNTItem(), new ItemStack(Materials.REDSTONE_TORCH_ON, TNT_SIZE.getValue()));
     items = items.stream().map(ExplosionMutation::applyLore).collect(Collectors.toList());
     return items;
   }
 
   private static ItemStack getTNTItem() {
-    ItemBuilder builder =
-        new ItemBuilder()
-            .material(Material.TNT)
-            .amount(TNT_SIZE.getValue())
-            .name(colorize(MYSTERY_TNT.getValue() ? "&d&lMystery TNT" : "&c&lTNT"));
+    ItemBuilder builder = new ItemBuilder()
+        .material(Material.TNT)
+        .amount(TNT_SIZE.getValue())
+        .name(colorize(MYSTERY_TNT.getValue() ? "&d&lMystery TNT" : "&c&lTNT"));
     if (MYSTERY_TNT.getValue()) {
       builder.lore(colorize("&7This TNT may have a special effect when placed!"));
     }
@@ -277,24 +271,22 @@ public class ExplosionMutation extends KitMutationBase {
   }
 
   private static ItemStack getTNTLauncherItem() {
-    ItemStack item =
-        new ItemBuilder()
-            .material(TNT_LAUNCHER_MATERIAL)
-            .amount(TNT_SIZE.getValue())
-            .name(colorize("&4&lTNT Launcher"))
-            .lore("&7Click to launch TNT in the direction you are facing")
-            .build();
+    ItemStack item = new ItemBuilder()
+        .material(TNT_LAUNCHER_MATERIAL)
+        .amount(TNT_SIZE.getValue())
+        .name(colorize("&4&lTNT Launcher"))
+        .lore("&7Click to launch TNT in the direction you are facing")
+        .build();
     return applyLore(item);
   }
 
   private static ItemStack getFireballItem() {
-    ItemStack item =
-        new ItemBuilder()
-            .material(Material.FIREBALL)
-            .amount(FIREBALL_COUNT)
-            .name(colorize("&4&lFireball"))
-            .lore(colorize("&7Click to launch fireball"))
-            .build();
+    ItemStack item = new ItemBuilder()
+        .material(Materials.FIREBALL)
+        .amount(FIREBALL_COUNT)
+        .name(colorize("&4&lFireball"))
+        .lore(colorize("&7Click to launch fireball"))
+        .build();
     return applyLore(item);
   }
 
@@ -324,7 +316,7 @@ public class ExplosionMutation extends KitMutationBase {
       }
     }
 
-    if (type == Material.FIREBALL) {
+    if (type == Materials.FIREBALL) {
       launchFireball(player);
     }
 

@@ -26,7 +26,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -95,11 +95,10 @@ public class FreezeManager {
     // Don't allow freezing if player is exempt
     if (freezee.hasPermission(CommunityPermissions.FREEZE_EXEMPT)
         && !freezer.getSender().hasPermission(CommunityPermissions.FREEZE_FORCE)) {
-      freezer.sendWarning(
-          text()
-              .append(PlayerComponent.player(freezee, NameStyle.FANCY))
-              .append(text(" can not be frozen"))
-              .build());
+      freezer.sendWarning(text()
+          .append(PlayerComponent.player(freezee, NameStyle.FANCY))
+          .append(text(" can not be frozen"))
+          .build());
       return;
     }
 
@@ -138,11 +137,10 @@ public class FreezeManager {
       Audience.get(freezee).sendWarning(freezeTitle.build());
     } else {
       Audience.get(freezee)
-          .showTitle(
-              title(
-                  empty(),
-                  freezeTitle.build(),
-                  Times.of(Ticks.duration(5), Ticks.duration(9999), Ticks.duration(5))));
+          .showTitle(title(
+              empty(),
+              freezeTitle.build(),
+              Times.of(Ticks.duration(5), Ticks.duration(9999), Ticks.duration(5))));
     }
     Audience.get(freezee).playSound(FREEZE_SOUND);
 
@@ -172,15 +170,13 @@ public class FreezeManager {
   private Component createInteractiveBroadcast(
       Component senderName, Player freezee, boolean frozen) {
     return text()
-        .append(
-            translatable(
-                String.format("moderation.freeze.broadcast.%s", frozen ? "frozen" : "thaw"),
-                NamedTextColor.GRAY,
-                senderName,
-                PlayerComponent.player(freezee, NameStyle.FANCY)))
-        .hoverEvent(
-            HoverEvent.showText(
-                translatable("moderation.freeze.broadcast.hover", NamedTextColor.GRAY)))
+        .append(translatable(
+            String.format("moderation.freeze.broadcast.%s", frozen ? "frozen" : "thaw"),
+            NamedTextColor.GRAY,
+            senderName,
+            PlayerComponent.player(freezee, NameStyle.FANCY)))
+        .hoverEvent(HoverEvent.showText(
+            translatable("moderation.freeze.broadcast.hover", NamedTextColor.GRAY)))
         .clickEvent(ClickEvent.runCommand("/f " + freezee.getName()))
         .build();
   }

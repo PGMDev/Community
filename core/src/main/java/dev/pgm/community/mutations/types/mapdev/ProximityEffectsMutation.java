@@ -8,6 +8,8 @@ import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
+import dev.pgm.community.utils.compatibility.Materials;
+import dev.pgm.community.utils.compatibility.PotionEffects;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,20 +42,18 @@ import tc.oc.pgm.wool.WoolMatchModule;
 
 public class ProximityEffectsMutation extends ScheduledMutationBase {
 
-  MutationListOption<Integer> attackerDistanceOption =
-      new MutationListOption<>(
-          "Attacker Distance",
-          "Radius where potion effects are applied",
-          Material.COMPASS,
-          true,
-          Lists.newArrayList(0, 5, 10, 15, 20, 30, 40, 50, 75, 100, 150, 200));
-  MutationListOption<Integer> defenderDistanceOption =
-      new MutationListOption<>(
-          "Defender Distance",
-          "Radius where potion effects are applied",
-          Material.EMPTY_MAP,
-          true,
-          Lists.newArrayList(0, 5, 10, 15, 20, 30, 40, 50, 75, 100, 150, 200));
+  MutationListOption<Integer> attackerDistanceOption = new MutationListOption<>(
+      "Attacker Distance",
+      "Radius where potion effects are applied",
+      Material.COMPASS,
+      true,
+      Lists.newArrayList(0, 5, 10, 15, 20, 30, 40, 50, 75, 100, 150, 200));
+  MutationListOption<Integer> defenderDistanceOption = new MutationListOption<>(
+      "Defender Distance",
+      "Radius where potion effects are applied",
+      Materials.EMPTY_MAP,
+      true,
+      Lists.newArrayList(0, 5, 10, 15, 20, 30, 40, 50, 75, 100, 150, 200));
 
   Map<PotionEffectType, MutationRangeOption> attackerOptions;
   Map<PotionEffectType, MutationRangeOption> defenderOptions;
@@ -85,7 +85,7 @@ public class ProximityEffectsMutation extends ScheduledMutationBase {
     HashMap<PotionEffectType, MutationRangeOption> effectOptionMap = new HashMap<>();
 
     effectOptionMap.put(
-        PotionEffectType.FAST_DIGGING,
+        PotionEffects.HASTE,
         new MutationRangeOption(
             prefix + " Haste", prefix + " Haste Amount", Material.DIAMOND_PICKAXE, true, 0, 0, 5));
     effectOptionMap.put(
@@ -93,7 +93,7 @@ public class ProximityEffectsMutation extends ScheduledMutationBase {
         new MutationRangeOption(
             prefix + " Speed", prefix + " Speed Amount", Material.SUGAR, true, 0, 0, 5));
     effectOptionMap.put(
-        PotionEffectType.INCREASE_DAMAGE,
+        PotionEffects.STRENGTH,
         new MutationRangeOption(
             prefix + " Strength",
             prefix + " Strength Amount",
@@ -103,7 +103,7 @@ public class ProximityEffectsMutation extends ScheduledMutationBase {
             0,
             5));
     effectOptionMap.put(
-        PotionEffectType.JUMP,
+        PotionEffects.JUMP_BOOST,
         new MutationRangeOption(
             prefix + " Jump Boost",
             prefix + " Jump Boost Amount",
@@ -123,23 +123,29 @@ public class ProximityEffectsMutation extends ScheduledMutationBase {
             0,
             5));
     effectOptionMap.put(
-        PotionEffectType.SLOW_DIGGING,
+        PotionEffects.MINING_FATIGUE,
         new MutationRangeOption(
             prefix + " Mining Fatigue",
             prefix + " Mining Fatigue Amount",
-            Material.WOOD_PICKAXE,
+            Materials.WOOD_PICKAXE,
             true,
             0,
             0,
             5));
     effectOptionMap.put(
-        PotionEffectType.SLOW,
+        PotionEffects.SLOWNESS,
         new MutationRangeOption(
-            prefix + " Slowness", prefix + " Slowness Amount", Material.WEB, true, 0, 0, 5));
+            prefix + " Slowness", prefix + " Slowness Amount", Materials.WEB, true, 0, 0, 5));
     effectOptionMap.put(
         PotionEffectType.WEAKNESS,
         new MutationRangeOption(
-            prefix + " Weakness", prefix + " Weakness Amount", Material.WOOD_SWORD, true, 0, 0, 5));
+            prefix + " Weakness",
+            prefix + " Weakness Amount",
+            Materials.WOOD_SWORD,
+            true,
+            0,
+            0,
+            5));
 
     return effectOptionMap;
   }
@@ -196,10 +202,8 @@ public class ProximityEffectsMutation extends ScheduledMutationBase {
     if (destroyableMatchModule.isPresent()) {
       for (Destroyable destroyable : destroyableMatchModule.get().getDestroyables()) {
         if (!destroyable.isCompleted()) {
-          ownedLocationsMap.add(
-              new Pair<>(
-                  destroyable.getBlockRegion().getBounds().getCenterPoint(),
-                  destroyable.getOwner()));
+          ownedLocationsMap.add(new Pair<>(
+              destroyable.getBlockRegion().getBounds().getCenterPoint(), destroyable.getOwner()));
         }
       }
     }
@@ -232,9 +236,8 @@ public class ProximityEffectsMutation extends ScheduledMutationBase {
     for (Map.Entry<PotionEffectType, MutationRangeOption> entry : options.entrySet()) {
       int level = entry.getValue().getValue();
       if (level > 0) {
-        PotionKit potionKit =
-            new PotionKit(
-                Collections.singleton(new PotionEffect(entry.getKey(), 5 * 20, level - 1)));
+        PotionKit potionKit = new PotionKit(
+            Collections.singleton(new PotionEffect(entry.getKey(), 5 * 20, level - 1)));
         for (MatchPlayer defender : players) {
           defender.applyKit(potionKit, true);
         }

@@ -12,7 +12,7 @@ import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -40,11 +40,10 @@ public class MobCommand extends CommunityCommand {
   public void viewMobs(CommandAudience audience, Player sender) {
     List<LivingEntity> ownedMobs = mobs.getOwnedMobs(sender);
     if (!ownedMobs.isEmpty()) {
-      audience.sendMessage(
-          TextFormatter.horizontalLineHeading(
-              sender,
-              text("Mobs", NamedTextColor.GREEN, TextDecoration.BOLD),
-              NamedTextColor.DARK_GREEN));
+      audience.sendMessage(TextFormatter.horizontalLineHeading(
+          sender,
+          text("Mobs", NamedTextColor.GREEN, TextDecoration.BOLD),
+          NamedTextColor.DARK_GREEN));
 
       sendEntityTotals(audience, ownedMobs);
     } else {
@@ -52,36 +51,22 @@ public class MobCommand extends CommunityCommand {
       return;
     }
 
-    Component mobActions =
-        text()
-            .append(
-                button(
-                    "Teleport",
-                    NamedTextColor.GREEN,
-                    "/mobs tphere",
-                    "Click to teleport mobs here"))
-            .append(space())
-            .append(button("Clear", NamedTextColor.RED, "/mobs clear", "Click to remove all mobs"))
-            .append(space())
-            .append(button("Heal", NamedTextColor.LIGHT_PURPLE, "/mobs heal", "Click to heal mobs"))
-            .build();
+    Component mobActions = text()
+        .append(
+            button("Teleport", NamedTextColor.GREEN, "/mobs tphere", "Click to teleport mobs here"))
+        .append(space())
+        .append(button("Clear", NamedTextColor.RED, "/mobs clear", "Click to remove all mobs"))
+        .append(space())
+        .append(button("Heal", NamedTextColor.LIGHT_PURPLE, "/mobs heal", "Click to heal mobs"))
+        .build();
 
-    Component mobModes =
-        text()
-            .append(
-                button(
-                    "Follow",
-                    NamedTextColor.DARK_GREEN,
-                    "/mobs follow",
-                    "Click to toggle follow mode"))
-            .append(space())
-            .append(
-                button(
-                    "Attack",
-                    NamedTextColor.DARK_RED,
-                    "/mobs attack",
-                    "Click to toggle mob targeting"))
-            .build();
+    Component mobModes = text()
+        .append(button(
+            "Follow", NamedTextColor.DARK_GREEN, "/mobs follow", "Click to toggle follow mode"))
+        .append(space())
+        .append(button(
+            "Attack", NamedTextColor.DARK_RED, "/mobs attack", "Click to toggle mob targeting"))
+        .build();
     audience.sendMessage(empty());
     audience.sendMessage(text("Actions:", NamedTextColor.GRAY));
     audience.sendMessage(mobActions);
@@ -95,24 +80,20 @@ public class MobCommand extends CommunityCommand {
     for (EntityType type : EntityType.values()) {
       long typeTotal = mobs.stream().filter(le -> le.getType().equals(type)).count();
       if (typeTotal > 0) {
-        audience.sendMessage(
-            text()
-                .append(
-                    text(
-                        WordUtils.capitalizeFully(type.toString().toLowerCase()),
-                        NamedTextColor.DARK_AQUA))
-                .append(text(" : ", NamedTextColor.GREEN))
-                .append(text(typeTotal, NamedTextColor.YELLOW))
-                .build());
+        audience.sendMessage(text()
+            .append(text(
+                WordUtils.capitalizeFully(type.toString().toLowerCase()), NamedTextColor.DARK_AQUA))
+            .append(text(" : ", NamedTextColor.GREEN))
+            .append(text(typeTotal, NamedTextColor.YELLOW))
+            .build());
       }
       total += typeTotal;
     }
-    audience.sendMessage(
-        text()
-            .append(text("Total mobs spawned", NamedTextColor.GRAY))
-            .append(text(" : ", NamedTextColor.GREEN))
-            .append(text(total, NamedTextColor.GOLD))
-            .build());
+    audience.sendMessage(text()
+        .append(text("Total mobs spawned", NamedTextColor.GRAY))
+        .append(text(" : ", NamedTextColor.GREEN))
+        .append(text(total, NamedTextColor.GOLD))
+        .build());
   }
 
   @Command("spawn <mob> [amount]")
@@ -129,14 +110,13 @@ public class MobCommand extends CommunityCommand {
       return;
     }
     mobs.spawn(sender, type, amount, !canDie);
-    audience.sendMessage(
-        text()
-            .append(text("Spawned "))
-            .append(text(amount, NamedTextColor.YELLOW))
-            .append(text(" "))
-            .append(text(WordUtils.capitalize(type.toString().toLowerCase()), NamedTextColor.GREEN))
-            .color(NamedTextColor.GRAY)
-            .build());
+    audience.sendMessage(text()
+        .append(text("Spawned "))
+        .append(text(amount, NamedTextColor.YELLOW))
+        .append(text(" "))
+        .append(text(WordUtils.capitalize(type.toString().toLowerCase()), NamedTextColor.GREEN))
+        .color(NamedTextColor.GRAY)
+        .build());
   }
 
   @Command("clear")
@@ -144,13 +124,12 @@ public class MobCommand extends CommunityCommand {
   @Permission(CommunityPermissions.MOB_SPAWN)
   public void clear(CommandAudience audience, Player sender) {
     int mobsRemoved = mobs.remove(audience.getPlayer());
-    audience.sendMessage(
-        text()
-            .append(text("Removed "))
-            .append(text(mobsRemoved, NamedTextColor.RED))
-            .append(text(" mob" + (mobsRemoved != 1 ? "s" : "")))
-            .color(NamedTextColor.GRAY)
-            .build());
+    audience.sendMessage(text()
+        .append(text("Removed "))
+        .append(text(mobsRemoved, NamedTextColor.RED))
+        .append(text(" mob" + (mobsRemoved != 1 ? "s" : "")))
+        .color(NamedTextColor.GRAY)
+        .build());
   }
 
   @Command("tphere|tph")
@@ -158,13 +137,12 @@ public class MobCommand extends CommunityCommand {
   @Permission(CommunityPermissions.MOB_SPAWN)
   public void tphere(CommandAudience audience, Player sender) {
     int mobsTeleported = mobs.tphere(audience.getPlayer());
-    audience.sendMessage(
-        text()
-            .append(text("Teleported "))
-            .append(text(mobsTeleported, NamedTextColor.GREEN))
-            .append(text(" mob" + (mobsTeleported != 1 ? "s" : "") + " to your location"))
-            .color(NamedTextColor.GRAY)
-            .build());
+    audience.sendMessage(text()
+        .append(text("Teleported "))
+        .append(text(mobsTeleported, NamedTextColor.GREEN))
+        .append(text(" mob" + (mobsTeleported != 1 ? "s" : "") + " to your location"))
+        .color(NamedTextColor.GRAY)
+        .build());
   }
 
   @Command("heal")
@@ -172,13 +150,12 @@ public class MobCommand extends CommunityCommand {
   @Permission(CommunityPermissions.MOB_SPAWN)
   public void heal(CommandAudience audience, Player sender) {
     int mobsHealed = mobs.heal(audience.getPlayer());
-    audience.sendMessage(
-        text()
-            .append(text("Healed "))
-            .append(text(mobsHealed, NamedTextColor.GREEN))
-            .append(text(" mob" + (mobsHealed != 1 ? "s" : "")))
-            .color(NamedTextColor.GRAY)
-            .build());
+    audience.sendMessage(text()
+        .append(text("Healed "))
+        .append(text(mobsHealed, NamedTextColor.GREEN))
+        .append(text(" mob" + (mobsHealed != 1 ? "s" : "")))
+        .color(NamedTextColor.GRAY)
+        .build());
   }
 
   @Command("attack [target]")
@@ -188,23 +165,19 @@ public class MobCommand extends CommunityCommand {
   public void attack(CommandAudience audience, Player sender, @Argument("target") Player target) {
     if (target != null) {
       mobs.attack(sender, target);
-      audience.sendMessage(
-          text()
-              .append(text("Spawned mobs will now attack ", NamedTextColor.GRAY))
-              .append(PlayerComponent.player(target, NameStyle.FANCY))
-              .build());
+      audience.sendMessage(text()
+          .append(text("Spawned mobs will now attack ", NamedTextColor.GRAY))
+          .append(PlayerComponent.player(target, NameStyle.FANCY))
+          .build());
     } else {
       boolean autoEnabled = mobs.toggleAutoAttack(sender);
-      audience.sendMessage(
-          text()
-              .append(
-                  text()
-                      .append(text("Hostile targeting has been ", NamedTextColor.GRAY))
-                      .append(
-                          text(
-                              autoEnabled ? "Enabled" : "Disabled",
-                              autoEnabled ? NamedTextColor.GREEN : NamedTextColor.RED)))
-              .build());
+      audience.sendMessage(text()
+          .append(text()
+              .append(text("Hostile targeting has been ", NamedTextColor.GRAY))
+              .append(text(
+                  autoEnabled ? "Enabled" : "Disabled",
+                  autoEnabled ? NamedTextColor.GREEN : NamedTextColor.RED)))
+          .build());
     }
   }
 
@@ -213,16 +186,13 @@ public class MobCommand extends CommunityCommand {
   @Permission(CommunityPermissions.MOB_SPAWN)
   public void follow(CommandAudience audience, Player sender) {
     boolean following = mobs.toggleFollow(audience.getPlayer());
-    audience.sendMessage(
-        text()
-            .append(
-                text()
-                    .append(text("Mob following has been ", NamedTextColor.GRAY))
-                    .append(
-                        text(
-                            following ? "Enabled" : "Disabled",
-                            following ? NamedTextColor.GREEN : NamedTextColor.RED)))
-            .build());
+    audience.sendMessage(text()
+        .append(text()
+            .append(text("Mob following has been ", NamedTextColor.GRAY))
+            .append(text(
+                following ? "Enabled" : "Disabled",
+                following ? NamedTextColor.GREEN : NamedTextColor.RED)))
+        .build());
   }
 
   @Command("speed <speed>")
@@ -230,11 +200,9 @@ public class MobCommand extends CommunityCommand {
   @Permission(CommunityPermissions.MOB_SPAWN)
   public void speed(CommandAudience audience, @Argument("speed") float speed) {
     mobs.setSpeed(speed);
-    audience.sendMessage(
-        text()
-            .append(
-                text("Follow speed has been set to ", NamedTextColor.GRAY)
-                    .append(text(speed, NamedTextColor.GREEN)))
-            .build());
+    audience.sendMessage(text()
+        .append(text("Follow speed has been set to ", NamedTextColor.GRAY)
+            .append(text(speed, NamedTextColor.GREEN)))
+        .build());
   }
 }

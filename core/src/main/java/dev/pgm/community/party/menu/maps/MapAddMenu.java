@@ -1,5 +1,6 @@
 package dev.pgm.community.party.menu.maps;
 
+import static dev.pgm.community.utils.PGMUtils.mapTagMaterial;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
@@ -7,6 +8,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.party.menu.MapPartyMenu;
+import dev.pgm.community.utils.compatibility.Enchantments;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.Pagination;
@@ -20,7 +23,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import tc.oc.pgm.api.PGM;
@@ -94,34 +96,26 @@ public class MapAddMenu extends MapPartyMenu {
     }
 
     // Return to party menu
-    contents.set(
-        5,
-        4,
-        ClickableItem.of(
-            getNamedItem("&7Return to &6Maps", Material.CAKE, 1),
-            c -> {
-              Bukkit.dispatchCommand(player, "event maps");
-            }));
+    contents.set(5, 4, ClickableItem.of(getNamedItem("&7Return to &6Maps", Material.CAKE, 1), c -> {
+      Bukkit.dispatchCommand(player, "event maps");
+    }));
   }
 
   private ClickableItem getAllIcon() {
-    ItemBuilder allItemBuilder =
-        new ItemBuilder()
-            .material(Material.BOOKSHELF)
-            .name(colorize((viewAll ? "&a" : "&c") + "View All"))
-            .lore(colorize(viewAll ? "&7Click to filter by map tags" : "&7Click to view all maps"))
-            .flags(ItemFlag.values());
+    ItemBuilder allItemBuilder = new ItemBuilder()
+        .material(Material.BOOKSHELF)
+        .name(colorize((viewAll ? "&a" : "&c") + "View All"))
+        .lore(colorize(viewAll ? "&7Click to filter by map tags" : "&7Click to view all maps"))
+        .flags(ItemFlag.values());
 
     if (viewAll) {
-      allItemBuilder.enchant(Enchantment.LUCK, 1);
+      allItemBuilder.enchant(Enchantments.LUCK_OF_THE_SEA, 1);
     }
 
-    return ClickableItem.of(
-        allItemBuilder.build(),
-        c -> {
-          this.viewAll = !viewAll;
-          getInventory().open(getViewer(), 0);
-        });
+    return ClickableItem.of(allItemBuilder.build(), c -> {
+      this.viewAll = !viewAll;
+      getInventory().open(getViewer(), 0);
+    });
   }
 
   private ClickableItem getFilterIcon() {
@@ -131,13 +125,13 @@ public class MapAddMenu extends MapPartyMenu {
 
     return ClickableItem.of(
         new ItemBuilder()
-            .material(getMapTagMaterial(getFilterTag()))
+            .material(mapTagMaterial(getFilterTag()))
             .name(TextTranslations.translateLegacy(getFilterTag().getName(), getViewer()))
             .lore(
                 colorize("&7Filter: &b" + (filterIndex + 1) + " &7/&3 " + tags.size()),
                 colorize(
                     "&7Total Maps: &a" + getFilteredMapItems().size() + " &7/&2 " + maps.size()))
-            .enchant(Enchantment.LUCK, 1)
+            .enchant(Enchantments.LUCK_OF_THE_SEA, 1)
             .flags(ItemFlag.values())
             .build(),
         c -> {
@@ -182,60 +176,53 @@ public class MapAddMenu extends MapPartyMenu {
   }
 
   private List<ClickableItem> getFilteredMapItems() {
-    return getMapItems(
-        maps.stream()
-            .filter(
-                map -> {
-                  if (viewAll) return true;
+    return getMapItems(maps.stream()
+        .filter(map -> {
+          if (viewAll) return true;
 
-                  Collection<MapTag> tags = map.getTags();
-                  return tags != null && tags.contains(getFilterTag());
-                })
-            .collect(Collectors.toList()));
+          Collection<MapTag> tags = map.getTags();
+          return tags != null && tags.contains(getFilterTag());
+        })
+        .collect(Collectors.toList()));
   }
 
   private ClickableItem getMapIcon(MapInfo map) {
     boolean isAdded = getFeature().getParty().isMapAdded(map);
 
-    Material icon =
-        map.getTags().isEmpty()
-                || !map.getTags().stream().filter(t -> t.isGamemode()).findAny().isPresent()
-            ? Material.MAP
-            : getMapTagMaterial(
-                map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().get());
+    Material icon;
+    icon = map.getTags().isEmpty()
+            || !map.getTags().stream().filter(t -> t.isGamemode()).findAny().isPresent()
+        ? Material.MAP
+        : mapTagMaterial(
+            map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().get());
 
-    ItemBuilder builder =
-        new ItemBuilder()
-            .material(icon)
-            .name(colorize("&6" + map.getName()))
-            .lore(
-                colorize(
-                    "&7Max Players: &e" + map.getMaxPlayers().stream().reduce(0, Integer::sum)),
-                colorize(
-                    "&7Tags: " + TextTranslations.translateLegacy(renderMapTags(map), getViewer())),
-                colorize(isAdded ? "&cAlready added" : "&aClick to add map")) // TODO:
-            .flags(ItemFlag.values());
+    ItemBuilder builder = new ItemBuilder()
+        .material(icon)
+        .name(colorize("&6" + map.getName()))
+        .lore(
+            colorize("&7Max Players: &e" + map.getMaxPlayers().stream().reduce(0, Integer::sum)),
+            colorize(
+                "&7Tags: " + TextTranslations.translateLegacy(renderMapTags(map), getViewer())),
+            colorize(isAdded ? "&cAlready added" : "&aClick to add map")) // TODO:
+        .flags(ItemFlag.values());
 
     if (isAdded) {
-      builder.enchant(Enchantment.LUCK, 1);
+      builder.enchant(Enchantments.LUCK_OF_THE_SEA, 1);
     }
 
-    return ClickableItem.of(
-        builder.build(),
-        c -> {
-          Bukkit.dispatchCommand(getViewer(), "event addmap " + map.getName());
-        });
+    return ClickableItem.of(builder.build(), c -> {
+      Bukkit.dispatchCommand(getViewer(), "event addmap " + map.getName());
+    });
   }
 
   private ClickableItem getNoMapsIcon() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
-            .color(DyeColor.RED)
-            .name(colorize("&cNo Maps found"))
-            .lore(colorize("&7Check &b/maps &7for details"))
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.STAINED_GLASS_PANE)
+        .color(DyeColor.RED)
+        .name(colorize("&cNo Maps found"))
+        .lore(colorize("&7Check &b/maps &7for details"))
+        .flags(ItemFlag.values())
+        .build());
   }
 
   private Component renderMapTags(MapInfo map) {
@@ -244,52 +231,5 @@ public class MapAddMenu extends MapPartyMenu {
             .map(tag -> text(tag.getId(), NamedTextColor.DARK_AQUA))
             .collect(Collectors.toList()),
         NamedTextColor.GRAY);
-  }
-
-  private Material getMapTagMaterial(MapTag mapTag) {
-    switch (mapTag.getId()) {
-      case "2teams":
-        return Material.LEATHER;
-      case "ffa":
-        return Material.DIAMOND_SWORD;
-      case "border":
-        return Material.IRON_BARDING;
-      case "wool":
-        return Material.WOOL;
-      case "controlpoint":
-        return Material.BEACON;
-      case "flag":
-        return Material.BANNER;
-      case "classes":
-        return Material.FISHING_ROD;
-      case "deathmatch":
-        return Material.STONE_SWORD;
-      case "monument":
-        return Material.DIAMOND_PICKAXE;
-      case "4teams":
-        return Material.TRAP_DOOR;
-      case "timelimit":
-        return Material.WATCH;
-      case "autotnt":
-        return Material.TNT;
-      case "core":
-        return Material.OBSIDIAN;
-      case "blitz":
-        return Material.EGG;
-      case "scorebox":
-        return Material.WEB;
-      case "6teams":
-        return Material.BED;
-      case "rage":
-        return Material.BOW;
-      case "3teams":
-        return Material.WORKBENCH;
-      case "terrain":
-        return Material.GRASS;
-      case "8teams":
-        return Material.INK_SACK;
-      default:
-        return Material.MAP;
-    }
   }
 }

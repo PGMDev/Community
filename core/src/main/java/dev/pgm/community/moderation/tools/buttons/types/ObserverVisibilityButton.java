@@ -3,6 +3,7 @@ package dev.pgm.community.moderation.tools.buttons.types;
 import static net.kyori.adventure.text.Component.translatable;
 
 import dev.pgm.community.moderation.tools.buttons.TranslatableToolButton;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -19,7 +20,7 @@ public class ObserverVisibilityButton extends TranslatableToolButton {
 
   private static final String NAME_KEY = "setting.visibility";
   private static final String LORE_KEY = NAME_KEY + ".lore";
-  private static final Material ON_MATERIAL = Material.EYE_OF_ENDER;
+  private static final Material ON_MATERIAL = Materials.EYE_OF_ENDER;
   private static final Material OFF_MATERIAL = Material.ENDER_PEARL;
   private static final NamedTextColor COLOR = NamedTextColor.YELLOW;
   private static final NamedTextColor ON_COLOR = NamedTextColor.GREEN;

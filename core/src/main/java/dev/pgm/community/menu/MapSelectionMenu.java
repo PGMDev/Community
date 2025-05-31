@@ -1,11 +1,14 @@
 package dev.pgm.community.menu;
 
+import static dev.pgm.community.utils.PGMUtils.mapTagMaterial;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
+import dev.pgm.community.utils.compatibility.Enchantments;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -20,7 +23,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -57,12 +59,11 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
   }
 
   public SmartInventory getInventory(SmartInventory parent) {
-    SmartInventory.Builder builder =
-        SmartInventory.builder()
-            .title(colorize(title))
-            .provider(this)
-            .manager(Community.get().getInventory())
-            .size(ROWS, 9);
+    SmartInventory.Builder builder = SmartInventory.builder()
+        .title(colorize(title))
+        .provider(this)
+        .manager(Community.get().getInventory())
+        .size(ROWS, 9);
 
     if (parent != null) {
       builder.parent(parent);
@@ -136,7 +137,8 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
     return map.getTags().isEmpty()
             || !map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().isPresent()
         ? Material.MAP
-        : getMapTagMaterial(map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().get());
+        : mapTagMaterial(
+            map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().get());
   }
 
   private List<ClickableItem> getMapItems(List<MapInfo> maps) {
@@ -144,47 +146,41 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
   }
 
   private List<ClickableItem> getFilteredMapItems() {
-    return getMapItems(
-        maps.stream()
-            .filter(
-                map -> {
-                  if (viewAll) return true;
+    return getMapItems(maps.stream()
+        .filter(map -> {
+          if (viewAll) return true;
 
-                  Collection<MapTag> tags = map.getTags();
-                  return tags != null && tags.contains(getFilterTag());
-                })
-            .collect(Collectors.toList()));
+          Collection<MapTag> tags = map.getTags();
+          return tags != null && tags.contains(getFilterTag());
+        })
+        .collect(Collectors.toList()));
   }
 
   private ClickableItem getNoMapsIcon() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
-            .color(DyeColor.RED)
-            .name(colorize("&cNo Maps found"))
-            .lore(colorize("&7Check &b/maps &7for details"))
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.STAINED_GLASS_PANE)
+        .color(DyeColor.RED)
+        .name(colorize("&cNo Maps found"))
+        .lore(colorize("&7Check &b/maps &7for details"))
+        .flags(ItemFlag.values())
+        .build());
   }
 
   private ClickableItem getAllIcon() {
-    ItemBuilder allItemBuilder =
-        new ItemBuilder()
-            .material(Material.BOOKSHELF)
-            .name(colorize((viewAll ? "&a" : "&c") + "View All"))
-            .lore(colorize(viewAll ? "&7Click to filter by map tags" : "&7Click to view all maps"))
-            .flags(ItemFlag.values());
+    ItemBuilder allItemBuilder = new ItemBuilder()
+        .material(Material.BOOKSHELF)
+        .name(colorize((viewAll ? "&a" : "&c") + "View All"))
+        .lore(colorize(viewAll ? "&7Click to filter by map tags" : "&7Click to view all maps"))
+        .flags(ItemFlag.values());
 
     if (viewAll) {
-      allItemBuilder.enchant(Enchantment.LUCK, 1);
+      allItemBuilder.enchant(Enchantments.LUCK_OF_THE_SEA, 1);
     }
 
-    return ClickableItem.of(
-        allItemBuilder.build(),
-        c -> {
-          this.viewAll = !viewAll;
-          getInventory().open(getViewer(), 0);
-        });
+    return ClickableItem.of(allItemBuilder.build(), c -> {
+      this.viewAll = !viewAll;
+      getInventory().open(getViewer(), 0);
+    });
   }
 
   private ClickableItem getFilterIcon() {
@@ -194,13 +190,13 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
 
     return ClickableItem.of(
         new ItemBuilder()
-            .material(getMapTagMaterial(getFilterTag()))
+            .material(mapTagMaterial(getFilterTag()))
             .name(TextTranslations.translateLegacy(getFilterTag().getName(), getViewer()))
             .lore(
                 colorize("&7Filter: &b" + (filterIndex + 1) + " &7/&3 " + tags.size()),
                 colorize(
                     "&7Total Maps: &a" + getFilteredMapItems().size() + " &7/&2 " + maps.size()))
-            .enchant(Enchantment.LUCK, 1)
+            .enchant(Enchantments.LUCK_OF_THE_SEA, 1)
             .flags(ItemFlag.values())
             .build(),
         c -> {
@@ -231,53 +227,6 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
             .map(tag -> text(tag.getId(), NamedTextColor.DARK_AQUA))
             .collect(Collectors.toList()),
         NamedTextColor.GRAY);
-  }
-
-  private Material getMapTagMaterial(MapTag mapTag) {
-    switch (mapTag.getId()) {
-      case "2teams":
-        return Material.LEATHER;
-      case "ffa":
-        return Material.DIAMOND_SWORD;
-      case "border":
-        return Material.IRON_BARDING;
-      case "wool":
-        return Material.WOOL;
-      case "controlpoint":
-        return Material.BEACON;
-      case "flag":
-        return Material.BANNER;
-      case "classes":
-        return Material.FISHING_ROD;
-      case "deathmatch":
-        return Material.STONE_SWORD;
-      case "monument":
-        return Material.DIAMOND_PICKAXE;
-      case "4teams":
-        return Material.TRAP_DOOR;
-      case "timelimit":
-        return Material.WATCH;
-      case "autotnt":
-        return Material.TNT;
-      case "core":
-        return Material.OBSIDIAN;
-      case "blitz":
-        return Material.EGG;
-      case "scorebox":
-        return Material.WEB;
-      case "6teams":
-        return Material.BED;
-      case "rage":
-        return Material.BOW;
-      case "3teams":
-        return Material.WORKBENCH;
-      case "terrain":
-        return Material.GRASS;
-      case "8teams":
-        return Material.INK_SACK;
-      default:
-        return Material.MAP;
-    }
   }
 
   private MapTag getFilterTag() {

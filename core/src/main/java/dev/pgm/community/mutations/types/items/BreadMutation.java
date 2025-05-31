@@ -7,6 +7,7 @@ import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import dev.pgm.community.utils.compatibility.PotionEffects;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,36 +50,33 @@ import tc.oc.pgm.util.event.PlayerCoarseMoveEvent;
 import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class BreadMutation extends KitMutationBase {
-  static final ImmutableMap<PotionEffectType, Double> BAD_POTION_MAP =
-      new ImmutableMap.Builder<PotionEffectType, Double>()
-          .put(PotionEffectType.WEAKNESS, 10.0)
-          .put(PotionEffectType.SLOW, 10.0)
-          .put(PotionEffectType.POISON, 10.0)
-          .put(PotionEffectType.WITHER, 10.0)
-          .put(PotionEffectType.BLINDNESS, 5.0)
-          .put(PotionEffectType.HUNGER, 5.0)
-          .put(PotionEffectType.CONFUSION, 5.0)
-          .build();
+  static final ImmutableMap<PotionEffectType, Double> BAD_POTION_MAP = new ImmutableMap.Builder<
+          PotionEffectType, Double>()
+      .put(PotionEffectType.WEAKNESS, 10.0)
+      .put(PotionEffects.SLOWNESS, 10.0)
+      .put(PotionEffectType.POISON, 10.0)
+      .put(PotionEffectType.WITHER, 10.0)
+      .put(PotionEffectType.BLINDNESS, 5.0)
+      .put(PotionEffectType.HUNGER, 5.0)
+      .put(PotionEffects.NAUSEA, 5.0)
+      .build();
   private static final ItemStack POTION_BREAD =
-      preventSharing(
-          new ItemBuilder(new ItemStack(Material.BREAD))
-              .unbreakable(true)
-              .name("Potion Bread")
-              .build());
+      preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+          .unbreakable(true)
+          .name("Potion Bread")
+          .build());
 
   private static final ItemStack ARMORED_BREAD =
-      preventSharing(
-          new ItemBuilder(new ItemStack(Material.BREAD))
-              .unbreakable(true)
-              .name("Armored Bread")
-              .build());
+      preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+          .unbreakable(true)
+          .name("Armored Bread")
+          .build());
 
   private static final ItemStack TELEPORT_BREAD =
-      preventSharing(
-          new ItemBuilder(new ItemStack(Material.BREAD))
-              .unbreakable(true)
-              .name("Teleport Bread")
-              .build());
+      preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+          .unbreakable(true)
+          .name("Teleport Bread")
+          .build());
   static final ImmutableMap<ItemStack, Double> BREADS_MAP = getBreadsMap();
   static final ImmutableMap<ItemStack, Double> BAD_BREADS_MAP = getBadBreadsMap();
   private final WeightedRandomChooser<ItemStack> breadChooser;
@@ -102,59 +100,53 @@ public class BreadMutation extends KitMutationBase {
 
   static ImmutableMap<ItemStack, Double> getBreadsMap() {
 
-    ItemStack ironBread =
-        preventSharing(new ItemBuilder(new ItemStack(Material.BREAD)).name("Iron Bread").build());
+    ItemStack ironBread = preventSharing(
+        new ItemBuilder(new ItemStack(Material.BREAD)).name("Iron Bread").build());
     ItemMeta ironBreadMeta = ironBread.getItemMeta();
     ironBreadMeta.addAttributeModifier(
         Attribute.GENERIC_KNOCKBACK_RESISTANCE,
         new AttributeModifier(
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE.getName(),
+            Attribute.GENERIC_KNOCKBACK_RESISTANCE.name(),
             1,
             AttributeModifier.Operation.ADD_NUMBER));
     ironBread.setItemMeta(ironBreadMeta);
 
-    ItemStack fastBread =
-        preventSharing(new ItemBuilder(new ItemStack(Material.BREAD)).name("Fast Bread").build());
+    ItemStack fastBread = preventSharing(
+        new ItemBuilder(new ItemStack(Material.BREAD)).name("Fast Bread").build());
     ItemMeta speedBreadMeta = fastBread.getItemMeta();
     speedBreadMeta.addAttributeModifier(
         Attribute.GENERIC_MOVEMENT_SPEED,
         new AttributeModifier(
-            Attribute.GENERIC_MOVEMENT_SPEED.getName(),
-            0.3,
-            AttributeModifier.Operation.ADD_SCALAR));
+            Attribute.GENERIC_MOVEMENT_SPEED.name(), 0.3, AttributeModifier.Operation.ADD_SCALAR));
     fastBread.setItemMeta(speedBreadMeta);
 
-    ItemStack veryFastBread =
-        preventSharing(
-            new ItemBuilder(new ItemStack(Material.BREAD)).name("Very Fast Bread").build());
+    ItemStack veryFastBread = preventSharing(
+        new ItemBuilder(new ItemStack(Material.BREAD)).name("Very Fast Bread").build());
     ItemMeta veryFastBreadMeta = veryFastBread.getItemMeta();
     veryFastBreadMeta.addAttributeModifier(
         Attribute.GENERIC_MOVEMENT_SPEED,
         new AttributeModifier(
-            Attribute.GENERIC_MOVEMENT_SPEED.getName(), 1, AttributeModifier.Operation.ADD_SCALAR));
+            Attribute.GENERIC_MOVEMENT_SPEED.name(), 1, AttributeModifier.Operation.ADD_SCALAR));
     veryFastBread.setItemMeta(veryFastBreadMeta);
 
     return new ImmutableMap.Builder<ItemStack, Double>()
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.FIRE_ASPECT, 1)
-                    .name("Hot Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.FIRE_ASPECT, 1)
+                .name("Hot Bread")
+                .build()),
             20.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.DAMAGE_ALL, 5)
-                    .name("Sharp Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.DAMAGE_ALL, 5)
+                .name("Sharp Bread")
+                .build()),
             20.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.KNOCKBACK, 2)
-                    .name("Bouncy Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.KNOCKBACK, 2)
+                .name("Bouncy Bread")
+                .build()),
             20.0)
         .put(ironBread, 10.0)
         .put(fastBread, 10.0)
@@ -163,46 +155,40 @@ public class BreadMutation extends KitMutationBase {
         .put(TELEPORT_BREAD, 3.0)
         .put(veryFastBread, 3.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.DAMAGE_ALL, 10)
-                    .name("Very Sharp Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.DAMAGE_ALL, 10)
+                .name("Very Sharp Bread")
+                .build()),
             3.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.FIRE_ASPECT, 10)
-                    .name("Very Hot Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.FIRE_ASPECT, 10)
+                .name("Very Hot Bread")
+                .build()),
             2.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.KNOCKBACK, 10)
-                    .name("Very Bouncy Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.KNOCKBACK, 10)
+                .name("Very Bouncy Bread")
+                .build()),
             1.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.DAMAGE_ALL, 20)
-                    .name("Insanely Sharp Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.DAMAGE_ALL, 20)
+                .name("Insanely Sharp Bread")
+                .build()),
             1.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.FIRE_ASPECT, 100)
-                    .name("Insanely Hot Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.FIRE_ASPECT, 100)
+                .name("Insanely Hot Bread")
+                .build()),
             1.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.KNOCKBACK, 100)
-                    .name("Insanely Bouncy Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.KNOCKBACK, 100)
+                .name("Insanely Bouncy Bread")
+                .build()),
             1.0)
         .build();
   }
@@ -210,25 +196,22 @@ public class BreadMutation extends KitMutationBase {
   static ImmutableMap<ItemStack, Double> getBadBreadsMap() {
     return new ImmutableMap.Builder<ItemStack, Double>()
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.FIRE_ASPECT, 1)
-                    .name("Hot Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.FIRE_ASPECT, 1)
+                .name("Hot Bread")
+                .build()),
             20.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.DAMAGE_ALL, 5)
-                    .name("Sharp Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.DAMAGE_ALL, 5)
+                .name("Sharp Bread")
+                .build()),
             20.0)
         .put(
-            preventSharing(
-                new ItemBuilder(new ItemStack(Material.BREAD))
-                    .enchant(Enchantment.KNOCKBACK, 2)
-                    .name("Bouncy Bread")
-                    .build()),
+            preventSharing(new ItemBuilder(new ItemStack(Material.BREAD))
+                .enchant(Enchantment.KNOCKBACK, 2)
+                .name("Bouncy Bread")
+                .build()),
             20.0)
         .build();
   }
@@ -257,9 +240,8 @@ public class BreadMutation extends KitMutationBase {
       ItemStack itemInHand = ((Player) event.getDamager()).getItemInHand();
       Player hitPlayer = (Player) event.getEntity();
       if (itemInHand.isSimilar(POTION_BREAD)) {
-        hitPlayer.addPotionEffect(
-            new PotionEffect(
-                potionChooser.choose(random), 20 * random.nextInt(7) + 3, random.nextInt(2) + 1));
+        hitPlayer.addPotionEffect(new PotionEffect(
+            potionChooser.choose(random), 20 * random.nextInt(7) + 3, random.nextInt(2) + 1));
       } else if (itemInHand.isSimilar(TELEPORT_BREAD)) {
         performBreadTeleport(hitPlayer);
       }
@@ -291,9 +273,8 @@ public class BreadMutation extends KitMutationBase {
           // Check if the player can physically walk into the area?
           if (isSafe(nextLocation, y < 0 ? 2 - y : 2) && isSafe(previousLocation, y == 1 ? 3 : 2)) {
             // Check if pgm will deny entry
-            PlayerCoarseMoveEvent event =
-                new PlayerCoarseMoveEvent(
-                    new PlayerMoveEvent(hitPlayer, previousLocation, nextLocation));
+            PlayerCoarseMoveEvent event = new PlayerCoarseMoveEvent(
+                new PlayerMoveEvent(hitPlayer, previousLocation, nextLocation));
             pluginManager.callEvent(event);
 
             if (!event.isCancelled()) {

@@ -9,6 +9,8 @@ import dev.pgm.community.Community;
 import dev.pgm.community.mutations.Mutation;
 import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import dev.pgm.community.utils.compatibility.Materials;
+import dev.pgm.community.utils.compatibility.PotionEffects;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -32,7 +34,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
@@ -105,7 +106,7 @@ public class FireworkMutation extends KitMutationBase {
       Player player = (Player) firework.getPassenger();
       Vector velocity = player.getLocation().getDirection().multiply(7).setY(0);
       player.setVelocity(velocity);
-      player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 5, 5));
+      player.addPotionEffect(new PotionEffect(PotionEffects.RESISTANCE, 20 * 5, 5));
     }
   }
 
@@ -153,7 +154,7 @@ public class FireworkMutation extends KitMutationBase {
 
   private static ItemStack getFirework(@Nullable Color color, Type type, int power) {
     Random random = Community.get().getRandom();
-    ItemStack firework = new ItemStack(Material.FIREWORK);
+    ItemStack firework = new ItemStack(Materials.FIREWORK);
     FireworkMeta meta = (FireworkMeta) firework.getItemMeta();
     meta.addEffect(FireworkEffect.builder()
         .withColor(

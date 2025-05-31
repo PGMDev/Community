@@ -1,16 +1,19 @@
 package dev.pgm.community.utils;
 
 import com.google.common.collect.Lists;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.api.map.MapTag;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.MatchPhase;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -183,5 +186,31 @@ public class PGMUtils {
     return getMatch().getPlayers().stream()
         .filter(mp -> mp.getBukkit().hasPermission(permissionFilter))
         .collect(Collectors.toList());
+  }
+
+  public static Material mapTagMaterial(MapTag mapTag) {
+    return switch (mapTag.getId()) {
+      case "2teams" -> Material.LEATHER;
+      case "ffa" -> Material.DIAMOND_SWORD;
+      case "border" -> Materials.IRON_BARDING;
+      case "wool" -> Materials.WOOL;
+      case "controlpoint" -> Material.BEACON;
+      case "flag" -> Materials.BANNER;
+      case "classes" -> Material.FISHING_ROD;
+      case "deathmatch" -> Material.STONE_SWORD;
+      case "monument" -> Material.DIAMOND_PICKAXE;
+      case "4teams" -> Materials.TRAP_DOOR;
+      case "timelimit" -> Materials.WATCH;
+      case "autotnt" -> Material.TNT;
+      case "core" -> Material.OBSIDIAN;
+      case "blitz" -> Material.EGG;
+      case "scorebox" -> Materials.WEB;
+      case "6teams" -> Materials.BED;
+      case "rage" -> Material.BOW;
+      case "3teams" -> Materials.WORKBENCH;
+      case "terrain" -> Materials.GRASS;
+      case "8teams" -> Materials.DYE;
+      default -> Material.MAP;
+    };
   }
 }

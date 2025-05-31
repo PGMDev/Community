@@ -3,6 +3,7 @@ package dev.pgm.community.requests.menu;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import dev.pgm.community.menu.MapSelectionMenu;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import java.util.List;
@@ -37,23 +38,20 @@ public class SponsorMenu extends MapSelectionMenu {
 
   @Override
   public ClickableItem getBorderItem() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
-            .color(DyeColor.YELLOW)
-            .name(" ")
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.STAINED_GLASS_PANE)
+        .color(DyeColor.YELLOW)
+        .name(" ")
+        .flags(ItemFlag.values())
+        .build());
   }
 
   @Override
   public ClickableItem getMapIcon(MapInfo map) {
-    return ClickableItem.of(
-        getMapItem(map),
-        c -> {
-          Bukkit.dispatchCommand(getViewer(), "sponsor request " + map.getName());
-          getViewer().closeInventory();
-        });
+    return ClickableItem.of(getMapItem(map), c -> {
+      Bukkit.dispatchCommand(getViewer(), "sponsor request " + map.getName());
+      getViewer().closeInventory();
+    });
   }
 
   private ItemStack getMapItem(MapInfo map) {

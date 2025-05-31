@@ -7,6 +7,7 @@ import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.party.hosts.MapPartyHosts;
 import dev.pgm.community.party.menu.MapPartyMenu;
 import dev.pgm.community.utils.SkullUtils;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.Pagination;
@@ -17,7 +18,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -44,10 +44,9 @@ public class HostMenu extends MapPartyMenu {
       // Main host
       contents.set(1, 4, getMainHostIcon(hosts));
 
-      Set<ClickableItem> players =
-          hosts.getSubHostIds().stream()
-              .map(id -> getSubHostIcon(hosts, id))
-              .collect(Collectors.toSet());
+      Set<ClickableItem> players = hosts.getSubHostIds().stream()
+          .map(id -> getSubHostIcon(hosts, id))
+          .collect(Collectors.toSet());
 
       Pagination page = contents.pagination();
       page.setItems(players.toArray(new ClickableItem[players.size()]));
@@ -75,8 +74,7 @@ public class HostMenu extends MapPartyMenu {
           4,
           4,
           ClickableItem.of(
-              SkullUtils.customSkull(ADD_SKIN, "&a&lAdd Host", "&7Click to add event host"),
-              c -> {
+              SkullUtils.customSkull(ADD_SKIN, "&a&lAdd Host", "&7Click to add event host"), c -> {
                 new HostAddMenu(hosts).open(getViewer());
               }));
 
@@ -96,13 +94,11 @@ public class HostMenu extends MapPartyMenu {
   }
 
   private ClickableItem getSubHostIcon(MapPartyHosts hosts, UUID playerId) {
-    return ClickableItem.of(
-        getHostHead(hosts, playerId),
-        c -> {
-          close();
-          String name = hosts.getCachedName(playerId);
-          Bukkit.dispatchCommand(getViewer(), "event hosts remove " + name);
-        });
+    return ClickableItem.of(getHostHead(hosts, playerId), c -> {
+      close();
+      String name = hosts.getCachedName(playerId);
+      Bukkit.dispatchCommand(getViewer(), "event hosts remove " + name);
+    });
   }
 
   private ClickableItem getMainHostIcon(MapPartyHosts hosts) {
@@ -110,14 +106,13 @@ public class HostMenu extends MapPartyMenu {
   }
 
   private ClickableItem getNoPlayersIcon() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
-            .color(DyeColor.RED)
-            .name(colorize("&cNo hosts found"))
-            .lore(colorize("&7Add hosts using the button below"))
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.STAINED_GLASS_PANE)
+        .color(DyeColor.RED)
+        .name(colorize("&cNo hosts found"))
+        .lore(colorize("&7Add hosts using the button below"))
+        .flags(ItemFlag.values())
+        .build());
   }
 
   private ItemStack getHostHead(MapPartyHosts hosts, UUID playerId) {

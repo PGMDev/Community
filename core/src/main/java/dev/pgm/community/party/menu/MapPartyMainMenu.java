@@ -13,6 +13,7 @@ import dev.pgm.community.party.menu.modifiers.MapPartyModifierMenu;
 import dev.pgm.community.party.menu.settings.MapPartySettingsMenu;
 import dev.pgm.community.party.presets.MapPartyPreset;
 import dev.pgm.community.utils.SkullUtils;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import java.util.List;
@@ -47,16 +48,15 @@ public class MapPartyMainMenu extends MapPartyMenu {
     MapParty party = getFeature().getParty();
 
     // Info item
-    ItemStack info =
-        new ItemBuilder()
-            .material(Material.CAKE)
-            .name(colorize(party.getName()))
-            .lore(
-                colorize(" &f* &7Description: &6" + party.getDescription()),
-                colorize(" &f* &7Type: &6" + party.getEventType()),
-                colorize(" &f* &7Started: " + (party.isRunning() ? "&aYes" : "&cNo")),
-                colorize(" &f* &7Time Remaining: &a" + MapPartyMessages.formatTime(party)))
-            .build();
+    ItemStack info = new ItemBuilder()
+        .material(Material.CAKE)
+        .name(colorize(party.getName()))
+        .lore(
+            colorize(" &f* &7Description: &6" + party.getDescription()),
+            colorize(" &f* &7Type: &6" + party.getEventType()),
+            colorize(" &f* &7Started: " + (party.isRunning() ? "&aYes" : "&cNo")),
+            colorize(" &f* &7Time Remaining: &a" + MapPartyMessages.formatTime(party)))
+        .build();
 
     ClickableItem infoIcon = ClickableItem.empty(info);
 
@@ -126,47 +126,34 @@ public class MapPartyMainMenu extends MapPartyMenu {
   }
 
   private ClickableItem getStartIcon() {
-    return ClickableItem.of(
-        START_ITEM,
-        c -> {
-          getParty()
-              .ifPresent(
-                  party -> {
-                    Bukkit.dispatchCommand(
-                        getViewer(), "event start " + (c.isLeftClick() ? "false" : "true"));
-                  });
-        });
+    return ClickableItem.of(START_ITEM, c -> {
+      getParty().ifPresent(party -> {
+        Bukkit.dispatchCommand(getViewer(), "event start " + (c.isLeftClick() ? "false" : "true"));
+      });
+    });
   }
 
   private ClickableItem getRestartIcon() {
-    return ClickableItem.of(
-        RESTART_ITEM,
-        c -> {
-          getParty()
-              .ifPresent(
-                  party -> {
-                    Bukkit.dispatchCommand(getViewer(), "event restart");
-                  });
-        });
+    return ClickableItem.of(RESTART_ITEM, c -> {
+      getParty().ifPresent(party -> {
+        Bukkit.dispatchCommand(getViewer(), "event restart");
+      });
+    });
   }
 
   private ClickableItem getEndIcon() {
-    return ClickableItem.of(
-        END_ITEM,
-        c -> {
-          getParty()
-              .ifPresent(
-                  party -> {
-                    Bukkit.dispatchCommand(getViewer(), "event stop");
-                    close();
-                  });
-        });
+    return ClickableItem.of(END_ITEM, c -> {
+      getParty().ifPresent(party -> {
+        Bukkit.dispatchCommand(getViewer(), "event stop");
+        close();
+      });
+    });
   }
 
   private ClickableItem getHostIcon(MapPartyHosts hosts) {
     return ClickableItem.of(
         new ItemBuilder()
-            .material(Material.SKULL_ITEM)
+            .material(Materials.SKULL_ITEM)
             .durability(3)
             .name(colorize("&a&lHosts"))
             .lore(colorize("&7Click to manage party hosts"))
@@ -182,9 +169,8 @@ public class MapPartyMainMenu extends MapPartyMenu {
         new ItemBuilder()
             .material(Material.MAP)
             .name(colorize(type == MapPartyType.REGULAR ? "&6&lPool" : "&6&lMaps"))
-            .lore(
-                colorize(
-                    "&7Click to manage party " + (type == MapPartyType.REGULAR ? "pool" : "maps")))
+            .lore(colorize(
+                "&7Click to manage party " + (type == MapPartyType.REGULAR ? "pool" : "maps")))
             .flags(ItemFlag.values())
             .build(),
         c -> {
@@ -195,7 +181,7 @@ public class MapPartyMainMenu extends MapPartyMenu {
   private ClickableItem getSettingsIcon() {
     return ClickableItem.of(
         new ItemBuilder()
-            .material(Material.REDSTONE_COMPARATOR)
+            .material(Materials.REDSTONE_COMPARATOR)
             .name(colorize("&3&lSettings"))
             .lore(colorize("&7Click to manage party settings"))
             .flags(ItemFlag.values())
@@ -234,7 +220,7 @@ public class MapPartyMainMenu extends MapPartyMenu {
 
     return ClickableItem.of(
         new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
+            .material(Materials.STAINED_GLASS_PANE)
             .color(DyeColor.CYAN)
             .name(colorize(preset.getName()))
             .lore(lore.toArray(new String[lore.size()]))
@@ -245,12 +231,11 @@ public class MapPartyMainMenu extends MapPartyMenu {
   }
 
   private ClickableItem getEmptyItem(int i) {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
-            .color(DyeColor.GRAY)
-            .name(colorize("&cEmpty Preset #" + (i + 1)))
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.STAINED_GLASS_PANE)
+        .color(DyeColor.GRAY)
+        .name(colorize("&cEmpty Preset #" + (i + 1)))
+        .build());
   }
 
   private static final String START_PARTY_SKIN =
@@ -260,16 +245,14 @@ public class MapPartyMainMenu extends MapPartyMenu {
   private static final String END_PARTY_SKIN =
       "http://textures.minecraft.net/texture/e9cdb9af38cf41daa53bc8cda7665c509632d14e678f0f19f263f46e541d8a30";
 
-  private static final ItemStack START_ITEM =
-      SkullUtils.customSkull(
-          START_PARTY_SKIN,
-          "&a&lStart Event",
-          "&2Left-Click&7 to start the event now",
-          "&2Right-Click&7 to start event after current match ends");
+  private static final ItemStack START_ITEM = SkullUtils.customSkull(
+      START_PARTY_SKIN,
+      "&a&lStart Event",
+      "&2Left-Click&7 to start the event now",
+      "&2Right-Click&7 to start event after current match ends");
 
-  private static final ItemStack RESTART_ITEM =
-      SkullUtils.customSkull(
-          RESTART_PARTY_SKIN, "&2&lRestart Event", "&7Click to restart the event");
+  private static final ItemStack RESTART_ITEM = SkullUtils.customSkull(
+      RESTART_PARTY_SKIN, "&2&lRestart Event", "&7Click to restart the event");
 
   private static final ItemStack END_ITEM =
       SkullUtils.customSkull(END_PARTY_SKIN, "&4&lEnd Event", "&7Click to end the event");

@@ -10,6 +10,8 @@ import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
 import dev.pgm.community.mutations.types.BowMutation;
 import dev.pgm.community.mutations.types.KitMutationBase;
+import dev.pgm.community.utils.compatibility.Enchantments;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -18,7 +20,6 @@ import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,15 +34,14 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class WebSlingersMutation extends KitMutationBase implements BowMutation {
 
-  private static MutationRangeOption WEB_LIFE =
-      new MutationRangeOption(
-          "Web Life",
-          "Length of time before webs are removed",
-          MutationType.WEB_SLINGERS.getMaterial(),
-          false,
-          10,
-          1,
-          60);
+  private static MutationRangeOption WEB_LIFE = new MutationRangeOption(
+      "Web Life",
+      "Length of time before webs are removed",
+      MutationType.WEB_SLINGERS.getMaterial(),
+      false,
+      10,
+      1,
+      60);
 
   private int cleanupTask;
 
@@ -60,11 +60,10 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
   @Override
   public void enable() {
     super.enable();
-    this.cleanupTask =
-        Community.get()
-            .getServer()
-            .getScheduler()
-            .scheduleSyncRepeatingTask(Community.get(), this::cleanup, 0L, 20L);
+    this.cleanupTask = Community.get()
+        .getServer()
+        .getScheduler()
+        .scheduleSyncRepeatingTask(Community.get(), this::cleanup, 0L, 20L);
   }
 
   @Override
@@ -94,11 +93,10 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
     ItemStack bow = event.getBow();
 
     if (!bow.isSimilar(getWebBow())) return;
-    FallingBlock web =
-        event
-            .getEntity()
-            .getWorld()
-            .spawnFallingBlock(event.getProjectile().getLocation(), Material.WEB, (byte) 0);
+    FallingBlock web = event
+        .getEntity()
+        .getWorld()
+        .spawnFallingBlock(event.getProjectile().getLocation(), Materials.WEB, (byte) 0);
     web.setDropItem(false);
     web.setVelocity(event.getProjectile().getVelocity());
     event.setProjectile(web);
@@ -108,10 +106,10 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
   public void onWebLand(final EntityChangeBlockEvent event) {
     if (!(event.getEntity() instanceof FallingBlock)) return;
     FallingBlock block = (FallingBlock) event.getEntity();
-    if (block.getMaterial() != Material.WEB) return;
+    if (block.getMaterial() != Materials.WEB) return;
 
     Location location = block.getLocation();
-    location.getBlock().setType(Material.WEB);
+    location.getBlock().setType(Materials.WEB);
     webLocations.put(location, getDelayedTime(WEB_LIFE.getValue()));
   }
 
@@ -127,7 +125,7 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
   }
 
   private void revertBlock(Location location) {
-    if (location.getBlock().getType() == Material.WEB) {
+    if (location.getBlock().getType() == Materials.WEB) {
       location.getBlock().setType(Material.AIR);
     }
   }
@@ -138,15 +136,14 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
   }
 
   private static ItemStack getWebBow() {
-    ItemStack bow =
-        new ItemBuilder()
-            .material(Material.BOW)
-            .enchant(Enchantment.ARROW_INFINITE, 1)
-            .name(ChatColor.DARK_RED + ChatColor.BOLD.toString() + "Web-Slinger")
-            .lore(ChatColor.GRAY + "Use to launch webs")
-            .flags(ItemFlag.values())
-            .unbreakable(true)
-            .build();
+    ItemStack bow = new ItemBuilder()
+        .material(Material.BOW)
+        .enchant(Enchantments.INFINITY, 1)
+        .name(ChatColor.DARK_RED + ChatColor.BOLD.toString() + "Web-Slinger")
+        .lore(ChatColor.GRAY + "Use to launch webs")
+        .flags(ItemFlag.values())
+        .unbreakable(true)
+        .build();
 
     ItemTags.PREVENT_SHARING.set(bow, true);
 

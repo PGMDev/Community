@@ -3,11 +3,11 @@ package dev.pgm.community.utils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import dev.pgm.community.utils.compatibility.Materials;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.UUID;
-import org.apache.commons.codec.binary.Base64;
-import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -17,7 +17,7 @@ import tc.oc.pgm.util.bukkit.BukkitUtils;
 public class SkullUtils {
 
   public static ItemStack customSkull(String url, String displayName, String... lore) {
-    ItemStack head = new ItemStack(Material.SKULL_ITEM);
+    ItemStack head = new ItemStack(Materials.SKULL_ITEM);
     head.setDurability((short) SkullType.PLAYER.ordinal());
     if (url.isEmpty()) {
       return head;
@@ -47,8 +47,8 @@ public class SkullUtils {
       return null;
     }
 
-    byte[] encodedData =
-        new Base64().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", url).getBytes());
+    byte[] encodedData = Base64.getEncoder()
+        .encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", url).getBytes());
     propertyMap.put("textures", new Property("textures", new String(encodedData)));
 
     return profile;

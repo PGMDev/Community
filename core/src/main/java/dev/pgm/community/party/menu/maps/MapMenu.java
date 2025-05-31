@@ -8,6 +8,8 @@ import dev.pgm.community.party.types.CustomPoolParty;
 import dev.pgm.community.party.types.RegularPoolParty;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.SkullUtils;
+import dev.pgm.community.utils.compatibility.Enchantments;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.Pagination;
@@ -18,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import tc.oc.pgm.api.map.MapInfo;
@@ -128,34 +129,30 @@ public class MapMenu extends MapPartyMenu {
   }
 
   private ClickableItem getPoolIcon(MapPool pool, boolean active) {
-    ItemBuilder icon =
-        new ItemBuilder()
-            .material(Material.MAP)
-            .name(colorize("&6" + StringUtils.capitalize(pool.getName())))
-            .lore(
-                colorize("&7Maps: &b" + pool.getMaps().size()),
-                colorize(active ? "&aSelected Pool" : "&7Click to set"))
-            .flags(ItemFlag.values());
+    ItemBuilder icon = new ItemBuilder()
+        .material(Material.MAP)
+        .name(colorize("&6" + StringUtils.capitalize(pool.getName())))
+        .lore(
+            colorize("&7Maps: &b" + pool.getMaps().size()),
+            colorize(active ? "&aSelected Pool" : "&7Click to set"))
+        .flags(ItemFlag.values());
 
     if (active) {
-      icon.enchant(Enchantment.LUCK, 1);
+      icon.enchant(Enchantments.LUCK_OF_THE_SEA, 1);
     }
-    return ClickableItem.of(
-        icon.build(),
-        c -> {
-          Bukkit.dispatchCommand(getViewer(), "event setpool " + pool.getName());
-        });
+    return ClickableItem.of(icon.build(), c -> {
+      Bukkit.dispatchCommand(getViewer(), "event setpool " + pool.getName());
+    });
   }
 
   private ClickableItem getNoMapsIcon() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.STAINED_GLASS_PANE)
-            .color(DyeColor.RED)
-            .name(colorize("&cNo Maps found"))
-            .lore(colorize("&7Add maps using the button below"))
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.STAINED_GLASS_PANE)
+        .color(DyeColor.RED)
+        .name(colorize("&cNo Maps found"))
+        .lore(colorize("&7Add maps using the button below"))
+        .flags(ItemFlag.values())
+        .build());
   }
 
   private static String getTitle(MapPartyFeature feature) {

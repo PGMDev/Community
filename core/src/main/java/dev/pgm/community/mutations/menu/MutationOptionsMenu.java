@@ -8,12 +8,13 @@ import dev.pgm.community.mutations.options.MutationBooleanOption;
 import dev.pgm.community.mutations.options.MutationListOption;
 import dev.pgm.community.mutations.options.MutationOption;
 import dev.pgm.community.mutations.options.MutationRangeOption;
+import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.InventoryProvider;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -40,11 +41,10 @@ public class MutationOptionsMenu implements InventoryProvider {
   private void render(Player player, InventoryContents contents) {
     contents.fill(null);
 
-    List<MutationOption> options =
-        mutations.getMutations().stream()
-            .map(Mutation::getOptions)
-            .flatMap(mo -> mo.stream())
-            .collect(Collectors.toList());
+    List<MutationOption> options = mutations.getMutations().stream()
+        .map(Mutation::getOptions)
+        .flatMap(mo -> mo.stream())
+        .collect(Collectors.toList());
 
     if (options.isEmpty()) {
       contents.set(1, 4, getNoMutationsIcon());
@@ -58,13 +58,12 @@ public class MutationOptionsMenu implements InventoryProvider {
   }
 
   private ClickableItem getNoMutationsIcon() {
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.SIGN)
-            .name(colorize("&c&lNo mutation options found!"))
-            .lore(colorize("&7Options only display when mutation is enabled"))
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Materials.SIGN)
+        .name(colorize("&c&lNo mutation options found!"))
+        .lore(colorize("&7Options only display when mutation is enabled"))
+        .flags(ItemFlag.values())
+        .build());
   }
 
   private ClickableItem getReturnIcon(Player viewer) {
