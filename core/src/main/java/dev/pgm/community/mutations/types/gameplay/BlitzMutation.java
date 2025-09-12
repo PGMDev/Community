@@ -19,9 +19,8 @@ import tc.oc.pgm.filters.matcher.StaticFilter;
 /** BlitzMutation - Enables blitz on a non-blitz match * */
 public class BlitzMutation extends MutationBase {
 
-  private static MutationRangeOption BLITZ_LIVES =
-      new MutationRangeOption(
-          "Blitz Lives", "The number of lives per-user", Material.EGG, true, 1, 1, 999);
+  private static MutationRangeOption BLITZ_LIVES = new MutationRangeOption(
+      "Blitz Lives", "The number of lives per-user", Material.EGG, true, 1, 1, 999);
 
   private BlitzMatchModule blitz;
 
@@ -37,15 +36,15 @@ public class BlitzMutation extends MutationBase {
   @Override
   public void enable() {
     super.enable();
-    this.blitz =
-        new BlitzMatchModule(
-            match,
-            new BlitzConfig(
-                BLITZ_LIVES.getValue(),
-                true,
-                StaticFilter.ALLOW,
-                StaticFilter.ALLOW,
-                StaticFilter.DENY));
+    this.blitz = new BlitzMatchModule(
+        match,
+        new BlitzConfig(
+            BLITZ_LIVES.getValue(),
+            true,
+            false,
+            StaticFilter.ALLOW,
+            StaticFilter.ALLOW,
+            StaticFilter.DENY));
 
     blitz.enable();
     match.addListener(blitz, MatchScope.RUNNING);

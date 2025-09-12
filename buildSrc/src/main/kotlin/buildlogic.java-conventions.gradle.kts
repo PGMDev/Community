@@ -26,9 +26,9 @@ dependencies {
     implementation("redis.clients:jedis:3.5.1")
     implementation("co.aikar:idb-core:1.0.0-SNAPSHOT")
     implementation("co.aikar:idb-bukkit:1.0.0-SNAPSHOT")
-    implementation("net.kyori:adventure-api:4.17.0")
-    implementation("net.kyori:adventure-text-serializer-plain:4.17.0")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.4")
+    implementation("net.kyori:adventure-api:4.24.0")
+    implementation("net.kyori:adventure-text-serializer-plain:4.24.0")
+    implementation("net.kyori:adventure-platform-bukkit:4.4.1")
 
     compileOnly("app.ashcon:sportpaper:1.8.8-R0.1-SNAPSHOT")
     compileOnly("tc.oc.pgm:core:0.16-SNAPSHOT")
@@ -55,7 +55,7 @@ spotless {
     ratchetFrom = "origin/dev"
     java {
         removeUnusedImports()
-        palantirJavaFormat("2.47.0").style("GOOGLE").formatJavadoc(true)
+        palantirJavaFormat("2.73.0").style("GOOGLE").formatJavadoc(true)
     }
 }
 

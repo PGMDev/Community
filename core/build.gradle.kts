@@ -10,6 +10,7 @@ tasks.named<ShadowJar>("shadowJar") {
     archiveFileName = "Community.jar"
     archiveClassifier.set("")
     destinationDirectory = rootProject.projectDir.resolve("build/libs")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     minimize()
 
@@ -42,15 +43,22 @@ publishing {
 
 tasks {
     processResources {
+        val name = project.name
+        val description = project.description
+        val version = project.version.toString()
+        val commitHash = project.latestCommitHash()
+
         filesMatching(listOf("plugin.yml")) {
             expand(
-                "name" to project.name,
-                "description" to project.description,
-                "mainClass" to "dev.pgm.community.Community",
-                "version" to project.version,
-                "commitHash" to project.latestCommitHash(),
-                "author" to "applenick",
-                "url" to "https://pgm.dev/")
+                mapOf(
+                    "name" to name,
+                    "description" to description,
+                    "mainClass" to "dev.pgm.community.Community",
+                    "version" to version,
+                    "commitHash" to commitHash,
+                    "author" to "applenick",
+                    "url" to "https://pgm.dev/")
+                )
         }
     }
 
