@@ -1,5 +1,6 @@
 name: Community
 description: ${description}
+api-version: ${apiVersion}
 main: ${mainClass}
 version: ${version} (git-${commitHash})
 website: ${url}

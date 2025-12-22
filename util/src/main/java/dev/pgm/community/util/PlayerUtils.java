@@ -1,6 +1,7 @@
 package dev.pgm.community.util;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import tc.oc.pgm.util.skin.Skin;
 
 public interface PlayerUtils {
@@ -15,4 +16,6 @@ public interface PlayerUtils {
   String getPlayerName(Player player, Player viewer);
 
   Skin getPlayerSkin(Player player, Player viewer);
+
+  ItemStack customSkull(String url, String displayName, String... lore);
 }

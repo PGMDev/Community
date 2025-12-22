@@ -1,5 +1,6 @@
 package dev.pgm.community.party.menu.maps;
 
+import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import dev.pgm.community.party.feature.MapPartyFeature;
@@ -7,7 +8,6 @@ import dev.pgm.community.party.menu.MapPartyMenu;
 import dev.pgm.community.party.types.CustomPoolParty;
 import dev.pgm.community.party.types.RegularPoolParty;
 import dev.pgm.community.utils.PGMUtils;
-import dev.pgm.community.utils.SkullUtils;
 import dev.pgm.community.utils.compatibility.Enchantments;
 import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
@@ -75,7 +75,7 @@ public class MapMenu extends MapPartyMenu {
           4,
           4,
           ClickableItem.of(
-              SkullUtils.customSkull(
+              PLAYER_UTILS.customSkull(
                   ADD_SKIN, "&a&lAdd Map", "&7Click to add a map to the selection"),
               c -> {
                 new MapAddMenu(getFeature(), getViewer());

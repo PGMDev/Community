@@ -1,12 +1,12 @@
 package dev.pgm.community.party.menu.hosts;
 
+import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import com.google.common.collect.Lists;
 import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.party.hosts.MapPartyHosts;
 import dev.pgm.community.party.menu.MapPartyMenu;
-import dev.pgm.community.utils.SkullUtils;
 import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
@@ -74,7 +74,8 @@ public class HostMenu extends MapPartyMenu {
           4,
           4,
           ClickableItem.of(
-              SkullUtils.customSkull(ADD_SKIN, "&a&lAdd Host", "&7Click to add event host"), c -> {
+              PLAYER_UTILS.customSkull(ADD_SKIN, "&a&lAdd Host", "&7Click to add event host"),
+              c -> {
                 new HostAddMenu(hosts).open(getViewer());
               }));
 

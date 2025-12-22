@@ -16,7 +16,6 @@ repositories {
     maven("https://repo.pgm.fyi/snapshots") // Sportpaper & other pgm-specific stuff
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") // Spigot repo
     maven("https://repo.aikar.co/content/groups/aikar/") // aikar repo
-    maven("https://jitpack.io") // Backup: jitpack
 }
 
 dependencies {
@@ -26,8 +25,8 @@ dependencies {
     implementation("redis.clients:jedis:3.5.1")
     implementation("co.aikar:idb-core:1.0.0-SNAPSHOT")
     implementation("co.aikar:idb-bukkit:1.0.0-SNAPSHOT")
-    implementation("net.kyori:adventure-api:4.24.0")
-    implementation("net.kyori:adventure-text-serializer-plain:4.24.0")
+    implementation("net.kyori:adventure-api:4.26.1")
+    implementation("net.kyori:adventure-text-serializer-plain:4.26.1")
     implementation("net.kyori:adventure-platform-bukkit:4.4.1")
     implementation("org.reflections:reflections:0.10.2")
 
@@ -36,11 +35,10 @@ dependencies {
     compileOnly("tc.oc.occ:AFK:1.0.0-SNAPSHOT")
     compileOnly("tc.oc.occ:Environment:1.0.0-SNAPSHOT")
     compileOnly("org.incendo:cloud-annotations:2.0.0")
-    compileOnly("org.jetbrains:annotations:22.0.0")
-    compileOnly("com.github.dmulloy2:ProtocolLib:5.3.0")
+    compileOnly("org.jetbrains:annotations:26.0.2")
+    compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
 
     // Minecraft includes these (or equivalents)
-    compileOnly("com.mojang:authlib:6.0.54")
     compileOnly("it.unimi.dsi:fastutil:8.1.0")
     compileOnly("com.google.guava:guava:17.0")
     compileOnly("com.google.code.gson:gson:2.10.1")
@@ -52,10 +50,10 @@ version = "0.2-SNAPSHOT"
 description = "A plugin for managing a Minecraft community"
 
 tasks {
-    withType<JavaCompile>() {
+    withType<JavaCompile> {
         options.encoding = "UTF-8"
     }
-    withType<Javadoc>() {
+    withType<Javadoc> {
         options.encoding = "UTF-8"
     }
 }
@@ -64,7 +62,7 @@ spotless {
     ratchetFrom = "origin/dev"
     java {
         removeUnusedImports()
-        palantirJavaFormat("2.73.0").style("GOOGLE").formatJavadoc(true)
+        palantirJavaFormat("2.83.0").style("GOOGLE").formatJavadoc(true)
     }
 }
 
