@@ -4,4 +4,4 @@ main: ${mainClass}
 version: ${version} (git-${commitHash})
 website: ${url}
 author: ${author}
-softdepend: [PGM, Environment, AFK]
+softdepend: [PGM, Environment]
