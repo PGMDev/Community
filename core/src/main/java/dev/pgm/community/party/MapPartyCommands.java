@@ -18,10 +18,12 @@ import java.time.Duration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import tc.oc.pgm.api.map.MapInfo;
+import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.FlagYielding;
 import tc.oc.pgm.lib.org.incendo.cloud.annotation.specifier.Greedy;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.named.NameStyle;
 
@@ -118,8 +120,17 @@ public class MapPartyCommands extends CommunityCommand {
 
   @Command("timelimit <duration>")
   @Permission(CommunityPermissions.PARTY_HOST)
-  public void setTimeLimit(CommandAudience viewer, @Argument("duration") Duration timeLimit) {
-    party.setTimelimit(viewer, timeLimit);
+  public void setTimeLimit(
+      CommandAudience viewer,
+      @Argument("duration") @FlagYielding Duration timeLimit,
+      @Flag(value = "force", aliases = "f") boolean force) {
+    party.setTimelimit(viewer, timeLimit, force);
+  }
+
+  @Command("extend <duration>")
+  @Permission(CommunityPermissions.PARTY_HOST)
+  public void extendTimeLimit(CommandAudience viewer, @Argument("duration") Duration timeLimit) {
+    party.extendTimeLimit(viewer, timeLimit);
   }
 
   @Command("mode")
@@ -160,21 +171,18 @@ public class MapPartyCommands extends CommunityCommand {
     if (isPartyMissing(viewer)) return;
     MapPartyHosts hosts = party.getParty().getHosts();
     PlayerSelection selection = getPlayers(viewer, targets);
-    selection
-        .getPlayers()
-        .forEach(
-            player -> {
-              if (!party.canHost(player)) {
-                viewer.sendWarning(MapPartyMessages.getAddHostError(player));
-                return;
-              }
+    selection.getPlayers().forEach(player -> {
+      if (!party.canHost(player)) {
+        viewer.sendWarning(MapPartyMessages.getAddHostError(player));
+        return;
+      }
 
-              if (hosts.isHost(player.getUniqueId())) {
-                viewer.sendWarning(MapPartyMessages.getExistingHostError(player));
-                return;
-              }
-              hosts.addSubHost(player);
-            });
+      if (hosts.isHost(player.getUniqueId())) {
+        viewer.sendWarning(MapPartyMessages.getExistingHostError(player));
+        return;
+      }
+      hosts.addSubHost(player);
+    });
   }
 
   @Command("hosts remove <target>")
@@ -183,11 +191,10 @@ public class MapPartyCommands extends CommunityCommand {
     if (isPartyMissing(viewer)) return;
     MapPartyHosts hosts = party.getParty().getHosts();
     if (!hosts.removeSubHost(target.getIdentifier())) {
-      viewer.sendWarning(
-          text()
-              .append(text(target.getIdentifier(), NamedTextColor.DARK_AQUA))
-              .append(text(" is not a party host"))
-              .build());
+      viewer.sendWarning(text()
+          .append(text(target.getIdentifier(), NamedTextColor.DARK_AQUA))
+          .append(text(" is not a party host"))
+          .build());
     }
   }
 
@@ -204,11 +211,10 @@ public class MapPartyCommands extends CommunityCommand {
     }
 
     if (hosts.isMainHost(target.getUniqueId())) {
-      viewer.sendWarning(
-          text()
-              .append(player(target, NameStyle.FANCY))
-              .append(text(" is already the main party host"))
-              .build());
+      viewer.sendWarning(text()
+          .append(player(target, NameStyle.FANCY))
+          .append(text(" is already the main party host"))
+          .build());
       return;
     }
 

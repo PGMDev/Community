@@ -1,5 +1,6 @@
 package dev.pgm.community.party.feature;
 
+import static dev.pgm.community.party.MapPartyMessages.formatTime;
 import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
@@ -137,7 +138,7 @@ public class MapPartyFeature extends FeatureBase {
     }
 
     if (preset.getDuration() != null) {
-      setTimelimit(viewer, preset.getDuration());
+      setTimelimit(viewer, preset.getDuration(), false);
     }
 
     if (type == MapPartyType.REGULAR) {
@@ -188,10 +189,8 @@ public class MapPartyFeature extends FeatureBase {
         }
 
         this.isStartQueued = true;
-        viewer.sendWarning(
-            text(
-                "Your map party is queued to start after the next match ends!",
-                NamedTextColor.GRAY));
+        viewer.sendWarning(text(
+            "Your map party is queued to start after the next match ends!", NamedTextColor.GRAY));
         return true;
       }
 
@@ -277,14 +276,46 @@ public class MapPartyFeature extends FeatureBase {
             .hoverEvent(HoverEvent.showText(text(description, NamedTextColor.GRAY))));
   }
 
-  public void setTimelimit(CommandAudience viewer, Duration timeLimit) {
+  public void setTimelimit(CommandAudience viewer, Duration timeLimit, boolean force) {
     if (isPartyMissing(viewer)) return;
+
+    if (!force
+        && party.getStartTime() != null
+        && timeLimit
+            .minus(Duration.between(party.getStartTime(), Instant.now()))
+            .isNegative()) {
+      viewer.sendWarning(text()
+          .append(text("Setting the time limit to "))
+          .append(duration(timeLimit).color(NamedTextColor.YELLOW))
+          .append(text(" would end the event immediately. Use the force flag to proceed anyways"))
+          .color(NamedTextColor.GRAY)
+          .build());
+      return;
+    }
 
     party.setLength(timeLimit);
     MapPartyMessages.broadcastHostAction(
         viewer.getStyledName(),
         text("set the event timelimit to"),
         duration(party.getLength(), NamedTextColor.GREEN));
+    if (party.isRunning()) {
+      MapPartyMessages.broadcastHostAction(
+          viewer.getStyledName(),
+          text()
+              .append(text("The event will now end in "))
+              .append(
+                  duration(timeLimit.minus(Duration.between(party.getStartTime(), Instant.now())))
+                      .color(NamedTextColor.GREEN))
+              .color(NamedTextColor.GRAY)
+              .build());
+      ;
+    }
+  }
+
+  public void extendTimeLimit(CommandAudience viewer, Duration timeToAdd) {
+    Duration oldLength = party.getLength();
+    Duration newLength = oldLength == null ? timeToAdd : oldLength.plus(timeToAdd);
+    setTimelimit(viewer, newLength, false);
   }
 
   public void toggleMode(CommandAudience viewer) {
@@ -308,11 +339,10 @@ public class MapPartyFeature extends FeatureBase {
     if (isRegularParty(viewer)) return;
 
     if (party.isMapAdded(map)) {
-      viewer.sendWarning(
-          text()
-              .append(map.getStyledName(MapNameStyle.COLOR))
-              .append(text(" has already been added!"))
-              .build());
+      viewer.sendWarning(text()
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" has already been added!"))
+          .build());
       return;
     }
 
@@ -334,11 +364,10 @@ public class MapPartyFeature extends FeatureBase {
     if (isRegularParty(viewer)) return;
 
     if (!(party.isMapAdded(map))) {
-      viewer.sendWarning(
-          text()
-              .append(map.getStyledName(MapNameStyle.COLOR))
-              .append(text(" has not been selected for this map party!"))
-              .build());
+      viewer.sendWarning(text()
+          .append(map.getStyledName(MapNameStyle.COLOR))
+          .append(text(" has not been selected for this map party!"))
+          .build());
       return;
     }
 
@@ -402,17 +431,15 @@ public class MapPartyFeature extends FeatureBase {
 
   public String formatLine(String line, MapParty party) {
     return colorize(
-        line.replace("$name$", colorize(party.getName()))
-            .replace("$time$", MapPartyMessages.formatTime(party)));
+        line.replace("$name$", colorize(party.getName())).replace("$time$", formatTime(party)));
   }
 
   public void setAutoScale(CommandAudience sender, boolean autoscaling) {
     party.setAutoScaling(autoscaling);
 
-    Component status =
-        text(
-            party.shouldAutoScale() ? "enabled" : "disabled",
-            party.shouldAutoScale() ? NamedTextColor.GREEN : NamedTextColor.RED);
+    Component status = text(
+        party.shouldAutoScale() ? "enabled" : "disabled",
+        party.shouldAutoScale() ? NamedTextColor.GREEN : NamedTextColor.RED);
 
     MapPartyMessages.broadcastHostAction(
         sender.getStyledName(),
@@ -430,17 +457,15 @@ public class MapPartyFeature extends FeatureBase {
 
     // Activate asap if party is running, otherwise will be run when event starts
     if (getParty().isRunning()) {
-      String command =
-          raindropsEnabled
-              ? getEventConfig().getRaindropActivateCommand()
-              : getEventConfig().getRaindropDeactivateCommand();
+      String command = raindropsEnabled
+          ? getEventConfig().getRaindropActivateCommand()
+          : getEventConfig().getRaindropDeactivateCommand();
       Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
     }
 
-    Component status =
-        text(
-            raindropsEnabled ? "enabled" : "disabled",
-            raindropsEnabled ? NamedTextColor.GREEN : NamedTextColor.RED);
+    Component status = text(
+        raindropsEnabled ? "enabled" : "disabled",
+        raindropsEnabled ? NamedTextColor.GREEN : NamedTextColor.RED);
 
     MapPartyMessages.broadcastHostAction(
         sender.getStyledName(),
