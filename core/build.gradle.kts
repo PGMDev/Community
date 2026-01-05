@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly("dev.pgm.paper:paper-api:1.8_1.21.11-SNAPSHOT")
+    compileOnly("dev.pgm.paper:paper-api:1.8_1.21.10-SNAPSHOT")
 
     implementation(project(":util"))
 
@@ -67,7 +67,7 @@ tasks {
                 mapOf(
                     "name" to name,
                     "description" to description,
-                    "apiVersion" to "1.21.11",
+                    "apiVersion" to "1.21.10",
                     "mainClass" to "dev.pgm.community.Community",
                     "version" to version,
                     "commitHash" to commitHash,
