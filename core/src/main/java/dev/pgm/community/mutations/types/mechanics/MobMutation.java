@@ -41,7 +41,7 @@ public class MobMutation extends ScheduledMutationBase {
   private static final int RANDOM_DISTANCE = 45;
   private static final String MOB_METADATA = "mob-mutation";
 
-  private static MutationListOption<Integer> TOTAL_MOBS = new MutationListOption(
+  private static MutationListOption<Integer> TOTAL_MOBS = new MutationListOption<>(
       "Total Mobs",
       "Total number of mobs spawned",
       MutationType.MOBS.getMaterial(),

@@ -28,6 +28,7 @@ tasks.named<ShadowJar>("shadowJar") {
     }
 
     dependencies {
+        exclude(dependency("org.jspecify:jspecify"))
         exclude(dependency("org.jetbrains:annotations"))
     }
 
@@ -66,12 +67,14 @@ tasks {
                 mapOf(
                     "name" to name,
                     "description" to description,
+                    "apiVersion" to "1.21.10",
                     "mainClass" to "dev.pgm.community.Community",
                     "version" to version,
                     "commitHash" to commitHash,
                     "author" to "applenick",
-                    "url" to "https://pgm.dev/")
+                    "url" to "https://pgm.dev/"
                 )
+            )
         }
     }
 

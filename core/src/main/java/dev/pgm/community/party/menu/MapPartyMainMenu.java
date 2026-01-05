@@ -1,5 +1,6 @@
 package dev.pgm.community.party.menu;
 
+import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 
 import com.google.common.collect.Lists;
@@ -12,7 +13,6 @@ import dev.pgm.community.party.menu.hosts.HostMenu;
 import dev.pgm.community.party.menu.modifiers.MapPartyModifierMenu;
 import dev.pgm.community.party.menu.settings.MapPartySettingsMenu;
 import dev.pgm.community.party.presets.MapPartyPreset;
-import dev.pgm.community.utils.SkullUtils;
 import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
@@ -245,15 +245,15 @@ public class MapPartyMainMenu extends MapPartyMenu {
   private static final String END_PARTY_SKIN =
       "http://textures.minecraft.net/texture/e9cdb9af38cf41daa53bc8cda7665c509632d14e678f0f19f263f46e541d8a30";
 
-  private static final ItemStack START_ITEM = SkullUtils.customSkull(
+  private static final ItemStack START_ITEM = PLAYER_UTILS.customSkull(
       START_PARTY_SKIN,
       "&a&lStart Event",
       "&2Left-Click&7 to start the event now",
       "&2Right-Click&7 to start event after current match ends");
 
-  private static final ItemStack RESTART_ITEM = SkullUtils.customSkull(
+  private static final ItemStack RESTART_ITEM = PLAYER_UTILS.customSkull(
       RESTART_PARTY_SKIN, "&2&lRestart Event", "&7Click to restart the event");
 
   private static final ItemStack END_ITEM =
-      SkullUtils.customSkull(END_PARTY_SKIN, "&4&lEnd Event", "&7Click to end the event");
+      PLAYER_UTILS.customSkull(END_PARTY_SKIN, "&4&lEnd Event", "&7Click to end the event");
 }
