@@ -1,7 +1,5 @@
 package dev.pgm.community.freeze;
 
-import static net.kyori.adventure.key.Key.key;
-import static net.kyori.adventure.sound.Sound.sound;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -14,11 +12,11 @@ import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
+import dev.pgm.community.utils.Sounds;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -42,10 +40,6 @@ import tc.oc.pgm.util.player.PlayerComponent;
 
 /** FreezeManager - Handles freezing of players */
 public class FreezeManager {
-
-  private final Sound FREEZE_SOUND =
-      sound(key("mob.enderdragon.growl"), Sound.Source.PLAYER, 1f, 1f);
-  private final Sound THAW_SOUND = sound(key("mob.enderdragon.growl"), Sound.Source.PLAYER, 1f, 2f);
 
   private final OnlinePlayerMapAdapter<Player> frozenPlayers;
   private final Cache<UUID, String> offlineFrozenCache =
@@ -142,7 +136,7 @@ public class FreezeManager {
               freezeTitle.build(),
               Times.of(Ticks.duration(5), Ticks.duration(9999), Ticks.duration(5))));
     }
-    Audience.get(freezee).playSound(FREEZE_SOUND);
+    Audience.get(freezee).playSound(Sounds.FREEZE_SOUND);
 
     BroadcastUtils.sendAdminChatMessage(
         createInteractiveBroadcast(senderName, freezee, true), CommunityPermissions.FREEZE);
@@ -160,7 +154,7 @@ public class FreezeManager {
     }
 
     freezee.resetTitle();
-    Audience.get(freezee).playSound(THAW_SOUND);
+    Audience.get(freezee).playSound(Sounds.THAW_SOUND);
     Audience.get(freezee).sendMessage(thawedTitle.color(NamedTextColor.GREEN));
 
     BroadcastUtils.sendAdminChatMessage(
