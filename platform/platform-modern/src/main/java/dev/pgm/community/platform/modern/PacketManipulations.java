@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import dev.pgm.community.util.PlayerUtils;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +57,18 @@ public class PacketManipulations implements PacketSender {
                       return playerInfoData;
                     }
 
+                    WrappedGameProfile playerProfile =
+                        playerInfoData.getProfile().withName(playerName);
+                    playerInfoData.getProfile().getProperties().forEach((key, property) -> {
+                      playerProfile.getProperties().put(key, property);
+                    });
+
                     return new PlayerInfoData(
                         playerId,
                         playerInfoData.getLatency(),
                         playerInfoData.isListed(),
                         playerInfoData.getGameMode(),
-                        playerInfoData.getProfile().withName(playerName),
+                        playerProfile,
                         WrappedChatComponent.fromLegacyText(playerDisplayName));
                   }))
                   .toList());
