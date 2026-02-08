@@ -83,6 +83,9 @@ moderation:
   mute:
     enabled: true
     public: true
+  note:
+    enabled: true
+    public: false
         
   # Sign Logging
   sign-logger:

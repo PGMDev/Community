@@ -18,6 +18,7 @@ public interface CommunityPermissions {
   String WARN = ROOT + ".warn"; // Access to the /warn command
   String MUTE = ROOT + ".mute"; // Access to the /mute command
   String BAN = ROOT + ".ban"; // Access to the /ban command
+  String NOTE = ROOT + ".note"; // Access to the /note command
 
   // Punishment related commands
   String LOOKUP = ROOT + ".lookup"; // Access to view own record with /lookup

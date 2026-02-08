@@ -20,6 +20,7 @@ public class ModerationConfig extends FeatureConfigImpl {
   private static final String WARN_KEY = KEY + ".warn";
   private static final String BAN_KEY = KEY + ".ban";
   private static final String MUTE_KEY = KEY + ".mute";
+  private static final String NOTE_KEY = KEY + ".note";
 
   private static final String GLOBAL_FORMAT_KEY = KEY + ".global-broadcast";
   private static final String STAFF_FORMAT_KEY = KEY + ".staff-broadcast";
@@ -54,11 +55,13 @@ public class ModerationConfig extends FeatureConfigImpl {
   private boolean warn;
   private boolean ban;
   private boolean mute;
+  private boolean note;
 
   private boolean kickPublic;
   private boolean warnPublic;
   private boolean banPublic;
   private boolean mutePublic;
+  private boolean notePublic;
 
   // Broadcasts
   private String globalBroadcastFormat;
@@ -160,6 +163,15 @@ public class ModerationConfig extends FeatureConfigImpl {
   }
 
   /**
+   * Whether note commands are enabled (/note)
+   *
+   * @return True if note commands are enabled
+   */
+  public boolean isNoteEnabled() {
+    return note;
+  }
+
+  /**
    * Get a rules URL to display on kick screen
    *
    * @return a rules URL string
@@ -185,6 +197,8 @@ public class ModerationConfig extends FeatureConfigImpl {
         return mutePublic;
       case WARN:
         return warnPublic;
+      case NOTE:
+        return notePublic;
       default:
         return broadcast;
     }
@@ -273,16 +287,18 @@ public class ModerationConfig extends FeatureConfigImpl {
     this.persist = config.getBoolean(PERSIST_KEY, true);
     this.broadcast = config.getBoolean(BROADCAST_KEY, true);
 
-    // Punishment options (kick, warn, ban, mute)
+    // Punishment options (kick, warn, ban, mute, note)
     this.kick = config.getBoolean(getEnabledKey(KICK_KEY));
     this.warn = config.getBoolean(getEnabledKey(WARN_KEY));
     this.ban = config.getBoolean(getEnabledKey(BAN_KEY));
     this.mute = config.getBoolean(getEnabledKey(MUTE_KEY));
+    this.note = config.getBoolean(getEnabledKey(NOTE_KEY));
 
     this.kickPublic = config.getBoolean(getBroadcastKey(KICK_KEY));
     this.warnPublic = config.getBoolean(getBroadcastKey(WARN_KEY));
     this.mutePublic = config.getBoolean(getBroadcastKey(MUTE_KEY));
     this.banPublic = config.getBoolean(getBroadcastKey(BAN_KEY));
+    this.notePublic = config.getBoolean(getBroadcastKey(NOTE_KEY));
 
     // Broadcasts
     this.globalBroadcastFormat = config.getString(GLOBAL_FORMAT_KEY);

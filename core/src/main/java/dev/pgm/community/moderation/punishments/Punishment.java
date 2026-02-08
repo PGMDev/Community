@@ -14,6 +14,7 @@ import dev.pgm.community.moderation.punishments.types.BanPunishment;
 import dev.pgm.community.moderation.punishments.types.ExpirablePunishment;
 import dev.pgm.community.moderation.punishments.types.KickPunishment;
 import dev.pgm.community.moderation.punishments.types.MutePunishment;
+import dev.pgm.community.moderation.punishments.types.NotePunishment;
 import dev.pgm.community.moderation.punishments.types.TempBanPunishment;
 import dev.pgm.community.moderation.punishments.types.UsernameBanPunishment;
 import dev.pgm.community.moderation.punishments.types.WarnPunishment;
@@ -368,6 +369,9 @@ public class Punishment implements Comparable<Punishment> {
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
       case NAME_BAN:
         return new UsernameBanPunishment(
+            id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
+      case NOTE:
+        return new NotePunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
     }
     return null;

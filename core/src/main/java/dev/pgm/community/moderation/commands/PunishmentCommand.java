@@ -138,7 +138,18 @@ public class PunishmentCommand extends CommunityCommand {
   @Permission(CommunityPermissions.LOOKUP)
   public void viewOwnPunishmentHistory(
       CommandAudience audience, Player player, @Argument("page") @Default("1") int page) {
-    viewPunishmentHistory(audience, new TargetPlayer(player), page);
+    TargetPlayer target = new TargetPlayer(player);
+    moderation
+        .query(target.getIdentifier())
+        .thenAcceptAsync(punishments -> sendPunishmentHistory(
+            audience,
+            target.getIdentifier(),
+            player.hasPermission(CommunityPermissions.PUNISH)
+                ? punishments
+                : punishments.stream()
+                    .filter(p -> !PunishmentType.NOTE.equals(p.getType()))
+                    .collect(Collectors.toList()),
+            page));
   }
 
   @Command("lookup|l <target> [page]")

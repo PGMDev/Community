@@ -14,7 +14,8 @@ public enum PunishmentType {
   KICK(true, false, false, false, "Kicked"),
   BAN(true, true, true, false, "Permanent Ban"),
   TEMP_BAN(true, true, true, true, "Temporary Ban"),
-  NAME_BAN(true, true, true, false, "Username Ban");
+  NAME_BAN(true, true, true, false, "Username Ban"),
+  NOTE(false, false, false, false, "Note");
 
   private String PREFIX_TRANSLATE_KEY = "moderation.type.";
   private String SCREEN_TRANSLATE_KEY = "moderation.screen.";
