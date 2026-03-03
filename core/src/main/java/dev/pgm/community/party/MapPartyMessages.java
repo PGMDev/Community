@@ -120,7 +120,7 @@ public class MapPartyMessages {
   }
 
   public static String formatTime(MapParty party) {
-    if (party.getLength() == null) return ChatColor.YELLOW + "No timelimit";
+    if (party.getLength() == null) return ChatColor.YELLOW + "No time limit";
     String duration = TextTranslations.translateLegacy(duration(party.getLength()));
 
     if (party.getStartTime() == null) return ChatColor.GOLD + duration;

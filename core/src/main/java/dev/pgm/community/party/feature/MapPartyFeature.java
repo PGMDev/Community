@@ -322,19 +322,18 @@ public class MapPartyFeature extends FeatureBase {
     party.setLength(timeLimit);
     MapPartyMessages.broadcastHostAction(
         viewer.getStyledName(),
-        text("set the event timelimit to"),
+        text("set the event time limit to"),
         duration(party.getLength(), NamedTextColor.GREEN));
     if (party.isRunning()) {
-      MapPartyMessages.broadcastHostAction(
-          viewer.getStyledName(),
+      BroadcastUtils.sendAdminChatMessage(
           text()
               .append(text("The event will now end in "))
               .append(
                   duration(timeLimit.minus(Duration.between(party.getStartTime(), Instant.now())))
                       .color(NamedTextColor.GREEN))
               .color(NamedTextColor.GRAY)
-              .build());
-      ;
+              .build(),
+          CommunityPermissions.PARTY);
     }
   }
 
