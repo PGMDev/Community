@@ -55,10 +55,9 @@ public class ModernPlayerUtils implements PlayerUtils {
     if (playerDisplayNames.containsKey(player.getUniqueId())) {
       Map<UUID, String> uuidStringMap = playerDisplayNames.get(player.getUniqueId());
       String displayName = uuidStringMap.get(viewer.getUniqueId());
-      return displayName == null
-          ? LegacyComponentSerializer.legacySection().serialize(player.displayName())
-          : displayName;
+      if (displayName != null) return displayName;
     }
+
     return LegacyComponentSerializer.legacySection().serialize(player.displayName());
   }
 
@@ -67,23 +66,21 @@ public class ModernPlayerUtils implements PlayerUtils {
     if (playerNames.containsKey(player.getUniqueId())) {
       Map<UUID, String> uuidStringMap = playerNames.get(player.getUniqueId());
       String name = uuidStringMap.get(viewer.getUniqueId());
-      return name == null ? player.getName() : name;
+      if (name != null) return name;
     }
+
     return player.getName();
   }
 
   @Override
   public Skin getPlayerSkin(Player player, Player viewer) {
-    return null;
-    //    if (playerSkins.containsKey(player.getUniqueId())) {
-    //      Map<UUID, Skin> uuidSkinMap = playerSkins.get(player.getUniqueId());
-    //      Skin skin = uuidSkinMap.get(viewer.getUniqueId());
-    //      if (skin == null) {
-    //        return new Skin(player.getPlayerProfile().getTextures())
-    //      }
-    //      return skin == null ? Skin.EMPTY : skin;
-    //    }
-    //    return Skin.EMPTY;
+    if (playerSkins.containsKey(player.getUniqueId())) {
+      Map<UUID, Skin> uuidSkinMap = playerSkins.get(player.getUniqueId());
+      Skin skin = uuidSkinMap.get(viewer.getUniqueId());
+      if (skin != null) return skin;
+    }
+
+    return getPlayerSkin(player);
   }
 
   @Override
