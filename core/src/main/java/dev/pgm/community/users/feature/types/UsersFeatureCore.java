@@ -12,6 +12,7 @@ import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.users.listeners.UserProfileLoginListener;
 import dev.pgm.community.users.services.AddressHistoryService.LatestAddressInfo;
 import dev.pgm.community.users.store.UserStore;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -21,7 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class UsersFeatureCore extends FeatureBase implements UsersFeature {
 
@@ -54,7 +55,7 @@ public class UsersFeatureCore extends FeatureBase implements UsersFeature {
   public Optional<UUID> getId(String username) {
     return names.asMap().entrySet().stream()
         .filter(e -> e.getValue().equalsIgnoreCase(username))
-        .map(e -> e.getKey())
+        .map(Map.Entry::getKey)
         .findAny();
   }
 
@@ -106,7 +107,7 @@ public class UsersFeatureCore extends FeatureBase implements UsersFeature {
   @Override
   public CompletableFuture<Optional<UUID>> getStoredId(String username) {
     Optional<UUID> cached = getId(username);
-    if (!cached.isPresent()) {
+    if (cached.isEmpty()) {
       return store.getProfile(username).thenApplyAsync(profile -> {
         UUID id = null;
         if (profile != null && profile.getId() != null) {
@@ -151,8 +152,9 @@ public class UsersFeatureCore extends FeatureBase implements UsersFeature {
       Community.get()
           .getServer()
           .getScheduler()
-          .runTask(Community.get(), () -> Bukkit.getPluginManager()
-              .callEvent(new UserProfileLoadEvent(profile)));
+          .runTask(
+              Community.get(),
+              () -> Bukkit.getPluginManager().callEvent(new UserProfileLoadEvent(profile)));
     }); // Login save
     store.trackIp(id, address); // Track IP
   }

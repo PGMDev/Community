@@ -1,7 +1,6 @@
 package dev.pgm.community.utils.ranks;
 
 import com.google.common.collect.Lists;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -41,16 +40,16 @@ public class RanksConfig {
       ranks.add(rank);
     }
 
-    Collections.sort(ranks, Comparator.comparingInt(Rank::getWeight));
+    ranks.sort(Comparator.comparingInt(Rank::getWeight));
   }
 
   public static class Rank {
-    private String name;
-    private String prefix;
-    private String permission;
-    private ChatColor color;
-    private int multiplier;
-    private int weight;
+    private final String name;
+    private final String prefix;
+    private final String permission;
+    private final ChatColor color;
+    private final int multiplier;
+    private final int weight;
 
     public Rank(
         String name,
@@ -61,6 +60,7 @@ public class RanksConfig {
         int weight) {
       this.name = name;
       this.prefix = prefix;
+      this.permission = permission;
       this.color = color;
       this.multiplier = multiplier;
       this.weight = weight;

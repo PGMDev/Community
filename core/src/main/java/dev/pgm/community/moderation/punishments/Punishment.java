@@ -3,8 +3,8 @@ package dev.pgm.community.moderation.punishments;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.title.Title.Times.times;
 import static net.kyori.adventure.title.Title.title;
-import static tc.oc.pgm.util.text.TemporalComponent.briefNaturalApproximate;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.collect.Lists;
@@ -31,11 +31,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
@@ -67,7 +66,7 @@ public class Punishment implements Comparable<Punishment> {
       UUID targetId,
       @Nullable UUID issuerId,
       String reason,
-      Duration duration,
+      @Nullable Duration duration,
       long timeIssued,
       boolean active,
       long lastUpdated,
@@ -139,7 +138,7 @@ public class Punishment implements Comparable<Punishment> {
     return service;
   }
 
-  public Duration getDuration() {
+  public @Nullable Duration getDuration() {
     return duration;
   }
 
@@ -202,8 +201,8 @@ public class Punishment implements Comparable<Punishment> {
       subtitle = text(reason, NamedTextColor.GOLD);
     }
 
-    target.showTitle(title(
-        title, subtitle, Times.of(Ticks.duration(5), Ticks.duration(200), Ticks.duration(10))));
+    target.showTitle(
+        title(title, subtitle, times(Ticks.duration(5), Ticks.duration(200), Ticks.duration(10))));
     target.playSound(Sounds.WARN_SOUND);
   }
 
@@ -250,10 +249,10 @@ public class Punishment implements Comparable<Punishment> {
   }
 
   public Component getExpireDateMessage() {
-    Duration banLength = ((ExpirablePunishment) this).getDuration();
+    Duration banLength = this.getDuration();
     Duration timeSince = Duration.between(getTimeIssued(), Instant.now());
     Duration remaining = banLength.minus(timeSince);
-    Component timeLeft = briefNaturalApproximate(remaining);
+    Component timeLeft = duration(remaining);
     return translatable("moderation.screen.expires", NamedTextColor.GRAY, timeLeft);
   }
 
@@ -350,26 +349,25 @@ public class Punishment implements Comparable<Punishment> {
       long lastUpdated,
       @Nullable UUID lastUpdatedBy,
       String service) {
-    switch (type) {
-      case WARN:
-        return new WarnPunishment(
+    return switch (type) {
+      case WARN ->
+        new WarnPunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
-      case MUTE:
-        return new MutePunishment(
+      case MUTE ->
+        new MutePunishment(
             id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, service);
-      case KICK:
-        return new KickPunishment(
+      case KICK ->
+        new KickPunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
-      case TEMP_BAN:
-        return new TempBanPunishment(
+      case TEMP_BAN ->
+        new TempBanPunishment(
             id, target, issuer, reason, time, length, active, lastUpdated, lastUpdatedBy, service);
-      case BAN:
-        return new BanPunishment(
+      case BAN ->
+        new BanPunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
-      case NAME_BAN:
-        return new UsernameBanPunishment(
+      case NAME_BAN ->
+        new UsernameBanPunishment(
             id, target, issuer, reason, time, active, lastUpdated, lastUpdatedBy, service);
-    }
-    return null;
+    };
   }
 }

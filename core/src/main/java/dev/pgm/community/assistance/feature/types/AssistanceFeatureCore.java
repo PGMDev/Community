@@ -47,7 +47,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.named.NameStyle;
@@ -110,7 +110,7 @@ public class AssistanceFeatureCore extends FeatureBase implements AssistanceFeat
 
   @Override
   public boolean canRequest(UUID uuid) {
-    return isCooldownEnabled() ? cooldown.getIfPresent(uuid) == null : true;
+    return !isCooldownEnabled() || cooldown.getIfPresent(uuid) == null;
   }
 
   @Override
@@ -346,9 +346,9 @@ public class AssistanceFeatureCore extends FeatureBase implements AssistanceFeat
             .getReporyNotifyTime()
             .minus(Duration.between(r.getTime(), Instant.now()))
             .isNegative())
-        .collect(Collectors.toList());
+        .toList();
     Set<UUID> reporters =
-        relatedReports.stream().map(r -> r.getSenderId()).collect(Collectors.toSet());
+        relatedReports.stream().map(AssistanceRequest::getSenderId).collect(Collectors.toSet());
     for (UUID reporterId : reporters) {
       Player onlineReporter = Bukkit.getPlayer(reporterId);
       if (onlineReporter != null) {

@@ -107,8 +107,7 @@ public class GrapplingHookMutation extends KitMutationBase {
 
   @EventHandler(ignoreCancelled = true)
   public void onDamage(EntityDamageByEntityEvent event) {
-    if (!(event.getDamager() instanceof FishHook)) return;
-    FishHook fishHook = (FishHook) event.getDamager();
+    if (!(event.getDamager() instanceof FishHook fishHook)) return;
     if (!(fishHook.getShooter() instanceof Player)) return;
 
     // Cancel damage if caused by a grappling hook

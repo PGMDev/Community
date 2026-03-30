@@ -2,9 +2,10 @@ package dev.pgm.community.commands.providers;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
+import org.jspecify.annotations.NonNull;
 import tc.oc.pgm.command.parsers.EnumParser;
 import tc.oc.pgm.lib.org.incendo.cloud.context.CommandContext;
 import tc.oc.pgm.lib.org.incendo.cloud.context.CommandInput;
@@ -32,7 +33,8 @@ public class GameModeParser extends EnumParser<GameMode>
   }
 
   @Override
-  public List<String> stringSuggestions(CommandContext<CommandSender> context, CommandInput input) {
+  public @NonNull List<String> stringSuggestions(
+      @NonNull CommandContext<CommandSender> context, @NonNull CommandInput input) {
     int totalGamemodes = GameMode.values().length;
     List<String> suggestions = super.stringSuggestions(context, input);
     List<String> indexedSuggestions = new ArrayList<>(totalGamemodes * 2);

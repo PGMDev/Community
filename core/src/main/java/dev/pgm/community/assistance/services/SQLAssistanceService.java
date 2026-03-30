@@ -15,18 +15,12 @@ import java.util.concurrent.CompletableFuture;
 public class SQLAssistanceService extends SQLFeatureBase<Report, String>
     implements AssistanceQuery {
 
-  private LoadingCache<UUID, PlayerReports> cachedReports;
+  private final LoadingCache<UUID, PlayerReports> cachedReports;
 
   public SQLAssistanceService() {
     super(TABLE_NAME, TABLE_FIELDS);
-    this.cachedReports = CacheBuilder.newBuilder()
-        .maximumSize(1000)
-        .build(new CacheLoader<UUID, PlayerReports>() {
-          @Override
-          public PlayerReports load(UUID key) throws Exception {
-            return new PlayerReports(key);
-          }
-        });
+    this.cachedReports =
+        CacheBuilder.newBuilder().maximumSize(1000).build(CacheLoader.from(PlayerReports::new));
   }
 
   @Override
@@ -83,7 +77,7 @@ public class SQLAssistanceService extends SQLFeatureBase<Report, String>
     return CompletableFuture.completedFuture(null); // Noop atm
   }
 
-  private class PlayerReports {
+  private static class PlayerReports {
     private final UUID playerId;
     private final List<Report> reports;
     private boolean loaded;

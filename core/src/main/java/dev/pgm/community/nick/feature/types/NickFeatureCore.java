@@ -41,7 +41,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.text.TextFormatter;
 
@@ -121,7 +121,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
         .filter((e) -> e.getValue().equalsIgnoreCase(nickName))
         .map(Entry::getKey)
         .findAny();
-    return player.isPresent() ? Bukkit.getPlayer(player.get()) : null;
+    return player.map(Bukkit::getPlayer).orElse(null);
   }
 
   @Override
@@ -179,18 +179,18 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
             sendLoginNotification(player, nick.getName(), false);
           } else {
             // Auto apply a random name if none set
-            WebUtils.getRandomName().thenAcceptAsync(name -> {
-              this.setNick(player.getUniqueId(), name).thenAcceptAsync(success -> {
-                if (success) {
-                  nickedPlayers.put(player.getUniqueId(), nick.getName());
-                  Audience.get(player)
-                      .sendWarning(text(
-                          "You had no nickname, so a random one has been assigned",
-                          NamedTextColor.GREEN));
-                  sendLoginNotification(player, nick.getName(), true);
-                }
-              });
-            });
+            WebUtils.getRandomName()
+                .thenAcceptAsync(name -> this.setNick(player.getUniqueId(), name)
+                    .thenAcceptAsync(success -> {
+                      if (success) {
+                        nickedPlayers.put(player.getUniqueId(), nick.getName());
+                        Audience.get(player)
+                            .sendWarning(text(
+                                "You had no nickname, so a random one has been assigned",
+                                NamedTextColor.GREEN));
+                        sendLoginNotification(player, nick.getName(), true);
+                      }
+                    }));
           }
 
         } else {
@@ -286,9 +286,10 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
 
   @Override
   public CompletableFuture<Boolean> isNameAvailable(String nickName) {
-    return store.isNameAvailable(nickName).thenApplyAsync(available -> {
-      return available && users.getStoredProfile(nickName).join() == null;
-    });
+    return store
+        .isNameAvailable(nickName)
+        .thenApplyAsync(
+            available -> available && users.getStoredProfile(nickName).join() == null);
   }
 
   @Override

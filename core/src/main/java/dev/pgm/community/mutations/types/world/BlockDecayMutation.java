@@ -23,17 +23,16 @@ import tc.oc.pgm.api.player.MatchPlayer;
 
 public class BlockDecayMutation extends ScheduledMutationBase {
 
-  private static MutationRangeOption DECAY_SECONDS =
-      new MutationRangeOption(
-          "Decay Delay",
-          "Delay of time before blocks decay",
-          MutationType.BLOCK_DECAY.getMaterial(),
-          false,
-          5,
-          1,
-          60);
+  private static final MutationRangeOption DECAY_SECONDS = new MutationRangeOption(
+      "Decay Delay",
+      "Delay of time before blocks decay",
+      MutationType.BLOCK_DECAY.getMaterial(),
+      false,
+      5,
+      1,
+      60);
 
-  private Map<Location, Long> placedBlocks = Maps.newHashMap();
+  private final Map<Location, Long> placedBlocks = Maps.newHashMap();
 
   public BlockDecayMutation(Match match) {
     super(match, MutationType.BLOCK_DECAY, 1);
@@ -51,7 +50,7 @@ public class BlockDecayMutation extends ScheduledMutationBase {
 
   @Override
   public void disable() {
-    if (this.placedBlocks != null && !this.placedBlocks.isEmpty()) {
+    if (!this.placedBlocks.isEmpty()) {
       this.placedBlocks.keySet().forEach(location -> location.getBlock().setType(Material.AIR));
       this.placedBlocks.clear();
     }

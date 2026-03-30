@@ -46,7 +46,6 @@ public interface Mutation {
    * mutation to be enabled
    *
    * @param existingMutations - A set of existing mutations to check
-   * @return
    */
   boolean canEnable(Set<Mutation> existingMutations);
 

@@ -4,6 +4,7 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.title.Title.Times.times;
 import static net.kyori.adventure.title.Title.title;
 
 import com.google.common.cache.Cache;
@@ -13,6 +14,7 @@ import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.Sounds;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +24,6 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -46,7 +47,7 @@ public class FreezeManager {
       CacheBuilder.newBuilder().expireAfterWrite(3, TimeUnit.MINUTES).build();
 
   public FreezeManager() {
-    this.frozenPlayers = new OnlinePlayerMapAdapter<Player>(Community.get());
+    this.frozenPlayers = new OnlinePlayerMapAdapter<>(Community.get());
   }
 
   public void cachePlayer(Player player) {
@@ -76,7 +77,7 @@ public class FreezeManager {
   }
 
   public List<Player> getFrozenPlayers() {
-    return frozenPlayers.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(frozenPlayers.values());
   }
 
   public boolean isFrozen(Entity player) {
@@ -134,7 +135,7 @@ public class FreezeManager {
           .showTitle(title(
               empty(),
               freezeTitle.build(),
-              Times.of(Ticks.duration(5), Ticks.duration(9999), Ticks.duration(5))));
+              times(Ticks.duration(5), Ticks.duration(9999), Ticks.duration(5))));
     }
     Audience.get(freezee).playSound(Sounds.FREEZE_SOUND);
 
@@ -150,7 +151,7 @@ public class FreezeManager {
 
     Component thawedTitle = thawed;
     if (!silent) {
-      thawedTitle.append(space()).append(by);
+      thawedTitle = thawedTitle.append(space()).append(by);
     }
 
     freezee.resetTitle();

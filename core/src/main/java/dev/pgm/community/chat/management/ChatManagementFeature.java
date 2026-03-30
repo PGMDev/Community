@@ -34,16 +34,14 @@ public class ChatManagementFeature extends FeatureBase {
   private boolean lockdown;
   private boolean slowmode;
 
-  private Cache<UUID, String> lastMessageCache;
+  private final Cache<UUID, String> lastMessageCache;
 
   public ChatManagementFeature(Configuration config, Logger logger) {
     super(new ChatManagementConfig(config), logger, "Chat Management");
-    this.lastMessageCache =
-        CacheBuilder.newBuilder()
-            .expireAfterWrite(
-                getChatConfig().getRepeatedMessagesExpireDuration().toMillis(),
-                TimeUnit.MILLISECONDS)
-            .build();
+    this.lastMessageCache = CacheBuilder.newBuilder()
+        .expireAfterWrite(
+            getChatConfig().getRepeatedMessagesExpireDuration().toMillis(), TimeUnit.MILLISECONDS)
+        .build();
     if (getConfig().isEnabled()) {
       enable();
     }
@@ -70,17 +68,14 @@ public class ChatManagementFeature extends FeatureBase {
   }
 
   private void broadcastModeChange(Component modeName, Component hover, boolean enabled) {
-    Component message =
-        text()
-            .append(modeName)
-            .append(text(" has been "))
-            .append(
-                enabled
-                    ? text("enabled", NamedTextColor.GREEN)
-                    : text("disabled", NamedTextColor.RED))
-            .color(NamedTextColor.GRAY)
-            .hoverEvent(HoverEvent.showText(hover))
-            .build();
+    Component message = text()
+        .append(modeName)
+        .append(text(" has been "))
+        .append(
+            enabled ? text("enabled", NamedTextColor.GREEN) : text("disabled", NamedTextColor.RED))
+        .color(NamedTextColor.GRAY)
+        .hoverEvent(HoverEvent.showText(hover))
+        .build();
     BroadcastUtils.sendGlobalWarning(message);
   }
 
@@ -104,7 +99,7 @@ public class ChatManagementFeature extends FeatureBase {
     Component builder = text("Slowmode has been ");
 
     if (isSlowmode()) {
-      builder
+      builder = builder
           .append(text("enabled", NamedTextColor.GREEN))
           .append(text(" in order to reduce spam."))
           .append(newline())
@@ -113,7 +108,7 @@ public class ChatManagementFeature extends FeatureBase {
           .append(text(getChatConfig().getSlowmodeSpeed(), NamedTextColor.YELLOW))
           .append(formatSeconds(getChatConfig().getSlowmodeSpeed()));
     } else {
-      builder
+      builder = builder
           .append(text("disabled", NamedTextColor.RED))
           .append(text(". There is no longer a chat speed restriction in place"));
     }
@@ -166,12 +161,11 @@ public class ChatManagementFeature extends FeatureBase {
         if (timeSince.getSeconds() < getChatConfig().getSlowmodeSpeed()) {
           long seconds = (getChatConfig().getSlowmodeSpeed() - timeSince.getSeconds());
 
-          Component cooldownMsg =
-              text("Please wait ")
-                  .append(text(seconds, NamedTextColor.RED, TextDecoration.BOLD))
-                  .append(formatSeconds(seconds))
-                  .append(text(" before sending another message"))
-                  .color(NamedTextColor.GRAY);
+          Component cooldownMsg = text("Please wait ")
+              .append(text(seconds, NamedTextColor.RED, TextDecoration.BOLD))
+              .append(formatSeconds(seconds))
+              .append(text(" before sending another message"))
+              .color(NamedTextColor.GRAY);
 
           viewer.sendWarning(cooldownMsg);
           event.setCancelled(true);
@@ -208,15 +202,7 @@ public class ChatManagementFeature extends FeatureBase {
 
   private void sendDelayedMessage(final Audience viewer, final Component message) {
     Bukkit.getScheduler()
-        .scheduleSyncDelayedTask(
-            Community.get(),
-            new Runnable() {
-              @Override
-              public void run() {
-                viewer.sendWarning(message);
-              }
-            },
-            30L);
+        .scheduleSyncDelayedTask(Community.get(), () -> viewer.sendWarning(message), 30L);
   }
 
   private Component formatSeconds(long seconds) {

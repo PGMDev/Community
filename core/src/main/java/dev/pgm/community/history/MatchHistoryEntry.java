@@ -26,7 +26,7 @@ public class MatchHistoryEntry implements Comparable<MatchHistoryEntry> {
   private final Duration finalDuration;
   private final Instant endTime;
 
-  private List<Component> staff;
+  private final List<Component> staff;
 
   public MatchHistoryEntry(Match match) {
     this.matchID = match.getId();

@@ -18,11 +18,10 @@ import tc.oc.pgm.doublejump.DoubleJumpKit;
 /** DoubleJumpMutation - Enables {@link DoubleJumpKit} and no fall damage for all players * */
 public class DoubleJumpMutation extends KitMutationBase {
 
-  private static MutationRangeOption JUMP_POWER =
-      new MutationRangeOption(
-          "Jump Power", "Power of double jump", MutationType.JUMP.getMaterial(), true, 2, 1, 10);
+  private static final MutationRangeOption JUMP_POWER = new MutationRangeOption(
+      "Jump Power", "Power of double jump", MutationType.JUMP.getMaterial(), true, 2, 1, 10);
 
-  private DoubleJumpKit disabledKit = getJumpKit(false);
+  private final DoubleJumpKit disabledKit;
 
   public DoubleJumpMutation(Match match) {
     super(match, MutationType.JUMP, getJumpKit(true));

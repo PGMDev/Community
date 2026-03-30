@@ -19,14 +19,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.map.MapInfo;
 
 public interface RequestFeature extends Feature {
 
-  static final String TOKEN_SYMBOL = "✪";
-  static final Component TOKEN = text(TOKEN_SYMBOL, NamedTextColor.GOLD);
-  static final Component SPONSOR = text("+", NamedTextColor.GREEN, TextDecoration.BOLD);
+  String TOKEN_SYMBOL = "✪";
+  Component TOKEN = text(TOKEN_SYMBOL, NamedTextColor.GOLD);
+  Component SPONSOR = text("+", NamedTextColor.GREEN, TextDecoration.BOLD);
 
   /**
    * Submit a map request
@@ -62,7 +62,6 @@ public interface RequestFeature extends Feature {
   /**
    * Get whether the provided player can submit a sponsor request
    *
-   * @param player
    * @return true if player can submit a sponsor request, false if not
    */
   boolean canSponsor(Player player); // If player can sponsor
@@ -70,7 +69,6 @@ public interface RequestFeature extends Feature {
   /**
    * Get whether the provided player can activate a super vote
    *
-   * @param player
    * @return true if the player can activate a super vote, false if not
    */
   boolean canSuperVote(Player player);
@@ -78,7 +76,6 @@ public interface RequestFeature extends Feature {
   /**
    * Get whether the provided player has activated a super vote
    *
-   * @param player
    * @return true if the player has activated a super vote, false if not
    */
   boolean isSuperVoteActive(Player player);

@@ -6,9 +6,9 @@ import org.bukkit.Material;
 
 public class MapPartySettings {
 
-  private PartyBooleanSetting showLoginMessage;
-  private PartyBooleanSetting showPartyNotifications;
-  private PartyBooleanSetting autoscalingTeams;
+  private final PartyBooleanSetting showLoginMessage;
+  private final PartyBooleanSetting showPartyNotifications;
+  private final PartyBooleanSetting autoscalingTeams;
 
   public MapPartySettings(MapPartyConfig config) {
     this.showLoginMessage = new PartyBooleanSetting(

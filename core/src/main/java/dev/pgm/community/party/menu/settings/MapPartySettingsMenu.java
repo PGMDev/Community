@@ -172,9 +172,8 @@ public class MapPartySettingsMenu extends MapPartyMenu {
             colorize("&7Click to toggle mode"))
         .flags(ItemFlag.values());
 
-    return ClickableItem.of(builder.build(), c -> {
-      Bukkit.dispatchCommand(getViewer(), "event mode");
-    });
+    return ClickableItem.of(
+        builder.build(), c -> Bukkit.dispatchCommand(getViewer(), "event mode"));
   }
 
   private ClickableItem getSettingItem(PartyBooleanSetting setting) {

@@ -6,9 +6,9 @@ import org.bukkit.Material;
 
 public class MutationListOption<T> extends MutationOption {
 
-  private List<T> options;
+  private final List<T> options;
   private int valueIndex;
-  private T def;
+  private final T def;
 
   public MutationListOption(
       String name,
@@ -19,7 +19,7 @@ public class MutationListOption<T> extends MutationOption {
     super(name, description, iconMaterial, prerequisite);
     this.options = options;
     this.valueIndex = 0;
-    this.def = options.get(0);
+    this.def = options.getFirst();
   }
 
   public ImmutableList<T> getOptions() {

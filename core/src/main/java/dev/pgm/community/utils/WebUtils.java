@@ -10,7 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -47,7 +48,7 @@ public class WebUtils {
       String response = "ERROR_404";
       HttpURLConnection url;
       try {
-        url = (HttpURLConnection) new URL(RANDOM_NAME_API).openConnection();
+        url = (HttpURLConnection) new URI(RANDOM_NAME_API).toURL().openConnection();
 
         url.setRequestMethod("GET");
         url.setRequestProperty("User-Agent", "Community");
@@ -59,7 +60,7 @@ public class WebUtils {
             new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
           response = br.readLine().trim();
         }
-      } catch (IOException e) {
+      } catch (IOException | URISyntaxException e) {
         e.printStackTrace();
       }
 
@@ -85,7 +86,8 @@ public class WebUtils {
       JsonObject obj = null;
       HttpURLConnection url;
       try {
-        url = (HttpURLConnection) new URL(USERNAME_API + assertNotNull(input)).openConnection();
+        url = (HttpURLConnection)
+            new URI(USERNAME_API + assertNotNull(input)).toURL().openConnection();
 
         url.setRequestMethod("GET");
         url.setRequestProperty("User-Agent", "Community");
@@ -103,7 +105,7 @@ public class WebUtils {
           }
           obj = new Gson().fromJson(data.toString(), JsonObject.class);
         }
-      } catch (IOException e) {
+      } catch (IOException | URISyntaxException e) {
         Community.log("%s", e.getMessage());
       }
       return obj;

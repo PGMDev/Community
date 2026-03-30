@@ -105,7 +105,7 @@ public final class DatabaseExecutor {
     return CompletableFuture.supplyAsync(
         () -> {
           Optional<Connection> connOpt = getConnection();
-          if (!connOpt.isPresent()) {
+          if (connOpt.isEmpty()) {
             return fallback.get();
           }
           try (Connection conn = connOpt.get()) {

@@ -13,7 +13,7 @@ public class NameUtils {
 
   public static boolean isPlayerId(String uuid) {
     try {
-      UUID playerId = UUID.fromString(uuid);
+      UUID.fromString(uuid);
       return true;
     } catch (IllegalArgumentException e) {
       return false;

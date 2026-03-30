@@ -9,7 +9,7 @@ import dev.pgm.community.moderation.tools.buttons.TranslatableToolButton;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -79,13 +79,10 @@ public class GamemodeButton extends TranslatableToolButton {
   }
 
   private GameMode getOppositeMode(GameMode mode) {
-    switch (mode) {
-      case CREATIVE:
-        return GameMode.SPECTATOR;
-      case SPECTATOR:
-        return GameMode.CREATIVE;
-      default:
-        return mode;
-    }
+    return switch (mode) {
+      case CREATIVE -> GameMode.SPECTATOR;
+      case SPECTATOR -> GameMode.CREATIVE;
+      default -> mode;
+    };
   }
 }

@@ -38,7 +38,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.events.PlayerJoinMatchEvent;
@@ -85,8 +85,8 @@ public class BreadMutation extends KitMutationBase {
   private final WeightedRandomChooser<ItemStack> breadChooser;
   private final WeightedRandomChooser<ItemStack> badBreadChooser;
   private final Random random;
-  private WeightedRandomChooser<PotionEffectType> potionChooser;
-  private Set<UUID> badBreadSet;
+  private final WeightedRandomChooser<PotionEffectType> potionChooser;
+  private final Set<UUID> badBreadSet;
 
   public BreadMutation(Match match) {
     super(match, MutationType.BREAD);
@@ -240,9 +240,8 @@ public class BreadMutation extends KitMutationBase {
 
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerDamageByEntity(EntityDamageByEntityEvent event) {
-    if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
+    if (event.getDamager() instanceof Player && event.getEntity() instanceof Player hitPlayer) {
       ItemStack itemInHand = ((Player) event.getDamager()).getItemInHand();
-      Player hitPlayer = (Player) event.getEntity();
       if (itemInHand.isSimilar(POTION_BREAD)) {
         hitPlayer.addPotionEffect(new PotionEffect(
             potionChooser.choose(random), 20 * random.nextInt(7) + 3, random.nextInt(2) + 1));
@@ -330,7 +329,7 @@ public class BreadMutation extends KitMutationBase {
     return origin;
   }
 
-  @NotNull
+  @NonNull
   private static Location copyLocation(Location origin, int x, int y, int z) {
     Location possibleLocation =
         new Location(origin.getWorld(), origin.getX() + x, origin.getY() + y, origin.getZ() + z);
@@ -359,8 +358,7 @@ public class BreadMutation extends KitMutationBase {
 
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerDamage(EntityDamageEvent event) {
-    if (event.getEntity() instanceof Player) {
-      Player player = (Player) event.getEntity();
+    if (event.getEntity() instanceof Player player) {
       if (player.getItemInHand().isSimilar(ARMORED_BREAD)) {
         event.setDamage(event.getDamage() * 0.5);
       }

@@ -12,8 +12,8 @@ import dev.pgm.community.utils.compatibility.Materials;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.InventoryProvider;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -43,8 +43,8 @@ public class MutationOptionsMenu implements InventoryProvider {
 
     List<MutationOption> options = mutations.getMutations().stream()
         .map(Mutation::getOptions)
-        .flatMap(mo -> mo.stream())
-        .collect(Collectors.toList());
+        .flatMap(Collection::stream)
+        .toList();
 
     if (options.isEmpty()) {
       contents.set(1, 4, getNoMutationsIcon());
@@ -73,9 +73,7 @@ public class MutationOptionsMenu implements InventoryProvider {
             .name(colorize("&eReturn to Mutations"))
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          mutations.getMenu().open(viewer);
-        });
+        c -> mutations.getMenu().open(viewer));
   }
 
   private ClickableItem getOptionIcon(MutationOption option) {
@@ -88,7 +86,7 @@ public class MutationOptionsMenu implements InventoryProvider {
     }
 
     if (option instanceof MutationListOption) {
-      return getListIcon((MutationListOption) option);
+      return getListIcon((MutationListOption<?>) option);
     }
 
     return null; // Option type not implemented yet
@@ -110,9 +108,7 @@ public class MutationOptionsMenu implements InventoryProvider {
                     + ": "
                     + getBooleanValue(option.getValue()))
             .build(),
-        c -> {
-          option.setValue(!option.getValue());
-        });
+        c -> option.setValue(!option.getValue()));
   }
 
   private ClickableItem getRangeIcon(MutationRangeOption option) {
@@ -156,7 +152,7 @@ public class MutationOptionsMenu implements InventoryProvider {
         });
   }
 
-  private ClickableItem getListIcon(MutationListOption option) {
+  private ClickableItem getListIcon(MutationListOption<?> option) {
     return ClickableItem.of(
         getItem(option)
             .lore(

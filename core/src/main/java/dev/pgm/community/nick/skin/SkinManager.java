@@ -6,7 +6,7 @@ import tc.oc.pgm.util.skin.Skin;
 
 public class SkinManager {
 
-  private SkinCache cache;
+  private final SkinCache cache;
 
   public SkinManager() {
     this.cache = new SkinCache();

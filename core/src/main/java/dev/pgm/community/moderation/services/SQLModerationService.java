@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SQLModerationService extends SQLFeatureBase<Punishment, String>
     implements ModerationQuery {
@@ -26,20 +26,15 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
 
   private static final int RECENT_LIMIT = 50;
 
-  private LoadingCache<UUID, PlayerPunishments> punishmentCache;
+  private final LoadingCache<UUID, PlayerPunishments> punishmentCache;
 
   private final ModerationConfig config;
 
   public SQLModerationService(ModerationConfig config) {
     super(TABLE_NAME, TABLE_FIELDS);
     this.config = config;
-    this.punishmentCache = CacheBuilder.newBuilder()
-        .build(new CacheLoader<UUID, PlayerPunishments>() {
-          @Override
-          public PlayerPunishments load(UUID key) throws Exception {
-            return new PlayerPunishments(key);
-          }
-        });
+    this.punishmentCache =
+        CacheBuilder.newBuilder().build(CacheLoader.from(PlayerPunishments::new));
   }
 
   @Override
@@ -114,7 +109,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
     long expires = punishment.getTimeIssued().toEpochMilli();
 
     if (punishment instanceof ExpirablePunishment) {
-      Duration time = ((ExpirablePunishment) punishment).getDuration();
+      Duration time = punishment.getDuration();
       expires = punishment.getTimeIssued().plusMillis(time.toMillis()).toEpochMilli();
     }
 
@@ -228,7 +223,7 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
     }
   }
 
-  private class PlayerPunishments {
+  private static class PlayerPunishments {
 
     private final UUID playerId;
     private final List<Punishment> punishments;

@@ -34,7 +34,7 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class WebSlingersMutation extends KitMutationBase implements BowMutation {
 
-  private static MutationRangeOption WEB_LIFE = new MutationRangeOption(
+  private static final MutationRangeOption WEB_LIFE = new MutationRangeOption(
       "Web Life",
       "Length of time before webs are removed",
       MutationType.WEB_SLINGERS.getMaterial(),
@@ -45,7 +45,7 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
 
   private int cleanupTask;
 
-  private Map<Location, Long> webLocations = Maps.newHashMap();
+  private final Map<Location, Long> webLocations;
 
   public WebSlingersMutation(Match match) {
     super(match, MutationType.WEB_SLINGERS, getWebBowKit());
@@ -87,8 +87,7 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
 
   @EventHandler
   public void onShootWeb(final EntityShootBowEvent event) {
-    if (!(event.getEntity() instanceof Player)) return;
-    Player player = (Player) event.getEntity();
+    if (!(event.getEntity() instanceof Player player)) return;
     if (player == null || match.getParticipant(player) == null) return;
     ItemStack bow = event.getBow();
 
@@ -104,8 +103,7 @@ public class WebSlingersMutation extends KitMutationBase implements BowMutation 
 
   @EventHandler
   public void onWebLand(final EntityChangeBlockEvent event) {
-    if (!(event.getEntity() instanceof FallingBlock)) return;
-    FallingBlock block = (FallingBlock) event.getEntity();
+    if (!(event.getEntity() instanceof FallingBlock block)) return;
     if (block.getMaterial() != Materials.WEB) return;
 
     Location location = block.getLocation();

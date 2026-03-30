@@ -89,17 +89,14 @@ public class ReportCommands extends CommunityCommand {
     checkEnabled();
 
     if (player != null) {
-      reports
-          .query(player)
-          .thenAcceptAsync(
-              reports -> {
-                if (reports.isEmpty()) {
-                  audience.sendWarning(
-                      text("No reports found for ").append(text(player, NamedTextColor.AQUA)));
-                  return;
-                }
-                sendReportHistory(audience, reports, page);
-              });
+      reports.query(player).thenAcceptAsync(reports -> {
+        if (reports.isEmpty()) {
+          audience.sendWarning(
+              text("No reports found for ").append(text(player, NamedTextColor.AQUA)));
+          return;
+        }
+        sendReportHistory(audience, reports, page);
+      });
       return;
     }
 
@@ -111,18 +108,17 @@ public class ReportCommands extends CommunityCommand {
 
     int perPage = 7;
     int pages = (reportData.size() + perPage - 1) / perPage;
-    page = Math.max(1, Math.min(page, pages));
+    page = Math.clamp(page, 1, pages);
 
-    Component pageNum =
-        translatable(
-            "command.simplePageHeader",
-            NamedTextColor.GRAY,
-            text(Integer.toString(page), NamedTextColor.RED),
-            text(Integer.toString(pages), NamedTextColor.RED));
+    Component pageNum = translatable(
+        "command.simplePageHeader",
+        NamedTextColor.GRAY,
+        text(Integer.toString(page), NamedTextColor.RED),
+        text(Integer.toString(pages), NamedTextColor.RED));
 
-    Component header =
-        translatable("moderation.reports.header", NamedTextColor.GRAY, headerResultCount, pageNum)
-            .append(text(" (").append(headerResultCount).append(text(") » ")).append(pageNum));
+    Component header = translatable(
+            "moderation.reports.header", NamedTextColor.GRAY, headerResultCount, pageNum)
+        .append(text(" (").append(headerResultCount).append(text(") » ")).append(pageNum));
 
     Component formattedHeader =
         TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.DARK_GRAY);
@@ -132,23 +128,19 @@ public class ReportCommands extends CommunityCommand {
         Component reporterName = getReportFormatName(data.getSenderId()).join();
         Component reportedName = getReportFormatName(data.getTargetId()).join();
 
-        Component serverName =
-            text("Server ", NamedTextColor.GRAY)
-                .append(text(": ", NamedTextColor.DARK_GRAY))
-                .append(text(data.getServer(), NamedTextColor.AQUA));
+        Component serverName = text("Server ", NamedTextColor.GRAY)
+            .append(text(": ", NamedTextColor.DARK_GRAY))
+            .append(text(data.getServer(), NamedTextColor.AQUA));
 
-        TextComponent.Builder reporter =
-            text()
-                .append(
-                    translatable("moderation.reports.hover", NamedTextColor.GRAY, reporterName));
+        TextComponent.Builder reporter = text()
+            .append(translatable("moderation.reports.hover", NamedTextColor.GRAY, reporterName));
 
         if (!data.getServer().equalsIgnoreCase(Community.get().getServerConfig().getServerId())) {
           reporter.append(newline()).append(serverName);
         }
 
-        Component timeAgo =
-            TemporalComponent.relativePastApproximate(data.getTime())
-                .color(NamedTextColor.DARK_GREEN);
+        Component timeAgo = TemporalComponent.relativePastApproximate(data.getTime())
+            .color(NamedTextColor.DARK_GREEN);
 
         return text()
             .append(timeAgo.hoverEvent(HoverEvent.showText(reporter.build())))
@@ -171,9 +163,7 @@ public class ReportCommands extends CommunityCommand {
     return usernames
         .getStoredUsername(id)
         .thenApplyAsync(
-            name -> {
-              return PlayerComponent.player(Bukkit.getPlayer(id), name, NameStyle.FANCY);
-            });
+            name -> PlayerComponent.player(Bukkit.getPlayer(id), name, NameStyle.FANCY));
   }
 
   private void checkEnabled() {

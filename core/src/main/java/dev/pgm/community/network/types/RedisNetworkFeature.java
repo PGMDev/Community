@@ -19,7 +19,7 @@ public class RedisNetworkFeature extends NetworkFeatureBase {
 
   private JedisPool pool;
 
-  private Set<NetworkSubscriber> subscribers;
+  private final Set<NetworkSubscriber> subscribers;
 
   public RedisNetworkFeature(Configuration config, Logger logger) {
     super(config, logger, "Network (Redis)");
@@ -33,19 +33,18 @@ public class RedisNetworkFeature extends NetworkFeatureBase {
   @Override
   public void enable() {
     super.enable();
-    this.pool =
-        new JedisPool(
-            new JedisPoolConfig(),
-            getNetworkConfig().getHost(),
-            getNetworkConfig().getPort(),
-            Protocol.DEFAULT_TIMEOUT,
-            getNetworkConfig().getPassword(),
-            getNetworkConfig().isSSL());
+    this.pool = new JedisPool(
+        new JedisPoolConfig(),
+        getNetworkConfig().getHost(),
+        getNetworkConfig().getPort(),
+        Protocol.DEFAULT_TIMEOUT,
+        getNetworkConfig().getPassword(),
+        getNetworkConfig().isSSL());
 
     testConnection();
 
     // Delay subscriber so all features can register
-    Community.get().getServer().getScheduler().runTaskLater(Community.get(), this::subscribe, 20l);
+    Community.get().getServer().getScheduler().runTaskLater(Community.get(), this::subscribe, 20L);
   }
 
   @Override
@@ -72,34 +71,24 @@ public class RedisNetworkFeature extends NetworkFeatureBase {
   }
 
   private void asyncSubscribe(NetworkSubscriber sub) {
-    Community.get()
-        .getServer()
-        .getScheduler()
-        .runTaskAsynchronously(
-            Community.get(),
-            () -> {
-              try (Jedis jedi = pool.getResource()) {
-                jedi.subscribe(sub, sub.getChannel());
-              }
-            });
+    Community.get().getServer().getScheduler().runTaskAsynchronously(Community.get(), () -> {
+      try (Jedis jedi = pool.getResource()) {
+        jedi.subscribe(sub, sub.getChannel());
+      }
+    });
   }
 
   @Override
   public void sendUpdate(NetworkUpdate update) {
     if (!isEnabled()) return;
-    Community.get()
-        .getServer()
-        .getScheduler()
-        .runTaskAsynchronously(
-            Community.get(),
-            () -> {
-              if (pool != null) {
-                try (Jedis jedi = pool.getResource()) {
-                  jedi.publish(
-                      update.getChannel(),
-                      String.format("%s;%s", getNetworkConfig().getNetworkId(), update.getData()));
-                }
-              }
-            });
+    Community.get().getServer().getScheduler().runTaskAsynchronously(Community.get(), () -> {
+      if (pool != null) {
+        try (Jedis jedi = pool.getResource()) {
+          jedi.publish(
+              update.getChannel(),
+              String.format("%s;%s", getNetworkConfig().getNetworkId(), update.getData()));
+        }
+      }
+    });
   }
 }

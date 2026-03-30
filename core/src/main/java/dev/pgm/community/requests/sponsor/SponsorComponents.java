@@ -28,9 +28,9 @@ public class SponsorComponents {
 
   public static ComponentLike getMapSizeBoundsComponent(MapSizeBounds bounds) {
     return text("(", NamedTextColor.YELLOW)
-        .append(text(bounds.getLowerBound(), NamedTextColor.GOLD))
+        .append(text(bounds.lowerBound(), NamedTextColor.GOLD))
         .append(text("-"))
-        .append(text(bounds.getUpperBound(), NamedTextColor.GOLD))
+        .append(text(bounds.upperBound(), NamedTextColor.GOLD))
         .append(text(")"));
   }
 

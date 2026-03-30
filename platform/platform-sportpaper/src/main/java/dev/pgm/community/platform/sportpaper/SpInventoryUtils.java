@@ -6,7 +6,6 @@ import dev.pgm.community.util.InventoryUtils;
 import dev.pgm.community.util.Supports;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -30,7 +29,7 @@ public class SpInventoryUtils implements InventoryUtils {
   public ItemStack getRandomPotion(boolean splash, Random random) {
     List<PotionType> safeTypes = Stream.of(PotionType.values())
         .filter(p -> p != PotionType.WATER) // No water lol
-        .collect(Collectors.toList());
+        .toList();
     PotionType randomType = safeTypes.get(random.nextInt(safeTypes.size()));
     Potion potion = new Potion(randomType, 1, splash);
     ItemStack item = new ItemStack(Material.POTION);

@@ -99,9 +99,7 @@ public class MapPartyMainMenu extends MapPartyMenu {
                 .material(Material.CAKE)
                 .name(colorize("&aCreate a new map party"))
                 .build(),
-            c -> {
-              selectTypeSub.open(this);
-            }));
+            c -> selectTypeSub.open(this)));
 
     List<MapPartyPreset> presets = getFeature().getPresets();
     int[] SLOTS = {1, 3, 5, 7};
@@ -126,28 +124,26 @@ public class MapPartyMainMenu extends MapPartyMenu {
   }
 
   private ClickableItem getStartIcon() {
-    return ClickableItem.of(START_ITEM, c -> {
-      getParty().ifPresent(party -> {
-        Bukkit.dispatchCommand(getViewer(), "event start " + (c.isLeftClick() ? "false" : "true"));
-      });
-    });
+    return ClickableItem.of(
+        START_ITEM,
+        c -> getParty()
+            .ifPresent(
+                party -> Bukkit.dispatchCommand(getViewer(), "event start " + (!c.isLeftClick()))));
   }
 
   private ClickableItem getRestartIcon() {
-    return ClickableItem.of(RESTART_ITEM, c -> {
-      getParty().ifPresent(party -> {
-        Bukkit.dispatchCommand(getViewer(), "event restart");
-      });
-    });
+    return ClickableItem.of(
+        RESTART_ITEM,
+        c -> getParty().ifPresent(party -> Bukkit.dispatchCommand(getViewer(), "event restart")));
   }
 
   private ClickableItem getEndIcon() {
-    return ClickableItem.of(END_ITEM, c -> {
-      getParty().ifPresent(party -> {
-        Bukkit.dispatchCommand(getViewer(), "event stop");
-        close();
-      });
-    });
+    return ClickableItem.of(
+        END_ITEM,
+        c -> getParty().ifPresent(party -> {
+          Bukkit.dispatchCommand(getViewer(), "event stop");
+          close();
+        }));
   }
 
   private ClickableItem getHostIcon(MapPartyHosts hosts) {
@@ -159,9 +155,7 @@ public class MapPartyMainMenu extends MapPartyMenu {
             .lore(colorize("&7Click to manage party hosts"))
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          new HostMenu(getFeature(), getViewer());
-        });
+        c -> new HostMenu(getFeature(), getViewer()));
   }
 
   private ClickableItem getMapsIcon(MapPartyType type) {
@@ -173,9 +167,7 @@ public class MapPartyMainMenu extends MapPartyMenu {
                 "&7Click to manage party " + (type == MapPartyType.REGULAR ? "pool" : "maps")))
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          Bukkit.dispatchCommand(getViewer(), "event maps");
-        });
+        c -> Bukkit.dispatchCommand(getViewer(), "event maps"));
   }
 
   private ClickableItem getSettingsIcon() {
@@ -186,9 +178,7 @@ public class MapPartyMainMenu extends MapPartyMenu {
             .lore(colorize("&7Click to manage party settings"))
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          new MapPartySettingsMenu(getFeature(), getViewer());
-        });
+        c -> new MapPartySettingsMenu(getFeature(), getViewer()));
   }
 
   private ClickableItem getModifierMenu() {
@@ -199,20 +189,18 @@ public class MapPartyMainMenu extends MapPartyMenu {
             .lore(colorize("&7Click to manage party modifiers"))
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          new MapPartyModifierMenu(getFeature(), getViewer());
-        });
+        c -> new MapPartyModifierMenu(getFeature(), getViewer()));
   }
 
   private ClickableItem getPresetIcon(MapPartyPreset preset) {
     List<String> lore = Lists.newArrayList();
-    lore.add(colorize("&6Description&7: &3" + preset.getDescription()));
+    lore.add(colorize("&6Description&7: &3" + preset.description()));
     lore.add(colorize("&6Mode&7: &a" + preset.getType().getName()));
 
     if (preset.getType() == MapPartyType.REGULAR) {
-      lore.add(colorize("&6Pool&7: &b" + preset.getPool()));
+      lore.add(colorize("&6Pool&7: &b" + preset.pool()));
     } else {
-      lore.add(colorize("&6Maps: &b" + preset.getMaps().size()));
+      lore.add(colorize("&6Maps: &b" + preset.maps().size()));
     }
 
     lore.add("");
@@ -222,17 +210,17 @@ public class MapPartyMainMenu extends MapPartyMenu {
         new ItemBuilder()
             .material(Materials.STAINED_GLASS_PANE)
             .color(DyeColor.CYAN)
-            .name(colorize(preset.getName()))
-            .lore(lore.toArray(new String[lore.size()]))
+            .name(colorize(preset.name()))
+            .lore(lore.toArray(new String[0]))
             .build(),
         c -> {
-          String command = "event preset " + preset.getName();
+          String command = "event preset " + preset.name();
           if (getFeature().requiresForceForCreate()) {
             new MapPartyCreateConfirmMenu(
                     getFeature(),
                     getViewer(),
-                    "event preset --force " + preset.getName(),
-                    preset.getName())
+                    "event preset --force " + preset.name(),
+                    preset.name())
                 .open(this);
           } else {
             Bukkit.dispatchCommand(getViewer(), command);
@@ -249,11 +237,11 @@ public class MapPartyMainMenu extends MapPartyMenu {
   }
 
   private static final String START_PARTY_SKIN =
-      "http://textures.minecraft.net/texture/4ae29422db4047efdb9bac2cdae5a0719eb772fccc88a66d912320b343c341";
+      "https://textures.minecraft.net/texture/4ae29422db4047efdb9bac2cdae5a0719eb772fccc88a66d912320b343c341";
   private static final String RESTART_PARTY_SKIN =
-      "http://textures.minecraft.net/texture/479e8cf21b839b255a2836e251941c5fdc99af01559e3733d5325ccfa3d922aa";
+      "https://textures.minecraft.net/texture/479e8cf21b839b255a2836e251941c5fdc99af01559e3733d5325ccfa3d922aa";
   private static final String END_PARTY_SKIN =
-      "http://textures.minecraft.net/texture/e9cdb9af38cf41daa53bc8cda7665c509632d14e678f0f19f263f46e541d8a30";
+      "https://textures.minecraft.net/texture/e9cdb9af38cf41daa53bc8cda7665c509632d14e678f0f19f263f46e541d8a30";
 
   private static final ItemStack START_ITEM = PLAYER_UTILS.customSkull(
       START_PARTY_SKIN,

@@ -9,9 +9,9 @@ import tc.oc.pgm.api.player.event.ObserverInteractEvent;
 
 public class ModerationTools {
 
-  private ModerationMenuTool menu;
-  private TeleportHook tpHook;
-  private LookupSign sign;
+  private final ModerationMenuTool menu;
+  private final TeleportHook tpHook;
+  private final LookupSign sign;
 
   public ModerationTools(ModerationConfig config) {
     // TODO: allow reloads to enable/disable tools

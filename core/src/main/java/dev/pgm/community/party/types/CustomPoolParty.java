@@ -25,7 +25,7 @@ public class CustomPoolParty extends MapPartyBase {
 
   private boolean voted;
 
-  private List<MapInfo> maps;
+  private final List<MapInfo> maps;
 
   public CustomPoolParty(Player creator, Duration length, MapPartyConfig config) {
     this(

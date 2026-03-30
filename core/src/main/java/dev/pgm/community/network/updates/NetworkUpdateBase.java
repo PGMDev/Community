@@ -5,9 +5,9 @@ import dev.pgm.community.utils.gson.GsonProvider;
 
 public abstract class NetworkUpdateBase<T> implements NetworkUpdate {
 
-  private T item;
-  private String channel;
-  private Gson gson;
+  private final T item;
+  private final String channel;
+  private final Gson gson;
 
   public NetworkUpdateBase(T item, String channel) {
     this.item = item;

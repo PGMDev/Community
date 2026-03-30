@@ -6,6 +6,7 @@ import static tc.oc.pgm.util.player.PlayerComponent.player;
 import dev.pgm.community.feature.FeatureBase;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.Sounds;
+import java.util.Objects;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -32,7 +33,8 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
   public void teleport(
       CommandAudience sender, Player teleporter, Location target, Component message) {
     boolean involved = sender.isPlayer()
-        && (sender.getPlayer().equals(teleporter) || sender.getPlayer().equals(teleporter));
+        && (Objects.equals(sender.getPlayer(), teleporter)
+            || Objects.equals(sender.getPlayer(), teleporter));
 
     teleporter.teleport(target);
     if (message != null) {
@@ -57,7 +59,8 @@ public class TeleportFeatureBase extends FeatureBase implements TeleportFeature 
       Component targetMsg,
       boolean senderFeedback) {
     boolean involved = sender.isPlayer()
-        && (sender.getPlayer().equals(teleporter) || sender.getPlayer().equals(target));
+        && (Objects.equals(sender.getPlayer(), teleporter)
+            || Objects.equals(sender.getPlayer(), target));
 
     teleporter.teleport(target);
 

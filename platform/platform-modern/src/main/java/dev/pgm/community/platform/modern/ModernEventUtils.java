@@ -7,7 +7,7 @@ import dev.pgm.community.util.Supports;
 import org.bukkit.entity.FishHook;
 import org.bukkit.event.player.PlayerFishEvent;
 
-@Supports(value = PAPER, minVersion = "1.20.6")
+@Supports(value = PAPER, minVersion = "1.21.11")
 public class ModernEventUtils implements EventUtils {
   @Override
   public FishHook getFishHook(PlayerFishEvent fishEvent) {

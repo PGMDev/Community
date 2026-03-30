@@ -2,6 +2,7 @@ package dev.pgm.community.utils;
 
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import com.google.common.collect.Lists;
@@ -35,7 +36,7 @@ public class MessageUtils {
   public static final Component TOKEN = text(TOKEN_SYMBOL, NamedTextColor.GOLD);
   public static final Component VOTE = text(VOTE_SYMBOL, NamedTextColor.LIGHT_PURPLE);
 
-  public static final Component getStoreLink() {
+  public static Component getStoreLink() {
     return text()
         .append(text(
             Community.get().getServerConfig().getStoreLink(),
@@ -54,10 +55,11 @@ public class MessageUtils {
         LegacyFormatUtils.horizontalLine(ChatColor.DARK_GRAY, LegacyFormatUtils.MAX_CHAT_WIDTH));
 
     message.add(header); // Header Line - FIRST
-    lines.forEach(message::add); // Add messages
+    message.addAll(lines); // Add messages
     message.add(footer); // Footer Line - LAST
 
-    return TextTranslations.translateLegacy(Component.join(text("\n" + ChatColor.RESET), message));
+    return TextTranslations.translateLegacy(
+        Component.join(separator(text("\n" + ChatColor.RESET)), message));
   }
 
   public static Component formatUnseen(String target) {
@@ -125,12 +127,13 @@ public class MessageUtils {
     }
   }
 
-  private static final Pattern URL_PATTERN = Pattern.compile(
-      "(https?://[\\w\\-\\.]+(:\\d+)?(/[\\w\\-\\./?%&=]*)?)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern URL_PATTERN =
+      Pattern.compile("(https?://[\\w\\-.]+(:\\d+)?(/[\\w\\-./?%&=]*)?)", Pattern.CASE_INSENSITIVE);
 
   private static Component addUrlEventsToComponent(Component component) {
-    return component.replaceText(
-        builder -> builder.match(URL_PATTERN).replacement((matchResult, textComponentBuilder) -> {
+    return component.replaceText(builder -> builder
+        .match(URL_PATTERN)
+        .replacement((matchResult, textComponentBuilder) -> {
           String url = matchResult.group();
           return Component.text(url)
               .color(NamedTextColor.BLUE)

@@ -16,7 +16,7 @@ import tc.oc.pgm.util.text.TextParser;
 
 public class UserProfileLoginListener implements Listener {
 
-  private UsersFeature users;
+  private final UsersFeature users;
 
   public UserProfileLoginListener(UsersFeature users) {
     this.users = users;
@@ -41,7 +41,7 @@ public class UserProfileLoginListener implements Listener {
             .replace("%name%", player.getName());
         boolean message = command.startsWith("!send");
         if (message) {
-          String msg = command.substring(5, command.length());
+          String msg = command.substring(5);
           Audience.get(player).sendMessage(TextParser.parseComponent(MessageUtils.format(msg)));
         } else {
           Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);

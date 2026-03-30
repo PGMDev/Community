@@ -22,23 +22,23 @@ import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.map.MapInfo;
 
 public class PollBuilder {
 
   private static final int MAX_POLL_OPTIONS = 4;
 
-  private PollEditAlerter alert; // Used to broadcast changes to values
+  private final PollEditAlerter alert; // Used to broadcast changes to values
 
   // Required
   private Component question;
   private UUID creator;
-  private PollThreshold threshold = PollThreshold.SIMPLE;
+  private PollThreshold threshold;
   private Duration duration;
 
   // Optional
-  private Set<EndAction> endActions = Sets.newHashSet();
+  private final Set<EndAction> endActions = Sets.newHashSet();
 
   public PollBuilder(PollConfig config, PollEditAlerter alert) {
     this.alert = alert;
@@ -152,17 +152,14 @@ public class PollBuilder {
       endActions.add(new NullEndAction());
     }
 
-    for (EndAction action : endActions) {
-      actions.add(action);
-    }
+    actions.addAll(endActions);
 
     if (question == null) {
       question = generateQuestion(actions);
     }
 
     if (actions.size() == 1) {
-      poll = new SingleChoicePoll(
-          question, creator, threshold, duration, actions.iterator().next());
+      poll = new SingleChoicePoll(question, creator, threshold, duration, actions.getFirst());
     } else if (endActions.size() > 1) {
       threshold = PollThreshold.SIMPLE;
       poll = new MultiChoicePoll(question, creator, threshold, duration, actions);
@@ -200,7 +197,7 @@ public class PollBuilder {
     }
 
     if (actions.size() == 1) {
-      return actions.iterator().next().getDefaultQuestion();
+      return actions.getFirst().getDefaultQuestion();
     }
 
     Set<Class<? extends EndAction>> uniqueActionTypes = new HashSet<>();
@@ -211,39 +208,35 @@ public class PollBuilder {
       }
     }
 
-    if (uniqueActionTypes.size() == 1) {
-      Class<? extends EndAction> singleActionType = uniqueActionTypes.iterator().next();
-      NamedTextColor textColor = NamedTextColor.WHITE;
-      String actionTypeName = "";
-      String questionSuffix = "";
+    Class<? extends EndAction> singleActionType = uniqueActionTypes.iterator().next();
+    NamedTextColor textColor = NamedTextColor.WHITE;
+    String actionTypeName = "";
+    String questionSuffix = "";
 
-      if (singleActionType.equals(CommandEndAction.class)) {
-        actionTypeName = "command";
-        textColor = NamedTextColor.AQUA;
-        questionSuffix = "execute?";
-      } else if (singleActionType.equals(KickPlayerEndAction.class)) {
-        actionTypeName = "player";
-        textColor = NamedTextColor.GOLD;
-        questionSuffix = "kick?";
-      } else if (singleActionType.equals(MutationEndAction.class)) {
-        actionTypeName = "mutation";
-        textColor = NamedTextColor.GREEN;
-        questionSuffix = "toggle?";
-      } else if (singleActionType.equals(MapEndAction.class)) {
-        actionTypeName = "map";
-        textColor = NamedTextColor.YELLOW;
-        questionSuffix = "play next?";
-      }
-
-      return text()
-          .append(text("Which "))
-          .append(text(actionTypeName, textColor))
-          .append(text(" should we "))
-          .append(text(questionSuffix))
-          .color(NamedTextColor.WHITE)
-          .build();
+    if (singleActionType.equals(CommandEndAction.class)) {
+      actionTypeName = "command";
+      textColor = NamedTextColor.AQUA;
+      questionSuffix = "execute?";
+    } else if (singleActionType.equals(KickPlayerEndAction.class)) {
+      actionTypeName = "player";
+      textColor = NamedTextColor.GOLD;
+      questionSuffix = "kick?";
+    } else if (singleActionType.equals(MutationEndAction.class)) {
+      actionTypeName = "mutation";
+      textColor = NamedTextColor.GREEN;
+      questionSuffix = "toggle?";
+    } else if (singleActionType.equals(MapEndAction.class)) {
+      actionTypeName = "map";
+      textColor = NamedTextColor.YELLOW;
+      questionSuffix = "play next?";
     }
 
-    return text("What should we do?", NamedTextColor.WHITE);
+    return text()
+        .append(text("Which "))
+        .append(text(actionTypeName, textColor))
+        .append(text(" should we "))
+        .append(text(questionSuffix))
+        .color(NamedTextColor.WHITE)
+        .build();
   }
 }

@@ -7,10 +7,8 @@ plugins {
 }
 
 dependencies {
-    compileOnly("dev.pgm.paper:paper-api:1.8_1.21.10-SNAPSHOT")
+    compileOnly("dev.pgm.paper:paper-api:1.8_1.21.11-SNAPSHOT")
     compileOnly("tc.oc.occ:Database:2.0.0-SNAPSHOT")
-
-    implementation("org.xerial:sqlite-jdbc:3.51.1.0")
 
     implementation(project(":util"))
 
@@ -28,11 +26,9 @@ tasks.named<ShadowJar>("shadowJar") {
         // Exclude from minimization as they're required at runtime
         exclude(project(":platform-sportpaper"))
         exclude(project(":platform-modern"))
-        exclude(dependency("org.xerial:sqlite-jdbc"))
     }
 
     dependencies {
-        exclude(dependency("org.jspecify:jspecify"))
         exclude(dependency("org.jetbrains:annotations"))
     }
 
@@ -71,7 +67,7 @@ tasks {
                 mapOf(
                     "name" to name,
                     "description" to description,
-                    "apiVersion" to "1.21.10",
+                    "apiVersion" to "1.21.11",
                     "mainClass" to "dev.pgm.community.Community",
                     "version" to version,
                     "commitHash" to commitHash,

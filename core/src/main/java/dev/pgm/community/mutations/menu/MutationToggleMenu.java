@@ -16,7 +16,7 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class MutationToggleMenu implements InventoryProvider {
 
-  private MutationFeature mutations;
+  private final MutationFeature mutations;
 
   public MutationToggleMenu(MutationFeature mutations) {
     this.mutations = mutations;
@@ -49,9 +49,7 @@ public class MutationToggleMenu implements InventoryProvider {
             .lore(ChatColor.GRAY + "Click to view active mutation options")
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          mutations.getOptionMenu().open(player);
-        });
+        c -> mutations.getOptionMenu().open(player));
   }
 
   @Override

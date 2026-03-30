@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 /** RefreshPunishmentSubscriber - Invalidates punishment cache for unbans/unmutes */
 public class RefreshPunishmentSubscriber extends NetworkSubscriber {
 
-  private ModerationFeature moderation;
+  private final ModerationFeature moderation;
 
   public RefreshPunishmentSubscriber(
       ModerationFeature moderation, String networkId, Logger logger) {
@@ -24,9 +24,8 @@ public class RefreshPunishmentSubscriber extends NetworkSubscriber {
       moderation.recieveRefresh(playerId);
       logger.info(String.format("Refreshed punishment data for %s", data));
     } catch (IllegalArgumentException e) {
-      logger.warning(
-          String.format(
-              "Invalid UUID (%s) recieved for message channel (%s)", Channels.PUNISHMENTS, data));
+      logger.warning(String.format(
+          "Invalid UUID (%s) recieved for message channel (%s)", Channels.PUNISHMENTS, data));
     }
   }
 }

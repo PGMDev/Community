@@ -14,7 +14,7 @@ public class Report extends AssistanceRequest implements Comparable<Report> {
    * @param reporterId UUID of reporting player
    * @param reason reason for report
    * @param time time reported
-   * @param name of current server
+   * @param server name of current server
    */
   public Report(UUID reportedId, UUID reporterId, String reason, long time, String server) {
     this(UUID.randomUUID(), reportedId, reporterId, reason, time, server);
@@ -51,8 +51,7 @@ public class Report extends AssistanceRequest implements Comparable<Report> {
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof Report)) return false;
-    Report otherReport = (Report) other;
+    if (!(other instanceof Report otherReport)) return false;
     return getId().equals(otherReport.getId());
   }
 }

@@ -123,7 +123,7 @@ public abstract class MapPartyMenu implements InventoryProvider {
   }
 
   protected static final String ADD_SKIN =
-      "http://textures.minecraft.net/texture/b056bc1244fcff99344f12aba42ac23fee6ef6e3351d27d273c1572531f";
+      "https://textures.minecraft.net/texture/b056bc1244fcff99344f12aba42ac23fee6ef6e3351d27d273c1572531f";
 
   protected DyeColor getBorderColor() {
     return getFeature().getParty() == null
@@ -133,9 +133,8 @@ public abstract class MapPartyMenu implements InventoryProvider {
 
   protected ClickableItem getMainMenuIcon() {
     return ClickableItem.of(
-        getNamedItem("&7Return to &dMap Party Manager", Material.CAKE, 1), c -> {
-          Bukkit.dispatchCommand(getViewer(), "event");
-        });
+        getNamedItem("&7Return to &dMap Party Manager", Material.CAKE, 1),
+        c -> Bukkit.dispatchCommand(getViewer(), "event"));
   }
 
   protected ItemStack getPlayerHead(
@@ -161,7 +160,7 @@ public abstract class MapPartyMenu implements InventoryProvider {
     return ClickableItem.of(icon, c -> getInventory().open(player, page));
   }
 
-  private final ItemStack getPageIcon(String text, int page) {
+  private ItemStack getPageIcon(String text, int page) {
     return getNamedItem(text, Material.ARROW, page);
   }
 

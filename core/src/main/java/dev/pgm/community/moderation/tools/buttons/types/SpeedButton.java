@@ -51,7 +51,7 @@ public class SpeedButton extends TranslatableToolButton {
     private final TextColor color;
     private final float value;
 
-    private static FlySpeed[] speeds = values();
+    private static final FlySpeed[] speeds = values();
 
     FlySpeed(TextColor color, float value) {
       this.color = color;

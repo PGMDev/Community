@@ -27,10 +27,8 @@ public class GhostMutation extends KitMutationBase {
     super.enable();
     match.getParties().stream()
         .filter(party -> party instanceof Competitor)
-        .forEach(
-            party ->
-                ((Competitor) party).setNameTagVisibility(NameTagVisibility.HIDE_FOR_OTHER_TEAMS));
-    ;
+        .forEach(party ->
+            ((Competitor) party).setNameTagVisibility(NameTagVisibility.HIDE_FOR_OTHER_TEAMS));
   }
 
   @Override

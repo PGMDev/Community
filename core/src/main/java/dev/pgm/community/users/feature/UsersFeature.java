@@ -10,11 +10,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 
@@ -36,9 +35,10 @@ public interface UsersFeature extends Feature {
    * @return The rendered name component of provided UUID
    */
   default CompletableFuture<Component> renderUsername(Optional<UUID> userId, NameStyle style) {
-    if (!userId.isPresent()) return CompletableFuture.completedFuture(PlayerComponent.CONSOLE);
-    return getStoredUsername(userId.get())
-        .thenApplyAsync(name -> player(Bukkit.getPlayer(userId.get()), name, style));
+    return userId
+        .map(uuid -> getStoredUsername(uuid)
+            .thenApplyAsync(name -> player(Bukkit.getPlayer(uuid), name, style)))
+        .orElseGet(() -> CompletableFuture.completedFuture(PlayerComponent.CONSOLE));
   }
 
   /**
@@ -147,7 +147,6 @@ public interface UsersFeature extends Feature {
    * @param target Player username
    * @param ignoreDisguised Whether the target's latest session should include disguised sessions
    * @param callback The callback to be ran with
-   * @throws ExecutionException
    */
   default void findUserWithSession(
       String target, boolean ignoreDisguised, UserProfileWithSessionCallback callback) {
@@ -158,7 +157,7 @@ public interface UsersFeature extends Feature {
 
           return profile.getLatestSession(ignoreDisguised).join();
         }),
-        (profile, session) -> callback.run(profile, session));
+        callback::run);
   }
 
   /**
@@ -167,7 +166,6 @@ public interface UsersFeature extends Feature {
    * @param id Player UUID
    * @param ignoreDisguised Whether the target's latest session should include disguised sessions
    * @param callback The callback to be ran with
-   * @throws ExecutionException
    */
   default void findUserWithSession(
       UUID id, boolean ignoreDisguised, UserProfileWithSessionCallback callback) {
@@ -178,6 +176,6 @@ public interface UsersFeature extends Feature {
 
           return profile.getLatestSession(ignoreDisguised).join();
         }),
-        (profile, session) -> callback.run(profile, session));
+        callback::run);
   }
 }

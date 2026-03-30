@@ -3,12 +3,11 @@ package dev.pgm.community.utils.ranks;
 import dev.pgm.community.Community;
 import java.util.List;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class RankUtils {
 
-  @Nullable
-  public static RanksConfig.Rank getHighestLevelRank(Player player) {
+  public static RanksConfig.@Nullable Rank getHighestLevelRank(Player player) {
     List<RanksConfig.Rank> allRanks =
         Community.get().getServerConfig().getRanksConfig().getRanks();
     RanksConfig.Rank highestRank = null;

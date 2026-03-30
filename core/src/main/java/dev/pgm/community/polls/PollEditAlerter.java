@@ -22,8 +22,8 @@ import tc.oc.pgm.util.text.TemporalComponent;
 
 public interface PollEditAlerter {
 
-  static final NamedTextColor CATEGORY_COLOR = NamedTextColor.DARK_AQUA;
-  static final Component RESET_MSG = text("value has been reset", NamedTextColor.YELLOW);
+  NamedTextColor CATEGORY_COLOR = NamedTextColor.DARK_AQUA;
+  Component RESET_MSG = text("value has been reset", NamedTextColor.YELLOW);
 
   default void broadcastChange(CommandAudience sender, String announcement) {
     broadcastChange(sender, announcement, null, true);
@@ -40,23 +40,19 @@ public interface PollEditAlerter {
     if (value != null) {
       valueComponent = text(value.toString());
 
-      if (value instanceof Duration) {
-        Duration time = (Duration) value;
+      if (value instanceof Duration time) {
         valueComponent = TemporalComponent.duration(time, NamedTextColor.AQUA);
       }
 
-      if (value instanceof MapInfo) {
-        MapInfo map = (MapInfo) value;
+      if (value instanceof MapInfo map) {
         valueComponent = map.getStyledName(MapNameStyle.COLOR);
       }
 
-      if (value instanceof UUID) {
-        UUID playerId = (UUID) value;
+      if (value instanceof UUID playerId) {
         valueComponent = player(playerId, NameStyle.FANCY);
       }
 
-      if (value instanceof PollThreshold) {
-        PollThreshold threshold = (PollThreshold) value;
+      if (value instanceof PollThreshold threshold) {
         valueComponent = threshold.toComponent();
       }
 
@@ -69,11 +65,10 @@ public interface PollEditAlerter {
       sender = new CommandAudience(Bukkit.getConsoleSender());
     }
 
-    TextComponent.Builder broadcast =
-        text()
-            .append(sender.getStyledName())
-            .append(BroadcastUtils.BROADCAST_DIV)
-            .append(text(category, CATEGORY_COLOR));
+    TextComponent.Builder broadcast = text()
+        .append(sender.getStyledName())
+        .append(BroadcastUtils.BROADCAST_DIV)
+        .append(text(category, CATEGORY_COLOR));
 
     if (!empty) {
       broadcast.append(BroadcastUtils.BROADCAST_DIV).append(valueComponent);

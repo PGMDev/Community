@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class UserProfileImpl implements UserProfile {
 
-  private UUID playerId;
+  private final UUID playerId;
   private String username;
   private Instant firstLogin;
   private int joinCount;

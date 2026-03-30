@@ -7,8 +7,8 @@ import redis.clients.jedis.JedisPubSub;
 
 public abstract class NetworkSubscriber extends JedisPubSub {
 
-  private String channel;
-  private String networkId;
+  private final String channel;
+  private final String networkId;
   protected Logger logger;
   protected Gson gson;
 

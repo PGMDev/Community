@@ -20,28 +20,30 @@ repositories {
 }
 
 dependencies {
-    implementation("com.zaxxer:HikariCP:2.4.1") { isTransitive = false }
-    implementation("fr.minuskube.inv:smart-invs:1.2.7") { isTransitive = false }
+    api("com.zaxxer:HikariCP:2.4.1") { isTransitive = false }
+    api("fr.minuskube.inv:smart-invs:1.2.7") { isTransitive = false }
+    api("redis.clients:jedis:3.5.1")
+    api("net.kyori:adventure-api:4.26.1")
+    api("net.kyori:adventure-text-serializer-plain:4.26.1")
+    api("net.kyori:adventure-platform-bukkit:4.4.1")
+    api("org.reflections:reflections:0.10.2")
 
-    implementation("redis.clients:jedis:3.5.1")
-    implementation("net.kyori:adventure-api:4.25.0")
-    implementation("net.kyori:adventure-text-serializer-plain:4.25.0")
-    implementation("net.kyori:adventure-platform-bukkit:4.4.1")
-    implementation("org.reflections:reflections:0.10.2")
+    // Annotations
+    api("org.jspecify:jspecify:1.0.0")
+    compileOnly("org.jetbrains:annotations:26.1.0")
 
+    // Runtime dependencies
     compileOnly("tc.oc.pgm:core:0.16-SNAPSHOT")
     compileOnly("tc.oc.pgm:util:0.16-SNAPSHOT")
-    compileOnly("tc.oc.occ:AFK:1.0.0-SNAPSHOT")
     compileOnly("tc.oc.occ:Environment:1.0.0-SNAPSHOT")
     compileOnly("org.incendo:cloud-annotations:2.0.0")
-    compileOnly("org.jetbrains:annotations:26.0.2")
     compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
 
-    // Minecraft includes these (or equivalents)
-    compileOnly("it.unimi.dsi:fastutil:8.1.0")
+    // Paper and SportPaper include these (or equivalents)
+    compileOnly("it.unimi.dsi:fastutil:8.5.15")
     compileOnly("com.google.guava:guava:17.0")
-    compileOnly("com.google.code.gson:gson:2.10.1")
-    compileOnly("commons-lang:commons-lang:2.6")
+    compileOnly("com.google.code.gson:gson:2.11.0")
+    compileOnly("org.apache.commons:commons-lang3:3.17.0")
 }
 
 group = "dev.pgm.community"
@@ -61,13 +63,15 @@ spotless {
     ratchetFrom = "origin/dev"
     java {
         removeUnusedImports()
-        palantirJavaFormat("2.83.0").style("GOOGLE").formatJavadoc(true)
+        trimTrailingWhitespace()
+        formatAnnotations()
+        palantirJavaFormat("2.90.0").style("GOOGLE").formatJavadoc(true)
     }
 }
 
 restrictImports {
     group {
-        reason = "Use org.jetbrains.annotations to add annotations"
+        reason = "Use org.jspecify.annotations to add annotations, or org.jetbrains.annotations if needed"
         bannedImports = listOf("javax.annotation.**")
     }
     group {

@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 public abstract class CommunityInventoryProvider<T extends MenuItem> implements InventoryProvider {
 
-  private List<T> items;
+  private final List<T> items;
 
   public CommunityInventoryProvider(List<T> items) {
     this.items = items;
@@ -38,13 +38,10 @@ public abstract class CommunityInventoryProvider<T extends MenuItem> implements 
   protected abstract ItemStack getNoResultsItem();
 
   protected int getStartingSlot(int categorySize) {
-    switch (categorySize) {
-      case 3:
-        return 2;
-      case 4:
-        return 1;
-      default:
-        return 0;
-    }
+    return switch (categorySize) {
+      case 3 -> 2;
+      case 4 -> 1;
+      default -> 0;
+    };
   }
 }

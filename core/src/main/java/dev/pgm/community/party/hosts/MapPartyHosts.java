@@ -8,11 +8,11 @@ import com.google.common.collect.Sets;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.utils.BroadcastUtils;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -66,11 +66,10 @@ public class MapPartyHosts {
   }
 
   public boolean removeSubHost(String name) {
-    Entry<UUID, String> cachedEntry =
-        nameCache.entrySet().stream()
-            .filter(e -> e.getValue().equalsIgnoreCase(name))
-            .findAny()
-            .orElse(null);
+    Entry<UUID, String> cachedEntry = nameCache.entrySet().stream()
+        .filter(e -> e.getValue().equalsIgnoreCase(name))
+        .findAny()
+        .orElse(null);
 
     if (cachedEntry != null) {
       UUID playerId = cachedEntry.getKey();
@@ -106,7 +105,7 @@ public class MapPartyHosts {
   }
 
   public Set<String> getHostNames() {
-    return this.nameCache.values().stream().collect(Collectors.toSet());
+    return new HashSet<>(this.nameCache.values());
   }
 
   public String getCachedName(UUID playerId) {

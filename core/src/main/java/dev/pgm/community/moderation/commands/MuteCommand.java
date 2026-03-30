@@ -2,6 +2,7 @@ package dev.pgm.community.moderation.commands;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -72,42 +73,44 @@ public class MuteCommand extends CommunityCommand {
     getTarget(target.getIdentifier(), usernames).thenAccept(id -> {
       if (id.isPresent()) {
 
-        moderation.isMuted(id.get()).thenAcceptAsync(isMuted -> {
-          usernames.renderUsername(id, NameStyle.FANCY).thenAcceptAsync(name -> {
-            if (isMuted.isPresent()) {
-              moderation.unmute(id.get(), audience).thenAcceptAsync(pardon -> {
-                if (!pardon) {
-                  audience.sendWarning(text()
-                      .append(name)
-                      .append(text(" could not be ", NamedTextColor.GRAY))
-                      .append(text("unmuted"))
-                      .color(NamedTextColor.RED)
-                      .build());
-                } else {
-                  BroadcastUtils.sendAdminChatMessage(
-                      text()
-                          .append(name)
-                          .append(text(" was unmuted by ", NamedTextColor.GRAY))
-                          .append(audience.getStyledName())
-                          .build(),
-                      CommunityPermissions.MUTE);
+        moderation
+            .isMuted(id.get())
+            .thenAcceptAsync(isMuted -> usernames
+                .renderUsername(id, NameStyle.FANCY)
+                .thenAcceptAsync(name -> {
+                  if (isMuted.isPresent()) {
+                    moderation.unmute(id.get(), audience).thenAcceptAsync(pardon -> {
+                      if (!pardon) {
+                        audience.sendWarning(text()
+                            .append(name)
+                            .append(text(" could not be ", NamedTextColor.GRAY))
+                            .append(text("unmuted"))
+                            .color(NamedTextColor.RED)
+                            .build());
+                      } else {
+                        BroadcastUtils.sendAdminChatMessage(
+                            text()
+                                .append(name)
+                                .append(text(" was unmuted by ", NamedTextColor.GRAY))
+                                .append(audience.getStyledName())
+                                .build(),
+                            CommunityPermissions.MUTE);
 
-                  Player online = Bukkit.getPlayer(id.get());
-                  if (online != null) {
-                    Audience.get(online)
-                        .sendWarning(
-                            translatable("moderation.unmute.target", NamedTextColor.GREEN));
+                        Player online = Bukkit.getPlayer(id.get());
+                        if (online != null) {
+                          Audience.get(online)
+                              .sendWarning(
+                                  translatable("moderation.unmute.target", NamedTextColor.GREEN));
+                        }
+                      }
+                    });
+                  } else {
+                    audience.sendWarning(text()
+                        .append(name)
+                        .append(text(" is not muted", NamedTextColor.GRAY))
+                        .build());
                   }
-                }
-              });
-            } else {
-              audience.sendWarning(text()
-                  .append(name)
-                  .append(text(" is not muted", NamedTextColor.GRAY))
-                  .build());
-            }
-          });
-        });
+                }));
       }
     });
   }
@@ -127,7 +130,7 @@ public class MuteCommand extends CommunityCommand {
       return;
     }
 
-    Component names = Component.join(text(", ", NamedTextColor.GRAY), onlineMutes);
+    Component names = Component.join(separator(text(", ", NamedTextColor.GRAY)), onlineMutes);
     Component message = translatable("moderation.mute.list", NamedTextColor.GOLD)
         .append(text("(", NamedTextColor.GRAY))
         .append(text(Integer.toString(onlineMutes.size()), NamedTextColor.YELLOW))

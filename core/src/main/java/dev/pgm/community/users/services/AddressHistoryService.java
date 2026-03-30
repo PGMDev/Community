@@ -15,39 +15,19 @@ import java.util.stream.Collectors;
 
 public class AddressHistoryService implements AddressQuery {
 
-  private LoadingCache<UUID, AddressHistory> historyCache;
+  private final LoadingCache<UUID, AddressHistory> historyCache;
 
-  private LoadingCache<UUID, LatestAddressInfo> latestCache;
+  private final LoadingCache<UUID, LatestAddressInfo> latestCache;
 
-  private LoadingCache<String, ResolvedIP> resolvedIPCache;
+  private final LoadingCache<String, ResolvedIP> resolvedIPCache;
 
-  private LoadingCache<String, IpAlts> altsCache;
+  private final LoadingCache<String, IpAlts> altsCache;
 
   public AddressHistoryService() {
-    this.historyCache = CacheBuilder.newBuilder().build(new CacheLoader<UUID, AddressHistory>() {
-      @Override
-      public AddressHistory load(UUID key) throws Exception {
-        return new AddressHistory(key);
-      }
-    });
-    this.latestCache = CacheBuilder.newBuilder().build(new CacheLoader<UUID, LatestAddressInfo>() {
-      @Override
-      public LatestAddressInfo load(UUID key) throws Exception {
-        return new LatestAddressInfo(key);
-      }
-    });
-    this.resolvedIPCache = CacheBuilder.newBuilder().build(new CacheLoader<String, ResolvedIP>() {
-      @Override
-      public ResolvedIP load(String key) throws Exception {
-        return new ResolvedIP(key);
-      }
-    });
-    this.altsCache = CacheBuilder.newBuilder().build(new CacheLoader<String, IpAlts>() {
-      @Override
-      public IpAlts load(String key) throws Exception {
-        return new IpAlts(key);
-      }
-    });
+    this.historyCache = CacheBuilder.newBuilder().build(CacheLoader.from(AddressHistory::new));
+    this.latestCache = CacheBuilder.newBuilder().build(CacheLoader.from(LatestAddressInfo::new));
+    this.resolvedIPCache = CacheBuilder.newBuilder().build(CacheLoader.from(ResolvedIP::new));
+    this.altsCache = CacheBuilder.newBuilder().build(CacheLoader.from(IpAlts::new));
 
     DatabaseExecutor.executeUpdateAsync(Query.createTable(IP_TABLE_NAME, IP_TABLE_FIELDS));
     DatabaseExecutor.executeUpdateAsync(
@@ -83,7 +63,7 @@ public class AddressHistoryService implements AddressQuery {
           Set<String> known = getKnownIps(id).join();
           if (known == null
               || known.isEmpty()
-              || !known.stream().anyMatch(ip -> ip.equalsIgnoreCase(address))) {
+              || known.stream().noneMatch(ip -> ip.equalsIgnoreCase(address))) {
             // Add user to known ip-id list
             DatabaseExecutor.executeUpdateAsync(INSERT_IP_USER_QUERY, id.toString(), ipId);
           }
@@ -184,9 +164,9 @@ public class AddressHistoryService implements AddressQuery {
     });
   }
 
-  private class IpAlts {
-    private String ipId;
-    private Set<String> playerIds;
+  private static class IpAlts {
+    private final String ipId;
+    private final Set<String> playerIds;
     private boolean loaded;
 
     public IpAlts(String ipId) {
@@ -214,7 +194,7 @@ public class AddressHistoryService implements AddressQuery {
 
   public static class ResolvedIP {
 
-    private String ipId;
+    private final String ipId;
     private String address;
     private boolean loaded;
 
@@ -244,8 +224,8 @@ public class AddressHistoryService implements AddressQuery {
 
   /** Holds Player ID and list of IP ids that match */
   public static class AddressHistory {
-    private UUID playerId;
-    private Set<String> addressesIds;
+    private final UUID playerId;
+    private final Set<String> addressesIds;
     private boolean loaded;
 
     public AddressHistory(UUID playerId) {

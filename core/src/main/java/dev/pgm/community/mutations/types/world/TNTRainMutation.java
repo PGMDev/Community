@@ -26,6 +26,7 @@ import tc.oc.pgm.api.player.MatchPlayer;
  * @deprecated Keeping for future use... TNTRainMutation - Spawns falling primed TNT on a scheduled
  *     interval, with no damage to players
  */
+@Deprecated
 public class TNTRainMutation extends ScheduledMutationBase {
 
   private static final int TASK_SECONDS = 30;
@@ -56,7 +57,7 @@ public class TNTRainMutation extends ScheduledMutationBase {
 
   @Override
   public void run() {
-    List<MatchPlayer> players = new ArrayList<MatchPlayer>(match.getParticipants());
+    List<MatchPlayer> players = new ArrayList<>(match.getParticipants());
     if (players.isEmpty()) return;
     List<MatchPlayer> spawned = Lists.newArrayList();
     while (spawned.size() < Math.min(MAX_PLAYERS_PER_RUN, players.size())) {
@@ -70,8 +71,7 @@ public class TNTRainMutation extends ScheduledMutationBase {
 
   @EventHandler
   public void onTNTDamagePrevention(EntityDamageByEntityEvent event) {
-    if (event.getDamager() instanceof TNTPrimed && event.getEntity() instanceof Player) {
-      TNTPrimed tnt = (TNTPrimed) event.getDamager();
+    if (event.getDamager() instanceof TNTPrimed tnt && event.getEntity() instanceof Player) {
       if (tnt.hasMetadata(TNT_META)) {
         event.setDamage(0);
       }
@@ -80,8 +80,7 @@ public class TNTRainMutation extends ScheduledMutationBase {
 
   @EventHandler
   public void onTNTExplode(EntityExplodeEvent event) {
-    if (event.getEntity() instanceof TNTPrimed) {
-      TNTPrimed tnt = (TNTPrimed) event.getEntity();
+    if (event.getEntity() instanceof TNTPrimed tnt) {
       if (tnt.hasMetadata(TNT_META)) {
         event.setYield(random.nextFloat() + 1f);
 

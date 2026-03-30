@@ -383,21 +383,21 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
 
               if (nextRequest == null) return;
               // Notify PGM of the sponsored map and minimum cooldown
-              options.addMap(nextRequest.getMap(), nextRequest.getPlayerId());
-              sponsor.startNewMapCooldown(nextRequest.getMap(), Duration.ZERO);
+              options.addMap(nextRequest.map(), nextRequest.playerId());
+              sponsor.startNewMapCooldown(nextRequest.map(), Duration.ZERO);
 
               // Track the current sponsor
               sponsor.setCurrentSponsor(nextRequest);
 
               // Update profile
-              getRequestProfile(nextRequest.getPlayerId()).thenAcceptAsync(profile -> {
+              getRequestProfile(nextRequest.playerId()).thenAcceptAsync(profile -> {
                 // Update RequestProfile with sponsor map info
-                profile.sponsor(nextRequest.getMap());
+                profile.sponsor(nextRequest.map());
                 update(profile);
               });
 
               // Alert online player if their sponsor request has been processed
-              sponsor.alertRequesterToConfirmation(nextRequest.getPlayerId());
+              sponsor.alertRequesterToConfirmation(nextRequest.playerId());
             },
             1,
             TimeUnit.SECONDS);
@@ -411,11 +411,11 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
 
     if (currentSponsor != null) {
 
-      Player player = Bukkit.getPlayer(currentSponsor.getPlayerId());
+      Player player = Bukkit.getPlayer(currentSponsor.playerId());
 
       // Same map = winner, refund the token even if offline
-      if (currentSponsor.getMap().equals(event.getPickedMap()) && currentSponsor.canRefund()) {
-        getRequestProfile(currentSponsor.getPlayerId()).thenAcceptAsync(profile -> {
+      if (currentSponsor.map().equals(event.getPickedMap()) && currentSponsor.canRefund()) {
+        getRequestProfile(currentSponsor.playerId()).thenAcceptAsync(profile -> {
           profile.giveSponsorToken(1);
           update(profile);
 
@@ -439,16 +439,16 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
     MapInfo map = event.getMatch().getMap();
 
     if (getCurrentSponsor() == null) return;
-    if (VisibilityUtils.isDisguised(getCurrentSponsor().getPlayerId())) return;
-    if (!getCurrentSponsor().getMap().equals(map)) return;
+    if (VisibilityUtils.isDisguised(getCurrentSponsor().playerId())) return;
+    if (!getCurrentSponsor().map().equals(map)) return;
 
     event.getExtraLines().add(empty());
     event
         .getExtraLines()
-        .add(SponsorComponents.getSponsoredJoinMessage(getCurrentSponsor().getPlayerId()));
+        .add(SponsorComponents.getSponsoredJoinMessage(getCurrentSponsor().playerId()));
   }
 
-  private Cache<UUID, String> voteConfirm =
+  private final Cache<UUID, String> voteConfirm =
       CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
 
   private static final List<String> BLOCKED_COMMANDS =
@@ -500,7 +500,7 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
 
   @Override
   public boolean cancelSponsorRequest(UUID playerId) {
-    return this.sponsor.getSponsorQueue().removeIf(s -> s.getPlayerId().equals(playerId));
+    return this.sponsor.getSponsorQueue().removeIf(s -> s.playerId().equals(playerId));
   }
 
   @Override
@@ -533,7 +533,7 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
   @Override
   public Optional<SponsorRequest> getPendingSponsor(UUID playerId) {
     return this.sponsor.getSponsorQueue().stream()
-        .filter(sr -> sr.getPlayerId().equals(playerId))
+        .filter(sr -> sr.playerId().equals(playerId))
         .findAny();
   }
 
@@ -546,13 +546,13 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
     Iterator<SponsorRequest> iterator = sponsor.getSponsorQueue().iterator();
     while (iterator.hasNext()) {
       SponsorRequest request = iterator.next();
-      Player player = Bukkit.getPlayer(request.getPlayerId());
+      Player player = Bukkit.getPlayer(request.playerId());
 
       if (player == null || !player.isOnline()) {
         iterator.remove();
 
-        logger.info("Removed offline sponsor request:" + request.getPlayerId() + " for map "
-            + request.getMap().getName());
+        logger.info("Removed offline sponsor request:" + request.playerId() + " for map "
+            + request.map().getName());
       }
     }
   }

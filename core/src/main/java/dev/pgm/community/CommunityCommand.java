@@ -10,6 +10,7 @@ import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.NameUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.VisibilityUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,7 +25,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.teams.Team;
@@ -46,7 +47,7 @@ public abstract class CommunityCommand {
     boolean username = NameUtils.isMinecraftName(target);
     if (!username) {
       try {
-        return CompletableFuture.completedFuture(Optional.ofNullable(UUID.fromString(target)));
+        return CompletableFuture.completedFuture(Optional.of(UUID.fromString(target)));
       } catch (IllegalArgumentException e) {
         throw TextException.exception(target + " is not a valid UUID.");
       }
@@ -54,7 +55,7 @@ public abstract class CommunityCommand {
     return service.getStoredId(target);
   }
 
-  public class PlayerSelection {
+  public static class PlayerSelection {
 
     private final Set<Player> players;
     private final Component selectionText;
@@ -77,7 +78,7 @@ public abstract class CommunityCommand {
       Component hover = TextFormatter.list(names, NamedTextColor.GRAY);
       if (getPlayers().size() > names.size()) {
         int leftOver = getPlayers().size() - names.size();
-        hover
+        hover = hover
             .append(text(" plus "))
             .append(text(leftOver, NamedTextColor.YELLOW))
             .append(text(" other player" + (leftOver != 1 ? "s" : "")))
@@ -106,7 +107,7 @@ public abstract class CommunityCommand {
 
     String[] parts = input.split("=");
 
-    List<Player> allOnline = Bukkit.getOnlinePlayers().stream().collect(Collectors.toList());
+    List<Player> allOnline = new ArrayList<>(Bukkit.getOnlinePlayers());
 
     Set<Player> targets = Sets.newHashSet();
     Component text;
@@ -141,16 +142,14 @@ public abstract class CommunityCommand {
         // Allow Observers to be selected
         if (teamName.toLowerCase().startsWith("obs")) {
           text = text("Observers", NamedTextColor.AQUA);
-          targets.addAll(match.getObservers().stream()
-              .map(MatchPlayer::getBukkit)
-              .collect(Collectors.toList()));
+          targets.addAll(
+              match.getObservers().stream().map(MatchPlayer::getBukkit).toList());
         } else {
           Team team = teams.bestFuzzyMatch(teamName);
           if (team == null) {
             throw TextException.exception(teamName + " is not a valid team name");
           }
-          targets.addAll(
-              team.getPlayers().stream().map(MatchPlayer::getBukkit).collect(Collectors.toList()));
+          targets.addAll(team.getPlayers().stream().map(MatchPlayer::getBukkit).toList());
           text = text()
               .append(text(team.getNameLegacy(), TextFormatter.convert(team.getColor())))
               .build();
@@ -189,8 +188,7 @@ public abstract class CommunityCommand {
     int value = def;
     try {
       value = Integer.parseInt(input);
-    } catch (NumberFormatException e) {
-      value = def;
+    } catch (NumberFormatException ignored) {
     }
     return value;
   }
@@ -234,7 +232,7 @@ public abstract class CommunityCommand {
       // priority now
       Optional<UUID> cachedId = service.getId(
           target); // If user is online or was online recently, we will have their UUID.
-      if (!cachedId.isPresent()) {
+      if (cachedId.isEmpty()) {
         throw TextException.exception(formatNotFoundMsg(target));
       } else {
         id = cachedId.get();

@@ -10,8 +10,8 @@ public enum MapPartyStatusType {
   END("stopped", NamedTextColor.RED),
   RESTART("restarted", NamedTextColor.DARK_GREEN);
 
-  String name;
-  NamedTextColor color;
+  final String name;
+  final NamedTextColor color;
 
   MapPartyStatusType(String name, NamedTextColor color) {
     this.name = name;

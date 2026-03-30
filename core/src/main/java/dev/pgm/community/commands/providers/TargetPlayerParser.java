@@ -10,7 +10,7 @@ import dev.pgm.community.commands.player.TargetPlayer;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import tc.oc.pgm.lib.org.incendo.cloud.context.CommandContext;
 import tc.oc.pgm.lib.org.incendo.cloud.context.CommandInput;
 import tc.oc.pgm.lib.org.incendo.cloud.parser.ArgumentParseResult;
@@ -24,8 +24,8 @@ public final class TargetPlayerParser
         BlockingSuggestionProvider.Strings<CommandSender> {
 
   @Override
-  public @NotNull ArgumentParseResult<@NotNull TargetPlayer> parse(
-      @NotNull CommandContext<@NotNull CommandSender> context, @NotNull CommandInput inputQueue) {
+  public @NonNull ArgumentParseResult<@NonNull TargetPlayer> parse(
+      @NonNull CommandContext<@NonNull CommandSender> context, @NonNull CommandInput inputQueue) {
     final String input = inputQueue.peekString();
 
     CommandSender sender = context.sender();
@@ -33,7 +33,7 @@ public final class TargetPlayerParser
 
     if (input.equals(CURRENT)) {
       if (!(context.sender() instanceof Player)) return failure(playerOnly());
-      player = (TargetPlayer) new TargetPlayer(sender, context.sender().getName());
+      player = new TargetPlayer(sender, context.sender().getName());
     } else {
       try {
         player = new TargetPlayer(sender, input);
@@ -52,8 +52,8 @@ public final class TargetPlayerParser
   }
 
   @Override
-  public @NotNull List<@NotNull String> stringSuggestions(
-      @NotNull CommandContext<CommandSender> context, @NotNull CommandInput input) {
+  public @NonNull List<@NonNull String> stringSuggestions(
+      @NonNull CommandContext<CommandSender> context, @NonNull CommandInput input) {
     CommandSender sender = context.sender();
 
     return Players.getPlayerNames(sender, input.readString());

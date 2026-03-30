@@ -25,7 +25,7 @@ import tc.oc.pgm.kits.tag.ItemTags;
 /** PotionMutation - Random potions given on spawn and when mining blocks * */
 public class PotionMutation extends KitMutationBase {
 
-  private static double SPLASH_CHANCE = 0.05;
+  private static final double SPLASH_CHANCE = 0.05;
 
   public PotionMutation(Match match) {
     super(match, MutationType.POTION);

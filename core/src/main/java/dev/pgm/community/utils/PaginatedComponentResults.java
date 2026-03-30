@@ -12,8 +12,8 @@ import tc.oc.pgm.util.text.TextException;
 
 public abstract class PaginatedComponentResults<T> {
 
-  private Component header;
-  private int resultsPerPage;
+  private final Component header;
+  private final int resultsPerPage;
 
   /**
    * Constructor
@@ -88,7 +88,7 @@ public abstract class PaginatedComponentResults<T> {
    * @throws TextException no match exceptions
    */
   public void display(Audience audience, List<? extends T> data, int page) throws TextException {
-    if (data.size() == 0) {
+    if (data.isEmpty()) {
       audience.sendWarning(formatEmpty());
       return;
     }

@@ -25,7 +25,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
@@ -61,7 +61,6 @@ public class NickCommands extends CommunityCommand {
         if (uuid.isPresent()) {
           users.renderUsername(uuid, NameStyle.FANCY).thenAcceptAsync(name -> {
             sendNickStatus(viewer, viewer.getPlayer(), uuid.get(), name);
-            return;
           });
         } else {
           viewer.sendWarning(formatNotFoundComponent(target));
@@ -239,15 +238,15 @@ public class NickCommands extends CommunityCommand {
       if (uuid.isPresent()) {
         nicks.setNick(uuid.get(), nick).thenAcceptAsync(success -> {
           if (success) {
-            users.renderUsername(uuid, NameStyle.FANCY).thenAcceptAsync(name -> {
-              viewer.sendMessage(text()
-                  .append(text("Nickname for "))
-                  .append(name)
-                  .append(text(" set to "))
-                  .append(text(nick, NamedTextColor.AQUA, TextDecoration.BOLD))
-                  .color(NamedTextColor.GRAY)
-                  .build());
-            });
+            users
+                .renderUsername(uuid, NameStyle.FANCY)
+                .thenAcceptAsync(name -> viewer.sendMessage(text()
+                    .append(text("Nickname for "))
+                    .append(name)
+                    .append(text(" set to "))
+                    .append(text(nick, NamedTextColor.AQUA, TextDecoration.BOLD))
+                    .color(NamedTextColor.GRAY)
+                    .build()));
           } else {
             viewer.sendWarning(text()
                 .append(text("Could not set nickname for "))
@@ -269,21 +268,21 @@ public class NickCommands extends CommunityCommand {
     if (viewer.hasPermission(CommunityPermissions.NICKNAME_CLEAR) && target != null) {
       getTarget(target.getIdentifier(), users).thenAcceptAsync(uuid -> {
         if (uuid.isPresent()) {
-          users.renderUsername(uuid, NameStyle.FANCY).thenAcceptAsync(name -> {
-            nicks.clearNick(uuid.get()).thenAcceptAsync(success -> {
-              Component setName = text()
-                  .append(text("You have reset the nickname of "))
-                  .append(name)
-                  .color(NamedTextColor.GREEN)
-                  .build();
-              Component noName = text()
-                  .append(name)
-                  .append(text(" does not have a nickname set"))
-                  .color(NamedTextColor.RED)
-                  .build();
-              viewer.sendWarning(success ? setName : noName);
-            });
-          });
+          users
+              .renderUsername(uuid, NameStyle.FANCY)
+              .thenAcceptAsync(name -> nicks.clearNick(uuid.get()).thenAcceptAsync(success -> {
+                Component setName = text()
+                    .append(text("You have reset the nickname of "))
+                    .append(name)
+                    .color(NamedTextColor.GREEN)
+                    .build();
+                Component noName = text()
+                    .append(name)
+                    .append(text(" does not have a nickname set"))
+                    .color(NamedTextColor.RED)
+                    .build();
+                viewer.sendWarning(success ? setName : noName);
+              }));
         } else {
           viewer.sendWarning(formatNotFoundComponent(target.getIdentifier()));
         }
@@ -294,11 +293,11 @@ public class NickCommands extends CommunityCommand {
     if (!viewer.isPlayer()) return;
 
     // Reset own nickname
-    nicks.clearNick(viewer.getPlayer().getUniqueId()).thenAcceptAsync(success -> {
-      viewer.sendWarning(text(
-          success ? "You have reset your nickname" : "You do not have a nickname set",
-          success ? NamedTextColor.GRAY : NamedTextColor.RED));
-    });
+    nicks
+        .clearNick(viewer.getPlayer().getUniqueId())
+        .thenAcceptAsync(success -> viewer.sendWarning(text(
+            success ? "You have reset your nickname" : "You do not have a nickname set",
+            success ? NamedTextColor.GRAY : NamedTextColor.RED)));
   }
 
   @Command("toggle")

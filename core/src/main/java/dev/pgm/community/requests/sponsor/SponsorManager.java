@@ -66,11 +66,11 @@ public class SponsorManager {
   }
 
   public boolean isQueued(UUID playerId) {
-    return getSponsorQueue().stream().anyMatch(sr -> sr.getPlayerId().equals(playerId));
+    return getSponsorQueue().stream().anyMatch(sr -> sr.playerId().equals(playerId));
   }
 
   public boolean isMapQueued(MapInfo map) {
-    return getSponsorQueue().stream().anyMatch(sr -> sr.getMap().equals(map));
+    return getSponsorQueue().stream().anyMatch(sr -> sr.map().equals(map));
   }
 
   public boolean isQueueOpen() {
@@ -104,7 +104,7 @@ public class SponsorManager {
   public SponsorRequest getNextSponsor() {
     for (Iterator<SponsorRequest> it = sponsors.iterator(); it.hasNext(); ) {
       SponsorRequest request = it.next();
-      if (!isMapSizeAllowed(request.getMap())) {
+      if (!isMapSizeAllowed(request.map())) {
         sendWrongSizeMapError(request);
         continue;
       }
@@ -188,12 +188,12 @@ public class SponsorManager {
   }
 
   private void sendWrongSizeMapError(SponsorRequest request) {
-    Player player = Bukkit.getPlayer(request.getPlayerId());
+    Player player = Bukkit.getPlayer(request.playerId());
     if (player == null || !player.isOnline()) return;
     Audience viewer = Audience.get(player);
 
     viewer.sendWarning(SponsorComponents.getWrongSizeMapError(
-        request.getMap().getStyledName(MapNameStyle.COLOR), getCurrentMapSizeBounds()));
+        request.map().getStyledName(MapNameStyle.COLOR), getCurrentMapSizeBounds()));
   }
 
   private void sendDelayedTokenRefreshMessage(Player player, int amount, boolean daily, int total) {

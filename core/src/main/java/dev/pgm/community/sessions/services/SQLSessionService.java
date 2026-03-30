@@ -13,7 +13,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.jetbrains.annotations.NotNull;
 
 public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     implements SessionDataQuery {
@@ -24,12 +23,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
   public SQLSessionService() {
     super(TABLE_NAME, TABLE_FIELDS);
     this.sessionCache = CacheBuilder.newBuilder()
-        .build(new CacheLoader<SessionQuery, SessionData>() {
-          @Override
-          public SessionData load(@NotNull SessionQuery key) {
-            return new SessionData(key.getPlayerId(), key.ignoreDisguised());
-          }
-        });
+        .build(CacheLoader.from(key -> new SessionData(key.playerId(), key.ignoreDisguised())));
     this.upsertLatestSessionQuery = DatabaseExecutor.getDialect().upsertLatestSessionQuery();
   }
 
@@ -136,7 +130,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
                 return new Session(
                     UUID.fromString(id), UUID.fromString(player), disguised, server, start, end);
               },
-              target.getPlayerId().toString(),
+              target.playerId().toString(),
               target.ignoreDisguised())
           .thenApplyAsync(result -> {
             if (result != null) {
@@ -147,7 +141,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     }
   }
 
-  private class SessionData {
+  private static class SessionData {
 
     private final UUID playerId;
     private final boolean ignoreDisguised;

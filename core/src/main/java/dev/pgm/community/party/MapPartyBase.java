@@ -23,8 +23,8 @@ public abstract class MapPartyBase implements MapParty {
   private String name;
   private String description;
   private Duration length;
-  private MapPartyHosts hosts;
-  private MapPartySettings settings;
+  private final MapPartyHosts hosts;
+  private final MapPartySettings settings;
   private boolean running;
   private boolean setup;
 

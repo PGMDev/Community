@@ -13,9 +13,9 @@ import tc.oc.pgm.util.text.TextTranslations;
 
 public abstract class TranslatableToolButton extends ToolButtonBase {
 
-  private String nameKey;
-  private String loreKey;
-  private NamedTextColor nameColor;
+  private final String nameKey;
+  private final String loreKey;
+  private final NamedTextColor nameColor;
 
   public TranslatableToolButton(
       Player viewer,

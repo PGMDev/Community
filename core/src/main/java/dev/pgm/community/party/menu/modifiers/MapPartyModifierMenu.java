@@ -54,9 +54,8 @@ public class MapPartyModifierMenu extends MapPartyMenu {
             .lore(
                 colorize("&7Click to toggle multiplier"),
                 "",
-                colorize(
-                    "&7Status&8: "
-                        + (getFeature().isRaindropMultiplierActive() ? "&aEnabled" : "&cDisabled")))
+                colorize("&7Status&8: "
+                    + (getFeature().isRaindropMultiplierActive() ? "&aEnabled" : "&cDisabled")))
             .flags(ItemFlag.values())
             .build(),
         c -> {
@@ -74,17 +73,14 @@ public class MapPartyModifierMenu extends MapPartyMenu {
               .lore(colorize("&7Click to view match mutations"))
               .flags(ItemFlag.values())
               .build(),
-          c -> {
-            Bukkit.dispatchCommand(getViewer(), "mutation");
-          });
+          c -> Bukkit.dispatchCommand(getViewer(), "mutation"));
     }
 
-    return ClickableItem.empty(
-        new ItemBuilder()
-            .material(Material.BARRIER)
-            .name(colorize("&cDisabled"))
-            .lore(colorize("&7Mutations are disabled! You can enable then in the config"))
-            .flags(ItemFlag.values())
-            .build());
+    return ClickableItem.empty(new ItemBuilder()
+        .material(Material.BARRIER)
+        .name(colorize("&cDisabled"))
+        .lore(colorize("&7Mutations are disabled! You can enable then in the config"))
+        .flags(ItemFlag.values())
+        .build());
   }
 }

@@ -19,7 +19,7 @@ import tc.oc.pgm.filters.matcher.StaticFilter;
 /** BlitzMutation - Enables blitz on a non-blitz match * */
 public class BlitzMutation extends MutationBase {
 
-  private static MutationRangeOption BLITZ_LIVES = new MutationRangeOption(
+  private static final MutationRangeOption BLITZ_LIVES = new MutationRangeOption(
       "Blitz Lives", "The number of lives per-user", Material.EGG, true, 1, 1, 999);
 
   private BlitzMatchModule blitz;

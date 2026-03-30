@@ -121,13 +121,9 @@ public class SuperVoteManager {
     return this.activeSuperVoters.contains(player.getUniqueId());
   }
 
-  private class StoredPermission {
-    private PermissionAttachment attachment;
-    private String permission;
-
-    public StoredPermission(Player player, String permission) {
-      this.attachment = player.addAttachment(Community.get());
-      this.permission = permission;
+  private record StoredPermission(PermissionAttachment attachment, String permission) {
+    private StoredPermission(Player attachment, String permission) {
+      this(attachment.addAttachment(Community.get()), permission);
     }
 
     public void enable() {
@@ -137,10 +133,6 @@ public class SuperVoteManager {
     public void disable(Player player) {
       attachment.setPermission(permission, false);
       player.removeAttachment(attachment);
-    }
-
-    public String getPermission() {
-      return permission;
     }
   }
 

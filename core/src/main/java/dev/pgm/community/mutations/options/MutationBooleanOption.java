@@ -5,7 +5,7 @@ import org.bukkit.Material;
 public class MutationBooleanOption extends MutationOption {
 
   private boolean value;
-  private boolean def;
+  private final boolean def;
 
   public MutationBooleanOption(
       String name, String description, Material iconMaterial, boolean def, boolean prereq) {

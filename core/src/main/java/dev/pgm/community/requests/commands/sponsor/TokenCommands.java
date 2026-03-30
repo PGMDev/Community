@@ -110,8 +110,8 @@ public class TokenCommands extends CommunityCommand {
   }
 
   public static class TokenRefreshAmount {
-    private Duration timeLeft;
-    private int amount;
+    private final Duration timeLeft;
+    private final int amount;
 
     public TokenRefreshAmount(Duration timeLeft, int amount) {
       this.timeLeft = timeLeft;

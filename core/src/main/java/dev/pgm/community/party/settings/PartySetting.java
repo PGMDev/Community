@@ -4,8 +4,8 @@ import org.bukkit.Material;
 
 public abstract class PartySetting {
 
-  private String name;
-  private String description;
+  private final String name;
+  private final String description;
 
   public PartySetting(String name, String description) {
     this.name = name;

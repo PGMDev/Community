@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 /** AssistanceSubscriber - Listens for {@link AssistanceRequest} */
 public class AssistanceSubscriber extends NetworkSubscriber {
 
-  private AssistanceFeature assist;
+  private final AssistanceFeature assist;
 
   public AssistanceSubscriber(AssistanceFeature assist, String networkId, Logger logger) {
     super(Channels.ASSISTANCE, networkId, logger);

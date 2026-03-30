@@ -5,6 +5,7 @@ import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -67,9 +68,7 @@ public class PunishmentCommand extends CommunityCommand {
       @Flag(value = "time", aliases = "l") Duration length) {
     moderation
         .getRecentPunishments(length != null ? length : Duration.ofHours(1))
-        .thenAcceptAsync(punishments -> {
-          sendPunishmentHistory(audience, null, punishments, page);
-        });
+        .thenAcceptAsync(punishments -> sendPunishmentHistory(audience, null, punishments, page));
   }
 
   @Command("repeatpunishment|rp <target>")
@@ -160,7 +159,7 @@ public class PunishmentCommand extends CommunityCommand {
 
     int perPage = 7;
     int pages = (punishmentData.size() + perPage - 1) / perPage;
-    page = Math.max(1, Math.min(page, pages));
+    page = Math.clamp(page, 1, pages);
 
     Component pageNum = translatable(
         "command.simplePageHeader",
@@ -223,7 +222,7 @@ public class PunishmentCommand extends CommunityCommand {
             hover
                 .append(newline())
                 .append(text("Expires in ", NamedTextColor.GRAY))
-                .append(TemporalComponent.briefNaturalApproximate(Instant.now(), endDate)
+                .append(duration(Duration.between(Instant.now(), endDate))
                     .color(NamedTextColor.YELLOW));
           } else if (!data.wasUpdated()) {
             hover
@@ -270,11 +269,11 @@ public class PunishmentCommand extends CommunityCommand {
             UUID uuid = UUID.fromString(target);
             Component targetName =
                 usernames.renderUsername(uuid, NameStyle.PLAIN).join().color(NamedTextColor.AQUA);
-            return noneFound.args(targetName);
+            return noneFound.arguments(targetName);
           } catch (IllegalArgumentException e) {
             // No-op
           }
-          return noneFound.args(text(target, NamedTextColor.AQUA));
+          return noneFound.arguments(text(target, NamedTextColor.AQUA));
         }
         return text("There have been no recent punishments", NamedTextColor.RED);
       }

@@ -23,8 +23,8 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class ModerationToolsMenu implements InventoryProvider {
 
-  private SmartInventory inventory;
-  private Random random;
+  private final SmartInventory inventory;
+  private final Random random;
 
   public ModerationToolsMenu() {
     this.inventory = SmartInventory.builder()

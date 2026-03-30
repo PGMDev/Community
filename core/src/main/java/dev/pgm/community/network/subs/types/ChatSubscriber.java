@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 /** ChatSubscriber - Listens for {@link NetworkChatMessage} */
 public class ChatSubscriber extends NetworkSubscriber {
 
-  private NetworkChatFeature chat;
+  private final NetworkChatFeature chat;
 
   public ChatSubscriber(NetworkChatFeature chat, String networkId, Logger logger) {
     super(Channels.CHAT, networkId, logger);

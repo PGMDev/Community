@@ -50,7 +50,7 @@ import tc.oc.pgm.util.inventory.tag.ItemTag;
 /** ExplosionMutation - TNT, Fireballs, and random explosions when mining blocks * */
 public class ExplosionMutation extends KitMutationBase {
 
-  private static MutationRangeOption FIREBALL_POWER = new MutationRangeOption(
+  private static final MutationRangeOption FIREBALL_POWER = new MutationRangeOption(
       "Fireball Power",
       "Power of fireball explosion",
       MutationType.EXPLOSION.getMaterial(),
@@ -59,14 +59,14 @@ public class ExplosionMutation extends KitMutationBase {
       0,
       10);
 
-  private static MutationBooleanOption FIREBALL_FIRE = new MutationBooleanOption(
+  private static final MutationBooleanOption FIREBALL_FIRE = new MutationBooleanOption(
       "Fireball Fire",
       "Whether fireballs are incendiary",
       MutationType.EXPLOSION.getMaterial(),
       true,
       false);
 
-  private static MutationRangeOption LAUNCH_COOLDOWN = new MutationRangeOption(
+  private static final MutationRangeOption LAUNCH_COOLDOWN = new MutationRangeOption(
       "Explosive Cooldown",
       "Delay between fireball or TNT shots",
       MutationType.EXPLOSION.getMaterial(),
@@ -75,14 +75,14 @@ public class ExplosionMutation extends KitMutationBase {
       0,
       60);
 
-  private static MutationBooleanOption MYSTERY_TNT = new MutationBooleanOption(
+  private static final MutationBooleanOption MYSTERY_TNT = new MutationBooleanOption(
       "Mystery TNT",
       "Whether TNT should have a random effect",
       MutationType.EXPLOSION.getMaterial(),
       true,
       false);
 
-  private static MutationRangeOption TNT_SIZE = new MutationRangeOption(
+  private static final MutationRangeOption TNT_SIZE = new MutationRangeOption(
       "TNT Amount",
       "Amount of TNT given per player",
       MutationType.EXPLOSION.getMaterial(),
@@ -98,7 +98,7 @@ public class ExplosionMutation extends KitMutationBase {
   private static final String EXPLOSION_METADATA = "mutation_explosion";
   private static final ItemTag<String> EXPLOSION_KIT = ItemTag.newString(EXPLOSION_METADATA);
 
-  private Map<UUID, Long> lastLaunch = Maps.newHashMap();
+  private final Map<UUID, Long> lastLaunch = Maps.newHashMap();
 
   public ExplosionMutation(Match match) {
     super(match, MutationType.EXPLOSION);
@@ -119,7 +119,6 @@ public class ExplosionMutation extends KitMutationBase {
     if (!isParticipant(event.getPlayer())) return;
     if (!MYSTERY_TNT.getValue()) return;
 
-    Player player = event.getPlayer();
     ItemStack block = event.getItemInHand();
     if (block == null) return;
     if (!isFromKit(block)) return;
@@ -221,14 +220,11 @@ public class ExplosionMutation extends KitMutationBase {
   }
 
   private static Kit getRandomKit() {
-    switch (Community.get().getRandom().nextInt(3)) {
-      case 0:
-        return getTNTKit();
-      case 1:
-        return getTNTLauncherKit();
-      default:
-        return getFireballKit();
-    }
+    return switch (Community.get().getRandom().nextInt(3)) {
+      case 0 -> getTNTKit();
+      case 1 -> getTNTLauncherKit();
+      default -> getFireballKit();
+    };
   }
 
   private static Kit getTNTKit() {
@@ -248,7 +244,7 @@ public class ExplosionMutation extends KitMutationBase {
     List<ItemStack> items = getTNTItems();
     items.add(getFireballItem());
     items.add(getTNTLauncherItem());
-    return items.toArray(new ItemStack[items.size()]);
+    return items.toArray(new ItemStack[0]);
   }
 
   private static List<ItemStack> getTNTItems() {
@@ -338,7 +334,7 @@ public class ExplosionMutation extends KitMutationBase {
     Location loc = player.getEyeLocation(); // Get the player's eye location
     Vector direction = loc.getDirection().normalize();
 
-    TNTPrimed tnt = (TNTPrimed) player.getWorld().spawn(loc, TNTPrimed.class);
+    TNTPrimed tnt = player.getWorld().spawn(loc, TNTPrimed.class);
     tnt.setVelocity(direction.multiply(4));
     tnt.setFuseTicks(60);
   }

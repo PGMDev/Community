@@ -10,22 +10,18 @@ import dev.pgm.community.nick.NickConfig;
 import dev.pgm.community.nick.NickImpl;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class SQLNickService extends SQLFeatureBase<Nick, String> implements NickQuery {
 
-  private LoadingCache<UUID, NickInfo> nickCache;
+  private final LoadingCache<UUID, NickInfo> nickCache;
 
   public SQLNickService(NickConfig config) {
     super(TABLE_NAME, TABLE_FIELDS);
 
-    this.nickCache = CacheBuilder.newBuilder().build(new CacheLoader<UUID, NickInfo>() {
-      @Override
-      public NickInfo load(UUID key) throws Exception {
-        return new NickInfo(key);
-      }
-    });
+    this.nickCache = CacheBuilder.newBuilder().build(CacheLoader.from(NickInfo::new));
   }
 
   @Override
@@ -87,7 +83,7 @@ public class SQLNickService extends SQLFeatureBase<Nick, String> implements Nick
   }
 
   public CompletableFuture<Boolean> isNameAvailable(String name) {
-    return queryByName(name).thenApplyAsync(results -> results == null);
+    return queryByName(name).thenApplyAsync(Objects::isNull);
   }
 
   public CompletableFuture<Nick> queryByName(String name) {
@@ -103,7 +99,7 @@ public class SQLNickService extends SQLFeatureBase<Nick, String> implements Nick
         name);
   }
 
-  private class NickInfo {
+  private static class NickInfo {
 
     private final UUID playerId;
     private Nick nick;

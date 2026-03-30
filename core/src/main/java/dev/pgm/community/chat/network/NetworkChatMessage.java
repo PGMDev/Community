@@ -12,10 +12,10 @@ import tc.oc.pgm.util.text.TextTranslations;
 
 public class NetworkChatMessage {
 
-  private String message;
-  private String sender;
-  private String server;
-  private String channel;
+  private final String message;
+  private final String sender;
+  private final String server;
+  private final String channel;
 
   public NetworkChatMessage(ChannelMessageEvent<?> event, String server) {
     this.message = toMinecraftGson(text(event.getMessage()));

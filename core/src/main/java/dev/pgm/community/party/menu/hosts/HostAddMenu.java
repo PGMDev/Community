@@ -37,9 +37,11 @@ public class HostAddMenu extends PlayerSelectionProvider {
   public void init(Player player, InventoryContents contents) {
     super.init(player, contents);
     contents.set(
-        5, 4, ClickableItem.of(getNamedItem("&7Return to &aEvent Hosts", Material.CAKE, 1), c -> {
-          Bukkit.dispatchCommand(player, "event hosts");
-        }));
+        5,
+        4,
+        ClickableItem.of(
+            getNamedItem("&7Return to &aEvent Hosts", Material.CAKE, 1),
+            c -> Bukkit.dispatchCommand(player, "event hosts")));
   }
 
   @Override

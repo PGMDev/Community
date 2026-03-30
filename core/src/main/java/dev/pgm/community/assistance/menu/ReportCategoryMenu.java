@@ -19,9 +19,9 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class ReportCategoryMenu extends CommunityInventoryProvider<ReportCategory> {
 
-  private InventoryManager manager;
-  private AssistanceFeature assistance;
-  private Player target;
+  private final InventoryManager manager;
+  private final AssistanceFeature assistance;
+  private final Player target;
 
   public ReportCategoryMenu(
       InventoryManager manager,
@@ -47,9 +47,7 @@ public class ReportCategoryMenu extends CommunityInventoryProvider<ReportCategor
   @Override
   public Consumer<InventoryClickEvent> getClickAction(
       ReportCategory category, Player viewer, InventoryContents contents) {
-    return e -> {
-      openReasonMenu(viewer, target, category);
-    };
+    return e -> openReasonMenu(viewer, target, category);
   }
 
   @Override

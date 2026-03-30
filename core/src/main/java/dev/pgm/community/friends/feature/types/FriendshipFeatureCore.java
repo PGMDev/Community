@@ -34,7 +34,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
@@ -85,17 +85,21 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
 
   @Override
   public CompletableFuture<List<Friendship>> getFriends(UUID playerId) {
-    return store.queryList(playerId.toString()).thenApplyAsync(q -> q.stream()
-        .filter(fr -> fr.getStatus() == FriendshipStatus.ACCEPTED)
-        .collect(Collectors.toList()));
+    return store
+        .queryList(playerId.toString())
+        .thenApplyAsync(q -> q.stream()
+            .filter(fr -> fr.getStatus() == FriendshipStatus.ACCEPTED)
+            .collect(Collectors.toList()));
   }
 
   @Override
   public CompletableFuture<List<Friendship>> getIncomingRequests(UUID playerId) {
-    return store.queryList(playerId.toString()).thenApplyAsync(q -> q.stream()
-        .filter(fr ->
-            fr.getRequestedId().equals(playerId) && fr.getStatus() == FriendshipStatus.PENDING)
-        .collect(Collectors.toList()));
+    return store
+        .queryList(playerId.toString())
+        .thenApplyAsync(q -> q.stream()
+            .filter(fr ->
+                fr.getRequestedId().equals(playerId) && fr.getStatus() == FriendshipStatus.PENDING)
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -147,16 +151,21 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
 
   @Override
   public CompletableFuture<Boolean> areFriends(UUID sender, UUID target) {
-    return store.queryList(sender.toString()).thenApplyAsync(frs -> frs.stream()
-        .anyMatch(
-            fr -> fr.areInvolved(sender, target) && fr.getStatus() == FriendshipStatus.ACCEPTED));
+    return store
+        .queryList(sender.toString())
+        .thenApplyAsync(frs -> frs.stream()
+            .anyMatch(fr ->
+                fr.areInvolved(sender, target) && fr.getStatus() == FriendshipStatus.ACCEPTED));
   }
 
   @Override
   public CompletableFuture<Optional<Friendship>> hasRequested(UUID sender, UUID target) {
-    return store.queryList(target.toString()).thenApplyAsync(frs -> frs.stream()
-        .filter(fr -> fr.areInvolved(sender, target) && fr.getStatus() == FriendshipStatus.PENDING)
-        .findAny());
+    return store
+        .queryList(target.toString())
+        .thenApplyAsync(frs -> frs.stream()
+            .filter(
+                fr -> fr.areInvolved(sender, target) && fr.getStatus() == FriendshipStatus.PENDING)
+            .findAny());
   }
 
   @Override
@@ -219,15 +228,7 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
     // Used to send online friend requests notifications AFTER all other login messages have been
     // sent
     Bukkit.getScheduler()
-        .scheduleSyncDelayedTask(
-            Community.get(),
-            new Runnable() {
-              @Override
-              public void run() {
-                onDelayedLogin(event);
-              }
-            },
-            40L);
+        .scheduleSyncDelayedTask(Community.get(), () -> onDelayedLogin(event), 40L);
   }
 
   @EventHandler

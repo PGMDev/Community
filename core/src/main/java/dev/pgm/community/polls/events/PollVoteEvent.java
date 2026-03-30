@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 
 public class PollVoteEvent extends PollEvent {
 
-  private Player player;
+  private final Player player;
 
   public PollVoteEvent(Player player, Poll poll) {
     super(poll);

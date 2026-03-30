@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 /** PunishmentSubscriber - Listens for {@link NetworkPunishment} */
 public class PunishmentSubscriber extends NetworkSubscriber {
 
-  private ModerationFeature moderation;
+  private final ModerationFeature moderation;
 
   public PunishmentSubscriber(ModerationFeature moderation, String networkId, Logger logger) {
     super(Channels.PUNISHMENTS, networkId, logger);

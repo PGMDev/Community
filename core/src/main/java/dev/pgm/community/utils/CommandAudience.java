@@ -6,15 +6,15 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 
 public class CommandAudience {
 
-  private Audience audience;
-  private CommandSender sender;
+  private final Audience audience;
+  private final CommandSender sender;
 
   public static CommandAudience CONSOLE = new CommandAudience(Bukkit.getConsoleSender());
 
@@ -60,6 +60,6 @@ public class CommandAudience {
   }
 
   public boolean hasPermission(String permission) {
-    return isPlayer() ? getPlayer().hasPermission(permission) : true;
+    return !isPlayer() || getPlayer().hasPermission(permission);
   }
 }

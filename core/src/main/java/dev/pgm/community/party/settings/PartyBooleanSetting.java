@@ -4,8 +4,8 @@ import org.bukkit.Material;
 
 public class PartyBooleanSetting extends PartySetting {
 
-  private Material trueIcon;
-  private Material falseIcon;
+  private final Material trueIcon;
+  private final Material falseIcon;
 
   private boolean value;
 

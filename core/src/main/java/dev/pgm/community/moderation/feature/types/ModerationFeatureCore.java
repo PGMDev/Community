@@ -64,7 +64,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.named.NameStyle;
 
@@ -296,9 +296,7 @@ public class ModerationFeatureCore extends FeatureBase implements ModerationFeat
       }
 
       Optional<MutePunishment> mute = hasActiveMute(punishments);
-      if (mute.isPresent()) {
-        addMute(event.getUniqueId(), mute.get());
-      }
+      mute.ifPresent(mutePunishment -> addMute(event.getUniqueId(), mutePunishment));
 
       Set<Punishment> deferredPunishments = getDeferredPunishments(punishments);
       for (Punishment punishment : deferredPunishments) {
@@ -330,40 +328,28 @@ public class ModerationFeatureCore extends FeatureBase implements ModerationFeat
   }
 
   private void scheduleDelayedCheck(UUID playerId) {
-    Community.get()
-        .getServer()
-        .getScheduler()
-        .scheduleSyncDelayedTask(Community.get(), new Runnable() {
-          @Override
-          public void run() {
-            Player player = Bukkit.getPlayer(playerId);
-            if (player != null) {
-              store.queryActiveForLogin(playerId.toString()).thenAcceptAsync(punishments -> {
-                Optional<Punishment> ban = hasActiveBan(punishments);
-                if (ban.isPresent()) {
-                  Punishment punishment = ban.get();
+    Community.get().getServer().getScheduler().scheduleSyncDelayedTask(Community.get(), () -> {
+      Player player = Bukkit.getPlayer(playerId);
+      if (player != null) {
+        store.queryActiveForLogin(playerId.toString()).thenAcceptAsync(punishments -> {
+          Optional<Punishment> ban = hasActiveBan(punishments);
+          ban.ifPresent(punishment -> player.kickPlayer(punishment.formatPunishmentScreen(
+              getModerationConfig(),
+              getUsers()
+                  .renderUsername(punishment.getIssuerId(), NameStyle.FANCY)
+                  .join(),
+              false)));
 
-                  player.kickPlayer(punishment.formatPunishmentScreen(
-                      getModerationConfig(),
-                      getUsers()
-                          .renderUsername(punishment.getIssuerId(), NameStyle.FANCY)
-                          .join(),
-                      false));
-                }
+          Optional<MutePunishment> mute = hasActiveMute(punishments);
+          mute.ifPresent(mutePunishment -> addMute(playerId, mutePunishment));
 
-                Optional<MutePunishment> mute = hasActiveMute(punishments);
-                if (mute.isPresent()) {
-                  addMute(playerId, mute.get());
-                }
-
-                logger.info("[Delayed]: "
-                    + punishments.size()
-                    + " Punishments have been fetched for "
-                    + playerId.toString());
-              });
-            }
-          }
+          logger.info("[Delayed]: "
+              + punishments.size()
+              + " Punishments have been fetched for "
+              + playerId);
         });
+      }
+    });
   }
 
   private Optional<MutePunishment> hasActiveMute(List<Punishment> punishments) {
@@ -529,7 +515,7 @@ public class ModerationFeatureCore extends FeatureBase implements ModerationFeat
       }
     } else if (PunishmentType.WARN.equals(punishment.getType())
         || PunishmentType.KICK.equals(punishment.getType())) {
-      // If its a warn or kick set it to active so the player sees it when they next login
+      // If it's a warn or kick set it to active so the player sees it when they next login
       punishment.setActive(true);
     }
 

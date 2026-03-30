@@ -14,7 +14,7 @@ import tc.oc.pgm.api.integration.Integration;
 
 public class PGMFriendIntegration implements FriendIntegration {
 
-  private Map<UUID, Set<UUID>> friends;
+  private final Map<UUID, Set<UUID>> friends;
 
   public PGMFriendIntegration() {
     this.friends = Maps.newHashMap();

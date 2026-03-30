@@ -17,7 +17,7 @@ import tc.oc.pgm.spawns.events.ParticipantKitApplyEvent;
 /** KitMutation - A base for mutations which grant kits * */
 public abstract class KitMutationBase extends MutationBase {
 
-  private List<Kit> kits;
+  private final List<Kit> kits;
 
   public KitMutationBase(Match match, MutationType type, Kit... kits) {
     super(match, type);
@@ -71,7 +71,7 @@ public abstract class KitMutationBase extends MutationBase {
 
   protected void removeAllKit(Kit kit) {
     if (kit.isRemovable()) {
-      match.getParticipants().forEach(player -> kit.remove(player));
+      match.getParticipants().forEach(kit::remove);
     }
   }
 
@@ -84,11 +84,6 @@ public abstract class KitMutationBase extends MutationBase {
   }
 
   protected void removeItems(ItemStack... items) {
-    match
-        .getParticipants()
-        .forEach(
-            player -> {
-              player.getInventory().removeItem(items);
-            });
+    match.getParticipants().forEach(player -> player.getInventory().removeItem(items));
   }
 }

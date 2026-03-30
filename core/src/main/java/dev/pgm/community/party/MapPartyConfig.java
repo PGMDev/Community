@@ -195,7 +195,7 @@ public class MapPartyConfig extends FeatureConfigImpl {
     // Register permission
     try {
       Community.get().getServer().getPluginManager().addPermission(permission);
-    } catch (Throwable t) {
+    } catch (Throwable ignored) {
     }
     return permission;
   }

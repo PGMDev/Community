@@ -3,7 +3,7 @@ package dev.pgm.community.moderation.punishments.types;
 import dev.pgm.community.moderation.punishments.Punishment;
 import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.util.UUID;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class UsernameBanPunishment extends Punishment {
 

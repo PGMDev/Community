@@ -22,8 +22,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 public class MapPartyBroadcastManager {
 
-  private MapPartyFeature feature;
-  private MapPartyConfig config;
+  private final MapPartyFeature feature;
+  private final MapPartyConfig config;
   private int taskId = -1;
   private int lineIndex;
 
@@ -143,10 +143,10 @@ public class MapPartyBroadcastManager {
 
   private class EventBroadcastLine {
 
-    private String message;
-    private String command;
-    private String hover;
-    private Duration interval;
+    private final String message;
+    private final String command;
+    private final String hover;
+    private final Duration interval;
     private Instant lastBroadcast;
 
     private final Component DEFAULT_HOVER = text("Click to view more info", NamedTextColor.GRAY);

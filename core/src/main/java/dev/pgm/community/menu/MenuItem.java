@@ -18,7 +18,7 @@ public abstract class MenuItem {
   private final String[] description;
 
   public MenuItem(Material icon, String name, List<String> description) {
-    this(icon, name, description.toArray(new String[description.size()]));
+    this(icon, name, description.toArray(new String[0]));
   }
 
   public MenuItem(Material icon, String name, String... description) {

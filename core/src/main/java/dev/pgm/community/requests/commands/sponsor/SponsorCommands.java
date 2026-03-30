@@ -144,7 +144,7 @@ public class SponsorCommands extends CommunityCommand {
         audience.sendMessage(current);
         audience.sendMessage(text()
             .append(text(" - ", NamedTextColor.YELLOW))
-            .append(sponsor.getMap().getStyledName(MapNameStyle.COLOR_WITH_AUTHORS))
+            .append(sponsor.map().getStyledName(MapNameStyle.COLOR_WITH_AUTHORS))
             .build());
         audience.sendMessage(queue);
       });
@@ -238,9 +238,9 @@ public class SponsorCommands extends CommunityCommand {
         .append(text("Current online player range", NamedTextColor.DARK_AQUA))
         .appendSpace()
         .append(text("(", NamedTextColor.GRAY))
-        .append(text(bounds.getLowerBound(), NamedTextColor.GOLD))
+        .append(text(bounds.lowerBound(), NamedTextColor.GOLD))
         .append(text("-", NamedTextColor.GRAY))
-        .append(text(bounds.getUpperBound(), NamedTextColor.GOLD))
+        .append(text(bounds.upperBound(), NamedTextColor.GOLD))
         .append(text(")", NamedTextColor.GRAY))
         .build();
     Component title = text()
@@ -359,17 +359,17 @@ public class SponsorCommands extends CommunityCommand {
     new PaginatedComponentResults<SponsorRequest>(formattedTitle, resultsPerPage) {
       @Override
       public Component format(SponsorRequest sponsor, int index) {
-        MapInfo map = sponsor.getMap();
+        MapInfo map = sponsor.map();
         Component mapName = map.getStyledName(MapNameStyle.COLOR)
             .clickEvent(ClickEvent.runCommand("/map " + map.getName()))
             .hoverEvent(HoverEvent.showText(translatable(
                 "command.maps.hover", NamedTextColor.GRAY, map.getStyledName(MapNameStyle.COLOR))));
 
-        Component playerName = VisibilityUtils.isDisguised(sponsor.getPlayerId())
+        Component playerName = VisibilityUtils.isDisguised(sponsor.playerId())
             ? empty()
             : text()
                 .append(BroadcastUtils.BROADCAST_DIV)
-                .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
+                .append(player(sponsor.playerId(), NameStyle.FANCY))
                 .build();
 
         return text()

@@ -15,9 +15,9 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public class ReportReasonsMenu extends CommunityInventoryProvider<ReportReason> {
 
-  private AssistanceFeature feature;
-  private ReportCategory category;
-  private Player target;
+  private final AssistanceFeature feature;
+  private final ReportCategory category;
+  private final Player target;
 
   public ReportReasonsMenu(AssistanceFeature feature, Player target, ReportCategory category) {
     super(category.getReasons());

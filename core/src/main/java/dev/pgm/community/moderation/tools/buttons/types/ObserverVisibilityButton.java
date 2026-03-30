@@ -68,14 +68,11 @@ public class ObserverVisibilityButton extends TranslatableToolButton {
   private String getStatusKey() {
     MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(getViewer());
     SettingValue value = matchPlayer.getSettings().getValue(SettingKey.OBSERVERS);
-    switch (value) {
-      case OBSERVERS_FRIEND:
-        return "misc.friends";
-      case OBSERVERS_ON:
-        return "misc.all";
-      default:
-        return "misc.none";
-    }
+    return switch (value) {
+      case OBSERVERS_FRIEND -> "misc.friends";
+      case OBSERVERS_ON -> "misc.all";
+      default -> "misc.none";
+    };
   }
 
   public void toggleObserverVisibility(Player player) {

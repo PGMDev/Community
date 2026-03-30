@@ -16,8 +16,8 @@ public enum PunishmentType {
   TEMP_BAN(true, true, true, true, "Temporary Ban"),
   NAME_BAN(true, true, true, false, "Username Ban");
 
-  private String PREFIX_TRANSLATE_KEY = "moderation.type.";
-  private String SCREEN_TRANSLATE_KEY = "moderation.screen.";
+  private final String PREFIX_TRANSLATE_KEY = "moderation.type.";
+  private final String SCREEN_TRANSLATE_KEY = "moderation.screen.";
 
   private final boolean screen;
   private final boolean canRescind;

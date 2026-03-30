@@ -23,7 +23,7 @@ public class NetworkChatFeature extends FeatureBase {
 
   public static final String ADMIN_CHANNEL = "admin";
 
-  private NetworkFeature network;
+  private final NetworkFeature network;
 
   public NetworkChatFeature(Configuration config, Logger logger, NetworkFeature network) {
     super(new NetworkChatConfig(config), logger, "Network Chat (PGM)");

@@ -48,7 +48,7 @@ public interface Nick {
     setEnabled(false);
   }
 
-  public static Nick of(UUID playerId, String nick) {
+  static Nick of(UUID playerId, String nick) {
     return new NickImpl(playerId, nick, Instant.now(), true);
   }
 }

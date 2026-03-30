@@ -4,5 +4,5 @@ import dev.pgm.community.sessions.Session;
 
 public interface UserProfileWithSessionCallback {
 
-  public void run(UserProfile profile, Session session);
+  void run(UserProfile profile, Session session);
 }

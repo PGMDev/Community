@@ -36,9 +36,7 @@ public class FriendlyFireMutation extends MutationBase {
     ScoreboardMatchModule smm = match.getModule(ScoreboardMatchModule.class);
     if (smm == null) return;
     smm.getScoreboards()
-        .forEach(
-            board -> {
-              board.getTeams().forEach(team -> team.setAllowFriendlyFire(match.getFriendlyFire()));
-            });
+        .forEach(board ->
+            board.getTeams().forEach(team -> team.setAllowFriendlyFire(match.getFriendlyFire())));
   }
 }

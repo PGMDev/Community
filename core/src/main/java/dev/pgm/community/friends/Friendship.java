@@ -5,12 +5,12 @@ import java.util.UUID;
 
 public class Friendship implements Comparable<Friendship> {
 
-  private UUID friendshipId; // ID of friendship
+  private final UUID friendshipId; // ID of friendship
 
-  private UUID requesterId; // UUID of player who requested friendship
-  private UUID requestedId; // UUID of target
+  private final UUID requesterId; // UUID of player who requested friendship
+  private final UUID requestedId; // UUID of target
 
-  private Instant requestDate; // Date the original request was sent
+  private final Instant requestDate; // Date the original request was sent
 
   private Instant requestUpdated; // Date request status was last updated
 
@@ -105,20 +105,12 @@ public class Friendship implements Comparable<Friendship> {
     return status;
   }
 
-  /**
-   * Sets the friendship status
-   *
-   * @param status
-   */
+  /** Sets the friendship status */
   public void setStatus(FriendshipStatus status) {
     this.status = status;
   }
 
-  /**
-   * Sets the date in which the friendship status was last updated
-   *
-   * @param time
-   */
+  /** Sets the date in which the friendship status was last updated */
   public void setLastUpdated(Instant now) {
     this.requestUpdated = now;
   }
@@ -156,16 +148,15 @@ public class Friendship implements Comparable<Friendship> {
     return getRequesterId().equals(playerId) ? getRequestedId() : getRequesterId();
   }
 
-  public static enum FriendshipStatus {
+  public enum FriendshipStatus {
     PENDING, // No decision has been more
     ACCEPTED, // Requested has accepted
-    REJECTED; // Requested has denied
+    REJECTED // Requested has denied
   }
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof Friendship)) return false;
-    Friendship otherFriendship = (Friendship) other;
+    if (!(other instanceof Friendship otherFriendship)) return false;
     return otherFriendship.getFriendshipId().equals(getFriendshipId());
   }
 

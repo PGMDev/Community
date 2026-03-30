@@ -11,12 +11,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public abstract class ToolButtonBase implements ToolButton {
 
-  private Player viewer;
+  private final Player viewer;
 
-  private String name;
-  private List<String> lore;
-  private Material material;
-  private int amount;
+  private final String name;
+  private final List<String> lore;
+  private final Material material;
+  private final int amount;
 
   public ToolButtonBase(
       Player viewer, String name, List<String> lore, Material material, int amount) {

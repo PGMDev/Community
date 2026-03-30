@@ -16,7 +16,7 @@ public class ModerationMenuTool extends ToolBase {
   private static final List<String> LORE =
       Lists.newArrayList("&7Click to open the mod tools menu.");
 
-  private ModerationToolsMenu menu;
+  private final ModerationToolsMenu menu;
 
   public ModerationMenuTool(int slot, boolean enabled) {
     super(slot, enabled);

@@ -24,7 +24,7 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.party.Party;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -41,7 +41,7 @@ public class MobMutation extends ScheduledMutationBase {
   private static final int RANDOM_DISTANCE = 45;
   private static final String MOB_METADATA = "mob-mutation";
 
-  private static MutationListOption<Integer> TOTAL_MOBS = new MutationListOption<>(
+  private static final MutationListOption<Integer> TOTAL_MOBS = new MutationListOption<>(
       "Total Mobs",
       "Total number of mobs spawned",
       MutationType.MOBS.getMaterial(),
@@ -101,7 +101,7 @@ public class MobMutation extends ScheduledMutationBase {
     return null;
   }
 
-  private EntityType[] MOB_TYPES = {
+  private final EntityType[] MOB_TYPES = {
     EntityType.ZOMBIE,
     EntityType.SKELETON,
     EntityType.SPIDER,

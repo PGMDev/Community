@@ -3,6 +3,7 @@ package dev.pgm.community.utils;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.title.Title.Times.times;
 import static net.kyori.adventure.title.Title.title;
 
 import dev.pgm.community.Community;
@@ -13,12 +14,11 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.util.Ticks;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.bukkit.ViaUtils;
 
@@ -124,7 +124,7 @@ public class BroadcastUtils {
 
   public static void sendGlobalTitle(
       @Nullable Component title, @Nullable Component subTitle, int stay, @Nullable Sound sound) {
-    Bukkit.getOnlinePlayers().stream().forEach(p -> {
+    Bukkit.getOnlinePlayers().forEach(p -> {
       Audience viewer = Audience.get(p);
       // Support legacy players
       if (ViaUtils.getProtocolVersion(p) <= ViaUtils.VERSION_1_7) {
@@ -133,7 +133,7 @@ public class BroadcastUtils {
       viewer.showTitle(title(
           title == null ? empty() : title,
           subTitle == null ? empty() : subTitle,
-          Times.of(Ticks.duration(5), Ticks.duration(20 * stay), Ticks.duration(15))));
+          times(Ticks.duration(5), Ticks.duration(20L * stay), Ticks.duration(15))));
 
       if (sound != null) {
         viewer.playSound(sound);

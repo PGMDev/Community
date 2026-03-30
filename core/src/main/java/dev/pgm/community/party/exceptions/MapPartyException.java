@@ -4,7 +4,7 @@ import dev.pgm.community.party.MapParty;
 
 public abstract class MapPartyException extends Exception {
 
-  private MapParty party;
+  private final MapParty party;
 
   public MapPartyException(MapParty party, String error) {
     super(error);

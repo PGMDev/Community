@@ -15,10 +15,8 @@ public interface NetworkFeature extends Feature {
   void sendUpdate(NetworkUpdate update);
 
   /**
-   * Register a new {@link NetworkSubscriber} Will listen to and consume updates from {@link
-   * #sendUpdate(NetworkUpdate)}
-   *
-   * @param sub
+   * Register a new {@link NetworkSubscriber} Will listen to and consume updates from
+   * {@link #sendUpdate(NetworkUpdate)}
    */
   void registerSubscriber(NetworkSubscriber sub);
 

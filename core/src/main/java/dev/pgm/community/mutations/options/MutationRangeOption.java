@@ -4,10 +4,10 @@ import org.bukkit.Material;
 
 public class MutationRangeOption extends MutationOption {
 
-  private int min;
-  private int max;
+  private final int min;
+  private final int max;
   private int value;
-  private int def;
+  private final int def;
 
   public MutationRangeOption(
       String name,

@@ -15,8 +15,7 @@ import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.Pagination;
 import fr.minuskube.inv.content.SlotIterator;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -42,15 +41,14 @@ public class MapMenu extends MapPartyMenu {
   private void render(Player player, InventoryContents contents) {
     contents.fillBorders(getBorderItem());
 
-    if (getFeature().getParty() != null && getFeature().getParty() instanceof CustomPoolParty) {
-      CustomPoolParty party = (CustomPoolParty) getFeature().getParty();
+    if (getFeature().getParty() != null
+        && getFeature().getParty() instanceof CustomPoolParty party) {
 
       List<MapInfo> maps = party.getMaps();
-      List<ClickableItem> mapItems =
-          maps.stream().map(this::getMapIcon).collect(Collectors.toList());
+      List<ClickableItem> mapItems = maps.stream().map(this::getMapIcon).toList();
 
       Pagination page = contents.pagination();
-      page.setItems(mapItems.toArray(new ClickableItem[mapItems.size()]));
+      page.setItems(mapItems.toArray(new ClickableItem[0]));
       page.setItemsPerPage(27);
 
       page.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 1, 0));
@@ -77,9 +75,7 @@ public class MapMenu extends MapPartyMenu {
           ClickableItem.of(
               PLAYER_UTILS.customSkull(
                   ADD_SKIN, "&a&lAdd Map", "&7Click to add a map to the selection"),
-              c -> {
-                new MapAddMenu(getFeature(), getViewer());
-              }));
+              c -> new MapAddMenu(getFeature(), getViewer())));
     } else {
       RegularPoolParty party = (RegularPoolParty) getFeature().getParty();
       MapPoolManager poolManager = PGMUtils.getMapPoolManager();
@@ -123,9 +119,7 @@ public class MapMenu extends MapPartyMenu {
             .lore(colorize("&7Click to remove"))
             .flags(ItemFlag.values())
             .build(),
-        c -> {
-          Bukkit.dispatchCommand(getViewer(), "event removemap " + map.getName());
-        });
+        c -> Bukkit.dispatchCommand(getViewer(), "event removemap " + map.getName()));
   }
 
   private ClickableItem getPoolIcon(MapPool pool, boolean active) {
@@ -140,9 +134,8 @@ public class MapMenu extends MapPartyMenu {
     if (active) {
       icon.enchant(Enchantments.LUCK_OF_THE_SEA, 1);
     }
-    return ClickableItem.of(icon.build(), c -> {
-      Bukkit.dispatchCommand(getViewer(), "event setpool " + pool.getName());
-    });
+    return ClickableItem.of(
+        icon.build(), c -> Bukkit.dispatchCommand(getViewer(), "event setpool " + pool.getName()));
   }
 
   private ClickableItem getNoMapsIcon() {

@@ -19,7 +19,7 @@ import tc.oc.pgm.util.named.NameStyle;
 
 public class KickPlayerEndAction implements EndAction {
 
-  private static int DELAY_SECONDS = 2;
+  private static final int DELAY_SECONDS = 2;
 
   private final UUID targetId;
 
@@ -53,14 +53,10 @@ public class KickPlayerEndAction implements EndAction {
           .getFeatures()
           .getUsers()
           .renderUsername(targetId, NameStyle.FANCY)
-          .thenAcceptAsync(
-              playerName -> {
-                BroadcastUtils.sendGlobalMessage(
-                    text()
-                        .append(playerName)
-                        .append(text(" is no longer online!", NamedTextColor.YELLOW))
-                        .build());
-              });
+          .thenAcceptAsync(playerName -> BroadcastUtils.sendGlobalMessage(text()
+              .append(playerName)
+              .append(text(" is no longer online!", NamedTextColor.YELLOW))
+              .build()));
       return;
     }
 
@@ -70,11 +66,10 @@ public class KickPlayerEndAction implements EndAction {
             Community.get(),
             () -> {
               // Send broadcast before kick, so name renders properly
-              BroadcastUtils.sendGlobalMessage(
-                  text()
-                      .append(player(target, NameStyle.FANCY))
-                      .append(text(" has been kicked!", NamedTextColor.RED, TextDecoration.BOLD))
-                      .build());
+              BroadcastUtils.sendGlobalMessage(text()
+                  .append(player(target, NameStyle.FANCY))
+                  .append(text(" has been kicked!", NamedTextColor.RED, TextDecoration.BOLD))
+                  .build());
               target.kickPlayer(colorize("&4&lYou have been voted off the server!"));
             },
             20L * DELAY_SECONDS);
@@ -83,9 +78,8 @@ public class KickPlayerEndAction implements EndAction {
   @Override
   public Component getName() {
     return text("Kick Player")
-        .hoverEvent(
-            HoverEvent.showText(
-                text("Kicks the target player upon completion", NamedTextColor.GRAY)));
+        .hoverEvent(HoverEvent.showText(
+            text("Kicks the target player upon completion", NamedTextColor.GRAY)));
   }
 
   @Override

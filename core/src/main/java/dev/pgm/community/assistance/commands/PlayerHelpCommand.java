@@ -15,8 +15,8 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 
 public class PlayerHelpCommand extends CommunityCommand {
 
-  private AssistanceFeature assistance;
-  private ModerationFeature moderation;
+  private final AssistanceFeature assistance;
+  private final ModerationFeature moderation;
 
   public PlayerHelpCommand() {
     this.assistance = Community.get().getFeatures().getReports();

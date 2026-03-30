@@ -49,7 +49,7 @@ public class HostMenu extends MapPartyMenu {
           .collect(Collectors.toSet());
 
       Pagination page = contents.pagination();
-      page.setItems(players.toArray(new ClickableItem[players.size()]));
+      page.setItems(players.toArray(new ClickableItem[0]));
       page.setItemsPerPage(7);
 
       page.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 2, 1));
@@ -75,9 +75,7 @@ public class HostMenu extends MapPartyMenu {
           4,
           ClickableItem.of(
               PLAYER_UTILS.customSkull(ADD_SKIN, "&a&lAdd Host", "&7Click to add event host"),
-              c -> {
-                new HostAddMenu(hosts).open(getViewer());
-              }));
+              c -> new HostAddMenu(hosts).open(getViewer())));
 
       // Return to party menu
       contents.set(5, 4, getMainMenuIcon());

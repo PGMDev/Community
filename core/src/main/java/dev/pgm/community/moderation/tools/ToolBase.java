@@ -12,8 +12,8 @@ import tc.oc.pgm.util.inventory.ItemBuilder;
 
 public abstract class ToolBase implements Tool {
 
-  private int slot;
-  private boolean enabled;
+  private final int slot;
+  private final boolean enabled;
 
   public ToolBase(int slot, boolean enabled) {
     this.slot = slot;

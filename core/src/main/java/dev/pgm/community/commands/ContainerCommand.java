@@ -30,8 +30,8 @@ import tc.oc.pgm.util.Audience;
 
 public class ContainerCommand extends CommunityCommand implements Listener {
 
-  private Set<UUID> clickingPlayers = Sets.newHashSet();
-  private Set<UUID> editingPlayers = Sets.newHashSet();
+  private final Set<UUID> clickingPlayers = Sets.newHashSet();
+  private final Set<UUID> editingPlayers = Sets.newHashSet();
 
   private static final Component EXIT_MESSAGE =
       text("Exited container editing mode", NamedTextColor.GRAY);
@@ -63,16 +63,10 @@ public class ContainerCommand extends CommunityCommand implements Listener {
   }
 
   private boolean isTypeAllowed(Material type) {
-    switch (type) {
-      case CHEST:
-      case ENDER_CHEST:
-      case FURNACE:
-      case DISPENSER:
-      case BEACON:
-        return true;
-      default:
-        return false;
-    }
+    return switch (type) {
+      case CHEST, ENDER_CHEST, FURNACE, DISPENSER, BEACON -> true;
+      default -> false;
+    };
   }
 
   private Component formatCoords(Block block, NamedTextColor coordColor) {
@@ -100,10 +94,9 @@ public class ContainerCommand extends CommunityCommand implements Listener {
 
     if (isChoosing(player) && canOpen(block) && event.getAction() == Action.LEFT_CLICK_BLOCK) {
       event.setCancelled(true);
-      viewer.sendMessage(
-          text()
-              .append(text("Now opening container at ", NamedTextColor.GRAY))
-              .append(formatCoords(block, NamedTextColor.GREEN)));
+      viewer.sendMessage(text()
+          .append(text("Now opening container at ", NamedTextColor.GRAY))
+          .append(formatCoords(block, NamedTextColor.GREEN)));
 
       InventoryHolder container = (InventoryHolder) block.getState();
       editingPlayers.add(player.getUniqueId());
@@ -112,20 +105,18 @@ public class ContainerCommand extends CommunityCommand implements Listener {
     }
   }
 
-  @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onInventoryClickEvent(InventoryClickEvent event) {
-    if (event.getWhoClicked() != null && event.getWhoClicked() instanceof Player) {
-      Player player = (Player) event.getWhoClicked();
+    if (event.getWhoClicked() != null && event.getWhoClicked() instanceof Player player) {
       if (editingPlayers.contains(player.getUniqueId())) {
         event.setCancelled(false);
       }
     }
   }
 
-  @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onInventoryClose(InventoryCloseEvent event) {
-    if (event.getPlayer() != null && event.getPlayer() instanceof Player) {
-      Player player = (Player) event.getPlayer();
+    if (event.getPlayer() != null && event.getPlayer() instanceof Player player) {
       if (editingPlayers.contains(player.getUniqueId())) {
         editingPlayers.remove(player.getUniqueId());
         Audience.get(player).sendWarning(EXIT_MESSAGE);

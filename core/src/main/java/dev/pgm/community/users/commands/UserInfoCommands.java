@@ -4,6 +4,7 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 import static tc.oc.pgm.util.text.TemporalComponent.relativePastApproximate;
@@ -36,7 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -71,52 +71,41 @@ public class UserInfoCommands extends CommunityCommand {
     boolean staff = audience.hasPermission(CommunityPermissions.STAFF);
     boolean findAnyone = audience.hasPermission(CommunityPermissions.FIND_ANYONE);
 
-    users.findUserWithSession(
-        target.getIdentifier(),
-        !staff,
-        (profile, session) -> {
-          if (profile == null || session == null) {
-            audience.sendWarning(
-                findAnyone
-                    ? MessageUtils.formatUnseen(target.getIdentifier())
-                    : MessageUtils.formatNotFriend(target.getIdentifier()));
-            return;
-          }
+    users.findUserWithSession(target.getIdentifier(), !staff, (profile, session) -> {
+      if (profile == null || session == null) {
+        audience.sendWarning(
+            findAnyone
+                ? MessageUtils.formatUnseen(target.getIdentifier())
+                : MessageUtils.formatNotFriend(target.getIdentifier()));
+        return;
+      }
 
-          if (audience.isPlayer()
-              && !friends.isFriend(audience.getPlayer().getUniqueId(), profile.getId())
-              && !findAnyone) {
-            audience.sendWarning(
-                text("You are not friends with ")
-                    .append(text(profile.getUsername(), NamedTextColor.DARK_AQUA)));
-            return;
-          }
+      if (audience.isPlayer()
+          && !friends.isFriend(audience.getPlayer().getUniqueId(), profile.getId())
+          && !findAnyone) {
+        audience.sendWarning(text("You are not friends with ")
+            .append(text(profile.getUsername(), NamedTextColor.DARK_AQUA)));
+        return;
+      }
 
-          boolean online = !session.hasEnded();
-          boolean disguised = session.isDisguised();
-          boolean visible = online && (!disguised || staff);
+      boolean online = !session.hasEnded();
+      boolean disguised = session.isDisguised();
+      boolean visible = online && (!disguised || staff);
 
-          Component lastSeenMsg =
-              text()
-                  .append(player(profile.getId(), NameStyle.FANCY))
-                  .append(
-                      text(
-                          visible ? " has been online for " : " was last seen ")) // TODO: translate
-                  .append(
-                      (visible
-                              ? duration(
-                                  Duration.between(session.getLatestUpdateDate(), Instant.now()))
-                              : TemporalComponent.relativePastApproximate(
-                                  session.getLatestUpdateDate()))
-                          .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
-                  .append(text(session.isOnThisServer() ? "" : " on "))
-                  .append(
-                      text(session.isOnThisServer() ? "" : session.getServerName())
-                          .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
-                  .color(NamedTextColor.GRAY)
-                  .build();
-          audience.sendMessage(lastSeenMsg);
-        });
+      Component lastSeenMsg = text()
+          .append(player(profile.getId(), NameStyle.FANCY))
+          .append(text(visible ? " has been online for " : " was last seen ")) // TODO: translate
+          .append((visible
+                  ? duration(Duration.between(session.getLatestUpdateDate(), Instant.now()))
+                  : TemporalComponent.relativePastApproximate(session.getLatestUpdateDate()))
+              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+          .append(text(session.isOnThisServer() ? "" : " on "))
+          .append(text(session.isOnThisServer() ? "" : session.getServerName())
+              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+          .color(NamedTextColor.GRAY)
+          .build();
+      audience.sendMessage(lastSeenMsg);
+    });
   }
 
   @Command("alts|alternateaccounts [target]")
@@ -129,94 +118,78 @@ public class UserInfoCommands extends CommunityCommand {
       return;
     }
 
-    users
-        .getStoredProfile(target.getIdentifier())
-        .thenAcceptAsync(
-            profile -> {
-              if (profile == null) {
-                audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
-                return;
-              }
+    users.getStoredProfile(target.getIdentifier()).thenAcceptAsync(profile -> {
+      if (profile == null) {
+        audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
+        return;
+      }
 
-              Set<UUID> alts = users.getAlternateAccounts(profile.getId()).join();
+      Set<UUID> alts = users.getAlternateAccounts(profile.getId()).join();
 
-              Component targetPlayer =
-                  users.renderUsername(profile.getId(), NameStyle.COLOR).join();
-              if (alts.isEmpty()) {
-                audience.sendWarning(
-                    translatable("moderation.alts.noAlts", NamedTextColor.GRAY, targetPlayer));
-                return;
-              }
+      Component targetPlayer =
+          users.renderUsername(profile.getId(), NameStyle.COLOR).join();
+      if (alts.isEmpty()) {
+        audience.sendWarning(
+            translatable("moderation.alts.noAlts", NamedTextColor.GRAY, targetPlayer));
+        return;
+      }
 
-              Set<Component> altNames =
-                  alts.stream()
-                      .map(
-                          altId -> {
-                            Component name = users.renderUsername(altId, NameStyle.COLOR).join();
+      Set<Component> altNames = alts.stream()
+          .map(altId -> {
+            Component name = users.renderUsername(altId, NameStyle.COLOR).join();
 
-                            return text()
-                                .append(name)
-                                .clickEvent(ClickEvent.runCommand("/l " + altId.toString()))
-                                .hoverEvent(
-                                    HoverEvent.showText(
-                                        text(
-                                                "Click to view punishment history of ",
-                                                NamedTextColor.GRAY)
-                                            .append(name)))
-                                .build();
-                          })
-                      .collect(Collectors.toSet());
+            return text()
+                .append(name)
+                .clickEvent(ClickEvent.runCommand("/l " + altId.toString()))
+                .hoverEvent(HoverEvent.showText(
+                    text("Click to view punishment history of ", NamedTextColor.GRAY)
+                        .append(name)))
+                .build();
+          })
+          .collect(Collectors.toSet());
 
-              Component numberOfAlts =
-                  text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
+      Component numberOfAlts = text(alts.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
 
-              Component altNameList =
-                  text()
-                      .append(targetPlayer)
-                      .append(text(" has "))
-                      .append(numberOfAlts)
-                      .append(text(" known alternate account"))
-                      .append(text(alts.size() != 1 ? "s" : ""))
-                      .append(text(": "))
-                      .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
-                      .color(NamedTextColor.GRAY)
-                      .build();
+      Component altNameList = text()
+          .append(targetPlayer)
+          .append(text(" has "))
+          .append(numberOfAlts)
+          .append(text(" known alternate account"))
+          .append(text(alts.size() != 1 ? "s" : ""))
+          .append(text(": "))
+          .append(TextFormatter.list(altNames, NamedTextColor.GRAY))
+          .color(NamedTextColor.GRAY)
+          .build();
 
-              List<Component> altsWithBans =
-                  alts.stream()
-                      .filter(altId -> moderation.isBanned(altId.toString()).join())
-                      .map(
-                          altId -> {
-                            Component name = users.renderUsername(altId, NameStyle.FANCY).join();
+      List<Component> altsWithBans = alts.stream()
+          .filter(altId -> moderation.isBanned(altId.toString()).join())
+          .map(altId -> {
+            Component name = users.renderUsername(altId, NameStyle.FANCY).join();
 
-                            return text()
-                                .append(name)
-                                .clickEvent(ClickEvent.runCommand("/l " + altId))
-                                .hoverEvent(
-                                    HoverEvent.showText(
-                                        text(
-                                                "Click to view punishment history of ",
-                                                NamedTextColor.GRAY)
-                                            .append(name)))
-                                .build();
-                          })
-                      .collect(Collectors.toList());
+            return text()
+                .append(name)
+                .clickEvent(ClickEvent.runCommand("/l " + altId))
+                .hoverEvent(HoverEvent.showText(
+                    text("Click to view punishment history of ", NamedTextColor.GRAY)
+                        .append(name)))
+                .build();
+          })
+          .collect(Collectors.toList());
 
-              Component numberOfBannedAlts =
-                  text(altsWithBans.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
+      Component numberOfBannedAlts =
+          text(altsWithBans.size(), NamedTextColor.YELLOW, TextDecoration.BOLD);
 
-              Component altBans =
-                  text()
-                      .append(numberOfBannedAlts)
-                      .append(text(" of these accounts are currently banned: "))
-                      .append(TextFormatter.list(altsWithBans, NamedTextColor.GRAY))
-                      .color(NamedTextColor.GRAY)
-                      .build();
-              audience.sendMessage(altNameList);
-              if (altsWithBans.size() > 0) {
-                audience.sendMessage(altBans);
-              }
-            });
+      Component altBans = text()
+          .append(numberOfBannedAlts)
+          .append(text(" of these accounts are currently banned: "))
+          .append(TextFormatter.list(altsWithBans, NamedTextColor.GRAY))
+          .color(NamedTextColor.GRAY)
+          .build();
+      audience.sendMessage(altNameList);
+      if (!altsWithBans.isEmpty()) {
+        audience.sendMessage(altBans);
+      }
+    });
   }
 
   @Command("profile|user <target> [all]")
@@ -226,122 +199,95 @@ public class UserInfoCommands extends CommunityCommand {
       CommandAudience audience,
       @Argument("target") TargetPlayer target,
       @Argument("all") @Default("false") boolean viewAll) {
-    users.findUserWithSession(
-        target.getIdentifier(),
-        false,
-        (profile, session) -> {
-          if (profile == null || session == null) {
-            audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
-            return;
-          }
+    users.findUserWithSession(target.getIdentifier(), false, (profile, session) -> {
+      if (profile == null || session == null) {
+        audience.sendWarning(MessageUtils.formatUnseen(target.getIdentifier()));
+        return;
+      }
 
-          Component header =
-              text("Account Info", NamedTextColor.RED)
-                  .append(text(" - ", NamedTextColor.GRAY))
-                  .append(player(profile.getId(), NameStyle.FANCY));
+      Component header = text("Account Info", NamedTextColor.RED)
+          .append(text(" - ", NamedTextColor.GRAY))
+          .append(player(profile.getId(), NameStyle.FANCY));
 
-          Component uuid =
-              formatInfoField("UUID", text(profile.getId().toString(), NamedTextColor.YELLOW));
-          Component firstLogin =
-              formatInfoField("First Login", formatDateWithHover(profile.getFirstLogin()));
-          Component lastLogin =
-              formatInfoField("Last Login", formatDateWithHover(session.getLatestUpdateDate()));
-          Component joinCount =
-              formatInfoField(
-                  "Join Count", text(profile.getJoinCount(), NamedTextColor.LIGHT_PURPLE));
+      Component uuid =
+          formatInfoField("UUID", text(profile.getId().toString(), NamedTextColor.YELLOW));
+      Component firstLogin =
+          formatInfoField("First Login", formatDateWithHover(profile.getFirstLogin()));
+      Component lastLogin =
+          formatInfoField("Last Login", formatDateWithHover(session.getLatestUpdateDate()));
+      Component joinCount =
+          formatInfoField("Join Count", text(profile.getJoinCount(), NamedTextColor.LIGHT_PURPLE));
 
-          Component lastServer =
-              formatInfoField("Last Server", text(session.getServerName(), NamedTextColor.AQUA));
+      Component lastServer =
+          formatInfoField("Last Server", text(session.getServerName(), NamedTextColor.AQUA));
 
-          Component knownIPs = formatInfoField("Known IPs", empty());
+      Component knownIPs = formatInfoField("Known IPs", empty());
 
-          audience.sendMessage(
-              TextFormatter.horizontalLineHeading(
-                  audience.getSender(), header, NamedTextColor.DARK_GRAY));
+      audience.sendMessage(TextFormatter.horizontalLineHeading(
+          audience.getSender(), header, NamedTextColor.DARK_GRAY));
 
-          audience.sendMessage(uuid);
-          audience.sendMessage(firstLogin);
-          audience.sendMessage(lastLogin);
-          audience.sendMessage(joinCount);
-          audience.sendMessage(lastServer);
+      audience.sendMessage(uuid);
+      audience.sendMessage(firstLogin);
+      audience.sendMessage(lastLogin);
+      audience.sendMessage(joinCount);
+      audience.sendMessage(lastServer);
 
-          if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
-            users
-                .getLatestAddress(profile.getId())
-                .thenAcceptAsync(
-                    latest -> {
-                      final String lastIpFieldName = "Latest IP";
+      if (audience.getSender().hasPermission(CommunityPermissions.RESTRICTED)) {
+        users.getLatestAddress(profile.getId()).thenAcceptAsync(latest -> {
+          final String lastIpFieldName = "Latest IP";
 
-                      if (latest == null) {
-                        audience.sendMessage(
-                            formatInfoField(
-                                lastIpFieldName,
-                                text("Unavailable", NamedTextColor.RED)
-                                    .hoverEvent(
-                                        HoverEvent.showText(
-                                            text(
-                                                "No IP info found (user has not logged in recently)",
-                                                NamedTextColor.RED)))));
-                      } else {
-                        audience.sendMessage(
-                            formatInfoField(
-                                lastIpFieldName,
-                                text()
-                                    .append(text(latest.getAddress(), NamedTextColor.AQUA))
-                                    .append(text(" ("))
-                                    .append(relativePastApproximate(latest.getDate()))
-                                    .append(text(")"))
-                                    .color(NamedTextColor.GRAY)
-                                    .build()));
-                      }
-                    });
-
-            users
-                .getKnownIPs(profile.getId())
-                .thenAcceptAsync(
-                    ips -> {
-                      if (ips.size() > 1) {
-                        final int MAX_VIEWABLE = 6;
-                        List<String> viewableIps = Lists.newArrayList(ips);
-                        if (!viewAll) {
-                          viewableIps = viewableIps.subList(0, Math.min(ips.size(), MAX_VIEWABLE));
-                        }
-                        audience.sendMessage(
-                            knownIPs.append(text("(" + ips.size() + ")", NamedTextColor.GRAY)));
-                        audience.sendMessage(
-                            formatListItems(
-                                viewableIps.stream()
-                                    .map(
-                                        ip ->
-                                            text()
-                                                .append(text("     - ", NamedTextColor.YELLOW))
-                                                .append(text(ip, NamedTextColor.DARK_AQUA))
-                                                .build())
-                                    .collect(Collectors.toList())));
-                        if (ips.size() > MAX_VIEWABLE && !viewAll) {
-                          audience.sendMessage(
-                              text()
-                                  .append(
-                                      text(
-                                          ips.size() - MAX_VIEWABLE,
-                                          NamedTextColor.YELLOW,
-                                          TextDecoration.BOLD))
-                                  .append(text(" Additional IPs found! ", NamedTextColor.DARK_AQUA))
-                                  .append(text("[", NamedTextColor.GRAY))
-                                  .append(text("View All", NamedTextColor.BLUE))
-                                  .append(text("]", NamedTextColor.GRAY))
-                                  .clickEvent(
-                                      ClickEvent.runCommand(
-                                          "/profile " + target.getIdentifier() + " true"))
-                                  .hoverEvent(
-                                      HoverEvent.showText(
-                                          text("Click to view all ips", NamedTextColor.GRAY)))
-                                  .build());
-                        }
-                      }
-                    });
+          if (latest == null) {
+            audience.sendMessage(formatInfoField(
+                lastIpFieldName,
+                text("Unavailable", NamedTextColor.RED)
+                    .hoverEvent(HoverEvent.showText(text(
+                        "No IP info found (user has not logged in recently)",
+                        NamedTextColor.RED)))));
+          } else {
+            audience.sendMessage(formatInfoField(
+                lastIpFieldName,
+                text()
+                    .append(text(latest.getAddress(), NamedTextColor.AQUA))
+                    .append(text(" ("))
+                    .append(relativePastApproximate(latest.getDate()))
+                    .append(text(")"))
+                    .color(NamedTextColor.GRAY)
+                    .build()));
           }
         });
+
+        users.getKnownIPs(profile.getId()).thenAcceptAsync(ips -> {
+          if (ips.size() > 1) {
+            final int MAX_VIEWABLE = 6;
+            List<String> viewableIps = Lists.newArrayList(ips);
+            if (!viewAll) {
+              viewableIps = viewableIps.subList(0, Math.min(ips.size(), MAX_VIEWABLE));
+            }
+            audience.sendMessage(
+                knownIPs.append(text("(" + ips.size() + ")", NamedTextColor.GRAY)));
+            audience.sendMessage(formatListItems(viewableIps.stream()
+                .map(ip -> text()
+                    .append(text("     - ", NamedTextColor.YELLOW))
+                    .append(text(ip, NamedTextColor.DARK_AQUA))
+                    .build())
+                .collect(Collectors.toList())));
+            if (ips.size() > MAX_VIEWABLE && !viewAll) {
+              audience.sendMessage(text()
+                  .append(
+                      text(ips.size() - MAX_VIEWABLE, NamedTextColor.YELLOW, TextDecoration.BOLD))
+                  .append(text(" Additional IPs found! ", NamedTextColor.DARK_AQUA))
+                  .append(text("[", NamedTextColor.GRAY))
+                  .append(text("View All", NamedTextColor.BLUE))
+                  .append(text("]", NamedTextColor.GRAY))
+                  .clickEvent(ClickEvent.runCommand("/profile " + target.getIdentifier() + " true"))
+                  .hoverEvent(
+                      HoverEvent.showText(text("Click to view all ips", NamedTextColor.GRAY)))
+                  .build());
+            }
+          }
+        });
+      }
+    });
   }
 
   private Component formatDateWithHover(Instant pastDate) {
@@ -354,7 +300,7 @@ public class UserInfoCommands extends CommunityCommand {
   }
 
   private Component formatListItems(Collection<Component> components) {
-    return Component.join(newline(), components);
+    return Component.join(separator(newline()), components);
   }
 
   private Component formatInfoField(String field, Component value) {
@@ -373,9 +319,7 @@ public class UserInfoCommands extends CommunityCommand {
     for (Player player : Bukkit.getOnlinePlayers()) {
       Set<UUID> alts = getOnlineAltAccounts(player);
 
-      if (alts.isEmpty() || accountedFor.contains(player.getUniqueId())) {
-        continue;
-      } else {
+      if (!alts.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
         altAccounts.add(formatAltAccountList(player, alts));
         accountedFor.add(player.getUniqueId());
         accountedFor.addAll(alts);
@@ -386,28 +330,28 @@ public class UserInfoCommands extends CommunityCommand {
   }
 
   private void showBannedAlts(CommandAudience audience, int page) {
-    CompletableFuture.runAsync(
-        () -> {
-          Set<Component> altAccounts = Sets.newHashSet();
-          Set<UUID> accountedFor = Sets.newHashSet();
+    CompletableFuture.runAsync(() -> {
+      Set<Component> altAccounts = Sets.newHashSet();
+      Set<UUID> accountedFor = Sets.newHashSet();
 
-          for (Player player : Bukkit.getOnlinePlayers()) {
-            Set<UUID> alts = users.getAlternateAccounts(player.getUniqueId()).join();
-            Map<UUID, Punishment> punishmentMap = new HashMap<>();
-            for (UUID alt : alts) {
-              Optional<Punishment> punishment = moderation.getActiveBan(alt.toString()).join();
-              punishment.ifPresent(value -> punishmentMap.put(alt, value));
-            }
+      for (Player player : Bukkit.getOnlinePlayers()) {
+        Set<UUID> alts = users.getAlternateAccounts(player.getUniqueId()).join();
+        Map<UUID, Punishment> punishmentMap = new HashMap<>();
+        for (UUID alt : alts) {
+          Optional<Punishment> punishment =
+              moderation.getActiveBan(alt.toString()).join();
+          punishment.ifPresent(value -> punishmentMap.put(alt, value));
+        }
 
-            if (!punishmentMap.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
-              altAccounts.add(formatAltAccountList(player, punishmentMap));
-              accountedFor.add(player.getUniqueId());
-              accountedFor.addAll(punishmentMap.keySet());
-            }
-          }
+        if (!punishmentMap.isEmpty() && !accountedFor.contains(player.getUniqueId())) {
+          altAccounts.add(formatAltAccountList(player, punishmentMap));
+          accountedFor.add(player.getUniqueId());
+          accountedFor.addAll(punishmentMap.keySet());
+        }
+      }
 
-          sendAltList(audience, page, altAccounts, true);
-        });
+      sendAltList(audience, page, altAccounts, true);
+    });
   }
 
   private void sendAltList(
@@ -415,26 +359,23 @@ public class UserInfoCommands extends CommunityCommand {
     int perPage = Math.max(15, altAccounts.size());
     int pages = (altAccounts.size() + perPage - 1) / perPage;
 
-    Component pageHeader =
-        translatable(
-            "command.pageHeader",
-            NamedTextColor.GRAY,
-            text(Integer.toString(page), NamedTextColor.DARK_AQUA),
-            text(Integer.toString(pages), NamedTextColor.DARK_AQUA));
+    Component pageHeader = translatable(
+        "command.pageHeader",
+        NamedTextColor.GRAY,
+        text(Integer.toString(page), NamedTextColor.DARK_AQUA),
+        text(Integer.toString(pages), NamedTextColor.DARK_AQUA));
 
-    Component headerText =
-        translatable(
-            banned ? "Banned Alt-Accounts" : "moderation.alts.header", NamedTextColor.DARK_AQUA);
+    Component headerText = translatable(
+        banned ? "Banned Alt-Accounts" : "moderation.alts.header", NamedTextColor.DARK_AQUA);
 
-    Component header =
-        text()
-            .append(headerText)
-            .append(text(" (", NamedTextColor.GRAY))
-            .append(text(Integer.toString(altAccounts.size()), NamedTextColor.DARK_AQUA))
-            .append(text(")", NamedTextColor.GRAY))
-            .append(text(" » ", NamedTextColor.GOLD))
-            .append(pageHeader)
-            .build();
+    Component header = text()
+        .append(headerText)
+        .append(text(" (", NamedTextColor.GRAY))
+        .append(text(Integer.toString(altAccounts.size()), NamedTextColor.DARK_AQUA))
+        .append(text(")", NamedTextColor.GRAY))
+        .append(text(" » ", NamedTextColor.GOLD))
+        .append(pageHeader)
+        .build();
 
     Component formattedHeader =
         TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.BLUE);
@@ -455,12 +396,11 @@ public class UserInfoCommands extends CommunityCommand {
   }
 
   private Component formatAltAccountList(Player target, Set<UUID> alts) {
-    Component names =
-        Component.join(
-            text(", ", NamedTextColor.GRAY),
-            alts.stream()
-                .map(pl -> users.renderUsername(pl, NameStyle.FANCY).join())
-                .collect(Collectors.toSet()));
+    Component names = Component.join(
+        separator(text(", ", NamedTextColor.GRAY)),
+        alts.stream()
+            .map(pl -> users.renderUsername(pl, NameStyle.FANCY).join())
+            .collect(Collectors.toSet()));
     Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
 
     return text("[", NamedTextColor.GOLD)
@@ -473,30 +413,24 @@ public class UserInfoCommands extends CommunityCommand {
   }
 
   private Component formatAltAccountList(Player target, Map<UUID, Punishment> alts) {
-    Component names =
-        Component.join(
-            text(", ", NamedTextColor.GRAY),
-            alts.entrySet().stream()
-                .map(
-                    pl -> {
-                      Punishment punishment = pl.getValue();
-                      List<Component> components = new ArrayList<>();
-                      components.add(
-                          TemporalComponent.relativePastApproximate(punishment.getTimeIssued())
-                              .color(NamedTextColor.YELLOW));
-                      components.add(punishment.formatTimeComponent());
-                      components.add(text(punishment.getReason()).color(NamedTextColor.RED));
+    Component names = Component.join(
+        separator(text(", ", NamedTextColor.GRAY)),
+        alts.entrySet().stream()
+            .map(pl -> {
+              Punishment punishment = pl.getValue();
+              List<Component> components = new ArrayList<>();
+              components.add(TemporalComponent.relativePastApproximate(punishment.getTimeIssued())
+                  .color(NamedTextColor.YELLOW));
+              components.add(punishment.formatTimeComponent());
+              components.add(text(punishment.getReason()).color(NamedTextColor.RED));
 
-                      return users
-                          .renderUsername(pl.getKey(), NameStyle.FANCY)
-                          .join()
-                          .hoverEvent(
-                              HoverEvent.showText(
-                                  Component.join(
-                                      JoinConfiguration.separator(BroadcastUtils.BROADCAST_DIV),
-                                      components)));
-                    })
-                .collect(Collectors.toSet()));
+              return users
+                  .renderUsername(pl.getKey(), NameStyle.FANCY)
+                  .join()
+                  .hoverEvent(HoverEvent.showText(
+                      Component.join(separator(BroadcastUtils.BROADCAST_DIV), components)));
+            })
+            .collect(Collectors.toSet()));
     Component size = text(Integer.toString(alts.size()), NamedTextColor.YELLOW);
 
     return text("[", NamedTextColor.GOLD)

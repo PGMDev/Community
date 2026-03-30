@@ -37,13 +37,13 @@ public class SponsorVotingBookCreator extends VotingBookCreatorImpl {
 
     // Add sponsor hover if available
     SponsorRequest sponsor = manager.getCurrentSponsor();
-    if (sponsor != null && sponsor.getMap().equals(map)) {
+    if (sponsor != null && sponsor.map().equals(map)) {
       return text()
           .append(originalHover)
           .append(newline())
           .append(text("+ ", NamedTextColor.YELLOW, TextDecoration.BOLD))
           .append(text("Sponsored by ", NamedTextColor.GRAY))
-          .append(player(sponsor.getPlayerId(), NameStyle.FANCY))
+          .append(player(sponsor.playerId(), NameStyle.FANCY))
           .build();
     }
 

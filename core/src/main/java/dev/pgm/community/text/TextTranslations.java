@@ -23,8 +23,8 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /** A singleton for accessing {@link MessageFormat} and {@link Component} translations. */
 @SuppressWarnings("UnstableApiUsage")
@@ -85,13 +85,13 @@ public final class TextTranslations {
     // platform)
     GlobalTranslator.translator().addSource(new Translator() {
       @Override
-      public @NotNull Key name() {
+      public @NonNull Key name() {
         return NAMESPACE;
       }
 
       @Override
       public @Nullable MessageFormat translate(
-          final @NotNull String key, final @NotNull Locale locale) {
+          final @NonNull String key, final @NonNull Locale locale) {
         return TextTranslations.getNearestKey(locale, key);
       }
     });
@@ -182,8 +182,7 @@ public final class TextTranslations {
     for (String resourceName : SOURCE_NAMES) {
       // If the locale is not the source code locale,
       // then append the language tag to get the proper resource
-      if (locale != SOURCE_LOCALE)
-        resourceName += "_" + locale.toLanguageTag().replaceAll("-", "_");
+      if (locale != SOURCE_LOCALE) resourceName += "_" + locale.toLanguageTag().replace("-", "_");
 
       final ResourceBundle resource;
       try {
@@ -197,7 +196,7 @@ public final class TextTranslations {
 
         // Single quotes are a special keyword that need to be escaped in MessageFormat
         // Templates are not escaped, whereas translations are escaped
-        if (locale == SOURCE_LOCALE) format = format.replaceAll("'", "''");
+        if (locale == SOURCE_LOCALE) format = format.replace("'", "''");
 
         TRANSLATIONS_TABLE.put(key, locale, new MessageFormat(format, locale));
         keysFound++;

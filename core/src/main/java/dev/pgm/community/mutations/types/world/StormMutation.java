@@ -7,7 +7,6 @@ import dev.pgm.community.mutations.MutationType;
 import dev.pgm.community.mutations.types.ScheduledMutationBase;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -67,10 +66,8 @@ public class StormMutation extends ScheduledMutationBase {
     Bukkit.getScheduler()
         .scheduleSyncDelayedTask(
             Community.get(),
-            () -> {
-              match.getWorld().spigot().strikeLightning(player.getLocation(), false);
-            },
-            20 * delay);
+            () -> match.getWorld().spigot().strikeLightning(player.getLocation(), false),
+            20L * delay);
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -80,7 +77,7 @@ public class StormMutation extends ScheduledMutationBase {
 
   private Set<MatchPlayer> selectRandomPlayers(int amount) {
     Set<MatchPlayer> chosen = Sets.newHashSet();
-    List<MatchPlayer> everyone = match.getParticipants().stream().collect(Collectors.toList());
+    List<MatchPlayer> everyone = match.getParticipants().stream().toList();
     if (!everyone.isEmpty()) {
       int retrys = 0;
       while (chosen.size() < amount && retrys < 5) {

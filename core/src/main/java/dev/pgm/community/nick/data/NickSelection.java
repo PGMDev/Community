@@ -6,8 +6,8 @@ import java.util.List;
 
 public class NickSelection {
 
-  private List<String> names;
-  private Instant lastRefresh;
+  private final List<String> names;
+  private final Instant lastRefresh;
 
   public NickSelection(List<String> names) {
     this.names = names;

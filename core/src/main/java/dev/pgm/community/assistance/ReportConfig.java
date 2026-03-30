@@ -39,11 +39,7 @@ public class ReportConfig extends FeatureConfigImpl {
 
   private List<ReportCategory> categories;
 
-  /**
-   * Configuration options related to reports
-   *
-   * @param config
-   */
+  /** Configuration options related to reports */
   public ReportConfig(Configuration config) {
     super(KEY, config);
   }

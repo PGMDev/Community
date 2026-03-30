@@ -6,7 +6,6 @@ import dev.pgm.community.utils.PGMUtils;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -21,9 +20,9 @@ public class PGMNickIntegration implements NickIntegration {
 
   private boolean hotbarColor = false;
 
-  private NickFeature nick;
+  private final NickFeature nick;
 
-  private Future<?> hotbarTask;
+  private final Future<?> hotbarTask;
 
   public PGMNickIntegration(NickFeature nick) {
     this.nick = nick;
@@ -44,10 +43,9 @@ public class PGMNickIntegration implements NickIntegration {
   private void updateHotbars() {
     Match match = PGMUtils.getMatch();
     if (match != null) {
-      List<MatchPlayer> nicked =
-          match.getPlayers().stream()
-              .filter(p -> nick.isNicked(p.getId()) && !Integration.isVanished(p.getBukkit()))
-              .collect(Collectors.toList());
+      List<MatchPlayer> nicked = match.getPlayers().stream()
+          .filter(p -> nick.isNicked(p.getId()) && !Integration.isVanished(p.getBukkit()))
+          .toList();
       nicked.forEach(mp -> sendHotbarNicked(mp, hotbarColor));
     }
     hotbarColor = !hotbarColor;

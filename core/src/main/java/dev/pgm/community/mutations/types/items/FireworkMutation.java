@@ -35,7 +35,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.MatchScope;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -53,9 +53,9 @@ public class FireworkMutation extends KitMutationBase {
   private static final ItemTag<String> FIREWORK_TAG = ItemTag.newString(FIREWORK_METADATA);
   private static final int FIREWORK_POWER = 2;
 
-  private Cache<UUID, String> lastFirework =
+  private final Cache<UUID, String> lastFirework =
       CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.SECONDS).build();
-  private Set<Firework> fireworks;
+  private final Set<Firework> fireworks;
 
   private ScheduledFuture<?> task;
 
@@ -102,8 +102,7 @@ public class FireworkMutation extends KitMutationBase {
 
   private void fling(Firework firework) {
     if (!firework.hasMetadata(FIREWORK_METADATA)) return;
-    if (firework.getPassenger() != null && firework.getPassenger() instanceof Player) {
-      Player player = (Player) firework.getPassenger();
+    if (firework.getPassenger() != null && firework.getPassenger() instanceof Player player) {
       Vector velocity = player.getLocation().getDirection().multiply(7).setY(0);
       player.setVelocity(velocity);
       player.addPotionEffect(new PotionEffect(PotionEffects.RESISTANCE, 20 * 5, 5));
@@ -137,10 +136,8 @@ public class FireworkMutation extends KitMutationBase {
   @EventHandler
   public void onFireworkArrow(ProjectileHitEvent event) {
     if (event.getEntity() == null) return;
-    if (!(event.getEntity().getShooter() instanceof Player)) return;
+    if (!(event.getEntity().getShooter() instanceof Player shooter)) return;
     if (event.getEntity().getShooter() == null) return;
-
-    Player shooter = (Player) event.getEntity().getShooter();
 
     if (lastFirework.getIfPresent(shooter.getUniqueId()) == null) {
       launchFirework(shooter, event.getEntity().getLocation());

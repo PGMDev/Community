@@ -15,7 +15,7 @@ public class Channels {
   // PUNISHMENT_UPDATE - Used to alert servers of unmuted or unbanned players
   public static final String PUNISHMENT_UPDATE = formatChannel("punishment_update");
 
-  private static final String formatChannel(String name) {
+  private static String formatChannel(String name) {
     return "community_" + name;
   }
 }

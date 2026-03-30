@@ -26,9 +26,9 @@ import tc.oc.pgm.spawns.events.ObserverKitApplyEvent;
 
 public class PGMPunishmentIntegration implements PunishmentIntegration, Listener {
 
-  private ModerationFeature moderation;
+  private final ModerationFeature moderation;
 
-  private ModerationTools tools;
+  private final ModerationTools tools;
 
   public PGMPunishmentIntegration(ModerationFeature moderation) {
     this.moderation = moderation;

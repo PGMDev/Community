@@ -18,17 +18,12 @@ import java.util.concurrent.CompletableFuture;
 public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
     implements FriendshipQuery {
 
-  private LoadingCache<UUID, PlayerFriendships> friendshipCache;
+  private final LoadingCache<UUID, PlayerFriendships> friendshipCache;
 
   public SQLFriendshipService() {
     super(TABLE_NAME, TABLE_FIELDS);
-    this.friendshipCache = CacheBuilder.newBuilder()
-        .build(new CacheLoader<UUID, PlayerFriendships>() {
-          @Override
-          public PlayerFriendships load(UUID key) throws Exception {
-            return new PlayerFriendships(key);
-          }
-        });
+    this.friendshipCache =
+        CacheBuilder.newBuilder().build(CacheLoader.from(PlayerFriendships::new));
   }
 
   @Override
@@ -131,9 +126,9 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
     return null; // Use queryList
   }
 
-  private class PlayerFriendships {
-    private UUID playerId;
-    private Set<Friendship> friendships;
+  private static class PlayerFriendships {
+    private final UUID playerId;
+    private final Set<Friendship> friendships;
     private boolean loaded;
 
     public PlayerFriendships(UUID playerId) {

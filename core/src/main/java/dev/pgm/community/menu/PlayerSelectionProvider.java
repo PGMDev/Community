@@ -61,7 +61,7 @@ public abstract class PlayerSelectionProvider implements InventoryProvider {
   @Override
   public void update(Player player, InventoryContents contents) {}
 
-  private final ItemStack getPageIcon(String text, int page) {
+  private ItemStack getPageIcon(String text, int page) {
     return getNamedItem(text, PAGE_MATERIAL, page);
   }
 

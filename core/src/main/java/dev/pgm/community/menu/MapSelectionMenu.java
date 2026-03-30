@@ -36,10 +36,10 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
 
   private static final int ROWS = 6;
 
-  private String title;
-  private Player viewer;
-  private List<MapInfo> maps;
-  private List<MapTag> tags;
+  private final String title;
+  private final Player viewer;
+  private final List<MapInfo> maps;
+  private final List<MapTag> tags;
 
   private int filterIndex = 0;
 
@@ -85,7 +85,6 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
     contents.setProperty("update", delay + 1);
     if (delay >= 5) {
       render(player, contents);
-      delay = 0;
     }
   }
 
@@ -105,7 +104,7 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
     List<ClickableItem> mapItems = getFilteredMapItems();
 
     Pagination page = contents.pagination();
-    page.setItems(mapItems.toArray(new ClickableItem[mapItems.size()]));
+    page.setItems(mapItems.toArray(new ClickableItem[0]));
     page.setItemsPerPage(36);
 
     page.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 1, 0));
@@ -134,11 +133,10 @@ public abstract class MapSelectionMenu implements InventoryProvider, PageableInv
   }
 
   public Material getMapMaterial(MapInfo map) {
-    return map.getTags().isEmpty()
-            || !map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().isPresent()
+    return map.getTags().isEmpty() || map.getTags().stream().noneMatch(MapTag::isGamemode)
         ? Material.MAP
         : mapTagMaterial(
-            map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().get());
+            map.getTags().stream().filter(MapTag::isGamemode).findAny().get());
   }
 
   private List<ClickableItem> getMapItems(List<MapInfo> maps) {

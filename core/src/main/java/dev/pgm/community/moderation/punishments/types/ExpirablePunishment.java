@@ -5,7 +5,7 @@ import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** A punishment that can expire * */
 public abstract class ExpirablePunishment extends Punishment {
@@ -40,8 +40,8 @@ public abstract class ExpirablePunishment extends Punishment {
   public boolean isActive() {
     Instant expires = this.getTimeIssued().plus(this.getDuration());
     return super.isActive()
-        ? Instant.now().isBefore(expires)
-        : false; // If expired return false, otherwise return true until expires
+        && Instant.now()
+            .isBefore(expires); // If expired return false, otherwise return true until expires
   }
 
   public Instant getExpireTime() {
@@ -49,8 +49,6 @@ public abstract class ExpirablePunishment extends Punishment {
   }
 
   public static @Nullable Duration getDuration(Punishment punishment) {
-    return punishment instanceof ExpirablePunishment
-        ? ExpirablePunishment.class.cast(punishment).getDuration()
-        : null;
+    return punishment instanceof ExpirablePunishment ? punishment.getDuration() : null;
   }
 }

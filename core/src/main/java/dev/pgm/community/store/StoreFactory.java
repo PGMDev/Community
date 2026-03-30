@@ -30,14 +30,13 @@ public final class StoreFactory {
       backend = "sql";
     }
 
-    switch (backend.toLowerCase(Locale.ROOT)) {
-      case "sql":
-      case "sqlite":
-        return new SqlStores(config);
-      default:
+    return switch (backend.toLowerCase(Locale.ROOT)) {
+      case "sql", "sqlite" -> new SqlStores(config);
+      default -> {
         logger.warning("Unknown database backend '" + backend + "', defaulting to sql.");
-        return new SqlStores(config);
-    }
+        yield new SqlStores(config);
+      }
+    };
   }
 
   private static class SqlStores implements Stores {

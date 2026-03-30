@@ -125,7 +125,7 @@ public class RequestProfile {
   @Override
   public String toString() {
     return String.format(
-        "RequestProfile{id = %d, tokens = %d, requestMap = %s, sponsorMap = %s, lastRequest = %s, lastSponsor = %s, lastRefresh = %s, superVotes = %s, lastSuperVote = %s}",
+        "RequestProfile{id = %s, tokens = %d, requestMap = %s, sponsorMap = %s, lastRequest = %s, lastSponsor = %s, lastRefresh = %s, superVotes = %s, lastSuperVote = %s}",
         getPlayerId().toString(),
         getSponsorTokens(),
         getLastRequestMap(),

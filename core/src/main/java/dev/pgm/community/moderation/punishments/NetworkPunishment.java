@@ -2,8 +2,8 @@ package dev.pgm.community.moderation.punishments;
 
 public class NetworkPunishment {
 
-  private String serverId;
-  private Punishment punishment;
+  private final String serverId;
+  private final Punishment punishment;
 
   public NetworkPunishment(Punishment punishment, String serverId) {
     this.punishment = punishment;

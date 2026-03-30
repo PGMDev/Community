@@ -40,7 +40,7 @@ public class MatchHistoryFeature extends FeatureBase {
 
     int perPage = 7;
     int pages = (entries.size() + perPage - 1) / perPage;
-    page = Math.max(1, Math.min(page, pages));
+    page = Math.clamp(page, 1, pages);
 
     Component pageNum = translatable(
         "command.simplePageHeader",

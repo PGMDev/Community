@@ -46,26 +46,24 @@ public class MutationCommands extends CommunityCommand {
 
       int perPage = 7;
       int pages = (mts.size() + perPage - 1) / perPage;
-      page = Math.max(1, Math.min(page, pages));
+      page = Math.clamp(page, 1, pages);
 
       NamedTextColor featureColor = NamedTextColor.DARK_GREEN;
 
-      Component pageNum =
-          translatable(
-              "command.simplePageHeader",
-              NamedTextColor.GRAY,
-              text(Integer.toString(page), featureColor),
-              text(Integer.toString(pages), featureColor));
+      Component pageNum = translatable(
+          "command.simplePageHeader",
+          NamedTextColor.GRAY,
+          text(Integer.toString(page), featureColor),
+          text(Integer.toString(pages), featureColor));
 
-      Component header =
-          text()
-              .append(text("Active Mutations", featureColor))
-              .append(text(" ("))
-              .append(headerResultCount)
-              .append(text(") » "))
-              .append(pageNum)
-              .colorIfAbsent(NamedTextColor.GRAY)
-              .build();
+      Component header = text()
+          .append(text("Active Mutations", featureColor))
+          .append(text(" ("))
+          .append(headerResultCount)
+          .append(text(") » "))
+          .append(pageNum)
+          .colorIfAbsent(NamedTextColor.GRAY)
+          .build();
 
       Component formattedHeader =
           TextFormatter.horizontalLineHeading(audience.getSender(), header, NamedTextColor.YELLOW);
@@ -74,7 +72,10 @@ public class MutationCommands extends CommunityCommand {
 
         @Override
         public Component format(Mutation data, int index) {
-          return text().append(text("- ", NamedTextColor.GOLD)).append(data.getName()).build();
+          return text()
+              .append(text("- ", NamedTextColor.GOLD))
+              .append(data.getName())
+              .build();
         }
 
         @Override
@@ -92,11 +93,10 @@ public class MutationCommands extends CommunityCommand {
   public void addMutation(CommandAudience audience, @Argument("type") MutationType type) {
     checkForMatch();
     if (!mutations.addMutation(audience, type, true)) {
-      audience.sendWarning(
-          text()
-              .append(text(type.getDisplayName(), NamedTextColor.YELLOW))
-              .append(text(" has already been added to the match."))
-              .build());
+      audience.sendWarning(text()
+          .append(text(type.getDisplayName(), NamedTextColor.YELLOW))
+          .append(text(" has already been added to the match."))
+          .build());
     }
   }
 
@@ -106,11 +106,10 @@ public class MutationCommands extends CommunityCommand {
   public void removeMutation(CommandAudience audience, @Argument("type") MutationType type) {
     checkForMatch();
     if (!mutations.removeMutation(audience, type)) {
-      audience.sendWarning(
-          text()
-              .append(text(type.getDisplayName(), NamedTextColor.YELLOW))
-              .append(text(" can not be removed from the match."))
-              .build());
+      audience.sendWarning(text()
+          .append(text(type.getDisplayName(), NamedTextColor.YELLOW))
+          .append(text(" can not be removed from the match."))
+          .build());
     }
   }
 

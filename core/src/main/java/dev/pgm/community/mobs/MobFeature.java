@@ -30,8 +30,8 @@ public class MobFeature extends FeatureBase {
 
   public static final float DEFAULT_SPEED = 1.2f;
 
-  private Map<UUID, UUID> followTargets;
-  private Set<UUID> attackers;
+  private final Map<UUID, UUID> followTargets;
+  private final Set<UUID> attackers;
 
   private BukkitTask task;
   private float speed;
@@ -67,10 +67,8 @@ public class MobFeature extends FeatureBase {
   @EventHandler
   public void onDamage(EntityDamageByEntityEvent event) {
     if (event.getDamager() != null
-        && event.getDamager() instanceof Player
-        && event.getEntity() instanceof Player) {
-      Player damager = (Player) event.getDamager();
-      Player target = (Player) event.getEntity();
+        && event.getDamager() instanceof Player damager
+        && event.getEntity() instanceof Player target) {
 
       if (isAttacker(damager.getUniqueId())) {
         setTarget(damager, target);
@@ -79,14 +77,13 @@ public class MobFeature extends FeatureBase {
   }
 
   public void updateFollows() {
-    this.followTargets.entrySet().forEach(entry -> {
-      Player owner = Bukkit.getPlayer(entry.getKey());
-      Player target = Bukkit.getPlayer(entry.getValue());
+    this.followTargets.forEach((key, value) -> {
+      Player owner = Bukkit.getPlayer(key);
+      Player target = Bukkit.getPlayer(value);
       if (owner != null && target != null) {
         this.getOwnedMobs(owner).forEach(mob -> {
           ENTITY_UTILS.follow(mob, target.getLocation(), speed);
-          if (mob instanceof Creature && attackers.contains(owner.getUniqueId())) {
-            Creature creature = (Creature) mob;
+          if (mob instanceof Creature creature && attackers.contains(owner.getUniqueId())) {
             creature.setTarget(target);
           }
         });
@@ -127,8 +124,7 @@ public class MobFeature extends FeatureBase {
   public void spawn(Player sender, EntityType type, boolean canDie) {
     Entity entity = sender.getLocation().getWorld().spawnEntity(sender.getLocation(), type);
 
-    if (entity instanceof LivingEntity) {
-      LivingEntity mob = (LivingEntity) entity;
+    if (entity instanceof LivingEntity mob) {
       if (!canDie) {
         mob.setMaxHealth(Integer.MAX_VALUE);
         mob.setHealth(mob.getMaxHealth());
@@ -164,7 +160,7 @@ public class MobFeature extends FeatureBase {
 
   public int remove(Player sender) {
     List<LivingEntity> mobs = getOwnedMobs(sender);
-    mobs.forEach(mob -> mob.remove());
+    mobs.forEach(Entity::remove);
     return mobs.size();
   }
 
@@ -172,9 +168,7 @@ public class MobFeature extends FeatureBase {
     UUID playerId = sender.getUniqueId();
 
     // Unset attackers when switching to follow
-    if (this.attackers.contains(playerId)) {
-      this.attackers.remove(playerId);
-    }
+    this.attackers.remove(playerId);
 
     if (this.followTargets.containsKey(playerId)) {
       this.followTargets.remove(playerId);

@@ -8,28 +8,23 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
-public class NullEndAction implements EndAction {
-
-  private final String option;
+public record NullEndAction(String option) implements EndAction {
 
   public NullEndAction() {
     this(null);
   }
 
-  public NullEndAction(String option) {
-    this.option = option;
-  }
-
+  @Override
   @Nullable
-  public String getOption() {
+  public String option() {
     return option;
   }
 
   @Override
   public String getValue() {
-    return getOption();
+    return option();
   }
 
   @Override
@@ -70,16 +65,15 @@ public class NullEndAction implements EndAction {
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof NullEndAction)) return false;
-    NullEndAction otherAction = ((NullEndAction) other);
-    if (otherAction.getOption() != null) {
-      return otherAction.getOption().equalsIgnoreCase(getOption());
+    if (!(other instanceof NullEndAction(String endAction))) return false;
+    if (endAction != null) {
+      return endAction.equalsIgnoreCase(option());
     }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getOption());
+    return Objects.hash(option());
   }
 }

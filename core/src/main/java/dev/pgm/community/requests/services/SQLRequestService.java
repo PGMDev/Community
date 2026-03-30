@@ -11,22 +11,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SQLRequestService extends SQLFeatureBase<RequestProfile, String>
     implements RequestQuery {
 
-  private LoadingCache<UUID, UserRequestData> profileCache;
+  private final LoadingCache<UUID, UserRequestData> profileCache;
 
   public SQLRequestService() {
     super(TABLE_NAME, TABLE_FIELDS);
 
-    this.profileCache = CacheBuilder.newBuilder().build(new CacheLoader<UUID, UserRequestData>() {
-      @Override
-      public UserRequestData load(UUID key) throws Exception {
-        return new UserRequestData(key);
-      }
-    });
+    this.profileCache = CacheBuilder.newBuilder().build(CacheLoader.from(UserRequestData::new));
   }
 
   public CompletableFuture<RequestProfile> login(UUID playerId) {
@@ -143,9 +138,9 @@ public class SQLRequestService extends SQLFeatureBase<RequestProfile, String>
     return time.toEpochMilli();
   }
 
-  private class UserRequestData {
+  private static class UserRequestData {
 
-    private UUID playerId;
+    private final UUID playerId;
     private RequestProfile profile;
     private boolean loaded;
 

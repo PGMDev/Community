@@ -39,8 +39,8 @@ public class MapAddMenu extends MapPartyMenu {
   private static final int ROWS = 6;
   private static final boolean HOST_ONLY = true;
 
-  private List<MapInfo> maps;
-  private List<MapTag> tags;
+  private final List<MapInfo> maps;
+  private final List<MapTag> tags;
 
   private int filterIndex = 0;
 
@@ -75,7 +75,7 @@ public class MapAddMenu extends MapPartyMenu {
     List<ClickableItem> mapItems = getFilteredMapItems();
 
     Pagination page = contents.pagination();
-    page.setItems(mapItems.toArray(new ClickableItem[mapItems.size()]));
+    page.setItems(mapItems.toArray(new ClickableItem[0]));
     page.setItemsPerPage(36);
 
     page.addToIterator(contents.newIterator(SlotIterator.Type.HORIZONTAL, 1, 0));
@@ -96,9 +96,12 @@ public class MapAddMenu extends MapPartyMenu {
     }
 
     // Return to party menu
-    contents.set(5, 4, ClickableItem.of(getNamedItem("&7Return to &6Maps", Material.CAKE, 1), c -> {
-      Bukkit.dispatchCommand(player, "event maps");
-    }));
+    contents.set(
+        5,
+        4,
+        ClickableItem.of(
+            getNamedItem("&7Return to &6Maps", Material.CAKE, 1),
+            c -> Bukkit.dispatchCommand(player, "event maps")));
   }
 
   private ClickableItem getAllIcon() {
@@ -167,7 +170,6 @@ public class MapAddMenu extends MapPartyMenu {
     contents.setProperty("update", delay + 1);
     if (delay >= 5) {
       render(player, contents);
-      delay = 0;
     }
   }
 
@@ -190,11 +192,10 @@ public class MapAddMenu extends MapPartyMenu {
     boolean isAdded = getFeature().getParty().isMapAdded(map);
 
     Material icon;
-    icon = map.getTags().isEmpty()
-            || !map.getTags().stream().filter(t -> t.isGamemode()).findAny().isPresent()
+    icon = map.getTags().isEmpty() || map.getTags().stream().noneMatch(MapTag::isGamemode)
         ? Material.MAP
         : mapTagMaterial(
-            map.getTags().stream().filter(tag -> tag.isGamemode()).findAny().get());
+            map.getTags().stream().filter(MapTag::isGamemode).findAny().get());
 
     ItemBuilder builder = new ItemBuilder()
         .material(icon)
@@ -210,9 +211,8 @@ public class MapAddMenu extends MapPartyMenu {
       builder.enchant(Enchantments.LUCK_OF_THE_SEA, 1);
     }
 
-    return ClickableItem.of(builder.build(), c -> {
-      Bukkit.dispatchCommand(getViewer(), "event addmap " + map.getName());
-    });
+    return ClickableItem.of(
+        builder.build(), c -> Bukkit.dispatchCommand(getViewer(), "event addmap " + map.getName()));
   }
 
   private ClickableItem getNoMapsIcon() {

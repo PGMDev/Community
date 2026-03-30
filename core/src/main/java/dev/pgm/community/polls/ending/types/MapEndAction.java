@@ -18,17 +18,7 @@ import tc.oc.pgm.api.map.MapTag;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
 
-public class MapEndAction implements EndAction {
-
-  private MapInfo map;
-
-  public MapEndAction(MapInfo map) {
-    this.map = map;
-  }
-
-  public MapInfo getMap() {
-    return map;
-  }
+public record MapEndAction(MapInfo map) implements EndAction {
 
   @Override
   public String getValue() {
@@ -72,19 +62,17 @@ public class MapEndAction implements EndAction {
     } else if (!gamemodes.isEmpty()) {
       boolean acronyms = gamemodes.size() > 1;
       hover
-          .append(
-              TextFormatter.list(
-                  gamemodes.stream()
-                      .map(gm -> text(acronyms ? gm.getAcronym() : gm.getFullName()))
-                      .collect(Collectors.toList()),
-                  NamedTextColor.AQUA))
+          .append(TextFormatter.list(
+              gamemodes.stream()
+                  .map(gm -> text(acronyms ? gm.getAcronym() : gm.getFullName()))
+                  .collect(Collectors.toList()),
+              NamedTextColor.AQUA))
           .appendNewline();
     }
 
-    hover.append(
-        text(
-            map.getTags().stream().map(MapTag::toString).collect(Collectors.joining(" ")),
-            NamedTextColor.YELLOW));
+    hover.append(text(
+        map.getTags().stream().map(MapTag::toString).collect(Collectors.joining(" ")),
+        NamedTextColor.YELLOW));
 
     return text()
         .append(map.getStyledName(MapNameStyle.PLAIN).color(NamedTextColor.AQUA))
@@ -105,12 +93,12 @@ public class MapEndAction implements EndAction {
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof MapEndAction)) return false;
-    return ((MapEndAction) other).getMap().equals(getMap());
+    if (!(other instanceof MapEndAction(MapInfo mapInfo))) return false;
+    return mapInfo.equals(map());
   }
 
   @Override
   public int hashCode() {
-    return getMap().hashCode();
+    return map().hashCode();
   }
 }

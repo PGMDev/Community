@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,7 +41,7 @@ public class SkinCache implements Listener {
     if (offlineSkins.size() == 0) {
       return Skin.EMPTY; // TODO: Warning, this may be bad for 1.16 clients...
     }
-    List<Skin> skins = offlineSkins.asMap().values().stream().collect(Collectors.toList());
+    List<Skin> skins = offlineSkins.asMap().values().stream().toList();
     return skins.get(random.nextInt(skins.size()));
   }
 

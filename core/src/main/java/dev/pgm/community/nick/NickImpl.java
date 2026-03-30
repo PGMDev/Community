@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class NickImpl implements Nick {
 
-  private UUID playerId;
+  private final UUID playerId;
   private String nickName;
   private Instant date;
   private boolean enabled;

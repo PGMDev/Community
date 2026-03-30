@@ -1,7 +1,6 @@
 package dev.pgm.community.party.feature;
 
 import static dev.pgm.community.party.MapPartyMessages.formatTime;
-import static dev.pgm.community.utils.PGMUtils.parseMapText;
 import static net.kyori.adventure.text.Component.text;
 import static tc.oc.pgm.util.bukkit.BukkitUtils.colorize;
 import static tc.oc.pgm.util.player.PlayerComponent.player;
@@ -127,7 +126,7 @@ public class MapPartyFeature extends FeatureBase {
 
   public MapPartyPreset getPreset(String presetName) {
     return getPresets().stream()
-        .filter(preset -> cleanName(preset.getName()).equalsIgnoreCase(presetName))
+        .filter(preset -> cleanName(preset.name()).equalsIgnoreCase(presetName))
         .findAny()
         .orElse(null);
   }
@@ -143,24 +142,22 @@ public class MapPartyFeature extends FeatureBase {
       return;
     }
 
-    if (preset.getName() != null) {
-      setName(viewer, preset.getName());
+    if (preset.name() != null) {
+      setName(viewer, preset.name());
     }
 
-    if (preset.getDescription() != null) {
-      setDescription(viewer, preset.getDescription());
+    if (preset.description() != null) {
+      setDescription(viewer, preset.description());
     }
 
-    if (preset.getDuration() != null) {
-      setTimelimit(viewer, preset.getDuration(), false);
+    if (preset.duration() != null) {
+      setTimelimit(viewer, preset.duration(), false);
     }
 
     if (type == MapPartyType.REGULAR) {
-      setMapPool(viewer, preset.getPool());
+      setMapPool(viewer, preset.pool());
     } else {
-      preset.getMaps().stream()
-          .map(mapName -> parseMapText(mapName))
-          .forEach(map -> addMap(viewer, map));
+      preset.maps().stream().map(PGMUtils::parseMapText).forEach(map -> addMap(viewer, map));
     }
   }
 
@@ -171,9 +168,10 @@ public class MapPartyFeature extends FeatureBase {
     }
 
     if (getEventConfig().restrictSingleSession() && historyStore.hasAnyEndedEvents() && !force) {
-      historyStore.mostRecent().ifPresent(lastParty -> {
-        viewer.sendWarning(MapPartyMessages.getPreviousPartyWarning(lastParty));
-      });
+      historyStore
+          .mostRecent()
+          .ifPresent(
+              lastParty -> viewer.sendWarning(MapPartyMessages.getPreviousPartyWarning(lastParty)));
       return false;
     }
 
@@ -247,9 +245,8 @@ public class MapPartyFeature extends FeatureBase {
   private boolean canModify(CommandSender sender) {
     if (party == null) return false;
 
-    if (!(sender instanceof Player)) return true;
+    if (!(sender instanceof Player player)) return true;
 
-    Player player = (Player) sender;
     return party.getHosts().isHost(player.getUniqueId())
         || player.hasPermission(CommunityPermissions.PARTY_ADMIN);
   }
@@ -527,10 +524,8 @@ public class MapPartyFeature extends FeatureBase {
       Bukkit.getScheduler()
           .runTaskLater(
               Community.get(),
-              () -> {
-                Bukkit.dispatchCommand(
-                    Bukkit.getConsoleSender(), getEventConfig().getRaindropActivateCommand());
-              },
+              () -> Bukkit.dispatchCommand(
+                  Bukkit.getConsoleSender(), getEventConfig().getRaindropActivateCommand()),
               20L * 8);
     }
 
@@ -594,11 +589,7 @@ public class MapPartyFeature extends FeatureBase {
             .getServer()
             .getScheduler()
             .scheduleSyncDelayedTask(
-                Community.get(),
-                () -> {
-                  sendPartyWelcome(event.getPlayer());
-                },
-                30L);
+                Community.get(), () -> sendPartyWelcome(event.getPlayer()), 30L);
       }
     }
   }
@@ -680,7 +671,7 @@ public class MapPartyFeature extends FeatureBase {
 
     int perPage = 7;
     int pages = (entries.size() + perPage - 1) / perPage;
-    page = Math.max(1, Math.min(page, pages));
+    page = Math.clamp(page, 1, pages);
 
     Component pageNum = text()
         .append(text(page, NamedTextColor.YELLOW))
@@ -715,9 +706,7 @@ public class MapPartyFeature extends FeatureBase {
     historyStore
         .getBySequence(sequence)
         .ifPresentOrElse(
-            entry -> {
-              sender.getAudience().sendMessage(entry.format(verbose));
-            },
+            entry -> sender.getAudience().sendMessage(entry.format(verbose)),
             () -> sender
                 .getAudience()
                 .sendWarning(text("No party history found for #" + sequence, NamedTextColor.RED)));

@@ -25,8 +25,7 @@ public class InfoCommandsFeature extends FeatureBase {
   public void onPlayerCommandProcess(PlayerCommandPreprocessEvent event) {
     // We dynamically check for defined commands, and send the related feedback
     getInfoConfig().getInfoCommands().stream()
-        .filter(
-            c -> event.getMessage().toLowerCase().startsWith("/" + c.getName().toLowerCase()))
+        .filter(c -> event.getMessage().toLowerCase().startsWith("/" + c.name().toLowerCase()))
         .findAny()
         .ifPresent(command -> {
           command.sendCommand(event.getPlayer());

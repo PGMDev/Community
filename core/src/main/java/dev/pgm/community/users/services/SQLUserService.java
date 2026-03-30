@@ -16,17 +16,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class SQLUserService extends SQLFeatureBase<UserProfile, String> implements UserQuery {
 
-  private LoadingCache<UUID, UserData> profileCache;
+  private final LoadingCache<UUID, UserData> profileCache;
 
   public SQLUserService() {
     super(TABLE_NAME, TABLE_FIELDS);
 
-    this.profileCache = CacheBuilder.newBuilder().build(new CacheLoader<UUID, UserData>() {
-      @Override
-      public UserData load(UUID key) throws Exception {
-        return new UserData(key);
-      }
-    });
+    this.profileCache = CacheBuilder.newBuilder().build(CacheLoader.from(UserData::new));
   }
 
   @Override
@@ -109,9 +104,9 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
     });
   }
 
-  private class UserData {
+  private static class UserData {
 
-    private UUID playerId;
+    private final UUID playerId;
     private UserProfile profile;
     private boolean loaded;
 

@@ -101,15 +101,12 @@ public class FreezeFeature extends FeatureBase {
   public static ItemStack getFreezeTool(CommandSender viewer) {
     ItemStack stack = new ItemStack(TOOL_MATERIAL);
     ItemMeta meta = stack.getItemMeta();
-    meta.setDisplayName(
-        ChatColor.WHITE
-            + ChatColor.BOLD.toString()
-            + TextTranslations.translate("moderation.freeze.itemName", viewer));
+    meta.setDisplayName(ChatColor.WHITE
+        + ChatColor.BOLD.toString()
+        + TextTranslations.translate("moderation.freeze.itemName", viewer));
     meta.addItemFlags(ItemFlag.values());
-    meta.setLore(
-        Collections.singletonList(
-            ChatColor.GRAY
-                + TextTranslations.translate("moderation.freeze.itemDescription", viewer)));
+    meta.setLore(Collections.singletonList(
+        ChatColor.GRAY + TextTranslations.translate("moderation.freeze.itemDescription", viewer)));
     stack.setItemMeta(meta);
     return stack;
   }
@@ -153,11 +150,7 @@ public class FreezeFeature extends FeatureBase {
   public void onPlayerCommand(final PlayerCommandPreprocessEvent event) {
     if (freeze.isFrozen(event.getPlayer())
         && !event.getPlayer().hasPermission(CommunityPermissions.FREEZE)) {
-      boolean allow =
-          ALLOWED_CMDS.stream()
-              .filter(cmd -> event.getMessage().startsWith(cmd))
-              .findAny()
-              .isPresent();
+      boolean allow = ALLOWED_CMDS.stream().anyMatch(cmd -> event.getMessage().startsWith(cmd));
 
       if (!allow) {
         // Don't allow commands except for those related to chat.

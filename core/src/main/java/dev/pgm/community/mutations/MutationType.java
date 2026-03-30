@@ -42,9 +42,9 @@ public enum MutationType {
       "Give potion effects based on distance to Objectives",
       Material.GLASS_BOTTLE);
 
-  String displayName;
-  String description;
-  Material icon;
+  final String displayName;
+  final String description;
+  final Material icon;
 
   MutationType(String displayName, String description, Material icon) {
     this.displayName = displayName;

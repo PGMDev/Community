@@ -5,7 +5,7 @@ import dev.pgm.community.moderation.punishments.PunishmentType;
 import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.Audience;
 
 public class WarnPunishment extends Punishment {

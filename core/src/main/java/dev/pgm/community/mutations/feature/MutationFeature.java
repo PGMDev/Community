@@ -58,7 +58,7 @@ import tc.oc.pgm.util.text.TextFormatter;
 
 public class MutationFeature extends FeatureBase {
 
-  private Set<Mutation> mutations;
+  private final Set<Mutation> mutations;
 
   private final InventoryManager inventory;
 
@@ -226,22 +226,19 @@ public class MutationFeature extends FeatureBase {
 
     Set<Component> names = mutations.stream().map(Mutation::getName).collect(Collectors.toSet());
     boolean single = names.size() == 1;
-    Component broadcast =
-        text()
-            .append(
-                TextFormatter.horizontalLine(
-                    NamedTextColor.DARK_GREEN, TextFormatter.MAX_CHAT_WIDTH))
-            .append(newline())
-            .append(TextFormatter.list(names, NamedTextColor.GRAY))
-            .append(text(" mutation" + (single ? "" : "s")))
-            .append(text(single ? " has " : " have "))
-            .append(text("been enabled"))
-            .append(newline())
-            .append(
-                TextFormatter.horizontalLine(
-                    NamedTextColor.DARK_GREEN, TextFormatter.MAX_CHAT_WIDTH))
-            .color(NamedTextColor.GRAY)
-            .build();
+    Component broadcast = text()
+        .append(
+            TextFormatter.horizontalLine(NamedTextColor.DARK_GREEN, TextFormatter.MAX_CHAT_WIDTH))
+        .append(newline())
+        .append(TextFormatter.list(names, NamedTextColor.GRAY))
+        .append(text(" mutation" + (single ? "" : "s")))
+        .append(text(single ? " has " : " have "))
+        .append(text("been enabled"))
+        .append(newline())
+        .append(
+            TextFormatter.horizontalLine(NamedTextColor.DARK_GREEN, TextFormatter.MAX_CHAT_WIDTH))
+        .color(NamedTextColor.GRAY)
+        .build();
 
     if (!mutations.isEmpty()) {
       BroadcastUtils.sendGlobalMessage(broadcast, Sounds.ALERT);

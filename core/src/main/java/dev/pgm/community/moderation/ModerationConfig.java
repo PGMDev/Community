@@ -175,19 +175,13 @@ public class ModerationConfig extends FeatureConfigImpl {
    * @return True if punishment should be visible publicly
    */
   public boolean isPunishmentPublic(Punishment punishment) {
-    switch (punishment.getType()) {
-      case TEMP_BAN:
-      case BAN:
-        return banPublic;
-      case KICK:
-        return kickPublic;
-      case MUTE:
-        return mutePublic;
-      case WARN:
-        return warnPublic;
-      default:
-        return broadcast;
-    }
+    return switch (punishment.getType()) {
+      case TEMP_BAN, BAN -> banPublic;
+      case KICK -> kickPublic;
+      case MUTE -> mutePublic;
+      case WARN -> warnPublic;
+      default -> broadcast;
+    };
   }
 
   /**

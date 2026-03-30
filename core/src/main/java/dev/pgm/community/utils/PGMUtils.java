@@ -68,23 +68,7 @@ public class PGMUtils {
     return isPGMEnabled() && getMatch() != null ? getMatch().getMap() : null;
   }
 
-  public static class MapSizeBounds {
-    private int lowerBound;
-    private int upperBound;
-
-    public MapSizeBounds(int lowerBound, int upperBound) {
-      this.lowerBound = lowerBound;
-      this.upperBound = upperBound;
-    }
-
-    public int getLowerBound() {
-      return lowerBound;
-    }
-
-    public int getUpperBound() {
-      return upperBound;
-    }
-  }
+  public record MapSizeBounds(int lowerBound, int upperBound) {}
 
   public static boolean isMapSizeAllowed(
       MapInfo map, int lowerBoundOffset, int upperBoundOffset, double scaleFactor) {
@@ -93,7 +77,7 @@ public class PGMUtils {
 
       int max = getMapMaxSize(map);
 
-      return max >= bounds.getLowerBound() && max <= bounds.getUpperBound();
+      return max >= bounds.lowerBound() && max <= bounds.upperBound();
     }
 
     return true;
@@ -126,7 +110,7 @@ public class PGMUtils {
 
   public static MapInfo parseMapText(String input) throws TextException {
     if (input.contains(PGMUtils.SPACE)) {
-      input = input.replaceAll(PGMUtils.SPACE, " ");
+      input = input.replace(PGMUtils.SPACE, " ");
     }
     MapInfo map = PGM.get().getMapLibrary().getMap(input);
 
@@ -149,8 +133,7 @@ public class PGMUtils {
 
   public static void setMapPool(CommandSender sender, MapPool pool) {
     if (isPGMEnabled()) {
-      if (PGM.get().getMapOrder() instanceof MapPoolManager) {
-        MapPoolManager manager = (MapPoolManager) PGM.get().getMapOrder();
+      if (PGM.get().getMapOrder() instanceof MapPoolManager manager) {
         manager.updateActiveMapPool(pool, getMatch(), true, sender, null, 0);
       }
     }
@@ -173,8 +156,7 @@ public class PGMUtils {
 
   public static Optional<MapPool> getMapPool(String name) {
     if (isPGMEnabled()) {
-      if (PGM.get().getMapOrder() instanceof MapPoolManager) {
-        MapPoolManager manager = (MapPoolManager) PGM.get().getMapOrder();
+      if (PGM.get().getMapOrder() instanceof MapPoolManager manager) {
         return Optional.ofNullable(manager.getMapPoolByName(name));
       }
     }

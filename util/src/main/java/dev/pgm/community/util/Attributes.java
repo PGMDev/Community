@@ -10,7 +10,6 @@ public class Attributes {
       parse("GENERIC_KNOCKBACK_RESISTANCE", "KNOCKBACK_RESISTANCE");
 
   private static Attribute parse(String... names) {
-    Attribute type = BukkitUtils.parse(Attribute::valueOf, names);
-    return type;
+    return BukkitUtils.parse(Attribute::valueOf, names);
   }
 }

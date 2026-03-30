@@ -3,6 +3,7 @@ package dev.pgm.community.freeze;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityCommand;
@@ -21,7 +22,7 @@ import tc.oc.pgm.util.player.PlayerComponent;
 
 public class FreezeCommand extends CommunityCommand {
 
-  private FreezeFeature freeze;
+  private final FreezeFeature freeze;
 
   public FreezeCommand() {
     this.freeze = Community.get().getFeatures().getFreeze();
@@ -46,12 +47,11 @@ public class FreezeCommand extends CommunityCommand {
 
     // Online Players
     if (freeze.getOnlineCount() > 0) {
-      Component names =
-          join(
-              text(", ", NamedTextColor.GRAY),
-              freeze.getFrozenPlayers().stream()
-                  .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
-                  .collect(Collectors.toList()));
+      Component names = join(
+          separator(text(", ", NamedTextColor.GRAY)),
+          freeze.getFrozenPlayers().stream()
+              .map(p -> PlayerComponent.player(p, NameStyle.FANCY))
+              .collect(Collectors.toList()));
 
       sender.sendMessage(
           formatFrozenList("moderation.freeze.frozenList.online", freeze.getOnlineCount(), names));
@@ -60,9 +60,8 @@ public class FreezeCommand extends CommunityCommand {
     // Offline Players
     if (freeze.getOfflineCount() > 0) {
       Component names = text(freeze.getOfflineFrozenNames());
-      sender.sendMessage(
-          formatFrozenList(
-              "moderation.freeze.frozenList.offline", freeze.getOfflineCount(), names));
+      sender.sendMessage(formatFrozenList(
+          "moderation.freeze.frozenList.offline", freeze.getOfflineCount(), names));
     }
   }
 

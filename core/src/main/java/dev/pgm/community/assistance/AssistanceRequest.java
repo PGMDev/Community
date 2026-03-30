@@ -49,9 +49,9 @@ public class AssistanceRequest {
     return type;
   }
 
-  public static enum RequestType {
+  public enum RequestType {
     PLAYER_HELP,
-    REPORT;
+    REPORT
   }
 
   @Override
