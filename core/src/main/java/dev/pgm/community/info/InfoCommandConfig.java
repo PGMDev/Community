@@ -1,6 +1,7 @@
 package dev.pgm.community.info;
 
 import dev.pgm.community.feature.config.FeatureConfigImpl;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.Configuration;
@@ -27,7 +28,9 @@ public class InfoCommandConfig extends FeatureConfigImpl {
       setEnabled(true);
     }
     this.commands = config.getConfigurationSection(KEY).getKeys(false).stream()
-        .map(key -> InfoCommandData.of(config.getConfigurationSection(KEY + "." + key)))
+        .map(key -> config.getConfigurationSection(KEY + "." + key))
+        .filter(Objects::nonNull)
+        .map(InfoCommandData::of)
         .collect(Collectors.toSet());
   }
 }
