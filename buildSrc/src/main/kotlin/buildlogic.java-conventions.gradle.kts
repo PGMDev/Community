@@ -12,10 +12,10 @@ java {
 
 repositories {
     mavenCentral()
-    maven("https://repo.pgm.fyi/snapshots") // Sportpaper & other pgm-specific stuff
-    maven("https://repo.papermc.io/repository/maven-public/") // PaperMC repo
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") // Spigot repo
-    maven("https://repo.aikar.co/content/groups/aikar/") // aikar repo
+    maven("https://repo.pgm.fyi/snapshots") // SportPaper & other PGM-specific stuff
+    maven("https://repo.papermc.io/repository/maven-public/") // Paper builds & paperweight plugin
+    maven("https://repo.aikar.co/content/groups/aikar/") // Aikar repo
+    maven("https://repo.codemc.io/repository/maven-releases/") // PacketEvents
     mavenLocal() // Local last
 }
 
@@ -37,7 +37,7 @@ dependencies {
     compileOnly("tc.oc.pgm:util:0.16-SNAPSHOT")
     compileOnly("tc.oc.occ:Environment:1.0.0-SNAPSHOT")
     compileOnly("org.incendo:cloud-annotations:2.0.0")
-    compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.12.0")
 
     // Paper and SportPaper include these (or equivalents)
     compileOnly("it.unimi.dsi:fastutil:8.5.15")

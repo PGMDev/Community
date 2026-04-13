@@ -97,7 +97,7 @@ public class Community extends JavaPlugin {
   }
 
   public void registerListener(Listener listener) {
-    Platform.MANIFEST.onEnable(this);
+    Platform.MANIFEST.onEnable();
     getServer().getPluginManager().registerEvents(listener, this);
   }
 

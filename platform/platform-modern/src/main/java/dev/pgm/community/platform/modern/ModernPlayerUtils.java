@@ -77,7 +77,7 @@ public class ModernPlayerUtils implements PlayerUtils {
     if (playerSkins.containsKey(player.getUniqueId())) {
       Map<UUID, Skin> uuidSkinMap = playerSkins.get(player.getUniqueId());
       Skin skin = uuidSkinMap.get(viewer.getUniqueId());
-      if (skin != null) return skin;
+      if (skin != null && !skin.isEmpty()) return skin;
     }
 
     return getPlayerSkin(player);
