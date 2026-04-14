@@ -4,6 +4,7 @@ import static org.reflections.scanners.Scanners.TypesAnnotated;
 
 import dev.pgm.community.util.Supports.Variant;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NonNull;
@@ -20,13 +21,25 @@ public abstract class Platform {
       .addUrls(ClasspathHelper.forPackage("dev.pgm.community", Platform.class.getClassLoader()))
       .forPackage("dev.pgm.community.platform")
       .setScanners(TypesAnnotated));
+  private static final Pattern VERSION_MATCHER =
+      Pattern.compile("(\\d{1,2})\\.(\\d{1,2})\\.(\\d{1,2})");
 
   public static final Version MINECRAFT_VERSION;
   public static final Variant VARIANT;
 
+  private static Version parseServerVersion(final @NonNull String versionName) {
+    var matcher = VERSION_MATCHER.matcher(versionName);
+    return matcher.find()
+        ? new Version(
+            Integer.parseInt(matcher.group(1)),
+            Integer.parseInt(matcher.group(2)),
+            Integer.parseInt(matcher.group(3)))
+        : new Version(0, 0, 0);
+  }
+
   static {
     var sv = Bukkit.getServer();
-    MINECRAFT_VERSION = TextParser.parseVersion(sv.getBukkitVersion().split("-")[0]);
+    MINECRAFT_VERSION = parseServerVersion(sv.getBukkitVersion());
     VARIANT = Arrays.stream(Supports.Variant.values())
         .filter(v -> v.matcher.test(sv))
         .findFirst()
@@ -61,10 +74,15 @@ public abstract class Platform {
       Supports[] supportList = clazz.getDeclaredAnnotationsByType(Supports.class);
       for (Supports sup : supportList) {
         if (VARIANT != sup.value()) continue;
-        if (!sup.minVersion().isEmpty()
-            && MINECRAFT_VERSION.isOlderThan(TextParser.parseVersion(sup.minVersion()))) continue;
-        if (!sup.maxVersion().isEmpty()
-            && TextParser.parseVersion(sup.maxVersion()).isOlderThan(MINECRAFT_VERSION)) continue;
+        if (!sup.minVersion().isEmpty()) {
+          Version min = TextParser.parseVersion(sup.minVersion());
+          if (MINECRAFT_VERSION.isOlderThan(min)) continue;
+        }
+
+        if (!sup.maxVersion().isEmpty()) {
+          Version max = TextParser.parseVersion(sup.maxVersion());
+          if (max.isOlderThan(MINECRAFT_VERSION)) continue;
+        }
 
         if (priority == null || priority.compareTo(sup.priority()) < 0) {
           priority = sup.priority();

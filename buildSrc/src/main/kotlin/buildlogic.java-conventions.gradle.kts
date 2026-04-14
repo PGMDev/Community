@@ -16,16 +16,28 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/") // Paper builds & paperweight plugin
     maven("https://repo.aikar.co/content/groups/aikar/") // Aikar repo
     maven("https://repo.codemc.io/repository/maven-releases/") // PacketEvents
+    exclusiveContent {
+        forRepository {
+            maven("https://jitpack.io")
+        }
+        filter {
+            includeGroup("com.github.OvercastCommunity.adventure-platform")
+            includeGroup("com.github.MinusKube")
+        }
+    }
     mavenLocal() // Local last
 }
 
 dependencies {
     api("com.zaxxer:HikariCP:2.4.1") { isTransitive = false }
-    api("fr.minuskube.inv:smart-invs:1.2.7") { isTransitive = false }
+    // Latest SmartInvs commit
+    api("com.github.MinusKube:SmartInvs:9c9dbbee16") { isTransitive = false }
     api("redis.clients:jedis:3.5.1")
     api("net.kyori:adventure-api:4.26.1")
     api("net.kyori:adventure-text-serializer-plain:4.26.1")
-    api("net.kyori:adventure-platform-bukkit:4.4.1")
+    // adventure-platform fork with ViaVersion and 1.21.11+ fixes
+    // https://github.com/OvercastCommunity/adventure-platform
+    api("com.github.OvercastCommunity.adventure-platform:adventure-platform-bukkit:04de657e85")
     api("org.reflections:reflections:0.10.2")
 
     // Annotations
