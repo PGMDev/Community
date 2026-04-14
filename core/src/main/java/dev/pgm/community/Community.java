@@ -1,5 +1,7 @@
 package dev.pgm.community;
 
+import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+
 import dev.pgm.community.commands.graph.CommunityCommandGraph;
 import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
@@ -51,7 +53,10 @@ public class Community extends JavaPlugin {
     } catch (Throwable t) {
       getLogger().log(Level.SEVERE, "Failed to initialize Community platform", t);
       getServer().getPluginManager().disablePlugin(this);
+      return;
     }
+
+    Platform.MANIFEST.onEnable(this);
 
     this.setupConfig();
     getLogger().info(dev.pgm.community.database.DatabaseExecutor.describeBackend());
@@ -60,7 +65,9 @@ public class Community extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    features.disable();
+    Platform.MANIFEST.onDisable();
+    if (features != null) features.disable();
+    PLAYER_IDENTITY.clearAll();
     dev.pgm.community.database.DatabaseExecutor.shutdown();
   }
 
@@ -97,7 +104,6 @@ public class Community extends JavaPlugin {
   }
 
   public void registerListener(Listener listener) {
-    Platform.MANIFEST.onEnable();
     getServer().getPluginManager().registerEvents(listener, this);
   }
 

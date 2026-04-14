@@ -1,5 +1,6 @@
 package dev.pgm.community.platform.sportpaper;
 
+import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
 import static dev.pgm.community.util.Supports.Variant.SPORTPAPER;
 
 import com.mojang.authlib.GameProfile;
@@ -19,6 +20,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.platform.sportpaper.utils.Skins;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
 import tc.oc.pgm.util.skin.Skin;
@@ -35,6 +38,7 @@ public class SpPlayerUtils implements PlayerUtils {
   @Override
   public void setFakeNameAndSkin(
       Player player, Player viewer, String displayName, String nick, Skin skin) {
+    PLAYER_IDENTITY.set(player, viewer, displayName, nick, skin);
     var fakeSkin = skin == null ? null : new org.bukkit.Skin(skin.getData(), skin.getSignature());
 
     player.setFakeDisplayName(viewer, displayName);
@@ -42,23 +46,7 @@ public class SpPlayerUtils implements PlayerUtils {
   }
 
   @Override
-  public String getPlayerDisplayName(Player player, Player viewer) {
-    return player.getDisplayName(viewer);
-  }
-
-  @Override
-  public String getPlayerName(Player player, Player viewer) {
-    return player.getName(viewer);
-  }
-
-  @Override
-  public Skin getPlayerSkin(Player player, Player viewer) {
-    org.bukkit.Skin skin = player.getSkin(viewer);
-    return new Skin(skin.getData(), skin.getSignature());
-  }
-
-  @Override
-  public ItemStack customSkull(String url, String displayName, String... lore) {
+  public ItemStack customSkull(@NonNull String url, String displayName, String... lore) {
     ItemStack head = new ItemStack(Material.SKULL_ITEM);
     head.setDurability((short) SkullType.PLAYER.ordinal());
     if (url.isEmpty()) {
@@ -82,7 +70,7 @@ public class SpPlayerUtils implements PlayerUtils {
     return head;
   }
 
-  private static GameProfile createGameProfile(String url) {
+  private static @Nullable GameProfile createGameProfile(String url) {
     GameProfile profile = new GameProfile(UUID.randomUUID(), null);
     PropertyMap propertyMap = profile.getProperties();
     if (propertyMap == null) {

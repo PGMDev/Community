@@ -7,7 +7,4 @@ import dev.pgm.community.util.Platform;
 import dev.pgm.community.util.Supports;
 
 @Supports(value = SPORTPAPER, priority = HIGHEST)
-public class SpPlatform implements Platform.Manifest {
-  @Override
-  public void onEnable() {}
-}
+public class SpPlatform implements Platform.Manifest {}

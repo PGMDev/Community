@@ -1,5 +1,6 @@
 package dev.pgm.community.nick.skin;
 
+import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
 import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 
 import com.google.common.cache.Cache;
@@ -67,6 +68,15 @@ public class SkinCache implements Listener {
     if (canUseSkin(player)) {
       offlineSkins.put(player.getUniqueId(), PLAYER_UTILS.getPlayerSkin(player));
     }
+
+    PLAYER_IDENTITY.clearViewer(player.getUniqueId());
+    UUID playerId = player.getUniqueId();
+    String playerName = player.getName();
+    Bukkit.getScheduler().runTask(Community.get(), () -> {
+      if (Bukkit.getPlayer(playerId) == null) {
+        PLAYER_IDENTITY.clearPlayer(playerId, playerName);
+      }
+    });
   }
 
   @EventHandler(priority = EventPriority.LOW)
@@ -78,9 +88,6 @@ public class SkinCache implements Listener {
   public void refreshNamesOnLogin(PlayerJoinEvent event) {
     refreshPlayer(event.getPlayer());
   }
-
-  // SPORTPAPER STUFF - TODO: Add alternative method and check if server is running SportPaper to
-  // enable
 
   private void refreshAllViewers(Player player) {
     Bukkit.getOnlinePlayers().forEach(viewer -> refreshFakeName(player, viewer));
@@ -109,7 +116,6 @@ public class SkinCache implements Listener {
     Bukkit.getOnlinePlayers().forEach(other -> refreshFakeName(other, viewer));
   }
 
-  // TODO: Figure out how to use without SPORTPAPER API
   private void refreshFakeName(Player player, Player viewer) {
     boolean nicked = Integration.getNick(player) != null;
     boolean areFriends = Integration.isFriend(player, viewer);

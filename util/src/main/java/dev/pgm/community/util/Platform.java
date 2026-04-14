@@ -5,6 +5,7 @@ import static org.reflections.scanners.Scanners.TypesAnnotated;
 import dev.pgm.community.util.Supports.Variant;
 import java.util.Arrays;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NonNull;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -79,6 +80,8 @@ public abstract class Platform {
   }
 
   public interface Manifest {
-    void onEnable();
+    default void onEnable(Plugin plugin) {}
+
+    default void onDisable() {}
   }
 }

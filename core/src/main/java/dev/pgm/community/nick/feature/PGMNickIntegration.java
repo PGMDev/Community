@@ -1,6 +1,6 @@
 package dev.pgm.community.nick.feature;
 
-import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
+import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.utils.PGMUtils;
@@ -41,7 +41,7 @@ public class PGMNickIntegration implements NickIntegration {
 
   @Override
   public Skin getPlayerSkin(@NonNull Player player, Player viewer) {
-    return PLAYER_UTILS.getPlayerSkin(player, viewer);
+    return PLAYER_IDENTITY.getSkin(player, viewer);
   }
 
   public void cancelTask() {

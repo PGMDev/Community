@@ -86,7 +86,19 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   @Override
   public void enable() {
     super.enable();
+    skins.enable();
     integrate();
+  }
+
+  @Override
+  public void disable() {
+    if (pgmNicks != null) {
+      pgmNicks.cancelTask();
+      pgmNicks = null;
+    }
+
+    skins.disable();
+    super.disable();
   }
 
   private void integrate() {
@@ -183,12 +195,12 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
                 .thenAcceptAsync(name -> this.setNick(player.getUniqueId(), name)
                     .thenAcceptAsync(success -> {
                       if (success) {
-                        nickedPlayers.put(player.getUniqueId(), nick.getName());
+                        nickedPlayers.put(player.getUniqueId(), name);
                         Audience.get(player)
                             .sendWarning(text(
                                 "You had no nickname, so a random one has been assigned",
                                 NamedTextColor.GREEN));
-                        sendLoginNotification(player, nick.getName(), true);
+                        sendLoginNotification(player, name, true);
                       }
                     }));
           }

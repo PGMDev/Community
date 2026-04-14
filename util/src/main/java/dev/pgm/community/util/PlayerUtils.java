@@ -2,6 +2,7 @@ package dev.pgm.community.util;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NonNull;
 import tc.oc.pgm.util.skin.Skin;
 
 public interface PlayerUtils {
@@ -11,11 +12,5 @@ public interface PlayerUtils {
 
   void setFakeNameAndSkin(Player player, Player viewer, String displayName, String nick, Skin skin);
 
-  String getPlayerDisplayName(Player player, Player viewer);
-
-  String getPlayerName(Player player, Player viewer);
-
-  Skin getPlayerSkin(Player player, Player viewer);
-
-  ItemStack customSkull(String url, String displayName, String... lore);
+  ItemStack customSkull(@NonNull String url, String displayName, String... lore);
 }
