@@ -1,5 +1,6 @@
 package dev.pgm.community.nick.feature;
 
+import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.utils.PGMUtils;
@@ -10,11 +11,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NonNull;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.integration.NickIntegration;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
+import tc.oc.pgm.util.skin.Skin;
 
 public class PGMNickIntegration implements NickIntegration {
 
@@ -34,6 +37,11 @@ public class PGMNickIntegration implements NickIntegration {
   @Override
   public String getNick(Player player) {
     return nick.getOnlineNick(player.getUniqueId());
+  }
+
+  @Override
+  public Skin getPlayerSkin(@NonNull Player player, Player viewer) {
+    return PLAYER_UTILS.getPlayerSkin(player, viewer);
   }
 
   public void cancelTask() {
