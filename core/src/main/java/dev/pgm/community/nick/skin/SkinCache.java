@@ -39,7 +39,10 @@ public class SkinCache implements Listener {
   // TODO: NEEDS WORK! Backup skins when 0 are online, prevent duplicates, etc
   private Skin getRandomSkin() {
     if (offlineSkins.size() == 0) {
-      return Skin.EMPTY; // TODO: Warning, this may be bad for 1.16 clients...
+      // Sunny
+      return new Skin(
+          "ewogICJ0aW1lc3RhbXAiIDogMTY2NjM1NjEyNzE3MiwKICAicHJvZmlsZUlkIiA6ICI1MTY4ZjZlMjIyM2E0Y2FjYjdiN2QyZjYyZWMxZGFhOSIsCiAgInByb2ZpbGVOYW1lIiA6ICJkZWZfbm90X2FzaCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9hM2JkMTYwNzlmNzY0Y2Q1NDFlMDcyZTg4OGZlNDM4ODVlNzExZjk4NjU4MzIzZGIwZjlhNjA0NWRhOTFlZTdhIgogICAgfQogIH0KfQ==",
+          "gUaeJg93CpJwZm3QbT59cX9pKrT+KBEXSYoQFFyyYl3d/sEcPM/n4uRGFSZDJm6hD5qNpOIrD/Tdm9aW9224LXwoOhXTH4QjIy7m7ZH29oXwiUCs0UR/cFGOnUFaCF+8ggWYyf/UhUnTVfyZb/XonejaTI9+/WBQmuCbF7TcgGzvuhYaEb9mWxhEfBeaiHV1iMiEgo4NJVya0MKTaZ10jfqq09JgijbJidims4Y6Ep7ozvbcsDMjGK02/nzdZ6cq7eJ3w5ZanGrhVdvyV05mKfGGU3SaLwMZ4Yj/WtSO3ZC36KT9kMBWyTWjWDyIK+wYDhv9LTQ/XWezsnV0uJQv3ngy0yMZh/O+sQzsb3kGXlSzZQjWkhoCkgASS5P/dSTr4mHAgctnG96NczNJA2caYgone6ytGcet63Z5iGx23t+XYiFxK9xsEbJFSW0qpOOMxn1H/gH3b3lkJfsWt0kcxSNsbWWL5WdPEw6aN5TfAVUDnhtxNbtwXqqNcNDHkrvfWC9UQw5NFf41ytnBJRWVyAitz3u0+u7l0G2vfPtusEUkkiYElXCYT+dURnT41y5sbZ6FLh05J3WWLA4ZTHqpp3mEHbmV3NwbNWadTiXH3MmKBHgNT0Q3ZgENcdnaomTTEvOGsN8PymBYLUIDj3DfSp8yl/dCgy1jBiSPk+A+wgs=");
     }
     List<Skin> skins = offlineSkins.asMap().values().stream().toList();
     return skins.get(random.nextInt(skins.size()));

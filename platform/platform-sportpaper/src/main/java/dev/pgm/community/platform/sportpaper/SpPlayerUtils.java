@@ -35,8 +35,10 @@ public class SpPlayerUtils implements PlayerUtils {
   @Override
   public void setFakeNameAndSkin(
       Player player, Player viewer, String displayName, String nick, Skin skin) {
+    var fakeSkin = skin == null ? null : new org.bukkit.Skin(skin.getData(), skin.getSignature());
+
     player.setFakeDisplayName(viewer, displayName);
-    player.setFakeNameAndSkin(viewer, nick, player.getSkin(viewer));
+    player.setFakeNameAndSkin(viewer, nick, fakeSkin);
   }
 
   @Override
