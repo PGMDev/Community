@@ -1,4 +1,4 @@
-package dev.pgm.community.nick;
+package dev.pgm.community.nick.identity;
 
 import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 
@@ -25,7 +25,7 @@ public final class PlayerIdentity {
 
   private PlayerIdentity() {}
 
-  public void set(
+  public synchronized void set(
       Player player,
       Player viewer,
       @Nullable String displayName,
@@ -63,7 +63,7 @@ public final class PlayerIdentity {
     }
   }
 
-  public void clearPlayer(UUID playerId, String realName) {
+  public synchronized void clearPlayer(UUID playerId, String realName) {
     playerSkins.remove(playerId);
     playerNames.remove(playerId);
     playerDisplayNames.remove(playerId);
@@ -73,7 +73,7 @@ public final class PlayerIdentity {
     });
   }
 
-  public void clearViewer(UUID viewerId) {
+  public synchronized void clearViewer(UUID viewerId) {
     clearViewer(playerSkins, viewerId);
     clearViewer(playerNames, viewerId);
     clearViewer(playerDisplayNames, viewerId);
@@ -88,7 +88,7 @@ public final class PlayerIdentity {
     });
   }
 
-  public void clearAll() {
+  public synchronized void clearAll() {
     playerSkins.clear();
     playerNames.clear();
     playerDisplayNames.clear();
@@ -96,7 +96,7 @@ public final class PlayerIdentity {
     viewerVisibleNames.clear();
   }
 
-  public @Nullable String getVisibleName(UUID viewerId, String realName) {
+  public synchronized @Nullable String getVisibleName(UUID viewerId, String realName) {
     Map<String, String> visibleNames = viewerVisibleNames.get(viewerId);
     return visibleNames == null ? null : visibleNames.get(realName);
   }
@@ -118,7 +118,7 @@ public final class PlayerIdentity {
     if (visibleNames.isEmpty()) viewerVisibleNames.remove(viewerId);
   }
 
-  public @Nullable String getTeamName(UUID viewerId, String entry) {
+  public synchronized @Nullable String getTeamName(UUID viewerId, String entry) {
     Map<String, HashSet<String>> teamEntries = viewerTeamEntries.get(viewerId);
     if (teamEntries == null) return null;
 
@@ -129,7 +129,7 @@ public final class PlayerIdentity {
     return null;
   }
 
-  public boolean hasTeamEntry(UUID viewerId, String teamName, String entry) {
+  public synchronized boolean hasTeamEntry(UUID viewerId, String teamName, String entry) {
     Map<String, HashSet<String>> teamEntries = viewerTeamEntries.get(viewerId);
     if (teamEntries == null) return false;
 
@@ -137,12 +137,12 @@ public final class PlayerIdentity {
     return entries != null && entries.contains(entry);
   }
 
-  public void createTeam(UUID viewerId, String teamName, Collection<String> entries) {
+  public synchronized void createTeam(UUID viewerId, String teamName, Collection<String> entries) {
     removeTeam(viewerId, teamName);
     addTeamEntries(viewerId, teamName, entries);
   }
 
-  public void removeTeam(UUID viewerId, String teamName) {
+  public synchronized void removeTeam(UUID viewerId, String teamName) {
     Map<String, HashSet<String>> teamEntries = viewerTeamEntries.get(viewerId);
     if (teamEntries == null) return;
 
@@ -150,7 +150,8 @@ public final class PlayerIdentity {
     if (teamEntries.isEmpty()) viewerTeamEntries.remove(viewerId);
   }
 
-  public void addTeamEntries(UUID viewerId, String teamName, Collection<String> entries) {
+  public synchronized void addTeamEntries(
+      UUID viewerId, String teamName, Collection<String> entries) {
     if (entries.isEmpty()) return;
 
     Map<String, HashSet<String>> teamEntries =
@@ -160,7 +161,8 @@ public final class PlayerIdentity {
     teamEntries.computeIfAbsent(teamName, k -> new HashSet<>()).addAll(entries);
   }
 
-  public void removeTeamEntries(UUID viewerId, String teamName, Collection<String> entries) {
+  public synchronized void removeTeamEntries(
+      UUID viewerId, String teamName, Collection<String> entries) {
     Map<String, HashSet<String>> teamEntries = viewerTeamEntries.get(viewerId);
     if (teamEntries == null) return;
 
@@ -172,36 +174,36 @@ public final class PlayerIdentity {
     if (teamEntries.isEmpty()) viewerTeamEntries.remove(viewerId);
   }
 
-  public String getDisplayName(Player player, Player viewer) {
+  public synchronized String getDisplayName(Player player, Player viewer) {
     String displayName = get(playerDisplayNames, player.getUniqueId(), viewer.getUniqueId());
     if (displayName != null) return displayName;
 
     return player.getDisplayName();
   }
 
-  public boolean hasDisplayName(Player player, Player viewer) {
+  public synchronized boolean hasDisplayName(Player player, Player viewer) {
     return get(playerDisplayNames, player.getUniqueId(), viewer.getUniqueId()) != null;
   }
 
-  public String getName(Player player, Player viewer) {
+  public synchronized String getName(Player player, Player viewer) {
     String name = get(playerNames, player.getUniqueId(), viewer.getUniqueId());
     if (name != null) return name;
 
     return player.getName();
   }
 
-  public boolean hasName(Player player, Player viewer) {
+  public synchronized boolean hasName(Player player, Player viewer) {
     return get(playerNames, player.getUniqueId(), viewer.getUniqueId()) != null;
   }
 
-  public Skin getSkin(Player player, Player viewer) {
+  public synchronized Skin getSkin(Player player, Player viewer) {
     Skin skin = get(playerSkins, player.getUniqueId(), viewer.getUniqueId());
     if (skin != null && !skin.isEmpty()) return skin;
 
     return PLAYER_UTILS.getPlayerSkin(player);
   }
 
-  public boolean hasSkin(Player player, Player viewer) {
+  public synchronized boolean hasSkin(Player player, Player viewer) {
     Skin skin = get(playerSkins, player.getUniqueId(), viewer.getUniqueId());
     return skin != null && !skin.isEmpty();
   }

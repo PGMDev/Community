@@ -1,6 +1,6 @@
 package dev.pgm.community.platform.modern;
 
-import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 
 import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;

@@ -1,6 +1,6 @@
 package dev.pgm.community.nick.feature;
 
-import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 import static net.kyori.adventure.text.Component.text;
 
 import dev.pgm.community.utils.PGMUtils;

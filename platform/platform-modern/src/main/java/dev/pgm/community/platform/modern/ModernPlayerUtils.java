@@ -1,6 +1,6 @@
 package dev.pgm.community.platform.modern;
 
-import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 import static dev.pgm.community.util.Supports.Variant.PAPER;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;

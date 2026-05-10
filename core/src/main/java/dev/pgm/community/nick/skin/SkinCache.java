@@ -1,6 +1,6 @@
 package dev.pgm.community.nick.skin;
 
-import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
 
 import com.google.common.cache.Cache;
@@ -127,6 +127,8 @@ public class SkinCache implements Listener {
     if (nicked && !canSeeRealName) {
       String nick = Integration.getNick(player);
       MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
+      if (matchPlayer == null) return;
+
       String displayName = PGM.get()
           .getNameDecorationRegistry()
           .getDecoratedName(player, matchPlayer.getParty().getColor());

@@ -1,6 +1,6 @@
 package dev.pgm.community.platform.sportpaper;
 
-import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 import static dev.pgm.community.util.Supports.Variant.SPORTPAPER;
 
 import com.mojang.authlib.GameProfile;

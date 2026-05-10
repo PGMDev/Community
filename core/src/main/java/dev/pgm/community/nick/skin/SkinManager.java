@@ -1,6 +1,6 @@
 package dev.pgm.community.nick.skin;
 
-import static dev.pgm.community.nick.PlayerIdentity.PLAYER_IDENTITY;
+import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 
 import dev.pgm.community.Community;
 import org.bukkit.entity.Player;
