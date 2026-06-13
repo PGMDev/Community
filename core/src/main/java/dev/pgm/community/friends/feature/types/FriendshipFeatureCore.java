@@ -196,8 +196,10 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
           friends.stream().map(f -> f.getOtherPlayer(playerId)).collect(Collectors.toSet());
       // Sends updated friendship status to PGM for hook-in
       if (integration != null) {
-        integration.setFriends(playerId, friendIds);
-        integration.callUpdateEvents(playerId, friendIds);
+        Bukkit.getScheduler().runTask(Community.get(), () -> {
+          integration.setFriends(playerId, friendIds);
+          integration.callUpdateEvents(playerId, friendIds);
+        });
       }
     });
   }
