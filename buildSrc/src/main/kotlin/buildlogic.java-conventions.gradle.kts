@@ -8,7 +8,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -35,23 +35,23 @@ dependencies {
     // Latest SmartInvs commit
     api("com.github.MinusKube:SmartInvs:9c9dbbee16") { isTransitive = false }
     api("redis.clients:jedis:3.5.1")
-    api("net.kyori:adventure-api:4.26.1")
-    api("net.kyori:adventure-text-serializer-plain:4.26.1")
-    // adventure-platform fork with ViaVersion and 1.21.11+ fixes
+    api("net.kyori:adventure-api:5.2.0")
+    api("net.kyori:adventure-text-serializer-plain:5.2.0")
+    // adventure-platform fork supporting Adventure 5.x
     // https://github.com/OvercastCommunity/adventure-platform
-    api("com.github.OvercastCommunity.adventure-platform:adventure-platform-bukkit:04de657e85")
+    api("com.github.OvercastCommunity.adventure-platform:adventure-platform-bukkit:ceb8ff2899")
     api("org.reflections:reflections:0.10.2")
 
     // Annotations
-    api("org.jspecify:jspecify:1.0.0")
+    api("org.jspecify:jspecify:1.0.1")
     compileOnly("org.jetbrains:annotations:26.1.0")
 
     // Runtime dependencies
     compileOnly("tc.oc.pgm:core:0.16-SNAPSHOT")
     compileOnly("tc.oc.pgm:util:0.16-SNAPSHOT")
     compileOnly("tc.oc.occ:Environment:1.0.0-SNAPSHOT")
-    compileOnly("org.incendo:cloud-annotations:2.0.0")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.12.0")
+    compileOnly("org.incendo:cloud-annotations:2.1.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
 
     // Paper and SportPaper include these (or equivalents)
     compileOnly("it.unimi.dsi:fastutil:8.5.15")
@@ -79,7 +79,7 @@ spotless {
         removeUnusedImports()
         trimTrailingWhitespace()
         formatAnnotations()
-        palantirJavaFormat("2.90.0").style("GOOGLE").formatJavadoc(true)
+        palantirJavaFormat("2.97.0").style("GOOGLE").formatJavadoc(true)
     }
 }
 
