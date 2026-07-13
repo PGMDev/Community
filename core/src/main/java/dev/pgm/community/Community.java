@@ -50,13 +50,12 @@ public class Community extends JavaPlugin {
     // Sanity test PGM is running on a supported version before doing any work
     try {
       Platform.init();
+      Platform.MANIFEST.onEnable(this);
     } catch (Throwable t) {
       getLogger().log(Level.SEVERE, "Failed to initialize Community platform", t);
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
-
-    Platform.MANIFEST.onEnable(this);
 
     this.setupConfig();
     getLogger().info(dev.pgm.community.database.DatabaseExecutor.describeBackend());
