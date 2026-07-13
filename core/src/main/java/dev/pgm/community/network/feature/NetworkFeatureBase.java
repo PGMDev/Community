@@ -9,9 +9,6 @@ public abstract class NetworkFeatureBase extends FeatureBase implements NetworkF
 
   public NetworkFeatureBase(Configuration config, Logger logger, String featureName) {
     super(new NetworkConfig(config), logger, featureName);
-    if (getConfig().isEnabled()) {
-      enable();
-    }
   }
 
   public NetworkConfig getNetworkConfig() {

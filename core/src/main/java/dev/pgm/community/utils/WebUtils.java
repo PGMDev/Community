@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.logging.Level;
 import tc.oc.pgm.util.skin.Skin;
 
 public class WebUtils {
@@ -164,7 +165,7 @@ public class WebUtils {
           obj = new Gson().fromJson(data.toString(), JsonObject.class);
         }
       } catch (IOException | URISyntaxException e) {
-        Community.log("%s", e.getMessage());
+        Community.get().getLogger().log(Level.WARNING, "Failed to fetch profile for " + input, e);
       }
       return obj;
     });

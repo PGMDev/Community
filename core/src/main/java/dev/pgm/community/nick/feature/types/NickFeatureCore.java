@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -205,7 +206,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
                       }
                     }))
                 .exceptionally(error -> {
-                  Community.log("Unable to assign a random nickname: %s", error.getMessage());
+                  logger.log(Level.WARNING, "Unable to assign a random nickname", error);
                   Audience.get(player)
                       .sendWarning(text(
                           "No nicknames are available at the moment. Try again soon!",

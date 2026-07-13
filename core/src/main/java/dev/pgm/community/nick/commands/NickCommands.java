@@ -16,6 +16,7 @@ import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -138,7 +139,7 @@ public class NickCommands extends CommunityCommand {
           }
         })
         .exceptionally(error -> {
-          Community.log("Unable to load random nicknames: %s", error.getMessage());
+          Community.get().getLogger().log(Level.WARNING, "Unable to load random nicknames", error);
           viewer.sendWarning(text(
               "No nicknames are available at the moment. Try again soon!", NamedTextColor.RED));
           return null;

@@ -14,7 +14,6 @@ import fr.minuskube.inv.InventoryManager;
 import java.util.Random;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import tc.oc.pgm.api.integration.Integration;
@@ -50,13 +49,12 @@ public class Community extends JavaPlugin {
     // Sanity test PGM is running on a supported version before doing any work
     try {
       Platform.init();
+      Platform.MANIFEST.onEnable(this);
     } catch (Throwable t) {
       getLogger().log(Level.SEVERE, "Failed to initialize Community platform", t);
       getServer().getPluginManager().disablePlugin(this);
       return;
     }
-
-    Platform.MANIFEST.onEnable(this);
 
     this.setupConfig();
     getLogger().info(dev.pgm.community.database.DatabaseExecutor.describeBackend());
@@ -159,12 +157,5 @@ public class Community extends JavaPlugin {
           .getScheduler()
           .runTask(this, () -> getServer().getPluginManager().callEvent(event));
     }
-  }
-
-  // REMOVE WHEN NOT IN DEV
-  public static void log(String format, Object... objects) {
-    Bukkit.getConsoleSender()
-        .sendRawMessage(ChatColor.translateAlternateColorCodes(
-            '&', String.format("&7[&4Community&7]&r " + format, objects)));
   }
 }

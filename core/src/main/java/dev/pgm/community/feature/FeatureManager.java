@@ -201,6 +201,10 @@ public class FeatureManager {
     return history;
   }
 
+  public NetworkFeature getNetwork() {
+    return network;
+  }
+
   public void reloadConfig(Configuration config) {
     // Reload all config values here
     getReports().getConfig().reload(config);
@@ -257,5 +261,6 @@ public class FeatureManager {
     if (getPolls().isEnabled()) getPolls().disable();
     if (getSquads().isEnabled()) getSquads().disable();
     if (getHistory().isEnabled()) getHistory().disable();
+    if (getNetwork().isEnabled()) getNetwork().disable();
   }
 }

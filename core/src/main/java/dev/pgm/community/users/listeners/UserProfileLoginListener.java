@@ -45,8 +45,9 @@ public class UserProfileLoginListener implements Listener {
           Audience.get(player).sendMessage(TextParser.parseComponent(MessageUtils.format(msg)));
         } else {
           Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-          Community.log(
-              "&7First join command (&6%s&7) executed for &b%s", command, player.getName());
+          Community.get()
+              .getLogger()
+              .info("First join command (%s) executed for %s".formatted(command, player.getName()));
         }
       });
     }

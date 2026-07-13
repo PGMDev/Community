@@ -120,9 +120,14 @@ public class SponsorManager {
 
   public void queueSponsorRequest(Player player, MapInfo map) {
     getSponsorQueue().add(new SponsorRequest(player.getUniqueId(), map, canRefund(player)));
-    Community.log(
-        "%s has queued a map (%s) (refund: %s) - Total Queued == %d",
-        player.getName(), map.getName(), canRefund(player), getSponsorQueue().size());
+    Community.get()
+        .getLogger()
+        .info("%s has queued a map (%s) (refund: %s) - Total queued: %d"
+            .formatted(
+                player.getName(),
+                map.getName(),
+                canRefund(player),
+                getSponsorQueue().size()));
 
     BroadcastUtils.sendAdminChatMessage(
         SponsorComponents.getSponsorAdminChatAlert(player, map),
