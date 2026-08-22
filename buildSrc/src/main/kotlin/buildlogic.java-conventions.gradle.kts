@@ -13,6 +13,7 @@ java {
 }
 
 repositories {
+    mavenLocal() // Local last
     mavenCentral()
     maven("https://repo.pgm.fyi/snapshots") // SportPaper & other PGM-specific stuff
     maven("https://repo.papermc.io/repository/maven-public/") // Paper builds & paperweight plugin
@@ -27,7 +28,6 @@ repositories {
             includeGroup("com.github.MinusKube")
         }
     }
-    mavenLocal() // Local last
 }
 
 dependencies {
