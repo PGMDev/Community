@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.util.Players;
 import tc.oc.pgm.util.text.TextException;
 import tc.oc.pgm.util.text.TextParser;
 
@@ -35,10 +36,12 @@ public final class TargetPlayer {
         this.name = Optional.of(player.getName());
       }
     } else {
-      this.name = Optional.of(input);
-      Player player = Bukkit.getPlayer(input);
+      Player player = Players.getPlayer(viewer, input);
       if (player != null) {
         this.playerId = Optional.of(player.getUniqueId());
+        this.name = Optional.of(player.getName());
+      } else {
+        this.name = Optional.of(input);
       }
     }
   }

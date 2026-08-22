@@ -1,7 +1,5 @@
 package dev.pgm.community;
 
-import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
-
 import dev.pgm.community.commands.graph.CommunityCommandGraph;
 import dev.pgm.community.events.CommunityEvent;
 import dev.pgm.community.feature.FeatureManager;
@@ -64,9 +62,8 @@ public class Community extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    Platform.MANIFEST.onDisable();
     if (features != null) features.disable();
-    PLAYER_IDENTITY.clearAll();
+    Platform.MANIFEST.onDisable();
     dev.pgm.community.database.DatabaseExecutor.shutdown();
   }
 

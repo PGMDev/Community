@@ -5,8 +5,6 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
@@ -22,12 +20,13 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -42,6 +41,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jspecify.annotations.Nullable;
+import tc.oc.pgm.api.PGM;
+import tc.oc.pgm.api.event.NameDecorationChangeEvent;
+import tc.oc.pgm.api.integration.Integration;
+import tc.oc.pgm.api.match.Match;
+import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.util.Audience;
 import tc.oc.pgm.util.text.TextFormatter;
 
@@ -51,20 +55,20 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   private final UsersFeature users;
   private final Map<UUID, String> nickedPlayers;
   private final Cache<UUID, String> loginSubdomains;
-  private final List<UUID> autoNicked;
   private final SkinManager skins;
   private final Cache<UUID, NickSelection> nickChoices;
 
   private @Nullable PGMNickIntegration pgmNicks;
+  private @Nullable Future<?> hotbarTask;
+  private boolean hotbarColor = false;
 
   public NickFeatureCore(Configuration config, Logger logger, UsersFeature users, NickStore store) {
     super(new NickConfig(config), logger, "Nicknames");
     this.store = store;
     this.users = users;
-    this.nickedPlayers = Maps.newHashMap();
+    this.nickedPlayers = new ConcurrentHashMap<>();
     this.loginSubdomains =
         CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS).build();
-    this.autoNicked = Lists.newArrayList();
     this.skins = new SkinManager();
     this.nickChoices =
         CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
@@ -93,8 +97,13 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   @Override
   public void disable() {
     if (pgmNicks != null) {
-      pgmNicks.cancelTask();
+      pgmNicks.disable();
       pgmNicks = null;
+    }
+
+    if (hotbarTask != null) {
+      hotbarTask.cancel(true);
+      hotbarTask = null;
     }
 
     skins.disable();
@@ -104,6 +113,8 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   private void integrate() {
     if (isPGMEnabled()) {
       pgmNicks = new PGMNickIntegration(this);
+      hotbarTask =
+          PGM.get().getExecutor().scheduleAtFixedRate(this::updateHotbars, 0, 1, TimeUnit.SECONDS);
     }
   }
 
@@ -115,25 +126,6 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   @Override
   public String getOnlineNick(UUID playerId) {
     return nickedPlayers.get(playerId);
-  }
-
-  @Override
-  public void removeOnlineNick(UUID playerId) {
-    this.nickedPlayers.remove(playerId);
-  }
-
-  @Override
-  public boolean isAutoNicked(UUID playerId) {
-    return this.autoNicked.contains(playerId);
-  }
-
-  @Override
-  public Player getPlayerFromNick(String nickName) {
-    Optional<UUID> player = nickedPlayers.entrySet().stream()
-        .filter((e) -> e.getValue().equalsIgnoreCase(nickName))
-        .map(Entry::getKey)
-        .findAny();
-    return player.map(Bukkit::getPlayer).orElse(null);
   }
 
   @Override
@@ -154,21 +146,6 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
     if (!getConfig().isEnabled()) return;
     Player player = event.getPlayer();
     loginSubdomains.invalidate(player.getUniqueId());
-    if (player.hasPermission(CommunityPermissions.NICKNAME)
-        && !nickedPlayers.containsKey(player.getUniqueId())
-        && isNickSubdomain(event.getHostname())) {
-      loginSubdomains.put(player.getUniqueId(), event.getHostname());
-    }
-  }
-
-  @EventHandler
-  public void onQuit(PlayerQuitEvent event) {
-    autoNicked.remove(event.getPlayer().getUniqueId());
-  }
-
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onJoin(PlayerJoinEvent event) {
-    Player player = event.getPlayer();
 
     // Disable nickname if the player does not have the proper permission
     if (!player.hasPermission(CommunityPermissions.NICKNAME)) {
@@ -179,15 +156,29 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
       return;
     }
 
+    if (!nickedPlayers.containsKey(player.getUniqueId()) && isNickSubdomain(event.getHostname())) {
+      loginSubdomains.put(player.getUniqueId(), event.getHostname());
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onQuit(PlayerQuitEvent event) {
+    UUID playerId = event.getPlayer().getUniqueId();
+    nickedPlayers.remove(playerId);
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onJoin(PlayerJoinEvent event) {
+    Player player = event.getPlayer();
+
     String domain = loginSubdomains.getIfPresent(player.getUniqueId());
     if (domain != null) {
       loginSubdomains.invalidate(player.getUniqueId());
-      autoNicked.add(player.getUniqueId());
 
       getNick(player.getUniqueId()).thenAcceptAsync(nick -> {
         if (nick != null) {
           if (!nick.getName().isEmpty()) {
-            nickedPlayers.put(player.getUniqueId(), nick.getName());
+            setNickname(player, nick.getName());
             sendLoginNotification(player, nick.getName(), false);
           } else {
             // Auto apply a random name if none set
@@ -195,7 +186,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
                 .thenAcceptAsync(name -> this.setNick(player.getUniqueId(), name)
                     .thenAcceptAsync(success -> {
                       if (success) {
-                        nickedPlayers.put(player.getUniqueId(), name);
+                        setNickname(player, name);
                         Audience.get(player)
                             .sendWarning(text(
                                 "You had no nickname, so a random one has been assigned",
@@ -206,7 +197,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
           }
 
         } else {
-          nickedPlayers.remove(player.getUniqueId());
+          setNickname(player, null);
         }
       });
     }
@@ -215,6 +206,22 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
     if (getOnlineNick(player.getUniqueId()) != null) {
       sendLoginNotification(player, getOnlineNick(player.getUniqueId()), false);
     }
+  }
+
+  private void setNickname(Player player, @Nullable String nick) {
+    if (!Community.get().isEnabled()) return;
+
+    Bukkit.getScheduler().runTask(Community.get(), () -> {
+      if (Bukkit.getPlayer(player.getUniqueId()) != player) return;
+
+      if (nick == null) {
+        nickedPlayers.remove(player.getUniqueId());
+      } else {
+        nickedPlayers.put(player.getUniqueId(), nick);
+      }
+
+      new NameDecorationChangeEvent(player.getUniqueId()).callEvent();
+    });
   }
 
   private void sendLoginNotification(Player player, String name, boolean instant) {
@@ -246,6 +253,28 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
                   TextFormatter.horizontalLine(NamedTextColor.GRAY, TextFormatter.MAX_CHAT_WIDTH));
             },
             30L);
+  }
+
+  private void updateHotbars() {
+    Match match = PGMUtils.getMatch();
+    if (match != null) {
+      List<MatchPlayer> nicked = match.getPlayers().stream()
+          .filter(p -> isNicked(p.getId()) && !Integration.isVanished(p.getBukkit()))
+          .toList();
+      nicked.forEach(mp -> sendHotbarNicked(mp, hotbarColor));
+    }
+    hotbarColor = !hotbarColor;
+  }
+
+  private void sendHotbarNicked(MatchPlayer player, boolean flashColor) {
+    Component warning = text(" \u26a0 ", flashColor ? NamedTextColor.YELLOW : NamedTextColor.GOLD);
+    Component nicked =
+        text("You are currently disguised", NamedTextColor.DARK_AQUA, TextDecoration.BOLD);
+    Component message = text().append(warning).append(nicked).append(warning).build();
+
+    if (player.isObserving()) {
+      player.sendActionBar(message);
+    }
   }
 
   @EventHandler

@@ -160,7 +160,8 @@ public class NickCommands extends CommunityCommand {
   public void setOwnSkin(CommandAudience viewer, Player sender, @Argument("name") String name) {
 
     if (name.equalsIgnoreCase("reset") || name.equalsIgnoreCase("clear")) {
-      nicks.getSkinManager().setSkin(viewer.getPlayer(), null);
+      Bukkit.getScheduler()
+          .runTask(Community.get(), () -> nicks.getSkinManager().setSkin(viewer.getPlayer(), null));
       viewer.sendWarning(text("You have reset your skin"));
       return;
     }
