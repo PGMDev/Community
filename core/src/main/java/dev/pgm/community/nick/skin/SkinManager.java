@@ -1,10 +1,9 @@
 package dev.pgm.community.nick.skin;
 
-import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
-
 import dev.pgm.community.Community;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.skin.Skin;
 
 public class SkinManager {
@@ -24,8 +23,12 @@ public class SkinManager {
     registered = true;
   }
 
-  public void setSkin(Player player, Skin skin) {
+  public void setSkin(Player player, @Nullable Skin skin) {
     cache.onSkinRefresh(player, skin);
+  }
+
+  public Skin getDisguiseSkin(Player player) {
+    return cache.getDisguiseSkin(player);
   }
 
   public void disable() {
@@ -33,7 +36,5 @@ public class SkinManager {
       HandlerList.unregisterAll(cache);
       registered = false;
     }
-
-    PLAYER_IDENTITY.clearAll();
   }
 }

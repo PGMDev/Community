@@ -33,10 +33,10 @@ public final class TargetPlayerParser
 
     if (input.equals(CURRENT)) {
       if (!(context.sender() instanceof Player)) return failure(playerOnly());
-      player = new TargetPlayer(sender, context.sender().getName());
+      player = new TargetPlayer(context.sender().getName());
     } else {
       try {
-        player = new TargetPlayer(sender, input);
+        player = new TargetPlayer(input);
       } catch (TextException e) {
         return failure(e);
       }

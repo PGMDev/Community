@@ -28,7 +28,13 @@ import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
@@ -43,6 +49,7 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.Players;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -68,8 +75,8 @@ public class FriendshipCommand extends CommunityCommand {
   public void list(
       CommandAudience sender, Player player, @Argument("page") @Default("1") int page) {
     friends
-        .getFriends(sender.getPlayer().getUniqueId())
-        .thenAcceptAsync(frs -> sendFriendList(sender, frs, page));
+        .getFriends(player.getUniqueId())
+        .thenAcceptAsync(frs -> sendFriendList(sender, player.getUniqueId(), frs, page));
   }
 
   @Command("requests [page]")
@@ -78,8 +85,9 @@ public class FriendshipCommand extends CommunityCommand {
   public void requests(
       CommandAudience sender, Player player, @Argument("page") @Default("1") int page) {
     friends
-        .getIncomingRequests(sender.getPlayer().getUniqueId())
-        .thenAcceptAsync(requests -> sendRequestsList(sender, requests, page));
+        .getIncomingRequests(player.getUniqueId())
+        .thenAcceptAsync(
+            requests -> sendRequestsList(sender, player.getUniqueId(), requests, page));
   }
 
   @Command("add <player>")
@@ -87,9 +95,12 @@ public class FriendshipCommand extends CommunityCommand {
   @Permission(CommunityPermissions.FRIENDSHIP)
   public void add(CommandAudience sender, Player player, @Argument("player") TargetPlayer target) {
     // Handle disguised players with fake requests
-    Player nicked = nicks.getPlayerFromNick(target.getIdentifier());
-    if (nicked != null) {
-      FakeRequests fake = fakeRequests.getUnchecked(sender.getId().get());
+    Player nicked = Players.getPlayer(sender.getSender(), target.getIdentifier());
+    if (nicked != null
+        && !VisibilityUtils.shouldRevealDisguise(sender.getSender(), nicked)
+        && Players.getVisibleName(sender.getSender(), nicked)
+            .equalsIgnoreCase(target.getIdentifier())) {
+      FakeRequests fake = fakeRequests.getUnchecked(player.getUniqueId());
       String fullName = nicks.getOnlineNick(nicked.getUniqueId());
       Component fancyName = PlayerComponent.player(nicked, NameStyle.FANCY);
 
@@ -113,7 +124,7 @@ public class FriendshipCommand extends CommunityCommand {
         }
 
         friends
-            .addFriend(sender.getPlayer().getUniqueId(), storedId.get())
+            .addFriend(player.getUniqueId(), storedId.get())
             .thenAcceptAsync(status -> users
                 .renderUsername(storedId, NameStyle.FANCY)
                 .thenAcceptAsync(name -> {
@@ -195,7 +206,7 @@ public class FriendshipCommand extends CommunityCommand {
         }
 
         UUID targetId = storedId.get();
-        friends.getFriends(sender.getPlayer().getUniqueId()).thenAcceptAsync(friendList -> {
+        friends.getFriends(player.getUniqueId()).thenAcceptAsync(friendList -> {
           Optional<Friendship> existing =
               friendList.stream().filter(fr -> fr.isInvolved(targetId)).findAny();
           users.renderUsername(storedId, NameStyle.FANCY).thenAcceptAsync(name -> {
@@ -225,7 +236,7 @@ public class FriendshipCommand extends CommunityCommand {
     getTarget(target, users).thenAcceptAsync(storedId -> {
       if (storedId.isPresent()) {
         List<Friendship> requests =
-            friends.getIncomingRequests(sender.getPlayer().getUniqueId()).join();
+            friends.getIncomingRequests(player.getUniqueId()).join();
         if (requests.isEmpty()) {
           sender.sendWarning(text("You have no pending friend requests"));
           return;
@@ -245,7 +256,7 @@ public class FriendshipCommand extends CommunityCommand {
 
               // Notify online requester
               Player onlineFriend = Bukkit.getPlayer(storedId.get());
-              if (onlineFriend != null && !VisibilityUtils.isDisguised(sender.getPlayer())) {
+              if (onlineFriend != null && !VisibilityUtils.isDisguised(player)) {
                 Audience.get(onlineFriend)
                     .sendMessage(text()
                         .append(sender.getStyledName())
@@ -273,7 +284,7 @@ public class FriendshipCommand extends CommunityCommand {
     getTarget(target, users).thenAcceptAsync(storedId -> {
       if (storedId.isPresent()) {
         List<Friendship> requests =
-            friends.getIncomingRequests(sender.getPlayer().getUniqueId()).join();
+            friends.getIncomingRequests(player.getUniqueId()).join();
         if (requests.isEmpty()) {
           sender.sendWarning(text("You have no pending friend requests"));
           return;
@@ -302,7 +313,8 @@ public class FriendshipCommand extends CommunityCommand {
     });
   }
 
-  private void sendRequestsList(CommandAudience audience, List<Friendship> requests, int page) {
+  private void sendRequestsList(
+      CommandAudience audience, UUID self, List<Friendship> requests, int page) {
     Collections.sort(requests); // Sorted by most recent request
 
     Component headerResultCount = text(Integer.toString(requests.size()), NamedTextColor.RED);
@@ -333,10 +345,8 @@ public class FriendshipCommand extends CommunityCommand {
       @Override
       public Component format(Friendship data, int index) {
         // [Name] > [ time since requested ] [buttons to accept/reject]
-        Component name = users
-            .renderUsername(
-                data.getOtherPlayer(audience.getPlayer().getUniqueId()), NameStyle.FANCY)
-            .join();
+        Component name =
+            users.renderUsername(data.getOtherPlayer(self), NameStyle.FANCY).join();
 
         return text()
             .append(name)
@@ -360,8 +370,8 @@ public class FriendshipCommand extends CommunityCommand {
     }.display(audience.getAudience(), requests, page);
   }
 
-  private void sendFriendList(CommandAudience audience, List<Friendship> friendships, int page) {
-    UUID self = audience.getPlayer().getUniqueId();
+  private void sendFriendList(
+      CommandAudience audience, UUID self, List<Friendship> friendships, int page) {
     boolean isStaff = audience.getSender().hasPermission(CommunityPermissions.STAFF);
 
     record ResolvedFriend(
@@ -373,11 +383,11 @@ public class FriendshipCommand extends CommunityCommand {
           UUID other = friendship.getOtherPlayer(self);
           if (other == null) return null;
 
-          return users.getStoredProfile(other).exceptionally(ex -> null).thenCompose(profile -> {
+          return users.getStoredProfile(other).exceptionally(_ -> null).thenCompose(profile -> {
             if (profile == null) return CompletableFuture.completedFuture(null);
             return profile
                 .getLatestSession(!isStaff)
-                .exceptionally(ex -> null)
+                .exceptionally(_ -> null)
                 .thenApply(session -> {
                   if (session == null) return null;
                   boolean visible = canSee(Bukkit.getPlayer(other), audience);
@@ -480,7 +490,7 @@ public class FriendshipCommand extends CommunityCommand {
 
   private final LoadingCache<UUID, FakeRequests> fakeRequests = CacheBuilder.newBuilder()
       .expireAfterAccess(3, TimeUnit.HOURS)
-      .build(CacheLoader.from(key -> new FakeRequests()));
+      .build(CacheLoader.from(_ -> new FakeRequests()));
 
   private static class FakeRequests {
 
