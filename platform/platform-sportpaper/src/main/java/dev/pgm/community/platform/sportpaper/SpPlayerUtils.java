@@ -1,6 +1,5 @@
 package dev.pgm.community.platform.sportpaper;
 
-import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
 import static dev.pgm.community.util.Supports.Variant.SPORTPAPER;
 
 import com.mojang.authlib.GameProfile;
@@ -15,35 +14,15 @@ import java.util.Base64;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import tc.oc.pgm.platform.sportpaper.utils.Skins;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
-import tc.oc.pgm.util.skin.Skin;
 
 @Supports(SPORTPAPER)
 public class SpPlayerUtils implements PlayerUtils {
-
-  @Override
-  public Skin getPlayerSkin(Player player) {
-    CraftPlayer craftPlayer = (CraftPlayer) player;
-    return Skins.fromProfile(craftPlayer.getProfile());
-  }
-
-  @Override
-  public void setFakeNameAndSkin(
-      Player player, Player viewer, String displayName, String nick, Skin skin) {
-    PLAYER_IDENTITY.set(player, viewer, displayName, nick, skin);
-    var fakeSkin = skin == null ? null : new org.bukkit.Skin(skin.getData(), skin.getSignature());
-
-    player.setFakeDisplayName(viewer, displayName);
-    player.setFakeNameAndSkin(viewer, nick, fakeSkin);
-  }
 
   @Override
   public ItemStack customSkull(@NonNull String url, String displayName, String... lore) {

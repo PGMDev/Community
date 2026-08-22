@@ -1,32 +1,28 @@
 package dev.pgm.community.nick.skin;
 
-import static dev.pgm.community.nick.identity.PlayerIdentity.PLAYER_IDENTITY;
-import static dev.pgm.community.util.PlayerUtils.PLAYER_UTILS;
+import static tc.oc.pgm.util.nms.PlayerUtils.PLAYER_UTILS;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Maps;
 import dev.pgm.community.Community;
-import dev.pgm.community.CommunityPermissions;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.api.PGM;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.Permissions;
 import tc.oc.pgm.api.event.NameDecorationChangeEvent;
 import tc.oc.pgm.api.integration.Integration;
-import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.util.skin.Skin;
 
-public class SkinCache implements Listener {
+class SkinCache implements Listener {
 
   // Sunny
   private static final Skin DEFAULT_SKIN = new Skin(
@@ -38,8 +34,8 @@ public class SkinCache implements Listener {
       .expireAfterWrite(6, TimeUnit.HOURS)
       .build();
   private final Random random = new Random();
-
-  private final Map<UUID, Skin> customSkins = Maps.newHashMap();
+  private final Map<UUID, Skin> customSkins = new ConcurrentHashMap<>();
+  private final Map<UUID, Skin> assignedSkins = new ConcurrentHashMap<>();
 
   // TODO: NEEDS WORK! Backup skins when 0 are online, prevent duplicates, etc
   private Skin getRandomSkin() {
@@ -50,11 +46,11 @@ public class SkinCache implements Listener {
     return skins[random.nextInt(skins.length)];
   }
 
-  private Skin getSkin(Player player) {
-    if (customSkins.containsKey(player.getUniqueId())) {
-      return customSkins.get(player.getUniqueId());
-    }
-    return getRandomSkin();
+  public Skin getDisguiseSkin(Player player) {
+    Skin custom = customSkins.get(player.getUniqueId());
+    if (custom != null) return custom;
+
+    return assignedSkins.computeIfAbsent(player.getUniqueId(), _ -> getRandomSkin());
   }
 
   private boolean canUseSkin(Player player) {
@@ -69,14 +65,8 @@ public class SkinCache implements Listener {
       offlineSkins.put(player.getUniqueId(), PLAYER_UTILS.getPlayerSkin(player));
     }
 
-    PLAYER_IDENTITY.clearViewer(player.getUniqueId());
-    UUID playerId = player.getUniqueId();
-    String playerName = player.getName();
-    Bukkit.getScheduler().runTask(Community.get(), () -> {
-      if (Bukkit.getPlayer(playerId) == null) {
-        PLAYER_IDENTITY.clearPlayer(playerId, playerName);
-      }
-    });
+    assignedSkins.remove(player.getUniqueId());
+    customSkins.remove(player.getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.LOW)
@@ -84,79 +74,15 @@ public class SkinCache implements Listener {
     offlineSkins.invalidate(event.getPlayer().getUniqueId());
   }
 
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void refreshNamesOnLogin(PlayerJoinEvent event) {
-    refreshPlayer(event.getPlayer());
-  }
-
-  private void refreshAllViewers(Player player) {
-    Bukkit.getOnlinePlayers().forEach(viewer -> refreshFakeName(player, viewer));
-  }
-
-  private void refreshPlayer(Player player) {
-    final MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
-    if (matchPlayer == null) return;
-
-    // Update displayname
-    player.setDisplayName(PGM.get()
-        .getNameDecorationRegistry()
-        .getDecoratedName(player, matchPlayer.getParty().getColor()));
-
-    // for all other online players, refresh their views
-    refreshAllViewers(player);
-
-    // Refresh the view of the player
-    refreshSelfView(player);
-
-    // Reset visibility
-    matchPlayer.resetVisibility();
-  }
-
-  private void refreshSelfView(Player viewer) {
-    Bukkit.getOnlinePlayers().forEach(other -> refreshFakeName(other, viewer));
-  }
-
-  private void refreshFakeName(Player player, Player viewer) {
-    boolean nicked = Integration.getNick(player) != null;
-    boolean areFriends = Integration.isFriend(player, viewer);
-    boolean canOverride = viewer.hasPermission(Permissions.STAFF)
-        || viewer.hasPermission(CommunityPermissions.NICKNAME_VIEW);
-
-    boolean canSeeRealName = (canOverride || player == viewer || areFriends);
-
-    if (nicked && !canSeeRealName) {
-      String nick = Integration.getNick(player);
-      MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
-      if (matchPlayer == null) return;
-
-      String displayName = PGM.get()
-          .getNameDecorationRegistry()
-          .getDecoratedName(player, matchPlayer.getParty().getColor());
-      PLAYER_UTILS.setFakeNameAndSkin(player, viewer, displayName, nick, getSkin(player));
-    } else {
-      PLAYER_UTILS.setFakeNameAndSkin(player, viewer, null, null, null);
-    }
-  }
-
-  public void onSkinRefresh(Player player, Skin skin) {
+  public void onSkinRefresh(Player player, @Nullable Skin skin) {
     if (skin == null) {
       customSkins.remove(player.getUniqueId());
+    } else {
+      customSkins.put(player.getUniqueId(), skin);
     }
 
-    if (Integration.getNick(player) != null) {
-      if (skin != null) {
-        // Store custom skin for persistence
-        customSkins.put(player.getUniqueId(), skin);
-      }
-
-      // Refresh skin for everyone online
-      refreshPlayer(player);
+    if (Integration.getNick(player) != null && Community.get().isEnabled()) {
+      new NameDecorationChangeEvent(player.getUniqueId()).callEvent();
     }
-
-    // Let PGM know to refresh tab entry
-    Community.get()
-        .getServer()
-        .getPluginManager()
-        .callEvent(new NameDecorationChangeEvent(player.getUniqueId()));
   }
 }
