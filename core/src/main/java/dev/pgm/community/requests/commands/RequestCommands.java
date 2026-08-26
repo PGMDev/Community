@@ -1,7 +1,9 @@
 package dev.pgm.community.requests.commands;
 
-import static net.kyori.adventure.text.Component.*;
 import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
 import static tc.oc.pgm.util.text.TemporalComponent.duration;
 
 import dev.pgm.community.Community;
