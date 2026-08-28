@@ -20,6 +20,7 @@ import dev.pgm.community.utils.MessageUtils;
 import dev.pgm.community.utils.PGMUtils.MapSizeBounds;
 import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -205,10 +206,15 @@ public class SponsorCommands extends CommunityCommand {
       @Flag(value = "author", aliases = "a") String author,
       @Flag(value = "name", aliases = "n") String name) {
     Stream<MapInfo> search = requests.getAvailableSponsorMaps().stream();
+    List<String> paginationArgs = new ArrayList<>();
+    paginationArgs.add("/sponsor maps");
 
     if (name != null) {
       String query = StringUtils.normalize(name);
       search = search.filter(map -> LiquidMetal.match(map.getNormalizedName(), query));
+
+      paginationArgs.add("--name");
+      paginationArgs.add(name);
     }
 
     if (!tags.isEmpty()) {
@@ -221,11 +227,17 @@ public class SponsorCommands extends CommunityCommand {
               Collectors.mapping(
                   (String s) -> s.startsWith("!") ? s.substring(1) : s, Collectors.toSet())));
       search = search.filter(map -> matchesTags(map, tagSet.get(false), tagSet.get(true)));
+
+      paginationArgs.add("--tags");
+      paginationArgs.add(String.join(",", tags));
     }
 
     if (author != null) {
       String query = StringUtils.normalize(author);
       search = search.filter(map -> matchesAuthor(map, query));
+
+      paginationArgs.add("--author");
+      paginationArgs.add(author);
     }
 
     Set<MapInfo> maps = search.collect(Collectors.toCollection(TreeSet::new));
@@ -278,6 +290,7 @@ public class SponsorCommands extends CommunityCommand {
 
     // Add page button when more than 1 page
     if (pages > 1) {
+      String command = String.join(" ", paginationArgs);
       TextComponent.Builder buttons = text();
 
       if (page > 1) {
@@ -286,7 +299,7 @@ public class SponsorCommands extends CommunityCommand {
             .append(text(" Previous Page", NamedTextColor.BLUE))
             .hoverEvent(
                 HoverEvent.showText(text("Click to view previous page", NamedTextColor.GRAY)))
-            .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page - 1))));
+            .clickEvent(ClickEvent.runCommand(command + " " + (page - 1))));
       }
 
       if (page > 1 && page < pages) {
@@ -298,7 +311,7 @@ public class SponsorCommands extends CommunityCommand {
             .append(text("Next Page ", NamedTextColor.BLUE))
             .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
             .hoverEvent(HoverEvent.showText(text("Click to view next page", NamedTextColor.GRAY)))
-            .clickEvent(ClickEvent.runCommand("/sponsor maps " + (page + 1))));
+            .clickEvent(ClickEvent.runCommand(command + " " + (page + 1))));
       }
       audience.sendMessage(TextFormatter.horizontalLineHeading(
           audience.getSender(), buttons.build(), NamedTextColor.DARK_PURPLE, 250));
