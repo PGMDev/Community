@@ -683,7 +683,7 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
       message.append(text()
           .append(space())
           .append(SPONSOR)
-          .clickEvent(ClickEvent.runCommand("/sponsor request" + map.getName()))
+          .clickEvent(ClickEvent.runCommand("/sponsor request " + map.getName()))
           .hoverEvent(HoverEvent.showText(text()
               .append(text("Click to sponsor this request", NamedTextColor.GRAY))
               .append(newline())
