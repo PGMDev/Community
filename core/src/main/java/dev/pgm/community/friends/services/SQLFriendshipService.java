@@ -24,10 +24,19 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
     super(TABLE_NAME, TABLE_FIELDS);
     this.friendshipCache =
         CacheBuilder.newBuilder().build(CacheLoader.from(PlayerFriendships::new));
+
+    getTableReady().thenRun(() -> {
+      DatabaseExecutor.createIndexAsync(TABLE_NAME, "idx_requester", "requester");
+      DatabaseExecutor.createIndexAsync(TABLE_NAME, "idx_requested", "requested");
+    });
   }
 
   @Override
   public void save(Friendship friendship) {
+    saveAsync(friendship);
+  }
+
+  public CompletableFuture<Integer> saveAsync(Friendship friendship) {
     PlayerFriendships cachedRequester = friendshipCache.getIfPresent(friendship.getRequesterId());
     PlayerFriendships cachedRequested = friendshipCache.getIfPresent(friendship.getRequestedId());
 
@@ -39,7 +48,7 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
       cachedRequested.getFriendships().add(friendship);
     }
 
-    DatabaseExecutor.executeUpdateAsync(
+    return DatabaseExecutor.executeUpdateAsync(
         INSERT_FRIENDSHIP_QUERY,
         friendship.getFriendshipId().toString(),
         friendship.getRequesterId().toString(),
@@ -49,30 +58,27 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
         friendship.getLastUpdated().toEpochMilli());
   }
 
-  public void updateFriendshipStatus(Friendship friendship, boolean accept) {
-    friendship.setStatus(accept ? FriendshipStatus.ACCEPTED : FriendshipStatus.REJECTED);
+  public CompletableFuture<Integer> updateFriendshipStatus(Friendship friendship, boolean accept) {
+    FriendshipStatus updatedStatus = accept
+        ? FriendshipStatus.ACCEPTED
+        : friendship.getStatus() == FriendshipStatus.ACCEPTED
+            ? FriendshipStatus.UNFRIENDED
+            : FriendshipStatus.REJECTED;
+    friendship.setStatus(updatedStatus);
     friendship.setLastUpdated(Instant.now());
 
     PlayerFriendships cachedRequester = friendshipCache.getIfPresent(friendship.getRequesterId());
     PlayerFriendships cachedRequested = friendshipCache.getIfPresent(friendship.getRequestedId());
 
     if (cachedRequester != null) {
-      if (accept) {
-        cachedRequester.getFriendships().add(friendship);
-      } else {
-        cachedRequester.getFriendships().remove(friendship);
-      }
+      cachedRequester.getFriendships().add(friendship);
     }
 
     if (cachedRequested != null) {
-      if (accept) {
-        cachedRequested.getFriendships().add(friendship);
-      } else {
-        cachedRequested.getFriendships().remove(friendship);
-      }
+      cachedRequested.getFriendships().add(friendship);
     }
 
-    DatabaseExecutor.executeUpdateAsync(
+    return DatabaseExecutor.executeUpdateAsync(
         UPDATE_FRIENDSHIP_QUERY,
         friendship.getStatus().toString().toUpperCase(),
         friendship.getLastUpdated().toEpochMilli(),
@@ -124,6 +130,10 @@ public class SQLFriendshipService extends SQLFeatureBase<Friendship, String>
   @Override
   public CompletableFuture<Friendship> query(String target) {
     return null; // Use queryList
+  }
+
+  public void invalidate(UUID playerId) {
+    friendshipCache.invalidate(playerId);
   }
 
   private static class PlayerFriendships {

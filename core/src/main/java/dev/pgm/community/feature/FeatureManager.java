@@ -27,6 +27,8 @@ import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.requests.feature.types.RequestFeatureCore;
 import dev.pgm.community.sessions.feature.SessionFeature;
 import dev.pgm.community.sessions.feature.types.SessionFeatureCore;
+import dev.pgm.community.settings.feature.SettingsFeature;
+import dev.pgm.community.settings.feature.types.SettingsFeatureCore;
 import dev.pgm.community.squads.SquadFeature;
 import dev.pgm.community.store.StoreFactory;
 import dev.pgm.community.store.Stores;
@@ -50,6 +52,7 @@ public class FeatureManager {
   private final RequestFeature requests;
   private final SessionFeature sessions;
   private final AltRiskFeature altRisk;
+  private final SettingsFeature settings;
 
   private final TeleportFeature teleports;
   private final InfoCommandsFeature infoCommands;
@@ -78,7 +81,9 @@ public class FeatureManager {
         new AssistanceFeatureCore(config, logger, users, network, inventory, stores.assistance());
     this.moderation =
         new ModerationFeatureCore(config, logger, users, network, stores.moderation());
-    this.friends = new FriendshipFeatureCore(config, logger, users, stores.friends());
+    this.settings = new SettingsFeatureCore(config, logger, stores.settings(), network);
+    this.friends =
+        new FriendshipFeatureCore(config, logger, users, stores.friends(), settings, network);
     this.nick = new NickFeatureCore(config, logger, users, stores.nicks());
     this.requests = new RequestFeatureCore(config, logger, users, stores.requests());
     this.altRisk = new AltRiskFeature(config, logger, users, sessions, moderation);
@@ -100,7 +105,7 @@ public class FeatureManager {
     this.mob = new MobFeature(config, logger);
     this.party = new MapPartyFeature(config, logger);
     this.polls = new PollFeature(config, logger);
-    this.squads = new SquadFeature(config, logger);
+    this.squads = new SquadFeature(config, logger, settings);
     this.history = new MatchHistoryFeature(config, logger);
   }
 
@@ -122,6 +127,10 @@ public class FeatureManager {
 
   public AltRiskFeature getAltRisk() {
     return altRisk;
+  }
+
+  public SettingsFeature getSettings() {
+    return settings;
   }
 
   public TeleportFeature getTeleports() {
@@ -201,6 +210,7 @@ public class FeatureManager {
     }
     getUsers().getConfig().reload(config);
     getSessions().getConfig().reload(config);
+    getSettings().getConfig().reload(config);
     getAltRisk().getConfig().reload(config);
     getTeleports().getConfig().reload(config);
     getInfoCommands().getConfig().reload(config);
@@ -229,6 +239,7 @@ public class FeatureManager {
     if (getModeration().isEnabled()) getModeration().disable();
     if (getUsers().isEnabled()) getUsers().disable();
     if (getSessions().isEnabled()) getSessions().disable();
+    if (getSettings().isEnabled()) getSettings().disable();
     if (getAltRisk().isEnabled()) getAltRisk().disable();
     if (getTeleports().isEnabled()) getTeleports().disable();
     if (getInfoCommands().isEnabled()) getInfoCommands().disable();

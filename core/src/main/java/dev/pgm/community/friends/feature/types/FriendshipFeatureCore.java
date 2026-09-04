@@ -12,10 +12,17 @@ import dev.pgm.community.friends.FriendshipConfig;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.friends.feature.PGMFriendIntegration;
 import dev.pgm.community.friends.store.FriendStore;
+import dev.pgm.community.network.feature.NetworkFeature;
+import dev.pgm.community.network.subs.types.FriendshipSubscriber;
+import dev.pgm.community.network.updates.types.FriendshipUpdate;
+import dev.pgm.community.settings.CommunitySetting;
+import dev.pgm.community.settings.feature.SettingsFeature;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.Sounds;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -42,18 +49,28 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
 
   private final FriendStore store;
   private final UsersFeature users;
+  private final SettingsFeature settings;
+  private final NetworkFeature network;
 
   @Nullable
   private PGMFriendIntegration integration;
 
   public FriendshipFeatureCore(
-      Configuration config, Logger logger, UsersFeature users, FriendStore store) {
+      Configuration config,
+      Logger logger,
+      UsersFeature users,
+      FriendStore store,
+      SettingsFeature settings,
+      NetworkFeature network) {
     super(new FriendshipConfig(config), logger, "Friends");
     this.store = store;
     this.users = users;
+    this.settings = settings;
+    this.network = network;
 
     if (getConfig().isEnabled()) {
       enable();
+      network.registerSubscriber(new FriendshipSubscriber(this, network.getNetworkId(), logger));
     }
   }
 
@@ -71,11 +88,17 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
 
   @Override
   public void onDelayedLogin(PlayerJoinEvent event) {
-    getIncomingRequests(event.getPlayer().getUniqueId()).thenAcceptAsync(requests -> {
-      if (!requests.isEmpty()) {
-        sendFriendRequestLoginMessage(event.getPlayer(), requests.size());
-      }
-    });
+    UUID playerId = event.getPlayer().getUniqueId();
+    settings
+        .isSettingEnabled(playerId, CommunitySetting.FRIEND_REQUESTS)
+        .thenAcceptAsync(accepting -> {
+          if (!accepting) return; // No request reminders for players who toggled requests off
+          getIncomingRequests(playerId).thenAcceptAsync(requests -> {
+            if (!requests.isEmpty()) {
+              sendFriendRequestLoginMessage(event.getPlayer(), requests.size());
+            }
+          });
+        });
   }
 
   @Override
@@ -104,49 +127,73 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
 
   @Override
   public CompletableFuture<FriendRequestStatus> addFriend(UUID sender, UUID target) {
-    return hasRequested(sender, target).thenApplyAsync(requested -> {
+    return hasRequested(sender, target).thenComposeAsync(requested -> {
       if (requested.isPresent()) {
         Friendship pending = requested.get();
         // If target has already requested you, just accept the friendship
         if (pending.getRequesterId().equals(target)) {
-          acceptFriendship(pending);
-          return FriendRequestStatus.ACCEPTED_EXISTING;
+          return acceptFriendship(pending)
+              .thenApply(ignored -> FriendRequestStatus.ACCEPTED_EXISTING);
         }
 
-        return FriendRequestStatus.EXISTING; // Already requested
+        return CompletableFuture.completedFuture(FriendRequestStatus.ALREADY_REQUESTED);
       }
 
       // Can't add an existing friend ;)
       if (areFriends(sender, target).join()) {
-        return FriendRequestStatus.EXISTING;
+        return CompletableFuture.completedFuture(FriendRequestStatus.ALREADY_FRIENDS);
+      }
+
+      // Target has toggled off incoming friend requests
+      if (!settings.isSettingEnabled(target, CommunitySetting.FRIEND_REQUESTS).join()) {
+        return CompletableFuture.completedFuture(FriendRequestStatus.BLOCKED);
+      }
+
+      // Sender's previous request was rejected too recently
+      if (isOnRequestCooldown(sender, target)) {
+        return CompletableFuture.completedFuture(FriendRequestStatus.COOLDOWN);
       }
 
       Friendship request = new Friendship(sender, target);
-      store.save(request);
+      return store.save(request).thenApply(ignored -> {
+        broadcastInvalidation(sender, target);
 
-      if (Bukkit.getPlayer(target) != null) {
-        Player targetPlayer = Bukkit.getPlayer(target);
+        if (Bukkit.getPlayer(target) != null) {
+          Player targetPlayer = Bukkit.getPlayer(target);
 
-        Component senderName =
-            users.renderUsername(Optional.of(sender), NameStyle.FANCY).join();
-        Component accept = FriendshipFeature.createAcceptButton(sender.toString());
-        Component reject = FriendshipFeature.createRejectButton(sender.toString());
+          Component senderName =
+              users.renderUsername(Optional.of(sender), NameStyle.FANCY).join();
+          Component accept = FriendshipFeature.createAcceptButton(sender.toString());
+          Component reject = FriendshipFeature.createRejectButton(sender.toString());
 
-        Component requestMsg = text()
-            .append(senderName)
-            .append(text(" has requested to be your friend. "))
-            .append(accept)
-            .append(space())
-            .append(reject)
-            .color(NamedTextColor.GOLD)
-            .build();
+          Component requestMsg = text()
+              .append(senderName)
+              .append(text(" has requested to be your friend. "))
+              .append(accept)
+              .append(space())
+              .append(reject)
+              .color(NamedTextColor.GOLD)
+              .build();
 
-        Audience.get(targetPlayer).sendMessage(requestMsg);
-        // TODO: play sound too?
-      }
+          Audience.get(targetPlayer).sendMessage(requestMsg);
+          Audience.get(targetPlayer).playSound(Sounds.FRIEND_REQUEST_LOGIN);
+        }
 
-      return FriendRequestStatus.PENDING;
+        return FriendRequestStatus.PENDING;
+      });
     });
+  }
+
+  private boolean isOnRequestCooldown(UUID sender, UUID target) {
+    Duration cooldown = getFriendshipConfig().getRequestCooldown();
+    if (cooldown == null || cooldown.isZero() || cooldown.isNegative()) return false;
+
+    return store.queryList(sender.toString()).join().stream()
+        .anyMatch(fr -> fr.areInvolved(sender, target)
+            && fr.getStatus() == FriendshipStatus.REJECTED
+            && fr.getRequesterId().equals(sender)
+            && fr.getLastUpdated() != null
+            && fr.getLastUpdated().plus(cooldown).isAfter(Instant.now()));
   }
 
   @Override
@@ -169,24 +216,41 @@ public class FriendshipFeatureCore extends FeatureBase implements FriendshipFeat
   }
 
   @Override
-  public void acceptFriendship(Friendship friendship) {
-    store.updateFriendshipStatus(friendship, true);
-    update(friendship);
+  public CompletableFuture<Void> acceptFriendship(Friendship friendship) {
+    return store.updateFriendshipStatus(friendship, true).thenAccept(ignored -> update(friendship));
   }
 
   @Override
-  public void rejectFriendship(Friendship friendship) {
-    store.updateFriendshipStatus(friendship, false);
-    update(friendship);
+  public CompletableFuture<Void> rejectFriendship(Friendship friendship) {
+    return store
+        .updateFriendshipStatus(friendship, false)
+        .thenAccept(ignored -> update(friendship));
   }
 
   public boolean isFriend(UUID sender, UUID target) {
-    return integration.isFriend(sender, target);
+    // Integration is only present when PGM + pgm-integration are enabled
+    return integration != null && integration.isFriend(sender, target);
   }
 
   public void update(Friendship friendship) {
     updateFriendships(friendship.getRequestedId());
     updateFriendships(friendship.getRequesterId());
+    broadcastInvalidation(friendship.getRequestedId(), friendship.getRequesterId());
+  }
+
+  private void broadcastInvalidation(UUID... playerIds) {
+    for (UUID playerId : playerIds) {
+      network.sendUpdate(new FriendshipUpdate(playerId));
+    }
+  }
+
+  @Override
+  public void receiveNetworkInvalidation(UUID playerId) {
+    store.invalidate(playerId);
+    // Reload (and push refreshed friend list to PGM) only if the player is on this server
+    if (Bukkit.getPlayer(playerId) != null) {
+      updateFriendships(playerId);
+    }
   }
 
   @Override

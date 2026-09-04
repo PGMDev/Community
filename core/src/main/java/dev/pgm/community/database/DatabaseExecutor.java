@@ -78,6 +78,28 @@ public final class DatabaseExecutor {
     });
   }
 
+  public static CompletableFuture<Integer> createIndexAsync(
+      String table, String indexName, String columns) {
+    SqlDialect dialect = getDialect();
+    String create = dialect.createIndexQuery(table, indexName, columns);
+    String find = dialect.findIndexQuery();
+
+    if (find == null) {
+      return executeUpdateAsync(create);
+    }
+
+    return queryFirstAsync(find, rs -> rs.getInt(1), table, indexName).thenCompose(count -> {
+      if (count == null) {
+        Community.get()
+            .getLogger()
+            .warning(
+                "Could not verify index " + indexName + " on " + table + "; skipping creation");
+        return CompletableFuture.completedFuture(0);
+      }
+      return count > 0 ? CompletableFuture.completedFuture(0) : executeUpdateAsync(create);
+    });
+  }
+
   public static void shutdown() {
     SQL_EXECUTOR.shutdown();
     SQLITE_EXECUTOR.shutdown();

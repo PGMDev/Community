@@ -14,6 +14,8 @@ import dev.pgm.community.requests.store.RequestStore;
 import dev.pgm.community.requests.store.SQLRequestStore;
 import dev.pgm.community.sessions.store.SQLSessionStore;
 import dev.pgm.community.sessions.store.SessionStore;
+import dev.pgm.community.settings.store.SQLSettingsStore;
+import dev.pgm.community.settings.store.SettingsStore;
 import dev.pgm.community.users.store.SQLUserStore;
 import dev.pgm.community.users.store.UserStore;
 import java.util.Locale;
@@ -47,6 +49,7 @@ public final class StoreFactory {
     private final RequestStore requests;
     private final FriendStore friends;
     private final NickStore nicks;
+    private final SettingsStore settings;
 
     private SqlStores(Configuration config) {
       this.users = new SQLUserStore();
@@ -56,6 +59,7 @@ public final class StoreFactory {
       this.requests = new SQLRequestStore();
       this.friends = new SQLFriendStore();
       this.nicks = new SQLNickStore(new NickConfig(config));
+      this.settings = new SQLSettingsStore();
     }
 
     @Override
@@ -91,6 +95,11 @@ public final class StoreFactory {
     @Override
     public NickStore nicks() {
       return nicks;
+    }
+
+    @Override
+    public SettingsStore settings() {
+      return settings;
     }
   }
 }

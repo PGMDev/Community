@@ -22,6 +22,10 @@ public class SQLUserService extends SQLFeatureBase<UserProfile, String> implemen
     super(TABLE_NAME, TABLE_FIELDS);
 
     this.profileCache = CacheBuilder.newBuilder().build(CacheLoader.from(UserData::new));
+
+    getTableReady()
+        .thenRun(
+            () -> DatabaseExecutor.createIndexAsync(TABLE_NAME, "idx_lower_name", "(LOWER(name))"));
   }
 
   @Override

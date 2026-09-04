@@ -21,6 +21,9 @@ public class SQLAssistanceService extends SQLFeatureBase<Report, String>
     super(TABLE_NAME, TABLE_FIELDS);
     this.cachedReports =
         CacheBuilder.newBuilder().maximumSize(1000).build(CacheLoader.from(PlayerReports::new));
+
+    getTableReady()
+        .thenRun(() -> DatabaseExecutor.createIndexAsync(TABLE_NAME, "idx_reported", "reported"));
   }
 
   @Override

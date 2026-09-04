@@ -11,6 +11,8 @@ import static tc.oc.pgm.util.text.TextFormatter.horizontalLineHeading;
 import com.google.common.collect.ImmutableList;
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
+import dev.pgm.community.settings.CommunitySetting;
+import dev.pgm.community.settings.feature.SettingsFeature;
 import java.util.Objects;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
@@ -64,9 +66,11 @@ public class SquadCommands {
       .hoverEvent(showText(translatable("squad.list.removeHover", NamedTextColor.RED)));
 
   private final SquadFeature manager;
+  private final SettingsFeature settings;
 
   public SquadCommands() {
     this.manager = Community.get().getFeatures().getSquads();
+    this.settings = Community.get().getFeatures().getSettings();
   }
 
   @Command("")
@@ -151,6 +155,19 @@ public class SquadCommands {
     if (squad == null) throw exception("squad.err.memberOnly");
     boolean enabled = squad.toggleAutojoin(sender.getId());
     sender.sendMessage(enabled ? AUTOJOIN_ENABLED : AUTOJOIN_DISABLED);
+  }
+
+  @Command("toggle")
+  @CommandDescription("Toggle whether you receive party invites")
+  @Permission(CommunityPermissions.SQUAD)
+  public void toggle(MatchPlayer sender) {
+    checkEnabled();
+    if (!settings.isEnabled()) throw exception("settings.err.disabled");
+    settings
+        .toggle(sender.getId(), CommunitySetting.SQUAD_INVITES)
+        .thenAcceptAsync(enabled -> sender.sendMessage(translatable(
+            enabled ? "squad.toggle.enabled" : "squad.toggle.disabled",
+            enabled ? NamedTextColor.GREEN : NamedTextColor.GRAY)));
   }
 
   @Command("list")

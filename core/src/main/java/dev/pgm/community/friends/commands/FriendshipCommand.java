@@ -18,6 +18,8 @@ import dev.pgm.community.friends.Friendship;
 import dev.pgm.community.friends.feature.FriendshipFeature;
 import dev.pgm.community.nick.feature.NickFeature;
 import dev.pgm.community.sessions.Session;
+import dev.pgm.community.settings.CommunitySetting;
+import dev.pgm.community.settings.feature.SettingsFeature;
 import dev.pgm.community.users.UserProfile;
 import dev.pgm.community.users.feature.UsersFeature;
 import dev.pgm.community.utils.BroadcastUtils;
@@ -51,11 +53,13 @@ public class FriendshipCommand extends CommunityCommand {
   private final FriendshipFeature friends;
   private final UsersFeature users;
   private final NickFeature nicks;
+  private final SettingsFeature settings;
 
   public FriendshipCommand() {
     this.friends = Community.get().getFeatures().getFriendships();
     this.users = Community.get().getFeatures().getUsers();
     this.nicks = Community.get().getFeatures().getNick();
+    this.settings = Community.get().getFeatures().getSettings();
   }
 
   @Command("[page]")
@@ -120,20 +124,30 @@ public class FriendshipCommand extends CommunityCommand {
                           .append(text("'s friend request!"))
                           .color(NamedTextColor.GREEN));
                       break;
-                    case EXISTING:
-                      if (friends
-                          .areFriends(sender.getPlayer().getUniqueId(), storedId.get())
-                          .join()) {
-                        sender.sendWarning(text("You are already friends with ").append(name));
-                      } else {
-                        sender.sendWarning(text("You have already sent a friend request to ")
-                            .append(name)
-                            .color(NamedTextColor.GRAY));
-                      }
+                    case ALREADY_FRIENDS:
+                      sender.sendWarning(text("You are already friends with ").append(name));
+                      break;
+                    case ALREADY_REQUESTED:
+                      sender.sendWarning(text("You have already sent a friend request to ")
+                          .append(name)
+                          .color(NamedTextColor.GRAY));
+                      break;
+                    case COOLDOWN:
+                      sender.sendWarning(text("You must wait before sending ")
+                          .append(name)
+                          .append(text(" another friend request"))
+                          .color(NamedTextColor.GRAY));
                       break;
                     case PENDING:
                       sender.sendMessage(
                           text("Friend request sent to ").append(name).color(NamedTextColor.GRAY));
+                      break;
+                    case BLOCKED:
+                      sender.sendWarning(text()
+                          .append(name)
+                          .append(text(" is not accepting friend requests"))
+                          .color(NamedTextColor.GRAY)
+                          .build());
                       break;
                     default:
                       sender.sendWarning(text("Could not send a friend request to ")
@@ -146,6 +160,26 @@ public class FriendshipCommand extends CommunityCommand {
         sender.sendWarning(formatNotFoundComponent(target.getIdentifier()));
       }
     });
+  }
+
+  @Command("toggle")
+  @CommandDescription("Toggle whether you receive friend requests")
+  @Permission(CommunityPermissions.FRIENDSHIP)
+  public void toggle(CommandAudience sender, Player player) {
+    if (!settings.isEnabled()) {
+      sender.sendWarning(text("Settings are currently unavailable"));
+      return;
+    }
+    settings
+        .toggle(player.getUniqueId(), CommunitySetting.FRIEND_REQUESTS)
+        .thenAcceptAsync(enabled -> {
+          if (enabled) {
+            sender.sendMessage(text("You are now accepting friend requests", NamedTextColor.GREEN));
+          } else {
+            sender.sendMessage(
+                text("You are no longer accepting friend requests", NamedTextColor.GRAY));
+          }
+        });
   }
 
   @Command("remove <player>")
@@ -166,11 +200,12 @@ public class FriendshipCommand extends CommunityCommand {
               friendList.stream().filter(fr -> fr.isInvolved(targetId)).findAny();
           users.renderUsername(storedId, NameStyle.FANCY).thenAcceptAsync(name -> {
             if (existing.isPresent()) {
-              friends.rejectFriendship(existing.get());
-              sender.sendMessage(text("You have removed ")
-                  .append(name)
-                  .append(text(" as a friend"))
-                  .color(NamedTextColor.GRAY));
+              friends
+                  .rejectFriendship(existing.get())
+                  .thenRun(() -> sender.sendMessage(text("You have removed ")
+                      .append(name)
+                      .append(text(" as a friend"))
+                      .color(NamedTextColor.GRAY)));
             } else {
               sender.sendWarning(text("You are not friends with ").append(name));
             }
@@ -182,11 +217,11 @@ public class FriendshipCommand extends CommunityCommand {
     });
   }
 
-  @Command("accept <username>")
+  @Command("accept <player>")
   @CommandDescription("Accept an incoming friend request")
   @Permission(CommunityPermissions.FRIENDSHIP)
   public void acceptRequest(
-      CommandAudience sender, Player player, @Argument("username") String target) {
+      CommandAudience sender, Player player, @Argument("player") String target) {
     getTarget(target, users).thenAcceptAsync(storedId -> {
       if (storedId.isPresent()) {
         List<Friendship> requests =
@@ -202,20 +237,21 @@ public class FriendshipCommand extends CommunityCommand {
 
         users.renderUsername(storedId, NameStyle.FANCY).thenAcceptAsync(name -> {
           if (pending.isPresent()) {
-            friends.acceptFriendship(pending.get());
-            sender.sendMessage(text("You accepted ")
-                .append(name)
-                .append(text("'s friend request!"))
-                .color(NamedTextColor.GREEN));
+            friends.acceptFriendship(pending.get()).thenRun(() -> {
+              sender.sendMessage(text("You accepted ")
+                  .append(name)
+                  .append(text("'s friend request!"))
+                  .color(NamedTextColor.GREEN));
 
-            // Notify online requester
-            Player onlineFriend = Bukkit.getPlayer(storedId.get());
-            if (onlineFriend != null && !VisibilityUtils.isDisguised(sender.getPlayer())) {
-              Audience.get(onlineFriend)
-                  .sendMessage(text()
-                      .append(sender.getStyledName())
-                      .append(text(" has accepted your friend request!", NamedTextColor.GREEN)));
-            }
+              // Notify online requester
+              Player onlineFriend = Bukkit.getPlayer(storedId.get());
+              if (onlineFriend != null && !VisibilityUtils.isDisguised(sender.getPlayer())) {
+                Audience.get(onlineFriend)
+                    .sendMessage(text()
+                        .append(sender.getStyledName())
+                        .append(text(" has accepted your friend request!", NamedTextColor.GREEN)));
+              }
+            });
 
           } else {
             sender.sendWarning(text("You don't have a pending friend request from ")
@@ -233,8 +269,8 @@ public class FriendshipCommand extends CommunityCommand {
   @Command("reject <player>")
   @Permission(CommunityPermissions.FRIENDSHIP)
   public void rejectRequest(
-      CommandAudience sender, Player player, @Argument("player") TargetPlayer target) {
-    getTarget(target.getIdentifier(), users).thenAcceptAsync(storedId -> {
+      CommandAudience sender, Player player, @Argument("player") String target) {
+    getTarget(target, users).thenAcceptAsync(storedId -> {
       if (storedId.isPresent()) {
         List<Friendship> requests =
             friends.getIncomingRequests(sender.getPlayer().getUniqueId()).join();
@@ -248,11 +284,12 @@ public class FriendshipCommand extends CommunityCommand {
             .findAny();
         users.renderUsername(storedId, NameStyle.FANCY).thenAcceptAsync(name -> {
           if (pending.isPresent()) {
-            friends.rejectFriendship(pending.get());
-            sender.sendMessage(text("You have rejected ")
-                .append(name)
-                .append(text("'s friend request"))
-                .color(NamedTextColor.GRAY));
+            friends
+                .rejectFriendship(pending.get())
+                .thenRun(() -> sender.sendMessage(text("You have rejected ")
+                    .append(name)
+                    .append(text("'s friend request"))
+                    .color(NamedTextColor.GRAY)));
           } else {
             sender.sendWarning(text("You don't have a pending friend request from ")
                 .append(name)
@@ -260,7 +297,7 @@ public class FriendshipCommand extends CommunityCommand {
           }
         });
       } else {
-        sender.sendWarning(formatNotFoundComponent(target.getIdentifier()));
+        sender.sendWarning(formatNotFoundComponent(target));
       }
     });
   }
@@ -356,8 +393,6 @@ public class FriendshipCommand extends CommunityCommand {
     List<ResolvedFriend> resolved = new ArrayList<>(
         futures.stream().map(CompletableFuture::join).filter(Objects::nonNull).toList());
 
-    if (resolved.isEmpty()) return;
-
     resolved.sort((a, b) -> {
       if (a.canSee() && !b.canSee()) return -1;
       if (b.canSee() && !a.canSee()) return 1;
@@ -394,7 +429,7 @@ public class FriendshipCommand extends CommunityCommand {
             .append(name)
             .append(space())
             .append(BroadcastUtils.RIGHT_DIV.color(NamedTextColor.GOLD))
-            .append(renderOnlineStatus(data.uuid(), audience).join());
+            .append(renderOnlineStatus(data.session(), isStaff));
 
         if (data.friendship().getLastUpdated() != null) {
           Component hover = text("Friends for ", NamedTextColor.GRAY)
@@ -413,27 +448,21 @@ public class FriendshipCommand extends CommunityCommand {
     }.display(audience.getAudience(), resolved, page);
   }
 
-  private CompletableFuture<Component> renderOnlineStatus(UUID playerId, CommandAudience viewer) {
-    boolean staff = viewer.getSender().hasPermission(CommunityPermissions.STAFF);
-    CompletableFuture<Component> future = new CompletableFuture<>();
-    users.findUserWithSession(playerId, !staff, (profile, session) -> {
-      boolean online = !session.hasEnded();
-      boolean vanished = session.isDisguised();
-      boolean visible = online && (!vanished || staff);
+  private Component renderOnlineStatus(Session session, boolean staff) {
+    boolean online = !session.hasEnded();
+    boolean vanished = session.isDisguised();
+    boolean visible = online && (!vanished || staff);
 
-      Component status = (visible
-              ? duration(Duration.between(session.getLatestUpdateDate(), Instant.now()))
-              : relativePastApproximate(session.getLatestUpdateDate()))
-          .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
-      future.complete(text(visible ? " Online for " : " Last seen ")
-          .append(status)
-          .append(text(session.isOnThisServer() ? "" : " on "))
-          .append(text(session.isOnThisServer() ? "" : session.getServerName())
-              .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
-          .color(NamedTextColor.GRAY));
-    });
-
-    return future;
+    Component status = (visible
+            ? duration(Duration.between(session.getLatestUpdateDate(), Instant.now()))
+            : relativePastApproximate(session.getLatestUpdateDate()))
+        .color(visible ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN);
+    return text(visible ? " Online for " : " Last seen ")
+        .append(status)
+        .append(text(session.isOnThisServer() ? "" : " on "))
+        .append(text(session.isOnThisServer() ? "" : session.getServerName())
+            .color(online ? NamedTextColor.GREEN : NamedTextColor.DARK_GREEN))
+        .color(NamedTextColor.GRAY);
   }
 
   private boolean canSee(Player player, CommandAudience viewer) {

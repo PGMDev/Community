@@ -10,6 +10,8 @@ public abstract class SQLFeatureBase<T, R> implements SQLFeature<T, R> {
   private final String tableName;
   private final String fields;
 
+  private CompletableFuture<Integer> tableReady = CompletableFuture.completedFuture(0);
+
   public SQLFeatureBase(String tableName, String fields) {
     this.tableName = tableName;
     this.fields = fields;
@@ -18,7 +20,11 @@ public abstract class SQLFeatureBase<T, R> implements SQLFeature<T, R> {
 
   @Override
   public void createTable() {
-    DatabaseExecutor.executeUpdateAsync(Query.createTable(tableName, fields));
+    this.tableReady = DatabaseExecutor.executeUpdateAsync(Query.createTable(tableName, fields));
+  }
+
+  protected CompletableFuture<Integer> getTableReady() {
+    return tableReady;
   }
 
   public CompletableFuture<Integer> count() {

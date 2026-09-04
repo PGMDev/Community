@@ -29,9 +29,9 @@ public interface FriendshipFeature extends Feature {
 
   CompletableFuture<FriendRequestStatus> addFriend(UUID sender, UUID target);
 
-  void acceptFriendship(Friendship friendship);
+  CompletableFuture<Void> acceptFriendship(Friendship friendship);
 
-  void rejectFriendship(Friendship friendship);
+  CompletableFuture<Void> rejectFriendship(Friendship friendship);
 
   boolean isFriend(UUID sender, UUID target);
 
@@ -40,6 +40,8 @@ public interface FriendshipFeature extends Feature {
   CompletableFuture<Optional<Friendship>> hasRequested(UUID sender, UUID target);
 
   void updateFriendships(UUID playerId);
+
+  void receiveNetworkInvalidation(UUID playerId);
 
   static Component createAcceptButton(String playerId) {
     return text("\u2714", NamedTextColor.GREEN, TextDecoration.BOLD)

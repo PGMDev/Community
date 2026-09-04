@@ -180,12 +180,17 @@ users:
 nick:
   enabled: true 
   pgm-integration: true
-  
-# Friends - Settings related to friendship features/commands  
+
+# Settings - Per-Player settings storage
+settings:
+  enabled: true
+
+# Friends - Settings related to friendship features/commands
 friends:
   enabled: true
-  
+
   pgm-integration: true # Whether Community will attempt to hook into PGM for extended friend features (tablist / joins / death messages)
+  request-cooldown: 1h # How long a player must wait to re-request someone who rejected them (0s to disable)
   
 # Teleports - Teleport commands include /tp, /bring, and /tploc
 teleports:

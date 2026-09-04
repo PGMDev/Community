@@ -151,13 +151,19 @@ public class Friendship implements Comparable<Friendship> {
   public enum FriendshipStatus {
     PENDING, // No decision has been more
     ACCEPTED, // Requested has accepted
-    REJECTED // Requested has denied
+    REJECTED, // Requested has denied
+    UNFRIENDED // An accepted friendship was ended by either player
   }
 
   @Override
   public boolean equals(Object other) {
     if (!(other instanceof Friendship otherFriendship)) return false;
     return otherFriendship.getFriendshipId().equals(getFriendshipId());
+  }
+
+  @Override
+  public int hashCode() {
+    return getFriendshipId().hashCode();
   }
 
   @Override

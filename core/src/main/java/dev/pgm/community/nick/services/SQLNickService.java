@@ -21,6 +21,10 @@ public class SQLNickService extends SQLFeatureBase<Nick, String> implements Nick
   public SQLNickService(NickConfig config) {
     super(TABLE_NAME, TABLE_FIELDS);
 
+    getTableReady()
+        .thenRun(() -> DatabaseExecutor.createIndexAsync(
+            TABLE_NAME, "idx_lower_nickname", "(LOWER(nickname))"));
+
     this.nickCache = CacheBuilder.newBuilder().build(CacheLoader.from(NickInfo::new));
   }
 

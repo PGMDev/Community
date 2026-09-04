@@ -6,6 +6,7 @@ import dev.pgm.community.moderation.store.ModerationStore;
 import dev.pgm.community.nick.store.NickStore;
 import dev.pgm.community.requests.store.RequestStore;
 import dev.pgm.community.sessions.store.SessionStore;
+import dev.pgm.community.settings.store.SettingsStore;
 import dev.pgm.community.users.store.UserStore;
 
 public interface Stores {
@@ -23,4 +24,6 @@ public interface Stores {
   FriendStore friends();
 
   NickStore nicks();
+
+  SettingsStore settings();
 }

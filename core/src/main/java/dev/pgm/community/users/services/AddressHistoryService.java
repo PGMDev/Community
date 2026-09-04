@@ -29,9 +29,16 @@ public class AddressHistoryService implements AddressQuery {
     this.resolvedIPCache = CacheBuilder.newBuilder().build(CacheLoader.from(ResolvedIP::new));
     this.altsCache = CacheBuilder.newBuilder().build(CacheLoader.from(IpAlts::new));
 
-    DatabaseExecutor.executeUpdateAsync(Query.createTable(IP_TABLE_NAME, IP_TABLE_FIELDS));
-    DatabaseExecutor.executeUpdateAsync(
-        Query.createTable(IP_USER_TABLE_NAME, IP_USER_TABLE_FIELDS));
+    DatabaseExecutor.executeUpdateAsync(Query.createTable(IP_TABLE_NAME, IP_TABLE_FIELDS))
+        .thenRun(() -> {
+          DatabaseExecutor.createIndexAsync(IP_TABLE_NAME, "ADDRESS_INDEX", IP_ADDRESS_FIELD);
+          DatabaseExecutor.createIndexAsync(IP_TABLE_NAME, "IP_ID_INDEX", IP_ID_FIELD);
+        });
+    DatabaseExecutor.executeUpdateAsync(Query.createTable(IP_USER_TABLE_NAME, IP_USER_TABLE_FIELDS))
+        .thenRun(() -> {
+          DatabaseExecutor.createIndexAsync(IP_USER_TABLE_NAME, "USER_ID_INDEX", USER_ID_FIELD);
+          DatabaseExecutor.createIndexAsync(IP_USER_TABLE_NAME, "IP_ID_INDEX", IP_ID_FIELD);
+        });
     DatabaseExecutor.executeUpdateAsync(
         Query.createTable(LATEST_IP_TABLE_NAME, LATEST_IP_TABLE_FIELDS));
   }

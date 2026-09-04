@@ -32,9 +32,13 @@ public class SQLModerationService extends SQLFeatureBase<Punishment, String>
 
   public SQLModerationService(ModerationConfig config) {
     super(TABLE_NAME, TABLE_FIELDS);
+
     this.config = config;
     this.punishmentCache =
         CacheBuilder.newBuilder().build(CacheLoader.from(PlayerPunishments::new));
+    getTableReady()
+        .thenRun(() -> DatabaseExecutor.createIndexAsync(
+            TABLE_NAME, "idx_punished_active_type", "punished, active, type"));
   }
 
   @Override

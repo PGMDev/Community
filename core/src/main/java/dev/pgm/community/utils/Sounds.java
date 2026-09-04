@@ -30,7 +30,7 @@ public class Sounds {
   public static final Sound TELEPORT =
       sound("ENDERMAN_TELEPORT", "ENTITY_ENDERMAN_TELEPORT", 0.7f, 0.9f);
 
-  // Played when player logs in and has a pending friend request
+  // Played when a player receives a friend request, live or as a login reminder
   public static final Sound FRIEND_REQUEST_LOGIN =
       sound("NOTE_PIANO", "BLOCK_NOTE_BLOCK_HARP", 1f, 1.2f);
 

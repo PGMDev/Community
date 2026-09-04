@@ -9,6 +9,8 @@ import static tc.oc.pgm.util.text.TextException.noPermission;
 
 import dev.pgm.community.CommunityPermissions;
 import dev.pgm.community.feature.FeatureBase;
+import dev.pgm.community.settings.CommunitySetting;
+import dev.pgm.community.settings.feature.SettingsFeature;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,8 +57,11 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
   private final Map<UUID, ScheduledFuture<?>> playerLeave = new HashMap<>();
   private final Set<UUID> preventJoins = new HashSet<>();
 
-  public SquadFeature(Configuration config, Logger logger) {
+  private final SettingsFeature settings;
+
+  public SquadFeature(Configuration config, Logger logger, SettingsFeature settings) {
     super(new SquadConfig(config), logger, "Squads (PGM)");
+    this.settings = settings;
 
     if (getConfig().isEnabled() && isPGMEnabled()) {
       enable();
@@ -186,6 +191,10 @@ public class SquadFeature extends FeatureBase implements SquadIntegration {
     if (leader.getId().equals(invited.getId())) throw exception("squad.err.noSelfInvite");
     if (getSquadByPlayer(invited) != null)
       throw exception("squad.err.alreadyInSquad", invited.getName(NameStyle.VERBOSE));
+
+    // Cache-only lookup: settings are preloaded at login and a miss safely uses the default.
+    if (!settings.isSettingEnabledCached(invited.getId(), CommunitySetting.SQUAD_INVITES))
+      throw exception("squad.err.invitesDisabled", invited.getName(NameStyle.VERBOSE));
 
     Squad squad = getOrCreateSquadByLeader(leader);
     int maxSize = getMaxSquadSize(leader);

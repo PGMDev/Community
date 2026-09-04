@@ -3,6 +3,7 @@ package dev.pgm.community.friends.store;
 import dev.pgm.community.friends.Friendship;
 import dev.pgm.community.friends.services.SQLFriendshipService;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class SQLFriendStore implements FriendStore {
@@ -14,13 +15,18 @@ public class SQLFriendStore implements FriendStore {
   }
 
   @Override
-  public void save(Friendship friendship) {
-    service.save(friendship);
+  public CompletableFuture<Integer> save(Friendship friendship) {
+    return service.saveAsync(friendship);
   }
 
   @Override
-  public void updateFriendshipStatus(Friendship friendship, boolean accept) {
-    service.updateFriendshipStatus(friendship, accept);
+  public CompletableFuture<Integer> updateFriendshipStatus(Friendship friendship, boolean accept) {
+    return service.updateFriendshipStatus(friendship, accept);
+  }
+
+  @Override
+  public void invalidate(UUID playerId) {
+    service.invalidate(playerId);
   }
 
   @Override

@@ -6,7 +6,7 @@ public interface FriendshipQuery {
   String TABLE_FIELDS = "(id VARCHAR(36) PRIMARY KEY, "
       + "requester VARCHAR(36), "
       + "requested VARCHAR(36), "
-      + "status VARCHAR(8), "
+      + "status VARCHAR(16), "
       + "requestDate LONG, "
       + "updateDate LONG)";
 
