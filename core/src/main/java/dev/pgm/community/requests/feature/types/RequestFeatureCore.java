@@ -354,6 +354,7 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onMatchEnd(MatchFinishEvent event) {
+    voteConfirm.invalidateAll();
     superVotes.onVoteStart();
 
     if (sponsor.getCurrentSponsor() != null) { // Reset current sponsor after match ends
@@ -411,6 +412,7 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
 
   @EventHandler
   public void onVoteEnd(MatchVoteFinishEvent event) {
+    voteConfirm.invalidateAll();
     superVotes.onVoteEnd();
 
     SponsorRequest currentSponsor = sponsor.getCurrentSponsor();
@@ -466,16 +468,43 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
       List.of("/vote add", "/pgm:vote add", "/sn", "/setnext", "/pgm:sn", "/pgm:setnext");
 
   public static boolean isBlockedCommand(String command) {
-    return BLOCKED_COMMANDS.stream().anyMatch(command::startsWith);
+    String normalized = command.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    return BLOCKED_COMMANDS.stream()
+        .anyMatch(blocked -> normalized.equals(blocked) || normalized.startsWith(blocked + " "));
   }
 
-  @EventHandler
+  private boolean hasSponsoredVote() {
+    SponsorRequest current = sponsor.getCurrentSponsor();
+    if (current == null || !superVotes.isVotingActive()) return false;
+
+    MapPoolManager poolManager = getPoolManager();
+    if (poolManager == null || poolManager.getOverriderMap() != null) return false;
+
+    if (poolManager.getActiveMapPool() instanceof VotingPool pool) {
+      MapPoll poll = pool.getCurrentPoll();
+      if (poll != null && poll.isRunning()) {
+        return poll.getVotes().containsKey(current.map());
+      }
+    }
+
+    // The sponsor is added shortly after match end, before the poll may have started.
+    return poolManager.getVoteOptions().isMapAdded(current.map());
+  }
+
+  @EventHandler(ignoreCancelled = true)
   public void onVoteAddCommand(PlayerCommandPreprocessEvent event) {
     if (!isBlockedCommand(event.getMessage())) return;
-    if (sponsor.getSponsorQueue().isEmpty()) return;
-    if (voteConfirm.getIfPresent(event.getPlayer().getUniqueId()) != null) return;
+    UUID playerId = event.getPlayer().getUniqueId();
+    if (!hasSponsoredVote()) {
+      voteConfirm.invalidate(playerId);
+      return;
+    }
+    if (event.getMessage().equals(voteConfirm.getIfPresent(playerId))) {
+      voteConfirm.invalidate(playerId);
+      return;
+    }
     event.setCancelled(true);
-    voteConfirm.put(event.getPlayer().getUniqueId(), "");
+    voteConfirm.put(playerId, event.getMessage());
     Audience viewer = Audience.get(event.getPlayer());
     viewer.sendWarning(text("A sponsor map has already been added to the vote!"));
     viewer.sendWarning(text("If you still want to adjust the vote, click ", NamedTextColor.GRAY)
