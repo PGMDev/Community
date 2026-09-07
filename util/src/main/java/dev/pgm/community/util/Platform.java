@@ -21,20 +21,18 @@ public abstract class Platform {
       .addUrls(ClasspathHelper.forPackage("dev.pgm.community", Platform.class.getClassLoader()))
       .forPackage("dev.pgm.community.platform")
       .setScanners(TypesAnnotated));
-  private static final Pattern VERSION_MATCHER =
-      Pattern.compile("(\\d{1,2})\\.(\\d{1,2})\\.(\\d{1,2})");
+  private static final Pattern VERSION_MATCHER = Pattern.compile("\\d+(?:\\.\\d+){1,2}");
 
   public static final Version MINECRAFT_VERSION;
   public static final Variant VARIANT;
 
   private static Version parseServerVersion(final @NonNull String versionName) {
     var matcher = VERSION_MATCHER.matcher(versionName);
-    return matcher.find()
-        ? new Version(
-            Integer.parseInt(matcher.group(1)),
-            Integer.parseInt(matcher.group(2)),
-            Integer.parseInt(matcher.group(3)))
-        : new Version(0, 0, 0);
+
+    if (!matcher.find())
+      throw new IllegalArgumentException("Could not parse server version from: " + versionName);
+
+    return TextParser.parseVersion(matcher.group());
   }
 
   static {
@@ -74,15 +72,10 @@ public abstract class Platform {
       Supports[] supportList = clazz.getDeclaredAnnotationsByType(Supports.class);
       for (Supports sup : supportList) {
         if (VARIANT != sup.value()) continue;
-        if (!sup.minVersion().isEmpty()) {
-          Version min = TextParser.parseVersion(sup.minVersion());
-          if (MINECRAFT_VERSION.isOlderThan(min)) continue;
-        }
-
-        if (!sup.maxVersion().isEmpty()) {
-          Version max = TextParser.parseVersion(sup.maxVersion());
-          if (max.isOlderThan(MINECRAFT_VERSION)) continue;
-        }
+        if (!sup.minVersion().isEmpty()
+            && MINECRAFT_VERSION.isOlderThan(TextParser.parseVersion(sup.minVersion()))) continue;
+        if (!sup.maxVersion().isEmpty()
+            && TextParser.parseVersion(sup.maxVersion()).isOlderThan(MINECRAFT_VERSION)) continue;
 
         if (priority == null || priority.compareTo(sup.priority()) < 0) {
           priority = sup.priority();

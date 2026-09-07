@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly("dev.pgm.paper:paper-api:1.8_1.21.11-SNAPSHOT")
+    compileOnly("dev.pgm.paper:paper-api:1.8_26.2-SNAPSHOT")
     compileOnly("tc.oc.occ:Database:2.0.0-SNAPSHOT")
 
     implementation(project(":util"))
@@ -62,15 +62,17 @@ tasks {
         val version = project.version.toString()
         val commitHash = project.latestCommitHash()
 
+        inputs.property("commitHash", commitHash)
+
         filesMatching(listOf("plugin.yml")) {
             expand(
                 mapOf(
                     "name" to name,
                     "description" to description,
-                    "apiVersion" to "1.21.11",
+                    "apiVersion" to "26.2",
                     "mainClass" to "dev.pgm.community.Community",
                     "version" to version,
-                    "commitHash" to commitHash,
+                    "commitHash" to commitHash.get(),
                     "author" to "applenick",
                     "url" to "https://pgm.dev/"
                 )

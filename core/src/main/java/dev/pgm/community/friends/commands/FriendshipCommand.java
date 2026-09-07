@@ -28,7 +28,13 @@ import dev.pgm.community.utils.PaginatedComponentResults;
 import dev.pgm.community.utils.VisibilityUtils;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
@@ -43,6 +49,7 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.Audience;
+import tc.oc.pgm.util.Players;
 import tc.oc.pgm.util.named.NameStyle;
 import tc.oc.pgm.util.player.PlayerComponent;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -87,8 +94,8 @@ public class FriendshipCommand extends CommunityCommand {
   @Permission(CommunityPermissions.FRIENDSHIP)
   public void add(CommandAudience sender, Player player, @Argument("player") TargetPlayer target) {
     // Handle disguised players with fake requests
-    Player nicked = nicks.getPlayerFromNick(target.getIdentifier());
-    if (nicked != null) {
+    Player nicked = target.getPlayer();
+    if (nicked != null && !Players.shouldRevealDisguise(sender.getSender(), nicked)) {
       FakeRequests fake = fakeRequests.getUnchecked(sender.getId().get());
       String fullName = nicks.getOnlineNick(nicked.getUniqueId());
       Component fancyName = PlayerComponent.player(nicked, NameStyle.FANCY);

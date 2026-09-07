@@ -3,7 +3,6 @@ package dev.pgm.community.commands.providers;
 import static tc.oc.pgm.command.util.ParserConstants.CURRENT;
 import static tc.oc.pgm.lib.org.incendo.cloud.parser.ArgumentParseResult.failure;
 import static tc.oc.pgm.lib.org.incendo.cloud.parser.ArgumentParseResult.success;
-import static tc.oc.pgm.util.text.TextException.exception;
 import static tc.oc.pgm.util.text.TextException.playerOnly;
 
 import dev.pgm.community.commands.player.TargetPlayer;
@@ -42,13 +41,8 @@ public final class TargetPlayerParser
       }
     }
 
-    Player bukkit = player.getPlayer();
-    if (bukkit == null || Players.shouldReveal(sender, bukkit)) {
-      inputQueue.readString();
-      return success(player);
-    }
-
-    return failure(exception("command.playerNotFound"));
+    inputQueue.readString();
+    return success(player);
   }
 
   @Override

@@ -13,6 +13,6 @@ public class VisibilityUtils {
   }
 
   public static boolean isDisguised(Player player) {
-    return Integration.isVanished(player) || Integration.getNick(player) != null;
+    return Integration.isDisguised(player);
   }
 }
