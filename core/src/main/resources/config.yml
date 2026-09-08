@@ -267,7 +267,7 @@ command-audit:
     - "/sudo"
     - "/community:sudo"
 
-# Freeze - Freeze players via command or observer hotbar tool (when PGM is enabled)  
+# Freeze - Freeze players via command or observer hotbar tool (when PGM is enabled)
 freeze:
   enabled: true  
   pgm-integration: true # Whether Community will attempt to hook into PGM
@@ -462,3 +462,15 @@ database:
   sqlite:
     # Relative paths resolve under the plugin data folder.
     file: "community.db" # SQLite file name or absolute path
+
+# Server Links - Adds links to the pause menu for 1.21+ clients
+# Requires ViaVersion to be installed on 1.8-based servers.
+server-links:
+  enabled: false
+  links:
+    # A built-in server link type will be auto-translated by the client and may provide some extra functionality.
+    - builtin: report bug # See https://jd.papermc.io/paper/org/bukkit/ServerLinks.Type.html for a list of built-in types
+      uri: https://pgm.dev
+    # Alternatively, custom text can be provided. Custom text is mutually exclusive with built-in types.
+    - text: "Submit a new map"
+      uri: https://pgm.dev

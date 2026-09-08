@@ -25,6 +25,7 @@ import dev.pgm.community.party.feature.MapPartyFeature;
 import dev.pgm.community.polls.feature.PollFeature;
 import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.requests.feature.types.RequestFeatureCore;
+import dev.pgm.community.serverlinks.ServerLinksFeature;
 import dev.pgm.community.sessions.feature.SessionFeature;
 import dev.pgm.community.sessions.feature.types.SessionFeatureCore;
 import dev.pgm.community.settings.feature.SettingsFeature;
@@ -68,6 +69,7 @@ public class FeatureManager {
   private final PollFeature polls;
   private final SquadFeature squads;
   private final MatchHistoryFeature history;
+  private final ServerLinksFeature serverLinks;
 
   public FeatureManager(Configuration config, Logger logger, InventoryManager inventory) {
     // Networking
@@ -107,6 +109,7 @@ public class FeatureManager {
     this.polls = new PollFeature(config, logger);
     this.squads = new SquadFeature(config, logger, settings);
     this.history = new MatchHistoryFeature(config, logger);
+    this.serverLinks = new ServerLinksFeature(config, logger);
   }
 
   public AssistanceFeature getReports() {
@@ -201,6 +204,10 @@ public class FeatureManager {
     return history;
   }
 
+  public ServerLinksFeature getServerLinks() {
+    return serverLinks;
+  }
+
   public void reloadConfig(Configuration config) {
     // Reload all config values here
     getReports().getConfig().reload(config);
@@ -228,6 +235,7 @@ public class FeatureManager {
     getPolls().getConfig().reload(config);
     getSquads().getConfig().reload(config);
     getHistory().getConfig().reload(config);
+    getServerLinks().getConfig().reload(config);
 
     // TODO: Look into maybe unregister commands for features that have been disabled
     // commands#unregisterCommand
@@ -257,5 +265,6 @@ public class FeatureManager {
     if (getPolls().isEnabled()) getPolls().disable();
     if (getSquads().isEnabled()) getSquads().disable();
     if (getHistory().isEnabled()) getHistory().disable();
+    if (getServerLinks().isEnabled()) getServerLinks().disable();
   }
 }
