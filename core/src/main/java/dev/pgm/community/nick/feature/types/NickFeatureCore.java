@@ -202,7 +202,15 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
                                 NamedTextColor.GREEN));
                         sendLoginNotification(player, name, true);
                       }
-                    }));
+                    }))
+                .exceptionally(error -> {
+                  Community.log("Unable to assign a random nickname: %s", error.getMessage());
+                  Audience.get(player)
+                      .sendWarning(text(
+                          "No nicknames are available at the moment. Try again soon!",
+                          NamedTextColor.RED));
+                  return null;
+                });
           }
 
         } else {

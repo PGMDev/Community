@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import tc.oc.pgm.util.skin.Skin;
 
 public class WebUtils {
@@ -45,8 +46,7 @@ public class WebUtils {
   /** Fetch a random minecraft username */
   public static CompletableFuture<String> getRandomName() {
     return CompletableFuture.supplyAsync(() -> {
-      String response = "ERROR_404";
-      HttpURLConnection url;
+      HttpURLConnection url = null;
       try {
         url = (HttpURLConnection) new URI(RANDOM_NAME_API).toURL().openConnection();
 
@@ -56,15 +56,24 @@ public class WebUtils {
         url.setConnectTimeout(10000);
         url.setReadTimeout(10000);
 
+        int status = url.getResponseCode();
+        if (status < 200 || status >= 300) {
+          throw new IOException("Random name API returned HTTP " + status);
+        }
+
         try (final BufferedReader br = new BufferedReader(
             new InputStreamReader(url.getInputStream(), StandardCharsets.UTF_8))) {
-          response = br.readLine().trim();
+          String response = br.readLine();
+          if (response == null || response.isBlank()) {
+            throw new IOException("Random name API returned an empty response");
+          }
+          return response.trim();
         }
       } catch (IOException | URISyntaxException e) {
-        e.printStackTrace();
+        throw new CompletionException("Unable to fetch a random nickname", e);
+      } finally {
+        if (url != null) url.disconnect();
       }
-
-      return response;
     });
   }
 

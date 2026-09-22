@@ -80,61 +80,69 @@ public class NickCommands extends CommunityCommand {
   @Permission(CommunityPermissions.NICKNAME)
   public void setRandomNick(
       CommandAudience viewer, Player sender, @Argument("page") @Default("1") int page) {
-    nicks.getNickSelection(sender.getUniqueId()).thenAcceptAsync(names -> {
-      List<String> selection = names.getNames();
+    nicks
+        .getNickSelection(sender.getUniqueId())
+        .thenAcceptAsync(names -> {
+          List<String> selection = names.getNames();
 
-      int resultsPerPage = 8;
-      int pages = (selection.size() + resultsPerPage - 1) / resultsPerPage;
+          int resultsPerPage = 8;
+          int pages = (selection.size() + resultsPerPage - 1) / resultsPerPage;
 
-      Component formattedTitle = TextFormatter.horizontalLineHeading(
-          viewer.getSender(), text("Select a nickname"), NamedTextColor.DARK_AQUA, 250);
+          Component formattedTitle = TextFormatter.horizontalLineHeading(
+              viewer.getSender(), text("Select a nickname"), NamedTextColor.DARK_AQUA, 250);
 
-      new PaginatedComponentResults<String>(formattedTitle, resultsPerPage) {
-        @Override
-        public Component format(String nick, int index) {
-          return text()
-              .append(text(" - ", NamedTextColor.GOLD))
-              .append(text(nick, NamedTextColor.YELLOW))
-              .hoverEvent(HoverEvent.showText(text("Click to set nick to ", NamedTextColor.GRAY)
-                  .append(text(nick, NamedTextColor.YELLOW))))
-              .clickEvent(ClickEvent.runCommand("/nick confirm " + nick))
-              .color(NamedTextColor.GRAY)
-              .build();
-        }
+          new PaginatedComponentResults<String>(formattedTitle, resultsPerPage) {
+            @Override
+            public Component format(String nick, int index) {
+              return text()
+                  .append(text(" - ", NamedTextColor.GOLD))
+                  .append(text(nick, NamedTextColor.YELLOW))
+                  .hoverEvent(HoverEvent.showText(text("Click to set nick to ", NamedTextColor.GRAY)
+                      .append(text(nick, NamedTextColor.YELLOW))))
+                  .clickEvent(ClickEvent.runCommand("/nick confirm " + nick))
+                  .color(NamedTextColor.GRAY)
+                  .build();
+            }
 
-        @Override
-        public Component formatEmpty() {
-          return text("Issue loading names, please try again!", NamedTextColor.RED);
-        }
-      }.display(viewer.getAudience(), selection, page);
+            @Override
+            public Component formatEmpty() {
+              return text("Issue loading names, please try again!", NamedTextColor.RED);
+            }
+          }.display(viewer.getAudience(), selection, page);
 
-      // Add page button when more than 1 page
-      if (pages > 1) {
-        TextComponent.Builder buttons = text();
+          // Add page button when more than 1 page
+          if (pages > 1) {
+            TextComponent.Builder buttons = text();
 
-        if (page > 1) {
-          buttons.append(text()
-              .append(text("Click for more names", NamedTextColor.BLUE))
-              .hoverEvent(
-                  HoverEvent.showText(text("Click to refresh nick selection", NamedTextColor.GRAY)))
-              .clickEvent(ClickEvent.runCommand("/nick random " + (page - 1))));
-        }
+            if (page > 1) {
+              buttons.append(text()
+                  .append(text("Click for more names", NamedTextColor.BLUE))
+                  .hoverEvent(HoverEvent.showText(
+                      text("Click to refresh nick selection", NamedTextColor.GRAY)))
+                  .clickEvent(ClickEvent.runCommand("/nick random " + (page - 1))));
+            }
 
-        if (page > 1 && page < pages) {
-          buttons.append(text(" | ", NamedTextColor.DARK_GRAY));
-        }
+            if (page > 1 && page < pages) {
+              buttons.append(text(" | ", NamedTextColor.DARK_GRAY));
+            }
 
-        if (page < pages) {
-          buttons.append(text()
-              .append(text("Click for more names", NamedTextColor.BLUE))
-              .hoverEvent(
-                  HoverEvent.showText(text("Click to refresh nick selection", NamedTextColor.GRAY)))
-              .clickEvent(ClickEvent.runCommand("/nick random " + (page + 1))));
-        }
-        viewer.sendMessage(TextFormatter.horizontalLineHeading(
-            viewer.getSender(), buttons.build(), NamedTextColor.DARK_AQUA, 250));
-      }
-    });
+            if (page < pages) {
+              buttons.append(text()
+                  .append(text("Click for more names", NamedTextColor.BLUE))
+                  .hoverEvent(HoverEvent.showText(
+                      text("Click to refresh nick selection", NamedTextColor.GRAY)))
+                  .clickEvent(ClickEvent.runCommand("/nick random " + (page + 1))));
+            }
+            viewer.sendMessage(TextFormatter.horizontalLineHeading(
+                viewer.getSender(), buttons.build(), NamedTextColor.DARK_AQUA, 250));
+          }
+        })
+        .exceptionally(error -> {
+          Community.log("Unable to load random nicknames: %s", error.getMessage());
+          viewer.sendWarning(text(
+              "No nicknames are available at the moment. Try again soon!", NamedTextColor.RED));
+          return null;
+        });
   }
 
   @Command("confirm <name>")
