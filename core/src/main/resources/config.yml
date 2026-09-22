@@ -22,7 +22,7 @@ general:
   mojang-api: "https://api.ashcon.app/mojang/v2/user/"
 
   # Where random usernames are fetched from (Nicknames)
-  randomname-api: "https://api.gamertag.dev/random"
+  randomname-api: "https://random.pgm.fyi/random"
 
 # Ranks    
 ranks:
@@ -180,6 +180,7 @@ users:
 nick:
   enabled: true 
   pgm-integration: true
+  random-name-count: 16
 
 # Settings - Per-Player settings storage
 settings:

@@ -76,6 +76,10 @@ public class Community extends JavaPlugin {
     config.reload(getConfig());
     features.reloadConfig(getConfig());
 
+    configureWebAPIs();
+  }
+
+  private void configureWebAPIs() {
     WebUtils.setRandomNameAPI(config.getRandomNameAPIAddress());
     WebUtils.setUsernameAPI(config.getMojangAPIAddress());
   }
@@ -84,6 +88,7 @@ public class Community extends JavaPlugin {
     this.saveDefaultConfig();
     this.reloadConfig();
     this.config = new CommunityConfig(getConfig());
+    configureWebAPIs();
   }
 
   private void setupCommands() {

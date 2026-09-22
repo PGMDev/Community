@@ -142,11 +142,12 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
     if (cached != null && !cached.canRefresh()) {
       return CompletableFuture.completedFuture(cached);
     }
-    return WebUtils.getRandomNameList(16).thenApplyAsync(names -> {
-      NickSelection selection = new NickSelection(names);
-      nickChoices.put(playerId, selection);
-      return selection;
-    });
+    return WebUtils.getRandomNameList(getNickConfig().getRandomNameCount())
+        .thenApplyAsync(names -> {
+          NickSelection selection = new NickSelection(names);
+          nickChoices.put(playerId, selection);
+          return selection;
+        });
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
