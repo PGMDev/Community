@@ -1,5 +1,6 @@
 package dev.pgm.community.requests.commands;
 
+import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -12,6 +13,7 @@ import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PaginatedComponentResults;
+import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Map;
@@ -28,6 +30,7 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.Argument;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Command;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
+import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
 import tc.oc.pgm.util.StreamUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
@@ -204,6 +207,41 @@ public class RequestCommands extends CommunityCommand {
             .append(text(" map requests", NamedTextColor.GRAY))
             .build(),
         CommunityPermissions.REQUEST_STAFF);
+  }
+
+  @Command("requests|reqs announce")
+  @CommandDescription("Broadcast an announcement to inform players you're taking requests")
+  @Permission(CommunityPermissions.REQUEST_STAFF)
+  public void announceRequests(
+      CommandAudience audience, @Flag(value = "title", aliases = "t") boolean showTitle) {
+    if (!requests.isAccepting()) {
+      audience.sendWarning(text("Map requests are not enabled! Unable to broadcast announcement"));
+      return;
+    }
+
+    Component announce = text()
+        .append(newline())
+        .append(text("Map requests are now ", NamedTextColor.GRAY))
+        .append(text("OPEN", NamedTextColor.GREEN, TextDecoration.BOLD))
+        .append(text("! ", NamedTextColor.GRAY))
+        .append(text("[", NamedTextColor.GRAY))
+        .append(text("Request a map", NamedTextColor.AQUA))
+        .append(text("]", NamedTextColor.GRAY))
+        .append(newline())
+        .clickEvent(ClickEvent.suggestCommand("/request "))
+        .hoverEvent(HoverEvent.showText(text("Click to request a map", NamedTextColor.GRAY)))
+        .build();
+
+    BroadcastUtils.sendGlobalMessage(announce);
+
+    if (showTitle) {
+      BroadcastUtils.sendGlobalTitle(
+          text("Map Requests", NamedTextColor.GREEN, TextDecoration.BOLD),
+          text("/request", NamedTextColor.AQUA),
+          3);
+
+      BroadcastUtils.playGlobalSound(Sounds.BROADCAST);
+    }
   }
 
   private Component getRequestsButton(
