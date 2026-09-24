@@ -13,6 +13,7 @@ import dev.pgm.community.requests.feature.RequestFeature;
 import dev.pgm.community.utils.BroadcastUtils;
 import dev.pgm.community.utils.CommandAudience;
 import dev.pgm.community.utils.PaginatedComponentResults;
+import dev.pgm.community.utils.Sounds;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Map;
@@ -31,7 +32,6 @@ import tc.oc.pgm.lib.org.incendo.cloud.annotations.CommandDescription;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Default;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Flag;
 import tc.oc.pgm.lib.org.incendo.cloud.annotations.Permission;
-import tc.oc.pgm.util.LegacyFormatUtils;
 import tc.oc.pgm.util.StreamUtils;
 import tc.oc.pgm.util.named.MapNameStyle;
 import tc.oc.pgm.util.text.TextFormatter;
@@ -213,44 +213,35 @@ public class RequestCommands extends CommunityCommand {
   @CommandDescription("Broadcast an announcement to inform players you're taking requests")
   @Permission(CommunityPermissions.REQUEST_STAFF)
   public void announceRequests(
-      CommandAudience audience, @Flag(value = "name", aliases = "n") boolean showName) {
+      CommandAudience audience, @Flag(value = "title", aliases = "t") boolean showTitle) {
     if (!requests.isAccepting()) {
       audience.sendWarning(text("Map requests are not enabled! Unable to broadcast announcement"));
       return;
     }
 
-    Component alert = text()
-        .append(
-            showName
-                ? text().append(audience.getStyledName()).append(text(" is ")).build()
-                : text("We are "))
-        .append(text("accepting map requests"))
-        .color(NamedTextColor.YELLOW)
-        .build();
-
-    Component broadcast = text()
+    Component announce = text()
         .append(newline())
+        .append(text("Map requests are now ", NamedTextColor.GRAY))
+        .append(text("OPEN", NamedTextColor.GREEN, TextDecoration.BOLD))
+        .append(text("! ", NamedTextColor.GRAY))
+        .append(text("[", NamedTextColor.GRAY))
+        .append(text("Request a map", NamedTextColor.AQUA))
+        .append(text("]", NamedTextColor.GRAY))
         .append(newline())
-        .append(TextFormatter.horizontalLineHeading(
-            audience.getSender(),
-            alert,
-            NamedTextColor.GOLD,
-            TextDecoration.STRIKETHROUGH,
-            LegacyFormatUtils.MAX_CHAT_WIDTH))
-        .append(newline())
-        .append(text("  "))
-        .append(BroadcastUtils.BROADCAST_DIV)
-        .append(text("Use "))
-        .append(text("/request [map]", NamedTextColor.AQUA, TextDecoration.UNDERLINED))
-        .append(text(" to submit your request"))
-        .append(newline())
-        .append(newline())
-        .color(NamedTextColor.GREEN)
-        .hoverEvent(HoverEvent.showText(text("Click to request a map", NamedTextColor.GRAY)))
         .clickEvent(ClickEvent.suggestCommand("/request "))
+        .hoverEvent(HoverEvent.showText(text("Click to request a map", NamedTextColor.GRAY)))
         .build();
 
-    BroadcastUtils.sendGlobalMessage(broadcast);
+    BroadcastUtils.sendGlobalMessage(announce);
+
+    if (showTitle) {
+      BroadcastUtils.sendGlobalTitle(
+          text("Map Requests", NamedTextColor.GREEN, TextDecoration.BOLD),
+          text("/request", NamedTextColor.AQUA),
+          3);
+
+      BroadcastUtils.playGlobalSound(Sounds.BROADCAST);
+    }
   }
 
   private Component getRequestsButton(
