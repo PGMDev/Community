@@ -4,6 +4,7 @@ import dev.pgm.community.sessions.feature.SessionFeature;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import tc.oc.pgm.api.integration.Integration;
 import tc.oc.pgm.api.player.event.PlayerVanishEvent;
 
 public class VanishedSessionListener implements Listener {
@@ -23,6 +24,7 @@ public class VanishedSessionListener implements Listener {
     if (session != null) {
       sessions.endSession(session);
     }
-    sessions.startSession(player);
+    boolean disguised = event.isVanished() || Integration.getNick(player) != null;
+    sessions.startSession(player, disguised);
   }
 }

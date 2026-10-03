@@ -78,6 +78,6 @@ public class Session {
   }
 
   public boolean isOnThisServer() {
-    return serverName.equals(Community.get().getServerConfig().getServerId());
+    return serverName.equals(Community.get().getServerId());
   }
 }

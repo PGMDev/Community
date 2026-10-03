@@ -11,88 +11,79 @@ import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     implements SessionDataQuery {
 
+  // Other servers write sessions to the same tables, so cached entries must expire
+  private static final long CACHE_EXPIRY_SECONDS = 60;
+  private static final long CACHE_MAX_SIZE = 5000;
+
   private final LoadingCache<SessionQuery, SessionData> sessionCache;
   private final String upsertLatestSessionQuery;
+  private final CompletableFuture<Integer> latestTableReady;
+
+  // Writes for a player are chained so they reach the database in the order they were issued
+  private final Map<UUID, CompletableFuture<Void>> pendingWrites;
 
   public SQLSessionService() {
     super(TABLE_NAME, TABLE_FIELDS);
     this.sessionCache = CacheBuilder.newBuilder()
-        .build(CacheLoader.from(key -> new SessionData(key.playerId(), key.ignoreDisguised())));
+        .maximumSize(CACHE_MAX_SIZE)
+        .expireAfterWrite(CACHE_EXPIRY_SECONDS, TimeUnit.SECONDS)
+        .build(CacheLoader.from(key -> new SessionData()));
     this.upsertLatestSessionQuery = DatabaseExecutor.getDialect().upsertLatestSessionQuery();
-  }
+    this.pendingWrites = new ConcurrentHashMap<>();
 
-  @Override
-  public void createTable() {
-    super.createTable();
-    DatabaseExecutor.executeUpdateAsync(Query.createTable(LATEST_TABLE_NAME, LATEST_TABLE_FIELDS));
+    getTableReady()
+        .thenRun(() -> DatabaseExecutor.createIndexAsync(TABLE_NAME, "idx_player", "player"));
+    this.latestTableReady = DatabaseExecutor.executeUpdateAsync(
+        Query.createTable(LATEST_TABLE_NAME, LATEST_TABLE_FIELDS));
+    latestTableReady.thenRun(
+        () -> DatabaseExecutor.createIndexAsync(LATEST_TABLE_NAME, "idx_session_id", "session_id"));
   }
 
   @Override
   public void save(Session session) {
-    SessionData query = sessionCache.getUnchecked(new SessionQuery(session.getPlayerId(), false));
-    query.setSession(session);
+    sessionCache.getUnchecked(new SessionQuery(session.getPlayerId(), false)).setSession(session);
 
-    query = sessionCache.getUnchecked(new SessionQuery(session.getPlayerId(), true));
-    query.invalidate();
-
-    DatabaseExecutor.executeUpdateAsync(
-        INSERT_SESSION_QUERY,
-        session.getSessionId().toString(),
-        session.getPlayerId().toString(),
-        session.isDisguised(),
-        session.getServerName(),
-        session.getStartDate().toEpochMilli(),
-        session.getEndDate() == null ? null : session.getEndDate().toEpochMilli());
-
-    DatabaseExecutor.executeUpdateAsync(
-        upsertLatestSessionQuery,
-        session.getPlayerId().toString(),
-        false,
-        session.getSessionId().toString(),
-        session.isDisguised(),
-        session.getServerName(),
-        session.getStartDate().toEpochMilli(),
-        session.getEndDate() == null ? null : session.getEndDate().toEpochMilli());
-
-    if (!session.isDisguised()) {
-      DatabaseExecutor.executeUpdateAsync(
-          upsertLatestSessionQuery,
-          session.getPlayerId().toString(),
-          true,
-          session.getSessionId().toString(),
-          session.isDisguised(),
-          session.getServerName(),
-          session.getStartDate().toEpochMilli(),
-          session.getEndDate() == null ? null : session.getEndDate().toEpochMilli());
+    SessionQuery ignoreDisguisedKey = new SessionQuery(session.getPlayerId(), true);
+    if (session.isDisguised()) {
+      // Latest non-disguised session is unchanged, but the cached copy may be stale
+      sessionCache.invalidate(ignoreDisguisedKey);
+    } else {
+      sessionCache.getUnchecked(ignoreDisguisedKey).setSession(session);
     }
+
+    enqueueWrite(
+        session.getPlayerId(),
+        () -> DatabaseExecutor.executeUpdateAsync(
+                INSERT_SESSION_QUERY,
+                session.getSessionId().toString(),
+                session.getPlayerId().toString(),
+                session.isDisguised(),
+                session.getServerName(),
+                session.getStartDate().toEpochMilli(),
+                toEpochMilli(session.getEndDate()))
+            .thenCompose(ignored -> upsertLatest(session, false))
+            .thenCompose(ignored -> session.isDisguised()
+                ? CompletableFuture.completedFuture(0)
+                : upsertLatest(session, true)));
   }
 
   public void updateSessionEndTime(Session session) {
-    DatabaseExecutor.executeUpdateAsync(
-        UPDATE_SESSION_ENDTIME_QUERY,
-        session.getEndDate() == null ? null : session.getEndDate().toEpochMilli(),
-        session.getSessionId().toString());
-    DatabaseExecutor.executeUpdateAsync(
-        UPDATE_LATEST_ENDTIME_QUERY,
-        session.getEndDate() == null ? null : session.getEndDate().toEpochMilli(),
-        session.getSessionId().toString());
+    endSessionWrite(session);
   }
 
   public void updateSessionEndTimeSync(Session session) {
-    Long endTime = session.getEndDate() == null ? null : session.getEndDate().toEpochMilli();
     try {
-      DatabaseExecutor.executeUpdateAsync(
-              UPDATE_SESSION_ENDTIME_QUERY, endTime, session.getSessionId().toString())
-          .join();
-      DatabaseExecutor.executeUpdateAsync(
-              UPDATE_LATEST_ENDTIME_QUERY, endTime, session.getSessionId().toString())
-          .join();
+      endSessionWrite(session).join();
     } catch (Exception exception) {
       Community.get()
           .getLogger()
@@ -101,9 +92,17 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     }
   }
 
+  public CompletableFuture<Void> closeOrphanedSessions(String server, Instant endTime) {
+    long end = endTime.toEpochMilli();
+    return CompletableFuture.allOf(getTableReady(), latestTableReady)
+        .thenCompose(ignored -> CompletableFuture.allOf(
+            DatabaseExecutor.executeUpdateAsync(CLOSE_ORPHANED_SESSIONS_QUERY, end, server),
+            DatabaseExecutor.executeUpdateAsync(CLOSE_ORPHANED_LATEST_QUERY, end, server)));
+  }
+
   @Override
   public CompletableFuture<List<Session>> queryList(SessionQuery target) {
-    return CompletableFuture.completedFuture(null);
+    return CompletableFuture.completedFuture(List.of());
   }
 
   @Override
@@ -112,73 +111,132 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
 
     if (data.isLoaded()) {
       return CompletableFuture.completedFuture(data.getSession());
-    } else {
-      return DatabaseExecutor.queryFirstAsync(
-              SELECT_LATEST_SESSION_QUERY,
-              result -> {
-                String id = result.getString("session_id");
-                String player = result.getString("player");
-                boolean disguised = result.getBoolean("disguised");
-                String server = result.getString("server");
-
-                long startTime = result.getLong("start_time");
-                Instant start = result.wasNull() ? null : Instant.ofEpochMilli(startTime);
-
-                long endTime = result.getLong("end_time");
-                Instant end = result.wasNull() ? null : Instant.ofEpochMilli(endTime);
-
-                return new Session(
-                    UUID.fromString(id), UUID.fromString(player), disguised, server, start, end);
-              },
-              target.playerId().toString(),
-              target.ignoreDisguised())
-          .thenApplyAsync(result -> {
-            if (result != null) {
-              data.setSession(result);
-            }
-            return data.getSession();
-          });
     }
+
+    // Wait for in-flight writes so the database row reflects this server's latest state
+    CompletableFuture<Void> pending =
+        pendingWrites.getOrDefault(target.playerId(), CompletableFuture.completedFuture(null));
+    return pending
+        .thenCompose(ignored -> DatabaseExecutor.queryFirstAsync(
+            SELECT_LATEST_SESSION_QUERY,
+            result -> {
+              String id = result.getString("session_id");
+              String player = result.getString("player");
+              boolean disguised = result.getBoolean("disguised");
+              String server = result.getString("server");
+
+              long startTime = result.getLong("start_time");
+              Instant start = result.wasNull() ? null : Instant.ofEpochMilli(startTime);
+
+              long endTime = result.getLong("end_time");
+              Instant end = result.wasNull() ? null : Instant.ofEpochMilli(endTime);
+
+              return new Session(
+                  UUID.fromString(id), UUID.fromString(player), disguised, server, start, end);
+            },
+            target.playerId().toString(),
+            target.ignoreDisguised()))
+        .thenApplyAsync(data::loadIfAbsent);
+  }
+
+  private CompletableFuture<Void> endSessionWrite(Session session) {
+    // Cached entries may hold a copy loaded from the database rather than this instance
+    for (boolean ignoreDisguised : new boolean[] {false, true}) {
+      SessionData data =
+          sessionCache.getIfPresent(new SessionQuery(session.getPlayerId(), ignoreDisguised));
+      if (data != null) data.updateEndDate(session);
+    }
+
+    Long endTime = toEpochMilli(session.getEndDate());
+    String sessionId = session.getSessionId().toString();
+    return enqueueWrite(
+        session.getPlayerId(),
+        () -> DatabaseExecutor.executeUpdateAsync(UPDATE_SESSION_ENDTIME_QUERY, endTime, sessionId)
+            .thenCompose(ignored -> DatabaseExecutor.executeUpdateAsync(
+                UPDATE_LATEST_ENDTIME_QUERY, endTime, sessionId)));
+  }
+
+  private CompletableFuture<Integer> upsertLatest(Session session, boolean ignoreDisguised) {
+    return DatabaseExecutor.executeUpdateAsync(
+        upsertLatestSessionQuery,
+        session.getPlayerId().toString(),
+        ignoreDisguised,
+        session.getSessionId().toString(),
+        session.isDisguised(),
+        session.getServerName(),
+        session.getStartDate().toEpochMilli(),
+        toEpochMilli(session.getEndDate()));
+  }
+
+  private CompletableFuture<Void> enqueueWrite(
+      UUID playerId, Supplier<CompletableFuture<?>> write) {
+    CompletableFuture<Void> queued = pendingWrites.compute(playerId, (id, previous) -> {
+      CompletableFuture<Void> base =
+          previous == null ? CompletableFuture.completedFuture(null) : previous;
+      return base.thenCompose(ignored -> write.get()).handle((result, error) -> {
+        if (error != null) {
+          Community.get()
+              .getLogger()
+              .warning("Failed to write session for " + playerId + ": " + error.getMessage());
+        }
+        return null;
+      });
+    });
+    queued.whenComplete((ignored, error) -> pendingWrites.remove(playerId, queued));
+    return queued;
+  }
+
+  private static Long toEpochMilli(Instant instant) {
+    return instant == null ? null : instant.toEpochMilli();
   }
 
   private static class SessionData {
 
-    private final UUID playerId;
-    private final boolean ignoreDisguised;
     private Session session;
     private boolean loaded;
 
-    public SessionData(UUID playerId, boolean ignoreDisguised) {
-      this.playerId = playerId;
-      this.ignoreDisguised = ignoreDisguised;
-      this.session = null;
-      this.loaded = false;
-    }
+    // A session that ended while the database lookup was in flight
+    private Session pendingEnd;
 
-    public UUID getPlayerId() {
-      return playerId;
-    }
-
-    public boolean isDisguiseIgnored() {
-      return ignoreDisguised;
-    }
-
-    public Session getSession() {
+    public synchronized Session getSession() {
       return session;
     }
 
-    public void setSession(Session session) {
-      loaded = true;
-      this.session = session;
-    }
-
-    public boolean isLoaded() {
+    public synchronized boolean isLoaded() {
       return loaded;
     }
 
-    public void invalidate() {
-      loaded = false;
-      session = null;
+    public synchronized void setSession(Session session) {
+      this.loaded = true;
+      this.session = session;
+      this.pendingEnd = null;
+    }
+
+    /**
+     * Stores a session loaded from the database, unless a newer one was set in the meantime. Any
+     * end time recorded during the lookup is applied, since the row may have been read before it
+     * was written.
+     */
+    public synchronized Session loadIfAbsent(Session session) {
+      if (!loaded) {
+        if (pendingEnd != null
+            && session != null
+            && session.getSessionId().equals(pendingEnd.getSessionId())) {
+          session.setEndDate(pendingEnd.getEndDate());
+        }
+        setSession(session);
+      }
+      return this.session;
+    }
+
+    public synchronized void updateEndDate(Session ended) {
+      if (!loaded) {
+        pendingEnd = ended;
+      } else if (session != null
+          && session != ended
+          && session.getSessionId().equals(ended.getSessionId())) {
+        session.setEndDate(ended.getEndDate());
+      }
     }
   }
 }

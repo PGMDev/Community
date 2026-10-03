@@ -23,6 +23,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import tc.oc.pgm.events.CountdownCancelEvent;
 import tc.oc.pgm.events.CountdownStartEvent;
 import tc.oc.pgm.restart.RestartCountdown;
 
@@ -39,6 +40,14 @@ public class SessionFeatureCore extends FeatureBase implements SessionFeature {
     this.activeSessions = new ConcurrentHashMap<>();
 
     if (getConfig().isEnabled()) {
+      try {
+        store
+            .closeOrphanedSessions(Community.get().getServerId(), Instant.now())
+            .join();
+      } catch (Exception exception) {
+        logger.warning("Failed to close orphaned sessions: " + exception.getMessage());
+      }
+
       enable();
 
       if (PGMUtils.isPGMEnabled()) {
@@ -66,16 +75,20 @@ public class SessionFeatureCore extends FeatureBase implements SessionFeature {
   }
 
   @Override
-  public Session startSession(Player player) {
-    Session session = new Session(player.getUniqueId(), VisibilityUtils.isDisguised(player));
+  public void startSession(Player player) {
+    startSession(player, VisibilityUtils.isDisguised(player));
+  }
+
+  @Override
+  public void startSession(Player player, boolean disguised) {
+    Session session = new Session(player.getUniqueId(), disguised);
     activeSessions.put(player.getUniqueId(), session);
     store.save(session);
-
-    return session;
   }
 
   @Override
   public void endSession(Session session) {
+    activeSessions.remove(session.getPlayerId(), session);
     session.setEndDate(Instant.now());
     store.updateSessionEndTime(session);
   }
@@ -107,8 +120,6 @@ public class SessionFeatureCore extends FeatureBase implements SessionFeature {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onQuitHighest(PlayerQuitEvent event) {
-    if (serverRestarting) return;
-
     Session session = activeSessions.remove(event.getPlayer().getUniqueId());
     if (session != null) {
       endSession(session);
@@ -127,5 +138,16 @@ public class SessionFeatureCore extends FeatureBase implements SessionFeature {
     // When restarting, end sessions early to avoid flooding queries.
     serverRestarting = true;
     endOngoingSessions();
+  }
+
+  @EventHandler
+  public void onServerRestartCancel(CountdownCancelEvent event) {
+    if (!(event.getCountdown() instanceof RestartCountdown) || !serverRestarting) return;
+
+    // Sessions were ended when the countdown started, so resume tracking online players
+    serverRestarting = false;
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      if (!activeSessions.containsKey(player.getUniqueId())) startSession(player);
+    }
   }
 }

@@ -12,7 +12,9 @@ public interface SessionFeature extends Feature {
 
   Session getActiveSession(UUID playerId);
 
-  Session startSession(Player player);
+  void startSession(Player player);
+
+  void startSession(Player player, boolean disguised);
 
   void endSession(Session session);
 
