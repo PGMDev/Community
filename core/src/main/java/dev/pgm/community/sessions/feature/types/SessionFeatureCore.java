@@ -40,13 +40,19 @@ public class SessionFeatureCore extends FeatureBase implements SessionFeature {
     this.activeSessions = new ConcurrentHashMap<>();
 
     if (getConfig().isEnabled()) {
-      try {
-        store
-            .closeOrphanedSessions(Community.get().getServerId(), Instant.now())
-            .join();
-      } catch (Exception exception) {
-        logger.warning("Failed to close orphaned sessions: " + exception.getMessage());
-      }
+      long cleanupStarted = System.nanoTime();
+      logger.info("Scheduling orphaned session cleanup");
+      store
+          .closeOrphanedSessions(Community.get().getServerId(), Instant.now())
+          .whenComplete((ignored, exception) -> {
+            long elapsedMillis = (System.nanoTime() - cleanupStarted) / 1_000_000;
+            if (exception != null) {
+              logger.warning("Failed to close orphaned sessions after " + elapsedMillis + " ms: "
+                  + exception.getMessage());
+            } else {
+              logger.info("Orphaned session cleanup completed in " + elapsedMillis + " ms");
+            }
+          });
 
       enable();
 

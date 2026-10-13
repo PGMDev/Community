@@ -28,6 +28,8 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
   private final LoadingCache<SessionQuery, SessionData> sessionCache;
   private final String upsertLatestSessionQuery;
   private final CompletableFuture<Integer> latestTableReady;
+  private final CompletableFuture<Void> cleanupIndexesReady;
+  private CompletableFuture<Void> startupReady = CompletableFuture.completedFuture(null);
 
   // Writes for a player are chained so they reach the database in the order they were issued
   private final Map<UUID, CompletableFuture<Void>> pendingWrites;
@@ -47,6 +49,12 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
         Query.createTable(LATEST_TABLE_NAME, LATEST_TABLE_FIELDS));
     latestTableReady.thenRun(
         () -> DatabaseExecutor.createIndexAsync(LATEST_TABLE_NAME, "idx_session_id", "session_id"));
+    this.cleanupIndexesReady = CompletableFuture.allOf(
+        getTableReady()
+            .thenCompose(ignored -> DatabaseExecutor.createIndexAsync(
+                TABLE_NAME, "idx_server_end_time", "server, end_time")),
+        latestTableReady.thenCompose(ignored -> DatabaseExecutor.createIndexAsync(
+            LATEST_TABLE_NAME, "idx_server_end_time", "server, end_time")));
   }
 
   @Override
@@ -94,10 +102,12 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
 
   public CompletableFuture<Void> closeOrphanedSessions(String server, Instant endTime) {
     long end = endTime.toEpochMilli();
-    return CompletableFuture.allOf(getTableReady(), latestTableReady)
-        .thenCompose(ignored -> CompletableFuture.allOf(
+    CompletableFuture<Void> cleanup =
+        cleanupIndexesReady.thenCompose(ignored -> CompletableFuture.allOf(
             DatabaseExecutor.executeUpdateAsync(CLOSE_ORPHANED_SESSIONS_QUERY, end, server),
             DatabaseExecutor.executeUpdateAsync(CLOSE_ORPHANED_LATEST_QUERY, end, server)));
+    startupReady = cleanup.handle((ignored, error) -> null);
+    return cleanup;
   }
 
   @Override
@@ -116,7 +126,8 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     // Wait for in-flight writes so the database row reflects this server's latest state
     CompletableFuture<Void> pending =
         pendingWrites.getOrDefault(target.playerId(), CompletableFuture.completedFuture(null));
-    return pending
+    return startupReady
+        .thenCompose(ignored -> pending)
         .thenCompose(ignored -> DatabaseExecutor.queryFirstAsync(
             SELECT_LATEST_SESSION_QUERY,
             result -> {
@@ -171,8 +182,7 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
   private CompletableFuture<Void> enqueueWrite(
       UUID playerId, Supplier<CompletableFuture<?>> write) {
     CompletableFuture<Void> queued = pendingWrites.compute(playerId, (id, previous) -> {
-      CompletableFuture<Void> base =
-          previous == null ? CompletableFuture.completedFuture(null) : previous;
+      CompletableFuture<Void> base = previous == null ? startupReady : previous;
       return base.thenCompose(ignored -> write.get()).handle((result, error) -> {
         if (error != null) {
           Community.get()
