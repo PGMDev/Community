@@ -12,15 +12,5 @@ public interface SessionFeature extends Feature {
 
   Session getActiveSession(UUID playerId);
 
-  void startSession(Player player);
-
-  void startSession(Player player, boolean disguised);
-
-  void endSession(Session session);
-
-  boolean isPlayerJoining(Player player);
-
-  void endOngoingSessions();
-
-  void endOngoingSessionsSync();
+  void updateDisguise(Player player);
 }

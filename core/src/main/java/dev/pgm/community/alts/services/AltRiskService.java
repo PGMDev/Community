@@ -56,10 +56,7 @@ public class AltRiskService {
     CompletableFuture<LatestAddressInfo> latestAddressFuture = users.getLatestAddress(targetId);
     CompletableFuture<Set<UUID>> altIdsFuture = users.getAlternateAccounts(targetId);
 
-    Session activeSession = sessions.getActiveSession(targetId);
-    CompletableFuture<Session> latestSessionFuture = activeSession != null
-        ? CompletableFuture.completedFuture(activeSession)
-        : sessions.getLatestSession(targetId, false);
+    CompletableFuture<Session> latestSessionFuture = sessions.getLatestSession(targetId, false);
 
     return CompletableFuture.allOf(
             profileFuture, knownIpsFuture, latestAddressFuture, altIdsFuture, latestSessionFuture)
@@ -88,7 +85,7 @@ public class AltRiskService {
               .toList();
 
           return CompletableFuture.allOf(analyses.toArray(new CompletableFuture[0]))
-              .thenApplyAsync(done -> {
+              .thenApplyAsync(_ -> {
                 AltRiskSummary summary = buildSummary(targetId, analyses);
                 return directEvasion.map(id -> withDirectEvasion(summary, id)).orElse(summary);
               });
@@ -182,8 +179,7 @@ public class AltRiskService {
 
           boolean joinedAfterPunishment = (currentSharedIp || !sharedIps.isEmpty())
               && latestBan
-                  .filter(
-                      punishment -> targetSession != null && targetSession.getStartDate() != null)
+                  .filter(_ -> targetSession != null && targetSession.getStartDate() != null)
                   .filter(punishment -> startedWithin(
                       targetSession.getStartDate(),
                       punishment.getTimeIssued(),

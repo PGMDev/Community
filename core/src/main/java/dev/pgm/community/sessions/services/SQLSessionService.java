@@ -1,15 +1,18 @@
 package dev.pgm.community.sessions.services;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import dev.pgm.community.Community;
 import dev.pgm.community.database.DatabaseExecutor;
 import dev.pgm.community.database.Query;
 import dev.pgm.community.feature.SQLFeatureBase;
 import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,35 +24,41 @@ import java.util.function.Supplier;
 public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
     implements SessionDataQuery {
 
-  // Other servers write sessions to the same tables, so cached entries must expire
+  private static final long END_BATCH_DELAY_MILLIS = 250;
+  private static final int END_BATCH_SIZE = 250;
   private static final long CACHE_EXPIRY_SECONDS = 60;
   private static final long CACHE_MAX_SIZE = 5000;
 
-  private final LoadingCache<SessionQuery, SessionData> sessionCache;
+  private final Cache<SessionQuery, Session> sessionCache;
   private final String upsertLatestSessionQuery;
-  private final CompletableFuture<Integer> latestTableReady;
-  private final CompletableFuture<Void> cleanupIndexesReady;
-  private CompletableFuture<Void> startupReady = CompletableFuture.completedFuture(null);
-
-  // Writes for a player are chained so they reach the database in the order they were issued
+  private final CompletableFuture<Void> orphanIndexesReady;
+  private final CompletableFuture<Void> tablesReady;
+  private volatile CompletableFuture<Void> readsReady = CompletableFuture.completedFuture(null);
   private final Map<UUID, CompletableFuture<Void>> pendingWrites;
+  private final Object endBatchLock = new Object();
+  private List<PendingEnd> endBatch = new ArrayList<>();
+  private CompletableFuture<Void> endBatchWritten = new CompletableFuture<>();
+  private boolean flushed;
+
+  private record PendingEnd(String sessionId, long endTime) {}
 
   public SQLSessionService() {
     super(TABLE_NAME, TABLE_FIELDS);
     this.sessionCache = CacheBuilder.newBuilder()
         .maximumSize(CACHE_MAX_SIZE)
         .expireAfterWrite(CACHE_EXPIRY_SECONDS, TimeUnit.SECONDS)
-        .build(CacheLoader.from(key -> new SessionData()));
+        .build();
     this.upsertLatestSessionQuery = DatabaseExecutor.getDialect().upsertLatestSessionQuery();
     this.pendingWrites = new ConcurrentHashMap<>();
 
-    getTableReady()
-        .thenRun(() -> DatabaseExecutor.createIndexAsync(TABLE_NAME, "idx_player", "player"));
-    this.latestTableReady = DatabaseExecutor.executeUpdateAsync(
+    CompletableFuture<Integer> latestTableReady = DatabaseExecutor.executeUpdateAsync(
         Query.createTable(LATEST_TABLE_NAME, LATEST_TABLE_FIELDS));
     latestTableReady.thenRun(
         () -> DatabaseExecutor.createIndexAsync(LATEST_TABLE_NAME, "idx_session_id", "session_id"));
-    this.cleanupIndexesReady = CompletableFuture.allOf(
+    this.tablesReady =
+        CompletableFuture.allOf(getTableReady(), latestTableReady).handle((ignored, _) -> null);
+
+    this.orphanIndexesReady = CompletableFuture.allOf(
         getTableReady()
             .thenCompose(ignored -> DatabaseExecutor.createIndexAsync(
                 TABLE_NAME, "idx_server_end_time", "server, end_time")),
@@ -59,54 +68,52 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
 
   @Override
   public void save(Session session) {
-    sessionCache.getUnchecked(new SessionQuery(session.getPlayerId(), false)).setSession(session);
-
-    SessionQuery ignoreDisguisedKey = new SessionQuery(session.getPlayerId(), true);
+    sessionCache.put(new SessionQuery(session.getPlayerId(), false), session);
+    SessionQuery publicKey = new SessionQuery(session.getPlayerId(), true);
     if (session.isDisguised()) {
-      // Latest non-disguised session is unchanged, but the cached copy may be stale
-      sessionCache.invalidate(ignoreDisguisedKey);
+      sessionCache.invalidate(publicKey);
     } else {
-      sessionCache.getUnchecked(ignoreDisguisedKey).setSession(session);
+      sessionCache.put(publicKey, session);
     }
 
     enqueueWrite(
         session.getPlayerId(),
-        () -> DatabaseExecutor.executeUpdateAsync(
+        () -> CompletableFuture.allOf(
+            DatabaseExecutor.executeUpdateAsync(
                 INSERT_SESSION_QUERY,
                 session.getSessionId().toString(),
                 session.getPlayerId().toString(),
                 session.isDisguised(),
                 session.getServerName(),
                 session.getStartDate().toEpochMilli(),
-                toEpochMilli(session.getEndDate()))
-            .thenCompose(ignored -> upsertLatest(session, false))
-            .thenCompose(ignored -> session.isDisguised()
-                ? CompletableFuture.completedFuture(0)
-                : upsertLatest(session, true)));
+                toEpochMilli(session.getEndDate())),
+            upsertLatestRows(session)
+                .exceptionallyCompose(_ -> upsertLatestRows(session))
+                .exceptionally(error -> {
+                  Community.get()
+                      .getLogger()
+                      .warning("Failed to update the latest session of " + session.getPlayerId()
+                          + ", so lookups may show their previous one: " + error.getMessage());
+                  return null;
+                })));
   }
 
-  public void updateSessionEndTime(Session session) {
-    endSessionWrite(session);
+  private CompletableFuture<Void> upsertLatestRows(Session session) {
+    return upsertLatest(session, false)
+        .thenCompose(ignored -> session.isDisguised()
+            ? CompletableFuture.completedFuture(0)
+            : upsertLatest(session, true))
+        .thenApply(ignored -> null);
   }
 
-  public void updateSessionEndTimeSync(Session session) {
-    try {
-      endSessionWrite(session).join();
-    } catch (Exception exception) {
-      Community.get()
-          .getLogger()
-          .warning(
-              "Failed to end session " + session.getSessionId() + ": " + exception.getMessage());
-    }
-  }
-
-  public CompletableFuture<Void> closeOrphanedSessions(String server, Instant endTime) {
-    long end = endTime.toEpochMilli();
-    CompletableFuture<Void> cleanup =
-        cleanupIndexesReady.thenCompose(ignored -> CompletableFuture.allOf(
-            DatabaseExecutor.executeUpdateAsync(CLOSE_ORPHANED_SESSIONS_QUERY, end, server),
-            DatabaseExecutor.executeUpdateAsync(CLOSE_ORPHANED_LATEST_QUERY, end, server)));
-    startupReady = cleanup.handle((ignored, error) -> null);
+  public CompletableFuture<Integer> closeOrphanedSessions(String server, Instant bootTime) {
+    Object[] params = {server, bootTime.toEpochMilli()};
+    CompletableFuture<Integer> cleanup = orphanIndexesReady.thenCompose(
+        ignored -> DatabaseExecutor.executeUpdateOrFailAsync(CLOSE_ORPHANED_SESSIONS_QUERY, params)
+            .thenCombine(
+                DatabaseExecutor.executeUpdateOrFailAsync(CLOSE_ORPHANED_LATEST_QUERY, params),
+                (closed, ignoredLatest) -> closed));
+    readsReady = cleanup.handle((ignored, _) -> null);
     return cleanup;
   }
 
@@ -117,58 +124,115 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
 
   @Override
   public CompletableFuture<Session> query(SessionQuery target) {
-    SessionData data = sessionCache.getUnchecked(target);
+    Session cached = sessionCache.getIfPresent(target);
+    if (cached != null) return CompletableFuture.completedFuture(cached);
 
-    if (data.isLoaded()) {
-      return CompletableFuture.completedFuture(data.getSession());
-    }
-
-    // Wait for in-flight writes so the database row reflects this server's latest state
     CompletableFuture<Void> pending =
         pendingWrites.getOrDefault(target.playerId(), CompletableFuture.completedFuture(null));
-    return startupReady
+    if (!pending.isDone()) writeCurrentBatch();
+    return readsReady
         .thenCompose(ignored -> pending)
         .thenCompose(ignored -> DatabaseExecutor.queryFirstAsync(
             SELECT_LATEST_SESSION_QUERY,
-            result -> {
-              String id = result.getString("session_id");
-              String player = result.getString("player");
-              boolean disguised = result.getBoolean("disguised");
-              String server = result.getString("server");
-
-              long startTime = result.getLong("start_time");
-              Instant start = result.wasNull() ? null : Instant.ofEpochMilli(startTime);
-
-              long endTime = result.getLong("end_time");
-              Instant end = result.wasNull() ? null : Instant.ofEpochMilli(endTime);
-
-              return new Session(
-                  UUID.fromString(id), UUID.fromString(player), disguised, server, start, end);
-            },
+            SQLSessionService::readSession,
             target.playerId().toString(),
             target.ignoreDisguised()))
-        .thenApplyAsync(data::loadIfAbsent);
+        .thenApply(session -> {
+          Session current = session != null && !pendingWrites.containsKey(target.playerId())
+              ? sessionCache.asMap().putIfAbsent(target, session)
+              : sessionCache.getIfPresent(target);
+          return current != null ? current : session;
+        });
   }
 
-  private CompletableFuture<Void> endSessionWrite(Session session) {
-    // Cached entries may hold a copy loaded from the database rather than this instance
-    for (boolean ignoreDisguised : new boolean[] {false, true}) {
-      SessionData data =
-          sessionCache.getIfPresent(new SessionQuery(session.getPlayerId(), ignoreDisguised));
-      if (data != null) data.updateEndDate(session);
+  public void updateSessionEndTime(UUID playerId, UUID sessionId, Instant endTime) {
+    PendingEnd end = new PendingEnd(sessionId.toString(), endTime.toEpochMilli());
+    enqueueWrite(playerId, () -> queueEnd(end));
+  }
+
+  public CompletableFuture<Void> shutdownFlush() {
+    synchronized (endBatchLock) {
+      flushed = true;
+    }
+    writeCurrentBatch();
+
+    return CompletableFuture.allOf(pendingWrites.values().toArray(CompletableFuture[]::new));
+  }
+
+  private void writeCurrentBatch() {
+    CompletableFuture<Void> batch;
+    synchronized (endBatchLock) {
+      batch = endBatchWritten;
+    }
+    writeEndBatch(batch);
+  }
+
+  private CompletableFuture<Void> queueEnd(PendingEnd end) {
+    CompletableFuture<Void> written;
+    boolean writeNow;
+    synchronized (endBatchLock) {
+      written = endBatchWritten;
+      endBatch.add(end);
+      writeNow = flushed || endBatch.size() >= END_BATCH_SIZE;
+      if (endBatch.size() == 1 && !writeNow) {
+        CompletableFuture.delayedExecutor(END_BATCH_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+            .execute(() -> writeEndBatch(written));
+      }
+    }
+    if (writeNow) writeEndBatch(written);
+    return written;
+  }
+
+  private void writeEndBatch(CompletableFuture<Void> written) {
+    List<PendingEnd> batch;
+    synchronized (endBatchLock) {
+      if (endBatchWritten != written || endBatch.isEmpty()) return;
+      batch = endBatch;
+      endBatch = new ArrayList<>();
+      endBatchWritten = new CompletableFuture<>();
     }
 
-    Long endTime = toEpochMilli(session.getEndDate());
-    String sessionId = session.getSessionId().toString();
-    return enqueueWrite(
-        session.getPlayerId(),
-        () -> DatabaseExecutor.executeUpdateAsync(UPDATE_SESSION_ENDTIME_QUERY, endTime, sessionId)
-            .thenCompose(ignored -> DatabaseExecutor.executeUpdateAsync(
-                UPDATE_LATEST_ENDTIME_QUERY, endTime, sessionId)));
+    Object[] params = new Object[batch.size() * 3];
+    int i = 0;
+    for (PendingEnd end : batch) {
+      params[i++] = end.sessionId();
+      params[i++] = end.endTime();
+    }
+    for (PendingEnd end : batch) params[i++] = end.sessionId();
+
+    writeEnds(batch.size(), params)
+        .exceptionallyCompose(_ -> writeEnds(batch.size(), params))
+        .whenComplete((ignored, error) -> {
+          if (error != null) {
+            Community.get()
+                .getLogger()
+                .warning("Failed to end " + batch.size() + " sessions. They will read as online on"
+                    + " this server until next startup, then be closed as zero-length: "
+                    + error.getMessage());
+          }
+          written.complete(null);
+        });
+  }
+
+  private static CompletableFuture<Void> writeEnds(int count, Object[] params) {
+    try {
+      return CompletableFuture.allOf(
+          DatabaseExecutor.executeUpdateOrFailAsync(endQuery(TABLE_NAME, "id", count), params),
+          DatabaseExecutor.executeUpdateOrFailAsync(
+              endQuery(LATEST_TABLE_NAME, "session_id", count), params));
+    } catch (RuntimeException e) {
+      return CompletableFuture.failedFuture(e);
+    }
+  }
+
+  private static String endQuery(String table, String idColumn, int count) {
+    return "UPDATE " + table + " SET end_time = CASE " + idColumn
+        + " WHEN ? THEN ?".repeat(count) + " END WHERE " + idColumn + " IN "
+        + placeholders(count);
   }
 
   private CompletableFuture<Integer> upsertLatest(Session session, boolean ignoreDisguised) {
-    return DatabaseExecutor.executeUpdateAsync(
+    return DatabaseExecutor.executeUpdateOrFailAsync(
         upsertLatestSessionQuery,
         session.getPlayerId().toString(),
         ignoreDisguised,
@@ -179,74 +243,41 @@ public class SQLSessionService extends SQLFeatureBase<Session, SessionQuery>
         toEpochMilli(session.getEndDate()));
   }
 
-  private CompletableFuture<Void> enqueueWrite(
-      UUID playerId, Supplier<CompletableFuture<?>> write) {
-    CompletableFuture<Void> queued = pendingWrites.compute(playerId, (id, previous) -> {
-      CompletableFuture<Void> base = previous == null ? startupReady : previous;
-      return base.thenCompose(ignored -> write.get()).handle((result, error) -> {
-        if (error != null) {
-          Community.get()
-              .getLogger()
-              .warning("Failed to write session for " + playerId + ": " + error.getMessage());
-        }
-        return null;
-      });
+  private void enqueueWrite(UUID playerId, Supplier<CompletableFuture<?>> write) {
+    CompletableFuture<Void> queued = new CompletableFuture<>();
+    CompletableFuture<Void> previous = pendingWrites.put(playerId, queued);
+    CompletableFuture<Void> base = previous == null ? tablesReady : previous;
+    base.thenCompose(ignored -> write.get()).whenComplete((ignored, error) -> {
+      if (error != null) {
+        Community.get()
+            .getLogger()
+            .warning("Failed to write session for " + playerId + ": " + error.getMessage());
+      }
+      pendingWrites.remove(playerId, queued);
+      queued.complete(null);
     });
-    queued.whenComplete((ignored, error) -> pendingWrites.remove(playerId, queued));
-    return queued;
+  }
+
+  private static Session readSession(ResultSet result) throws SQLException {
+    String id = result.getString("session_id");
+    String player = result.getString("player");
+    boolean disguised = result.getBoolean("disguised");
+    String server = result.getString("server");
+
+    long startTime = result.getLong("start_time");
+    Instant start = result.wasNull() ? null : Instant.ofEpochMilli(startTime);
+
+    long endTime = result.getLong("end_time");
+    Instant end = result.wasNull() ? null : Instant.ofEpochMilli(endTime);
+
+    return new Session(UUID.fromString(id), UUID.fromString(player), disguised, server, start, end);
+  }
+
+  private static String placeholders(int count) {
+    return "(" + String.join(", ", Collections.nCopies(count, "?")) + ")";
   }
 
   private static Long toEpochMilli(Instant instant) {
     return instant == null ? null : instant.toEpochMilli();
-  }
-
-  private static class SessionData {
-
-    private Session session;
-    private boolean loaded;
-
-    // A session that ended while the database lookup was in flight
-    private Session pendingEnd;
-
-    public synchronized Session getSession() {
-      return session;
-    }
-
-    public synchronized boolean isLoaded() {
-      return loaded;
-    }
-
-    public synchronized void setSession(Session session) {
-      this.loaded = true;
-      this.session = session;
-      this.pendingEnd = null;
-    }
-
-    /**
-     * Stores a session loaded from the database, unless a newer one was set in the meantime. Any
-     * end time recorded during the lookup is applied, since the row may have been read before it
-     * was written.
-     */
-    public synchronized Session loadIfAbsent(Session session) {
-      if (!loaded) {
-        if (pendingEnd != null
-            && session != null
-            && session.getSessionId().equals(pendingEnd.getSessionId())) {
-          session.setEndDate(pendingEnd.getEndDate());
-        }
-        setSession(session);
-      }
-      return this.session;
-    }
-
-    public synchronized void updateEndDate(Session ended) {
-      if (!loaded) {
-        pendingEnd = ended;
-      } else if (session != null
-          && session != ended
-          && session.getSessionId().equals(ended.getSessionId())) {
-        session.setEndDate(ended.getEndDate());
-      }
-    }
   }
 }

@@ -14,11 +14,10 @@ public class Session {
   private final String serverName; // The server that this session was started on
 
   private final Instant startDate; // Date the session started
-  private Instant endDate; // Date the session ended
+  private volatile Instant endDate; // Date the session ended, read from other threads
 
-  public Session(UUID playerId, boolean disguised) {
-    this(
-        UUID.randomUUID(), playerId, disguised, Community.get().getServerId(), Instant.now(), null);
+  public Session(UUID playerId, boolean disguised, Instant startDate) {
+    this(UUID.randomUUID(), playerId, disguised, Community.get().getServerId(), startDate, null);
   }
 
   public Session(

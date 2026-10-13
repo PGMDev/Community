@@ -6,7 +6,10 @@ general:
   # Display name for the network used in various locations.
   server-name: "&4Overcast &7Community"
 
-  # Unique identifier for the server, used for cross-server tracking.
+  # Unique identifier for the server, used for cross-server tracking. Should match the proxy's server name.
+  # Must be unique per instance; sessions left open under this ID are closed on startup.
+  # Resolved from the Environment API (if enabled), then the SERVER_NAME env var, then this value.
+  # Fixed until the server restarts; changes are ignored on reload.
   server-id: "occ"
 
   # Determine whether to use the Environment API to retrieve the server ID.
@@ -435,7 +438,10 @@ alt-risk:
 # Network - Features which help in running Community on multiple servers
 network:
   enabled: false  
-  id: "" # Network id of server, leave blank for randomly generated
+  # Unique ID of this instance on the Redis network, used to ignore its own messages.
+  # The SERVER_NAME env var takes precedence when set. Leave blank for a random ID if SERVER_NAME is unset.
+  # Fixed until the server restarts.
+  id: ""
   
   # Redis login values
   redis:

@@ -29,7 +29,7 @@ public class NetworkConfig extends FeatureConfigImpl {
   }
 
   public String getNetworkId() {
-    return NetworkUtils.getServerVar(networkId);
+    return networkId;
   }
 
   public String getHost() {
@@ -56,7 +56,10 @@ public class NetworkConfig extends FeatureConfigImpl {
     this.port = config.getInt(REDIS_PORT);
     this.ssl = config.getBoolean(REDIS_SSL);
 
-    String netId = config.getString(ID);
-    this.networkId = netId != null && !netId.isEmpty() ? netId : UUID.randomUUID().toString();
+    if (networkId == null) {
+      String id = config.getString(ID);
+      networkId = NetworkUtils.getServerVar(
+          id != null && !id.isEmpty() ? id : UUID.randomUUID().toString());
+    }
   }
 }

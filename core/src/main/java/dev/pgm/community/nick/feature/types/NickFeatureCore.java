@@ -20,6 +20,7 @@ import dev.pgm.community.utils.PGMUtils;
 import dev.pgm.community.utils.WebUtils;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +56,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   private final NickStore store;
   private final UsersFeature users;
   private final Map<UUID, String> nickedPlayers;
+  private final Set<UUID> pendingNicks;
   private final Cache<UUID, String> loginSubdomains;
   private final Cache<UUID, Boolean> pendingLogins;
   private final Cache<UUID, Nick> loginNicks;
@@ -70,6 +72,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
     this.store = store;
     this.users = users;
     this.nickedPlayers = new ConcurrentHashMap<>();
+    this.pendingNicks = ConcurrentHashMap.newKeySet();
     this.loginSubdomains =
         CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS).build();
     this.pendingLogins =
@@ -136,6 +139,11 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   }
 
   @Override
+  public boolean isNickPending(UUID playerId) {
+    return pendingNicks.contains(playerId);
+  }
+
+  @Override
   public CompletableFuture<NickSelection> getNickSelection(UUID playerId) {
     NickSelection cached = nickChoices.getIfPresent(playerId);
     if (cached != null && !cached.canRefresh()) {
@@ -183,6 +191,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   public void onQuit(PlayerQuitEvent event) {
     UUID playerId = event.getPlayer().getUniqueId();
     if (pendingLogins.getIfPresent(playerId) == null) nickedPlayers.remove(playerId);
+    pendingNicks.remove(playerId);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -193,26 +202,35 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
     String domain = loginSubdomains.getIfPresent(player.getUniqueId());
     if (domain != null) {
       loginSubdomains.invalidate(player.getUniqueId());
+      pendingNicks.add(player.getUniqueId());
 
       // No stored nickname, so auto apply a random name
       WebUtils.getRandomName()
-          .thenAcceptAsync(name -> this.setNick(player.getUniqueId(), name)
-              .thenAcceptAsync(success -> {
-                if (success) {
-                  setNickname(player, name);
-                  Audience.get(player)
-                      .sendWarning(text(
-                          "You had no nickname, so a random one has been assigned",
-                          NamedTextColor.GREEN));
-                  sendLoginNotification(player, name, true);
-                }
-              }))
+          .thenCompose(name ->
+              setNick(player.getUniqueId(), name).thenApply(success -> success ? name : null))
+          .handle((name, error) -> {
+            if (error != null) {
+              logger.log(Level.WARNING, "Unable to assign a random nickname", error);
+            }
+
+            if (name != null) {
+              setNickname(player, name);
+              Audience.get(player)
+                  .sendWarning(text(
+                      "You had no nickname, so a random one has been assigned",
+                      NamedTextColor.GREEN));
+              sendLoginNotification(player, name, true);
+            } else {
+              setNickname(player, null);
+              Audience.get(player)
+                  .sendWarning(text(
+                      "No nicknames are available at the moment. Try again soon!",
+                      NamedTextColor.RED));
+            }
+            return null;
+          })
           .exceptionally(error -> {
-            logger.log(Level.WARNING, "Unable to assign a random nickname", error);
-            Audience.get(player)
-                .sendWarning(text(
-                    "No nicknames are available at the moment. Try again soon!",
-                    NamedTextColor.RED));
+            logger.log(Level.WARNING, "Failed to handle a random nickname result", error);
             return null;
           });
     }
@@ -234,6 +252,7 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
       } else {
         nickedPlayers.put(player.getUniqueId(), nick);
       }
+      pendingNicks.remove(player.getUniqueId());
 
       new NameDecorationChangeEvent(player.getUniqueId()).callEvent();
     });

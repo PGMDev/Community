@@ -25,6 +25,8 @@ public interface NickFeature extends Feature {
 
   String getOnlineNick(UUID playerId); // Get the nickname of an online player
 
+  boolean isNickPending(UUID playerId); // Whether a nickname is still being assigned
+
   SkinManager getSkinManager();
 
   CompletableFuture<NickSelection> getNickSelection(UUID playerId);

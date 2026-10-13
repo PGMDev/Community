@@ -2,6 +2,7 @@ package dev.pgm.community;
 
 import dev.pgm.community.utils.NetworkUtils;
 import dev.pgm.community.utils.ranks.RanksConfig;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import tc.oc.occ.environment.Environment;
 
@@ -9,8 +10,6 @@ public class CommunityConfig {
 
   private String serverDisplayName;
   private String serverId;
-  private boolean useEnvironment;
-  private String environmentServerIdKey;
   private RanksConfig ranks;
   private String storeLink;
 
@@ -24,9 +23,7 @@ public class CommunityConfig {
   public void reload(Configuration config) {
     this.ranks = new RanksConfig(config);
     this.serverDisplayName = config.getString("general.server-name", "");
-    this.serverId = config.getString("general.server-id", "");
-    this.useEnvironment = config.getBoolean("general.use-environment");
-    this.environmentServerIdKey = config.getString("general.environment-server-id");
+    if (serverId == null) serverId = resolveServerId(config);
     this.storeLink = config.getString("general.store-link");
     this.mojangAPIAddress = config.getString("general.mojang-api");
     this.randomNameAPIAddress = config.getString("general.randomname-api");
@@ -37,17 +34,16 @@ public class CommunityConfig {
   }
 
   public String getServerId() {
-    if (useEnvironment) {
-      String serverId = Environment.get().getString(environmentServerIdKey);
-      if (serverId != null && !serverId.isEmpty()) {
-        return serverId;
-      }
-    }
-    return NetworkUtils.getServerVar(serverId);
+    return serverId;
   }
 
-  public boolean isEnvironmentEnabled() {
-    return useEnvironment && Environment.get() != null;
+  private static String resolveServerId(Configuration config) {
+    if (config.getBoolean("general.use-environment")
+        && Bukkit.getPluginManager().isPluginEnabled("Environment")) {
+      String id = Environment.get().getString(config.getString("general.environment-server-id"));
+      if (id != null && !id.isEmpty()) return id;
+    }
+    return NetworkUtils.getServerVar(config.getString("general.server-id", ""));
   }
 
   public RanksConfig getRanksConfig() {

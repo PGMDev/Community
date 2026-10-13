@@ -4,6 +4,7 @@ import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
 import dev.pgm.community.sessions.services.SQLSessionService;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class SQLSessionStore implements SessionStore {
@@ -25,17 +26,17 @@ public class SQLSessionStore implements SessionStore {
   }
 
   @Override
-  public void updateSessionEndTime(Session session) {
-    service.updateSessionEndTime(session);
+  public void updateSessionEndTime(UUID playerId, UUID sessionId, Instant endTime) {
+    service.updateSessionEndTime(playerId, sessionId, endTime);
   }
 
   @Override
-  public void updateSessionEndTimeSync(Session session) {
-    service.updateSessionEndTimeSync(session);
+  public CompletableFuture<Integer> closeOrphanedSessions(String server, Instant bootTime) {
+    return service.closeOrphanedSessions(server, bootTime);
   }
 
   @Override
-  public CompletableFuture<Void> closeOrphanedSessions(String server, Instant endTime) {
-    return service.closeOrphanedSessions(server, endTime);
+  public CompletableFuture<Void> shutdownFlush() {
+    return service.shutdownFlush();
   }
 }

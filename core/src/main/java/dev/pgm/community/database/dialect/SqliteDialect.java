@@ -8,7 +8,8 @@ public class SqliteDialect implements SqlDialect {
         + "(player, ignore_disguised, session_id, disguised, server, start_time, end_time)"
         + " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(player, ignore_disguised) DO UPDATE SET "
         + "session_id = excluded.session_id, disguised = excluded.disguised, "
-        + "server = excluded.server, start_time = excluded.start_time, end_time = excluded.end_time";
+        + "server = excluded.server, start_time = excluded.start_time, end_time = excluded.end_time"
+        + " WHERE excluded.start_time >= latest_sessions.start_time";
   }
 
   @Override

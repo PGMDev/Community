@@ -9,10 +9,10 @@ public interface SessionDataQuery {
   String INSERT_SESSION_QUERY = "INSERT INTO " + TABLE_NAME
       + "(id, player, disguised, server, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?)";
 
-  String UPDATE_SESSION_ENDTIME_QUERY = "UPDATE " + TABLE_NAME + " SET end_time = ? WHERE id = ?";
+  String CLOSE_ORPHANED_SET_CLAUSE =
+      " SET end_time = start_time WHERE server = ? AND end_time IS NULL AND start_time < ?";
 
-  String CLOSE_ORPHANED_SESSIONS_QUERY =
-      "UPDATE " + TABLE_NAME + " SET end_time = ? WHERE server = ? AND end_time IS NULL";
+  String CLOSE_ORPHANED_SESSIONS_QUERY = "UPDATE " + TABLE_NAME + CLOSE_ORPHANED_SET_CLAUSE;
 
   String LATEST_TABLE_NAME = "latest_sessions";
   String LATEST_TABLE_FIELDS =
@@ -21,9 +21,5 @@ public interface SessionDataQuery {
   String SELECT_LATEST_SESSION_QUERY =
       "SELECT * FROM " + LATEST_TABLE_NAME + " WHERE player = ? AND ignore_disguised = ? LIMIT 1";
 
-  String UPDATE_LATEST_ENDTIME_QUERY =
-      "UPDATE " + LATEST_TABLE_NAME + " SET end_time = ? WHERE session_id = ?";
-
-  String CLOSE_ORPHANED_LATEST_QUERY =
-      "UPDATE " + LATEST_TABLE_NAME + " SET end_time = ? WHERE server = ? AND end_time IS NULL";
+  String CLOSE_ORPHANED_LATEST_QUERY = "UPDATE " + LATEST_TABLE_NAME + CLOSE_ORPHANED_SET_CLAUSE;
 }

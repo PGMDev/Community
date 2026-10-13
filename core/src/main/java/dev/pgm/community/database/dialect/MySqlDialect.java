@@ -7,8 +7,13 @@ public class MySqlDialect implements SqlDialect {
     return "INSERT INTO latest_sessions"
         + "(player, ignore_disguised, session_id, disguised, server, start_time, end_time)"
         + " VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE "
-        + "session_id = VALUES(session_id), disguised = VALUES(disguised), "
-        + "server = VALUES(server), start_time = VALUES(start_time), end_time = VALUES(end_time)";
+        + ifNewer("session_id") + ", " + ifNewer("disguised") + ", " + ifNewer("server") + ", "
+        + ifNewer("end_time") + ", " + ifNewer("start_time");
+  }
+
+  private static String ifNewer(String column) {
+    return column + " = IF(VALUES(start_time) >= start_time, VALUES(" + column + "), " + column
+        + ")";
   }
 
   @Override

@@ -2,9 +2,10 @@ package dev.pgm.community.sessions.feature.types;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.feature.FeatureBase;
+import dev.pgm.community.nick.feature.NickFeature;
+import dev.pgm.community.sessions.DisguiseSessionListener;
 import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
-import dev.pgm.community.sessions.VanishedSessionListener;
 import dev.pgm.community.sessions.feature.SessionFeature;
 import dev.pgm.community.sessions.store.SessionStore;
 import dev.pgm.community.users.feature.UsersFeature;
@@ -14,64 +15,82 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tc.oc.pgm.events.CountdownCancelEvent;
-import tc.oc.pgm.events.CountdownStartEvent;
-import tc.oc.pgm.restart.RestartCountdown;
 
 public class SessionFeatureCore extends FeatureBase implements SessionFeature {
 
+  private static final long DISABLE_TIMEOUT_SECONDS = 30;
+
+  private final Supplier<NickFeature> nicks;
   private final SessionStore store;
   private final Map<UUID, Session> activeSessions;
-  private VanishedSessionListener vanishedSessionListener;
-  private boolean serverRestarting;
+  private DisguiseSessionListener disguiseSessionListener;
+  private boolean started;
 
-  public SessionFeatureCore(UsersFeature users, Logger logger, SessionStore store) {
+  public SessionFeatureCore(
+      UsersFeature users, Supplier<NickFeature> nicks, Logger logger, SessionStore store) {
     super(users.getConfig(), logger, "Sessions");
+    this.nicks = nicks;
     this.store = store;
     this.activeSessions = new ConcurrentHashMap<>();
 
     if (getConfig().isEnabled()) {
+      String serverId = Community.get().getServerId();
+      if (isDefaultServerId(serverId)) {
+        logger.warning("Server ID is the default \"" + serverId
+            + "\". Instances sharing an ID will close each other's sessions on startup.");
+      }
+
+      // A count after a clean shutdown suggests another instance shares this server ID
       long cleanupStarted = System.nanoTime();
-      logger.info("Scheduling orphaned session cleanup");
-      store
-          .closeOrphanedSessions(Community.get().getServerId(), Instant.now())
-          .whenComplete((ignored, exception) -> {
-            long elapsedMillis = (System.nanoTime() - cleanupStarted) / 1_000_000;
-            if (exception != null) {
-              logger.warning("Failed to close orphaned sessions after " + elapsedMillis + " ms: "
-                  + exception.getMessage());
-            } else {
-              logger.info("Orphaned session cleanup completed in " + elapsedMillis + " ms");
-            }
-          });
+      store.closeOrphanedSessions(serverId, Instant.now()).whenComplete((closed, error) -> {
+        long elapsedMillis = (System.nanoTime() - cleanupStarted) / 1_000_000;
+        if (error != null) {
+          logger.warning(
+              "Failed to close orphaned sessions after " + elapsedMillis + " ms: " + error);
+        } else if (closed > 0) {
+          logger.info("Closed " + closed + " orphaned sessions for server " + serverId + " in "
+              + elapsedMillis + " ms");
+        }
+      });
 
       enable();
+      started = true;
 
       if (PGMUtils.isPGMEnabled()) {
-        vanishedSessionListener = new VanishedSessionListener(this);
-        Bukkit.getPluginManager().registerEvents(vanishedSessionListener, Community.get());
+        disguiseSessionListener = new DisguiseSessionListener(this);
+        Bukkit.getPluginManager().registerEvents(disguiseSessionListener, Community.get());
       }
     }
   }
 
   @Override
   public void disable() {
+    if (!started) return;
+    started = false;
     super.disable();
-    if (vanishedSessionListener != null) HandlerList.unregisterAll(vanishedSessionListener);
-    endOngoingSessionsSync();
+    if (disguiseSessionListener != null) HandlerList.unregisterAll(disguiseSessionListener);
+    endAllSessions();
   }
 
   @Override
   public CompletableFuture<Session> getLatestSession(UUID playerId, boolean ignoreDisguised) {
+    Session active = activeSessions.get(playerId);
+    if (active != null && !(ignoreDisguised && active.isDisguised())) {
+      return CompletableFuture.completedFuture(active);
+    }
     return store.query(new SessionQuery(playerId, ignoreDisguised));
   }
 
@@ -80,80 +99,62 @@ public class SessionFeatureCore extends FeatureBase implements SessionFeature {
     return activeSessions.get(playerId);
   }
 
-  @Override
-  public void startSession(Player player) {
-    startSession(player, VisibilityUtils.isDisguised(player));
+  private boolean isDisguised(Player player) {
+    return VisibilityUtils.isDisguised(player) || nicks.get().isNickPending(player.getUniqueId());
   }
 
-  @Override
-  public void startSession(Player player, boolean disguised) {
-    Session session = new Session(player.getUniqueId(), disguised);
+  private void startSession(Player player, Instant startTime) {
+    Session session = new Session(player.getUniqueId(), isDisguised(player), startTime);
     activeSessions.put(player.getUniqueId(), session);
     store.save(session);
   }
 
   @Override
-  public void endSession(Session session) {
+  public void updateDisguise(Player player) {
+    Session previous = getActiveSession(player.getUniqueId());
+    if (previous == null || previous.isDisguised() == isDisguised(player)) return;
+
+    Instant now = Instant.now();
+    store.updateSessionEndTime(player.getUniqueId(), previous.getSessionId(), now);
+    startSession(player, now);
+    previous.setEndDate(now);
+  }
+
+  private void endSession(Session session, Instant endTime) {
+    session.setEndDate(endTime);
+    store.updateSessionEndTime(session.getPlayerId(), session.getSessionId(), endTime);
     activeSessions.remove(session.getPlayerId(), session);
-    session.setEndDate(Instant.now());
-    store.updateSessionEndTime(session);
   }
 
-  @Override
-  public void endOngoingSessions() {
+  private void endAllSessions() {
     Instant now = Instant.now();
     for (Session session : activeSessions.values()) {
-      session.setEndDate(now);
-      store.updateSessionEndTime(session);
+      endSession(session, now);
     }
-    activeSessions.clear();
-  }
 
-  @Override
-  public void endOngoingSessionsSync() {
-    Instant now = Instant.now();
-    for (Session session : activeSessions.values()) {
-      session.setEndDate(now);
-      store.updateSessionEndTimeSync(session);
+    try {
+      store.shutdownFlush().orTimeout(DISABLE_TIMEOUT_SECONDS, TimeUnit.SECONDS).join();
+    } catch (CompletionException e) {
+      logger.warning("Timed out waiting for session writes. Sessions not yet ended will be closed"
+          + " on next startup as zero-length, losing their playtime: " + e.getMessage());
     }
-    activeSessions.clear();
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onJoinHighest(PlayerJoinEvent event) {
-    if (!serverRestarting) startSession(event.getPlayer());
+    startSession(event.getPlayer(), Instant.now());
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
-  public void onQuitHighest(PlayerQuitEvent event) {
-    Session session = activeSessions.remove(event.getPlayer().getUniqueId());
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onQuit(PlayerQuitEvent event) {
+    Session session = getActiveSession(event.getPlayer().getUniqueId());
     if (session != null) {
-      endSession(session);
+      endSession(session, Instant.now());
     }
   }
 
-  @Override
-  public boolean isPlayerJoining(Player player) {
-    return !activeSessions.containsKey(player.getUniqueId());
-  }
-
-  @EventHandler
-  public void onServerRestart(CountdownStartEvent event) {
-    if (!(event.getCountdown() instanceof RestartCountdown)) return;
-
-    // When restarting, end sessions early to avoid flooding queries.
-    serverRestarting = true;
-    endOngoingSessions();
-  }
-
-  @EventHandler
-  public void onServerRestartCancel(CountdownCancelEvent event) {
-    if (!(event.getCountdown() instanceof RestartCountdown) || !serverRestarting) return;
-
-    // Sessions were ended when the countdown started, so resume tracking online players
-    serverRestarting = false;
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      if (!activeSessions.containsKey(player.getUniqueId())) startSession(player);
-    }
+  private static boolean isDefaultServerId(String serverId) {
+    Configuration defaults = Community.get().getConfig().getDefaults();
+    return defaults != null && serverId.equals(defaults.getString("general.server-id"));
   }
 }
