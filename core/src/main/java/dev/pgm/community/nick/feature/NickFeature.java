@@ -25,6 +25,8 @@ public interface NickFeature extends Feature {
 
   String getOnlineNick(UUID playerId); // Get the nickname of an online player
 
+  void removeOnlineNick(UUID playerId); // Undisguise an online player for this session only
+
   boolean isNickPending(UUID playerId); // Whether a nickname is still being assigned
 
   SkinManager getSkinManager();

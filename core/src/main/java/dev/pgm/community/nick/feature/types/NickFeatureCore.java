@@ -139,6 +139,12 @@ public class NickFeatureCore extends FeatureBase implements NickFeature {
   }
 
   @Override
+  public void removeOnlineNick(UUID playerId) {
+    Player player = Bukkit.getPlayer(playerId);
+    if (player != null) setNickname(player, null);
+  }
+
+  @Override
   public boolean isNickPending(UUID playerId) {
     return pendingNicks.contains(playerId);
   }
