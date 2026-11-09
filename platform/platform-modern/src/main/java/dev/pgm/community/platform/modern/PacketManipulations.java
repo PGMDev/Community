@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Predicate;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -46,19 +45,11 @@ public class PacketManipulations {
   }
 
   private void handlePlayerInfo(PacketSendEvent event) {
-    reEncodeIfModified(event, this::rewritePlayerInfo);
+    PacketEventsUtil.reEncodeIfModified(event, this::rewritePlayerInfo);
   }
 
   private void handleScoreboardTeams(PacketSendEvent event) {
-    reEncodeIfModified(event, this::rewriteScoreboardTeams);
-  }
-
-  /** Re-encode only rewritten packets, restoring any wrapper an earlier listener left behind */
-  private static void reEncodeIfModified(
-      PacketSendEvent event, Predicate<PacketSendEvent> rewrite) {
-    var previousWrapper = event.getLastUsedWrapper();
-    if (rewrite.test(event)) event.markForReEncode(true);
-    else event.setLastUsedWrapper(previousWrapper);
+    PacketEventsUtil.reEncodeIfModified(event, this::rewriteScoreboardTeams);
   }
 
   private boolean rewritePlayerInfo(PacketSendEvent event) {

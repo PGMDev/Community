@@ -4,12 +4,10 @@ import static dev.pgm.community.util.PlayerIdentities.IDENTITIES;
 
 import dev.pgm.community.Community;
 import dev.pgm.community.CommunityPermissions;
-import dev.pgm.community.utils.VisibilityUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,6 +25,7 @@ import tc.oc.pgm.api.integration.NickIntegration;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.events.PlayerJoinMatchEvent;
 import tc.oc.pgm.events.PlayerPartyChangeEvent;
+import tc.oc.pgm.util.Players;
 import tc.oc.pgm.util.skin.Skin;
 
 public class PGMNickIntegration implements NickIntegration, Listener {
@@ -63,16 +62,13 @@ public class PGMNickIntegration implements NickIntegration, Listener {
   }
 
   @Override
-  public @Nullable Skin getPlayerSkin(@NonNull Player player, Player viewer) {
-    return VisibilityUtils.shouldRevealDisguise(viewer, player) ? null : getDisguiseSkin(player);
-  }
-
   public @Nullable Skin getDisguiseSkin(@NonNull Player player) {
     return nick.isNicked(player.getUniqueId())
         ? nick.getSkinManager().getDisguiseSkin(player)
         : null;
   }
 
+  @Override
   public boolean canRevealDisguise(Player player, CommandSender viewer) {
     return viewer.hasPermission(CommunityPermissions.NICKNAME_VIEW);
   }
@@ -81,9 +77,7 @@ public class PGMNickIntegration implements NickIntegration, Listener {
     String nickName = getNick(player);
     MatchPlayer matchPlayer = PGM.get().getMatchManager().getPlayer(player);
 
-    if (nickName == null
-        || matchPlayer == null
-        || VisibilityUtils.shouldRevealDisguise(viewer, player)) {
+    if (nickName == null || matchPlayer == null || Players.shouldRevealDisguise(viewer, player)) {
       IDENTITIES.clearIdentity(player, viewer);
       return;
     }
@@ -92,18 +86,10 @@ public class PGMNickIntegration implements NickIntegration, Listener {
         player,
         viewer,
         nickName,
-        getDecoratedName(player, nickName, matchPlayer.getParty().getColor()),
+        PGM.get()
+            .getNameDecorationRegistry()
+            .getDecoratedName(player, nickName, matchPlayer.getParty().getColor()),
         getDisguiseSkin(player));
-  }
-
-  private static String getDecoratedName(
-      Player player, String name, @Nullable ChatColor partyColor) {
-    var decorations = PGM.get().getNameDecorationRegistry();
-    return decorations.getPrefix(player.getUniqueId())
-        + (partyColor == null ? ChatColor.RESET : partyColor)
-        + name
-        + decorations.getSuffix(player.getUniqueId())
-        + ChatColor.WHITE;
   }
 
   public void refresh(Player player) {

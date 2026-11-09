@@ -97,7 +97,7 @@ public class FriendshipCommand extends CommunityCommand {
     // Handle disguised players with fake requests
     Player nicked = Players.getPlayer(sender.getSender(), target.getIdentifier());
     if (nicked != null
-        && !VisibilityUtils.shouldRevealDisguise(sender.getSender(), nicked)
+        && !Players.shouldRevealDisguise(sender.getSender(), nicked)
         && Players.getVisibleName(sender.getSender(), nicked)
             .equalsIgnoreCase(target.getIdentifier())) {
       FakeRequests fake = fakeRequests.getUnchecked(player.getUniqueId());
