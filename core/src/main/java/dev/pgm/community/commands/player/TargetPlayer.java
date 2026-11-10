@@ -7,61 +7,62 @@ import dev.pgm.community.utils.NameUtils;
 import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.util.text.TextException;
 import tc.oc.pgm.util.text.TextParser;
 
 public final class TargetPlayer {
 
-  private Optional<UUID> playerId = Optional.empty();
-  private Optional<String> name = Optional.empty();
+  private @Nullable UUID playerId;
+  private @Nullable String name;
 
   public TargetPlayer(Player player) {
     assertNotNull(player);
-    this.playerId = Optional.of(player.getUniqueId());
-    this.name = Optional.of(player.getName());
+    this.playerId = player.getUniqueId();
+    this.name = player.getName();
   }
 
-  public TargetPlayer(CommandSender viewer, String input) throws TextException {
+  public TargetPlayer(String input) throws TextException {
     if (input == null || !NameUtils.isIdentifier(input)) {
       throw exception("Invalid player identifier: " + input);
     }
 
     if (NameUtils.isPlayerId(input)) {
-      this.playerId = Optional.of(TextParser.parseUuid(input));
-      Player player = Bukkit.getPlayer(playerId.get());
+      this.playerId = TextParser.parseUuid(input);
+      Player player = Bukkit.getPlayer(playerId);
       if (player != null) {
-        this.name = Optional.of(player.getName());
+        this.name = player.getName();
       }
     } else {
-      this.name = Optional.of(input);
+      this.name = input;
       Player player = Bukkit.getPlayer(input);
       if (player != null) {
-        this.playerId = Optional.of(player.getUniqueId());
+        this.playerId = player.getUniqueId();
       }
     }
   }
 
-  public Optional<UUID> getUUID() {
-    return this.playerId;
+  public @NonNull Optional<UUID> getUUID() {
+    return Optional.ofNullable(this.playerId);
   }
 
-  public Optional<String> getName() {
-    return this.name;
+  public @NonNull Optional<String> getName() {
+    return Optional.ofNullable(this.name);
   }
 
-  public String getIdentifier() {
+  public @Nullable String getIdentifier() {
     return getUUID().map(UUID::toString).orElse(getName().orElse(null));
   }
 
-  public Player getPlayer() {
-    if (getUUID().isPresent()) {
-      return Bukkit.getPlayer(getUUID().get());
+  public @Nullable Player getPlayer() {
+    if (playerId != null) {
+      return Bukkit.getPlayer(playerId);
     }
 
-    if (getName().isPresent()) {
-      return Bukkit.getPlayer(getName().get());
+    if (name != null) {
+      return Bukkit.getPlayer(name);
     }
 
     return null;

@@ -76,7 +76,7 @@ public class FeatureManager {
 
     // DB Features
     this.users = new UsersFeatureCore(config, logger, stores.users());
-    this.sessions = new SessionFeatureCore(users, logger, stores.sessions());
+    this.sessions = new SessionFeatureCore(users, this::getNick, logger, stores.sessions());
     this.reports =
         new AssistanceFeatureCore(config, logger, users, network, inventory, stores.assistance());
     this.moderation =
@@ -201,6 +201,10 @@ public class FeatureManager {
     return history;
   }
 
+  public NetworkFeature getNetwork() {
+    return network;
+  }
+
   public void reloadConfig(Configuration config) {
     // Reload all config values here
     getReports().getConfig().reload(config);
@@ -238,7 +242,9 @@ public class FeatureManager {
     if (getReports().isEnabled()) getReports().disable();
     if (getModeration().isEnabled()) getModeration().disable();
     if (getUsers().isEnabled()) getUsers().disable();
-    if (getSessions().isEnabled()) getSessions().disable();
+    // Call sessions disable() unconditionally to close sessions that may be open, if sessions were
+    // turned off during a config reload for some reason
+    getSessions().disable();
     if (getSettings().isEnabled()) getSettings().disable();
     if (getAltRisk().isEnabled()) getAltRisk().disable();
     if (getTeleports().isEnabled()) getTeleports().disable();
@@ -257,5 +263,6 @@ public class FeatureManager {
     if (getPolls().isEnabled()) getPolls().disable();
     if (getSquads().isEnabled()) getSquads().disable();
     if (getHistory().isEnabled()) getHistory().disable();
+    if (getNetwork().isEnabled()) getNetwork().disable();
   }
 }

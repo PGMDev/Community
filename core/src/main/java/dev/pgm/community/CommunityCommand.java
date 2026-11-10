@@ -25,7 +25,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.jspecify.annotations.Nullable;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.teams.Team;
@@ -193,30 +192,6 @@ public abstract class CommunityCommand {
     return value;
   }
 
-  private boolean isNicked(CommandAudience viewer, Player player) {
-    if (viewer.hasPermission(CommunityPermissions.STAFF)) return false;
-    return Community.get().getFeatures().getNick().isNicked(player.getUniqueId());
-  }
-
-  @Nullable
-  protected Player getSinglePlayer(CommandAudience viewer, String target, boolean allowNicks) {
-    Player player = Bukkit.getPlayer(target);
-    Player nicked = Community.get().getFeatures().getNick().getPlayerFromNick(target);
-
-    if (player == null && nicked != null && allowNicks) {
-      player = nicked;
-    }
-
-    if (player == null
-        || (player != null && !canViewVanished(viewer, player))
-        || (player != null && nicked == null && isNicked(viewer, player))) {
-      viewer.sendWarning(formatNotFoundComponent(target));
-      return null;
-    }
-
-    return player;
-  }
-
   protected UUID getOnlineTarget(String target, UsersFeature service) {
     UUID id = null;
     if (!NameUtils.isMinecraftName(target)) {
@@ -248,20 +223,6 @@ public abstract class CommunityCommand {
 
   protected boolean isDisguised(Player player) {
     return VisibilityUtils.isDisguised(player);
-  }
-
-  private boolean isVanished(@Nullable Player player) {
-    return player != null && player.hasMetadata("isVanished");
-  }
-
-  public boolean canViewVanished(CommandAudience viewer, Player player) {
-    boolean vanished = isVanished(player);
-    if (vanished
-        && viewer.isPlayer()
-        && !viewer.getPlayer().hasPermission(CommunityPermissions.VIEW_VANISHED)) {
-      return false;
-    }
-    return true;
   }
 
   protected String formatNotFoundMsg(String target) {

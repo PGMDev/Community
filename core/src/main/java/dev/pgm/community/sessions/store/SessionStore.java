@@ -2,6 +2,8 @@ package dev.pgm.community.sessions.store;
 
 import dev.pgm.community.sessions.Session;
 import dev.pgm.community.sessions.SessionQuery;
+import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface SessionStore {
@@ -10,7 +12,9 @@ public interface SessionStore {
 
   CompletableFuture<Session> query(SessionQuery target);
 
-  void updateSessionEndTime(Session session);
+  void updateSessionEndTime(UUID playerId, UUID sessionId, Instant endTime);
 
-  void updateSessionEndTimeSync(Session session);
+  CompletableFuture<Integer> closeOrphanedSessions(String server, Instant bootTime);
+
+  CompletableFuture<Void> shutdownFlush();
 }

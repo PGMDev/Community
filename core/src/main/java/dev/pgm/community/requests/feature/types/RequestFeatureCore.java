@@ -272,20 +272,19 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
     // Green when the player gains currency, red when they lose it
     String amount = (shown > 0 ? "&a" : "&c") + formatAuditAmount(change.currency(), shown) + "&7";
     String actor = "&f" + change.actorName() + "&7";
-    String description =
-        switch (change.action()) {
-          case ADMIN_GRANT -> "was given " + amount + " by " + actor;
-          case ADMIN_REMOVE -> "had " + amount + " removed by " + actor;
-          case DAILY_REFRESH -> "received " + amount + " from the daily refresh";
-          case WEEKLY_REFRESH -> "received " + amount + " from the weekly refresh";
-          case SPEND ->
-            change.currency() == Currency.SPONSOR_TOKEN
-                ? "spent " + amount + " sponsoring &6" + getAuditMapName(change.context())
-                : "spent " + amount + " activating a super vote";
-          case REFUND ->
-            "was refunded " + amount
-                + (change.context() != null ? " &8(" + change.context() + ")" : "");
-        };
+    String description = switch (change.action()) {
+      case ADMIN_GRANT -> "was given " + amount + " by " + actor;
+      case ADMIN_REMOVE -> "had " + amount + " removed by " + actor;
+      case DAILY_REFRESH -> "received " + amount + " from the daily refresh";
+      case WEEKLY_REFRESH -> "received " + amount + " from the weekly refresh";
+      case SPEND ->
+        change.currency() == Currency.SPONSOR_TOKEN
+            ? "spent " + amount + " sponsoring &6" + getAuditMapName(change.context())
+            : "spent " + amount + " activating a super vote";
+      case REFUND ->
+        "was refunded " + amount
+            + (change.context() != null ? " &8(" + change.context() + ")" : "");
+    };
 
     // Balances never go below zero, so note when less was taken than requested
     String requested = actual != change.amount() ? " &8(requested " + change.amount() + ")" : "";
@@ -500,8 +499,9 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
     Bukkit.getScheduler().runTask(Community.get(), () -> {
       if (sponsor.getSponsorQueue().removeIf(request -> request.playerId().equals(playerId))) {
         String name = users.getUsername(playerId);
-        Community.log(
-            "Removed sponsor request for %s - replaced on another server",
+        logAudit(
+            Currency.SPONSOR_TOKEN,
+            "&7Removed sponsor request for &f%s &8- &7replaced on another server",
             name != null ? name : playerId);
       }
     });
@@ -973,18 +973,18 @@ public class RequestFeatureCore extends FeatureBase implements RequestFeature {
                           Player player = Bukkit.getPlayer(nextRequest.playerId());
                           // Replaced by a newer request on another server, which owns it now
                           if (SponsorClaimLostException.isCause(failure)) {
-                            Community.log(
+                            logger.info(String.format(
                                 "Removed sponsor request (%s) for %s - replaced on another server",
-                                nextRequest.map().getName(), nextRequest.playerId());
+                                nextRequest.map().getName(), nextRequest.playerId()));
                             return;
                           }
                           // Retrying can't fix a low balance, so drop the request instead of
                           // letting it claim the sponsor slot every time it reaches the front
                           if (InsufficientCurrencyException.isCause(failure)) {
                             releaseSponsorClaim(nextRequest.playerId());
-                            Community.log(
+                            logger.info(String.format(
                                 "Removed sponsor request (%s) for %s - not enough tokens",
-                                nextRequest.map().getName(), nextRequest.playerId());
+                                nextRequest.map().getName(), nextRequest.playerId()));
                             if (player != null) {
                               Audience.get(player)
                                   .sendWarning(

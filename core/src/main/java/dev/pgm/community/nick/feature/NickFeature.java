@@ -6,7 +6,6 @@ import dev.pgm.community.nick.data.NickSelection;
 import dev.pgm.community.nick.skin.SkinManager;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.bukkit.entity.Player;
 
 public interface NickFeature extends Feature {
 
@@ -26,12 +25,9 @@ public interface NickFeature extends Feature {
 
   String getOnlineNick(UUID playerId); // Get the nickname of an online player
 
-  Player getPlayerFromNick(String nickName);
+  void removeOnlineNick(UUID playerId); // Undisguise an online player for this session only
 
-  void removeOnlineNick(UUID playerId); // Removes the player from being nicked
-
-  boolean isAutoNicked(
-      UUID playerId); // Whether the player was nicked via logging in with nick.<domain>
+  boolean isNickPending(UUID playerId); // Whether a nickname is still being assigned
 
   SkinManager getSkinManager();
 
